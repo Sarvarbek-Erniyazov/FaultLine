@@ -136,10 +136,18 @@ def test_profile_of_a_status_table(tmp_path: Path) -> None:
     assert "System OK" in profile["top_messages"]
 
 
-def test_verdict_without_any_event_table() -> None:
-    verdict, rationale = free_text_verdict([])
+def test_verdict_when_nothing_is_staged() -> None:
+    # Distinct from "searched and found nothing": reporting an empty data directory as
+    # a finding about the record would be a false negative dressed up as evidence.
+    verdict, rationale = free_text_verdict([], members_staged=0)
     assert verdict == "UNVERIFIED"
-    assert "no status, alarm or event member" in rationale
+    assert "absence of evidence" in rationale
+
+
+def test_verdict_when_archives_are_staged_but_hold_no_event_table() -> None:
+    verdict, rationale = free_text_verdict([], members_staged=42)
+    assert verdict == "UNVERIFIED"
+    assert "archives are staged" in rationale
 
 
 def test_verdict_when_no_message_column_exists() -> None:

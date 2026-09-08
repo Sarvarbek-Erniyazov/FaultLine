@@ -171,20 +171,32 @@ def profile_event_table(member: RawMember, frame: pd.DataFrame) -> dict[str, Any
     return profile
 
 
-def free_text_verdict(profiles: list[dict[str, Any]]) -> tuple[str, str]:
+def free_text_verdict(
+    profiles: list[dict[str, Any]], members_staged: int | None = None
+) -> tuple[str, str]:
     """Decide what the inspected event tables say about free text.
 
     Args:
         profiles: Profiles produced by :func:`profile_event_table`.
+        members_staged: How many members were discovered for the source. Pass it so
+            that "nothing is staged" is not reported as "searched and found nothing":
+            the two read almost identically and mean entirely different things.
 
     Returns:
         A ``(verdict, rationale)`` pair, where the verdict is one of
         ``VERIFIED yes``, ``VERIFIED no`` or ``UNVERIFIED``.
     """
+    if members_staged == 0:
+        return (
+            "UNVERIFIED",
+            "nothing is staged for this source, so no conclusion is possible either way. "
+            "This is an absence of evidence, not evidence of absence. Run "
+            "`faultline download telemetry --tier 1 --source <id>` and inspect again",
+        )
     if not profiles:
         return (
             "UNVERIFIED",
-            "no status, alarm or event member was found in the staged archives; "
+            "archives are staged, but no status, alarm or event member was found in them; "
             "either this record publishes none, or the classification patterns missed it",
         )
     with_messages = [p for p in profiles if p["message_column"] and p["unique_messages"] > 0]
@@ -254,7 +266,7 @@ def build_report(
     Returns:
         A Markdown document.
     """
-    verdict, rationale = free_text_verdict(profiles)
+    verdict, rationale = free_text_verdict(profiles, members_staged=len(members))
     archives = sorted({member.archive for member in members})
     by_kind: Counter[str] = Counter(member.kind for member in members)
 

@@ -1,0 +1,132 @@
+{
+  "source": "kelmarsh",
+  "provider": "Cubico Sustainable Investments Ltd",
+  "license": "CC-BY-4.0",
+  "record_id": 16807551,
+  "concept_doi": "10.5281/zenodo.5841833",
+  "version_doi": "10.5281/zenodo.16807551",
+  "generated_at": "2026-09-08T22:22:27.683335Z",
+  "files": [
+    {
+      "filename": "Kelmarsh_SCADA_2016_3082.zip",
+      "relative_path": "raw/telemetry/kelmarsh/Kelmarsh_SCADA_2016_3082.zip",
+      "size_bytes": 97915553,
+      "md5": "ca8efbb6dbcfae3516583937eb5b5402",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807551/files/Kelmarsh_SCADA_2016_3082.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-08T22:12:13.212754Z",
+      "verified": true
+    },
+    {
+      "filename": "Kelmarsh_SCADA_2017_3083.zip",
+      "relative_path": "raw/telemetry/kelmarsh/Kelmarsh_SCADA_2017_3083.zip",
+      "size_bytes": 174604722,
+      "md5": "c78263ee52ee0e48e2cb4bbaa1ba211a",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807551/files/Kelmarsh_SCADA_2017_3083.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-08T22:12:43.336823Z",
+      "verified": true
+    },
+    {
+      "filename": "Kelmarsh_SCADA_2018_3084.zip",
+      "relative_path": "raw/telemetry/kelmarsh/Kelmarsh_SCADA_2018_3084.zip",
+      "size_bytes": 262157463,
+      "md5": "972e5280172216a5fe76dcab19c741b0",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807551/files/Kelmarsh_SCADA_2018_3084.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-08T22:13:25.223017Z",
+      "verified": true
+    },
+    {
+      "filename": "Kelmarsh_SCADA_2019_3085.zip",
+      "relative_path": "raw/telemetry/kelmarsh/Kelmarsh_SCADA_2019_3085.zip",
+      "size_bytes": 311269947,
+      "md5": "14348a1572b722e1be10e53cd145c39a",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807551/files/Kelmarsh_SCADA_2019_3085.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-08T22:14:12.568703Z",
+      "verified": true
+    },
+    {
+      "filename": "Kelmarsh_SCADA_2020_3086.zip",
+      "relative_path": "raw/telemetry/kelmarsh/Kelmarsh_SCADA_2020_3086.zip",
+      "size_bytes": 473677799,
+      "md5": "e189e02da98f32e74acc72e8559ef0db",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807551/files/Kelmarsh_SCADA_2020_3086.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-08T22:15:33.164831Z",
+      "verified": true
+    },
+    {
+      "filename": "Kelmarsh_SCADA_2021_4456.zip",
+      "relative_path": "raw/telemetry/kelmarsh/Kelmarsh_SCADA_2021_4456.zip",
+      "size_bytes": 467454435,
+      "md5": "4e0ef3d65f067fd3d8f3d30e79ab01ae",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807551/files/Kelmarsh_SCADA_2021_4456.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-08T22:16:50.549716Z",
+      "verified": true
+    },
+    {
+      "filename": "Kelmarsh_SCADA_2022_4457.zip",
+      "relative_path": "raw/telemetry/kelmarsh/Kelmarsh_SCADA_2022_4457.zip",
+      "size_bytes": 485620228,
+      "md5": "b695d2b21cd5a236b2e690e0a43df5ab",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807551/files/Kelmarsh_SCADA_2022_4457.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-08T22:18:16.990876Z",
+      "verified": true
+    },
+    {
+      "filename": "Kelmarsh_SCADA_2023_5961.zip",
+      "relative_path": "raw/telemetry/kelmarsh/Kelmarsh_SCADA_2023_5961.zip",
+      "size_bytes": 716099870,
+      "md5": "685d9589347d1866f6f2cfe45b9af4f4",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807551/files/Kelmarsh_SCADA_2023_5961.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-08T22:20:16.581746Z",
+      "verified": true
+    },
+    {
+      "filename": "Kelmarsh_SCADA_2024_5962.zip",
+      "relative_path": "raw/telemetry/kelmarsh/Kelmarsh_SCADA_2024_5962.zip",
+      "size_bytes": 704598245,
+      "md5": "e9e3318f5b393d8596ff1801f8da0414",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807551/files/Kelmarsh_SCADA_2024_5962.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-08T22:22:26.138186Z",
+      "verified": true
+    },
+    {
+      "filename": "Kelmarsh_WT_dataSignalMapping.csv",
+      "relative_path": "raw/telemetry/kelmarsh/Kelmarsh_WT_dataSignalMapping.csv",
+      "size_bytes": 3150,
+      "md5": "ca8fe399ab15ae7111d3214c632efd36",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807551/files/Kelmarsh_WT_dataSignalMapping.csv/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-08T22:22:26.564983Z",
+      "verified": true
+    },
+    {
+      "filename": "Kelmarsh_WT_static.csv",
+      "relative_path": "raw/telemetry/kelmarsh/Kelmarsh_WT_static.csv",
+      "size_bytes": 807,
+      "md5": "af3a038f0f7fddfc1608ad0bfc8cf5ba",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807551/files/Kelmarsh_WT_static.csv/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-08T22:22:27.682329Z",
+      "verified": true
+    }
+  ]
+}

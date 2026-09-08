@@ -18,8 +18,11 @@ import re
 from datetime import UTC, datetime
 from pathlib import Path
 
+import yaml
+
 from faultline.data.common.manifest import SourceManifest, manifest_path, read_manifest
 from faultline.data.common.report import kv_table, section, table
+from faultline.data.telemetry.adapters.base import load_channel_map
 from faultline.download.zenodo import SourceSpec
 from faultline.logging_utils import get_logger
 from faultline.paths import ProjectPaths
@@ -89,6 +92,39 @@ def _staging_rows(manifest: SourceManifest | None) -> list[tuple[str, object, ob
         )
         for record in manifest.files
     ]
+
+
+def channel_map_status(path: Path) -> dict[str, object]:
+    """Summarize how far a source's channel map has been resolved.
+
+    Read from the file rather than asserted, so a card cannot claim a mapping is
+    outstanding after it has been done, or done while it is still outstanding.
+
+    Args:
+        path: Path to ``configs/data/channel_map/<source>.yaml``.
+
+    Returns:
+        Rows describing the mapping state, ready for a key/value table.
+    """
+    if not path.is_file():
+        return {"mapping status": f"{UNVERIFIED} - no channel map file exists"}
+    resolved = load_channel_map(path)
+    payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    declared = payload.get("channels", {}) or {}
+    stated = str(payload.get("mapping_status", "")).strip()
+    rows: dict[str, object] = {
+        "channels mapped": f"{len(resolved)} of {len(declared)}",
+        "mapping status": stated
+        or (f"{UNVERIFIED} - TODO(m1): fill the channel map from the provider signal-mapping file"),
+    }
+    if not resolved:
+        rows["mapping status"] = (
+            f"{UNVERIFIED} - every entry is still TODO(m1); the adapter skips this "
+            "source rather than guessing at column names"
+        )
+    if timezone := payload.get("timezone"):
+        rows["timezone (from the data files)"] = str(timezone)
+    return rows
 
 
 def build_card(source: str, spec: SourceSpec, paths: ProjectPaths) -> Path:
@@ -193,10 +229,7 @@ def build_card(source: str, spec: SourceSpec, paths: ProjectPaths) -> Path:
             kv_table(
                 {
                     "channel map": f"configs/data/channel_map/{source}.yaml",
-                    "mapping status": f"{UNVERIFIED} - TODO(m1): fill the channel map from the "
-                    "provider signal-mapping file"
-                    if channel_map.is_file()
-                    else f"{UNVERIFIED} - no channel map file",
+                    **channel_map_status(channel_map),
                 }
             ),
         )

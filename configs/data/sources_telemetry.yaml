@@ -34,7 +34,7 @@ sources:
       n_turbines: 6
       rated_kw: 2050
       period: "2016-2024"
-    timezone: "TODO(m1): confirm UTC vs Europe/London from the SCADA file headers"
+    timezone: "UTC" # CONFIRMED 2026-09-09 from the file preamble ("# Time zone: UTC")
     intended_use: "training / validation site"
     tiers:
       1:
@@ -69,7 +69,7 @@ sources:
       rated_kw: 2050
       period: "2016-2024"
       note: "turbine WT03 is absent from the record"
-    timezone: "TODO(m1): confirm UTC vs Europe/London from the SCADA file headers"
+    timezone: "UTC" # CONFIRMED 2026-09-09 from the file preamble ("# Time zone: UTC")
     intended_use: "training / validation site"
     tiers:
       1:

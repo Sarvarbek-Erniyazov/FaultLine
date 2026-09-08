@@ -1,0 +1,99 @@
+{
+  "source": "penmanshiel",
+  "provider": "Cubico Sustainable Investments Ltd",
+  "license": "CC-BY-4.0",
+  "record_id": 16807304,
+  "concept_doi": "10.5281/zenodo.5946807",
+  "version_doi": "10.5281/zenodo.16807304",
+  "generated_at": "2026-09-08T22:42:48.039109Z",
+  "files": [
+    {
+      "filename": "Penmanshiel_SCADA_2016_WT01-10_3107.zip",
+      "relative_path": "raw/telemetry/penmanshiel/Penmanshiel_SCADA_2016_WT01-10_3107.zip",
+      "size_bytes": 128926241,
+      "md5": "3819e1b2168b84da195b64e1e9d78b03",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807304/files/Penmanshiel_SCADA_2016_WT01-10_3107.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-08T22:23:17.769830Z",
+      "verified": true
+    },
+    {
+      "filename": "Penmanshiel_SCADA_2016_WT11-15_3107.zip",
+      "relative_path": "raw/telemetry/penmanshiel/Penmanshiel_SCADA_2016_WT11-15_3107.zip",
+      "size_bytes": 55917173,
+      "md5": "92c30453d43a38e985af3e2e305eedd4",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807304/files/Penmanshiel_SCADA_2016_WT11-15_3107.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-08T22:23:37.534970Z",
+      "verified": true
+    },
+    {
+      "filename": "Penmanshiel_SCADA_2017_WT01-10_3114.zip",
+      "relative_path": "raw/telemetry/penmanshiel/Penmanshiel_SCADA_2017_WT01-10_3114.zip",
+      "size_bytes": 273531678,
+      "md5": "c8279e34a5e33d688e2219aa9abab74e",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807304/files/Penmanshiel_SCADA_2017_WT01-10_3114.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-08T22:24:36.251375Z",
+      "verified": true
+    },
+    {
+      "filename": "Penmanshiel_SCADA_2017_WT11-15_3115.zip",
+      "relative_path": "raw/telemetry/penmanshiel/Penmanshiel_SCADA_2017_WT11-15_3115.zip",
+      "size_bytes": 152896438,
+      "md5": "d41874e3d195e88506949492b5758cf6",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807304/files/Penmanshiel_SCADA_2017_WT11-15_3115.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-08T22:25:41.176504Z",
+      "verified": true
+    },
+    {
+      "filename": "Penmanshiel_SCADA_2018_WT01-10_3113.zip",
+      "relative_path": "raw/telemetry/penmanshiel/Penmanshiel_SCADA_2018_WT01-10_3113.zip",
+      "size_bytes": 365016408,
+      "md5": "6389e5c4ea59d6565f6712db43a504ce",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807304/files/Penmanshiel_SCADA_2018_WT01-10_3113.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-08T22:27:22.162204Z",
+      "verified": true
+    },
+    {
+      "filename": "Penmanshiel_SCADA_2018_WT11-15_3116.zip",
+      "relative_path": "raw/telemetry/penmanshiel/Penmanshiel_SCADA_2018_WT11-15_3116.zip",
+      "size_bytes": 204798983,
+      "md5": "7c40dc00df6d6301427213e15170b927",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807304/files/Penmanshiel_SCADA_2018_WT11-15_3116.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-08T22:29:09.521928Z",
+      "verified": true
+    },
+    {
+      "filename": "Penmanshiel_SCADA_2019_WT01-10_3112.zip",
+      "relative_path": "raw/telemetry/penmanshiel/Penmanshiel_SCADA_2019_WT01-10_3112.zip",
+      "size_bytes": 473518587,
+      "md5": "78389603cb4ae20a6a9b878f5a84bc7b",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807304/files/Penmanshiel_SCADA_2019_WT01-10_3112.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-08T22:31:33.363229Z",
+      "verified": true
+    },
+    {
+      "filename": "Penmanshiel_SCADA_2019_WT11-15_3117.zip",
+      "relative_path": "raw/telemetry/penmanshiel/Penmanshiel_SCADA_2019_WT11-15_3117.zip",
+      "size_bytes": 265354191,
+      "md5": "92747a976716c5f35d9ee6462958fd7a",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807304/files/Penmanshiel_SCADA_2019_WT11-15_3117.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-08T22:42:48.039109Z",
+      "verified": true
+    }
+  ]
+}

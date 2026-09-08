@@ -1,30 +1,82 @@
 # Channel map: Kelmarsh
 #
 # Maps each canonical FaultLine channel onto the column name published by the source.
-# A value of null or a TODO string means the mapping is unresolved and the channel is
-# skipped by the adapter rather than guessed at.
+# A value of null means the mapping is unresolved and the adapter skips that channel
+# rather than guessing at it.
 #
-# Source of truth: Kelmarsh_WT_dataSignalMapping.csv, staged with tier 1.
-# It was not parsed at M0 because the Zenodo record was unreachable during the
-# staging window (service outage; see the M0 report). Fill this file from that CSV
-# before implementing KelmarshAdapter.load_scada -- do not infer column names from
-# the channel names below, which are FaultLine's vocabulary, not the provider's.
+# Source of truth: the header row of Turbine_Data_Kelmarsh_<n>_<period>.csv inside the
+# staged Kelmarsh_SCADA_<year>_*.zip archives (299 columns, Greenbyte export, UTF-8).
+# Every name below was verified to exist verbatim in that header on 2026-09-09; see
+# reports/data/raw_inventory_kelmarsh_20260908.md.
+#
+# TODO(m1): cross-check against Kelmarsh_WT_dataSignalMapping.csv, which documents the
+# provider signal definitions. A name establishes that a column exists, not what it
+# measures, and three of the mappings below are judgement calls flagged inline.
 
 source: kelmarsh
 site: "Kelmarsh"
-mapping_status: "unresolved - TODO(m1)"
+mapping_status: "resolved from the SCADA header; 1 channel unresolved, 3 to confirm"
+
+# Confirmed from the file preamble ("# Time zone: UTC"), which settles the timezone
+# question the source specification raised for this record.
+timezone: "UTC"
 
 channels:
-  wind_speed_ms: null # TODO(m1)
-  power_kw: null # TODO(m1)
-  rotor_speed_rpm: null # TODO(m1)
-  generator_speed_rpm: null # TODO(m1)
-  pitch_angle_deg: null # TODO(m1)
-  nacelle_position_deg: null # TODO(m1)
-  wind_direction_deg: null # TODO(m1)
-  ambient_temp_c: null # TODO(m1)
-  nacelle_temp_c: null # TODO(m1)
-  gearbox_bearing_temp_c: null # TODO(m1)
-  gearbox_oil_temp_c: null # TODO(m1)
-  generator_bearing_temp_c: null # TODO(m1)
-  generator_winding_temp_c: null # TODO(m1)
+  wind_speed_ms: "Wind speed (m/s)"
+  power_kw: "Power (kW)"
+  rotor_speed_rpm: "Rotor speed (RPM)"
+  generator_speed_rpm: "Generator RPM (RPM)"
+
+  # Three pitch columns exist, one per blade: "... A (°)", "... B (°)", "... C (°)".
+  # Blade A is taken as the canonical single-channel pitch. TODO(m1): decide whether
+  # the model should see all three -- a disagreement between blades is itself a fault
+  # signature, and collapsing to one blade discards it.
+  pitch_angle_deg: "Blade angle (pitch position) A (°)"
+
+  nacelle_position_deg: "Nacelle position (°)"
+  wind_direction_deg: "Wind direction (°)"
+
+  # Two plausible ambient sensors exist: "Nacelle ambient temperature (°C)" and
+  # "Ambient temperature (converter) (°C)". The nacelle sensor is taken as outdoor air;
+  # the converter one reads inside the cabinet.
+  # TODO(m1): confirm against the signal mapping file.
+  ambient_temp_c: "Nacelle ambient temperature (°C)"
+
+  nacelle_temp_c: "Nacelle temperature (°C)"
+
+  # No column names a gearbox bearing directly. The candidates are ambiguous:
+  # "Front bearing temperature (°C)", "Rear bearing temperature (°C)" and
+  # "Rotor bearing temp (°C)" could belong to the main shaft or to the gearbox.
+  # Left unresolved on purpose -- mapping a main-bearing sensor onto a gearbox channel
+  # would corrupt exactly the drivetrain signal this project exists to model.
+  # TODO(m1): resolve from Kelmarsh_WT_dataSignalMapping.csv.
+  gearbox_bearing_temp_c: null
+
+  gearbox_oil_temp_c: "Gear oil temperature (°C)"
+
+  # Front and rear generator bearings are both published; front is taken as canonical.
+  # TODO(m1): consider carrying both, as with the pitch channels.
+  generator_bearing_temp_c: "Generator bearing front temperature (°C)"
+
+  # Stator temperature is the generator winding temperature on this machine.
+  # TODO(m1): confirm against the signal mapping file.
+  generator_winding_temp_c: "Stator temperature 1 (°C)"
+
+# Columns identified but deliberately left outside the canonical channel set, recorded
+# so that the exclusion is a visible decision rather than an oversight.
+observed_but_unmapped:
+  - "Gearbox speed (RPM)"
+  - "Gear oil inlet temperature (°C)"
+  - "Gear oil inlet pressure (bar)"
+  - "Gear oil pump pressure (bar)"
+  - "Generator bearing rear temperature (°C)"
+  - "Blade angle (pitch position) B (°)"
+  - "Blade angle (pitch position) C (°)"
+  - "Ambient temperature (converter) (°C)"
+  - "Rotor bearing temp (°C)"
+  - "Long Term Wind (m/s)"
+
+# The export also publishes per-column aggregates such as "<channel>, Max (°C)",
+# ", Min" and ", Standard deviation". They are excluded here: the 10-minute mean is the
+# canonical value, and whether the spread columns earn their place is an M1 feature
+# question, not a channel-mapping one.

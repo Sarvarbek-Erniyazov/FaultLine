@@ -27,8 +27,20 @@ def test_every_source_has_an_adapter() -> None:
 def test_get_adapter_loads_the_channel_map(repo_root: Path) -> None:
     adapter = get_adapter("kelmarsh", repo_root / "configs")
     assert adapter.source_id == "kelmarsh"
-    # every entry is TODO(m1) at M0, so the resolved map is empty rather than wrong
-    assert adapter.channel_map == {}
+    # Kelmarsh was resolved at M0 from the real SCADA header.
+    assert adapter.channel_map["power_kw"] == "Power (kW)"
+    assert adapter.channel_map["wind_speed_ms"] == "Wind speed (m/s)"
+    assert len(adapter.channel_map) == 12
+    # The one channel with no unambiguous column is absent rather than guessed: the
+    # candidates could belong to the main shaft or to the gearbox.
+    assert "gearbox_bearing_temp_c" not in adapter.channel_map
+
+
+def test_unresolved_channel_maps_stay_empty(repo_root: Path) -> None:
+    # The other three sources are still TODO(m1), so their maps resolve to nothing
+    # rather than to something plausible and wrong.
+    for source in ("penmanshiel", "hill_of_towie", "care"):
+        assert get_adapter(source, repo_root / "configs").channel_map == {}
 
 
 def test_unknown_source_is_rejected(repo_root: Path) -> None:

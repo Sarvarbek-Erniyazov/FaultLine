@@ -1,0 +1,94 @@
+{
+  "run_id": "20260908-221358_all_text_34e5612d",
+  "status": "ok",
+  "error": null,
+  "config_path": "configs/data/text_v0.yaml",
+  "config_hash": "34e5612d",
+  "git_sha": "5dc15b28c9a9dc00209244792e864398e9bb1fd8",
+  "python": "3.12.10",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "started_at": "2026-09-08T22:13:58.393716+00:00",
+  "ended_at": "2026-09-08T22:13:58.521352+00:00",
+  "elapsed_seconds": 0.056,
+  "stages": [
+    {
+      "name": "clean",
+      "rows_in": 55,
+      "rows_out": 54,
+      "dropped": 1,
+      "extra": {
+        "counters": {
+          "empty_after_cleaning": 1
+        },
+        "outputs": [
+          "fixture_smoke.jsonl"
+        ]
+      },
+      "report_path": "clean_stats_report.md"
+    },
+    {
+      "name": "filter",
+      "rows_in": 54,
+      "rows_out": 43,
+      "dropped": 11,
+      "extra": {
+        "counters": {
+          "repeated_lines": 3,
+          "alpha_ratio": 3,
+          "min_chars": 5
+        },
+        "outputs": [
+          "fixture_smoke.jsonl"
+        ]
+      },
+      "report_path": "filter_stats_report.md"
+    },
+    {
+      "name": "dedup",
+      "rows_in": 43,
+      "rows_out": 38,
+      "dropped": 5,
+      "extra": {
+        "counters": {
+          "duplicate": 5
+        },
+        "outputs": [
+          "fixture_smoke.dedup.jsonl"
+        ]
+      },
+      "report_path": "dedup_stats_report.md"
+    },
+    {
+      "name": "pii",
+      "rows_in": 38,
+      "rows_out": 38,
+      "dropped": 0,
+      "extra": {
+        "counters": {
+          "email": 3,
+          "phone": 3,
+          "digits": 0
+        },
+        "outputs": [
+          "fixture_smoke.pii.jsonl"
+        ]
+      },
+      "report_path": "pii_stats_report.md"
+    },
+    {
+      "name": "final",
+      "rows_in": 38,
+      "rows_out": 38,
+      "dropped": 0,
+      "extra": {
+        "counters": {},
+        "outputs": [
+          "train-00000.jsonl",
+          "val-00000.jsonl",
+          "test-00000.jsonl"
+        ]
+      },
+      "report_path": "final_stats_report.md"
+    }
+  ]
+}

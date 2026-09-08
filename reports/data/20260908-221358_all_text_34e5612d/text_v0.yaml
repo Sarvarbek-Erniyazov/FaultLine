@@ -1,0 +1,79 @@
+# Text corpus pipeline configuration, version 0.
+#
+# Ported from the course reference notebook. That notebook was not YAML-driven: it
+# carried one inline FILTER_CONFIG dict and hard-coded everything else. Every value
+# it did set is reproduced here and marked "course default"; values it left implicit
+# in code are marked "course default (was hard-coded)"; the single deliberate
+# behavioural change is marked with its decision record. See docs/COURSE_PORT.md for
+# the cell-by-cell mapping.
+#
+# This file is versioned, not edited: a run copies it into its own report directory
+# and records its hash. Changing a threshold means writing text_v1.yaml.
+
+text:
+  io:
+    corpus_name: "fixture_smoke" # the committed synthetic fixture; real corpora arrive at M2
+    input_path: null # null = <data_root>/raw/text/<corpus_name>.jsonl
+    text_field: "text" # course default
+
+  # ---------------------------------------------------------------------------
+  # cleaning (notebook cell 16)
+  # ---------------------------------------------------------------------------
+  clean:
+    unescape_html_entities: true # course default
+    remove_html_tags: true # course default
+    unicode_form: "NFKC" # course default
+    remove_control_chars: true # course default (keeps newline and tab)
+    normalize_whitespace: true # course default
+    drop_empty: true # course default (notebook cell 17 counted these as empty_removed)
+
+  # ---------------------------------------------------------------------------
+  # quality filtering (notebook cell 21, FILTER_CONFIG)
+  # ---------------------------------------------------------------------------
+  filter:
+    min_chars: 200 # course default
+    max_chars: 100000 # course default
+    min_alpha_ratio: 0.30 # course default
+    max_repeated_line_ratio: 0.30 # course default
+
+  # ---------------------------------------------------------------------------
+  # deduplication (notebook cells 27-28)
+  # ---------------------------------------------------------------------------
+  dedup:
+    strategy: "exact" # course default. TODO(m2): "minhash" for near-duplicates, which the
+      # operator-narrative corpus will need -- the same incident is
+      # republished with small edits across sources
+    lowercase: true # course default (document_hash lowercased before hashing)
+    strip: true # course default
+
+  # ---------------------------------------------------------------------------
+  # PII scrubbing (notebook cells 32-34)
+  # ---------------------------------------------------------------------------
+  pii:
+    mask_emails: true # course default
+    mask_phones: true # course default
+    mask_digits: false # FaultLine override (ADR-0005): the course masked any run of six or
+      # more digits, which is right for TinyStories and destructive for
+      # operator narratives, where quantities are the technical content
+    email_placeholder: "<EMAIL>" # course default
+    phone_placeholder: "<PHONE>" # course default
+    number_placeholder: "<NUMBER>" # course default
+
+  # ---------------------------------------------------------------------------
+  # final corpus (extends the notebook, which wrote one flat file)
+  # ---------------------------------------------------------------------------
+  final:
+    shard_size: 5000 # FaultLine addition: the notebook wrote a single JSONL file
+    split_fractions: # FaultLine addition: the notebook had no splits
+      train: 0.98
+      val: 0.01
+      test: 0.01
+    split_seed: 20260909 # mixed into the per-document hash, so the assignment survives re-runs
+
+  # ---------------------------------------------------------------------------
+  # reporting (extends notebook cell 37)
+  # ---------------------------------------------------------------------------
+  report:
+    sample_size: 5 # documents sampled per report section
+    sample_chars: 200 # truncation length for sampled documents
+    sample_seed: 20260909

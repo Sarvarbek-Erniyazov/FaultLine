@@ -4,18 +4,20 @@
 # A value of null means the mapping is unresolved and the adapter skips that channel
 # rather than guessing at it.
 #
-# Source of truth: the header row of Turbine_Data_Kelmarsh_<n>_<period>.csv inside the
-# staged Kelmarsh_SCADA_<year>_*.zip archives (299 columns, Greenbyte export, UTF-8).
-# Every name below was verified to exist verbatim in that header on 2026-09-09; see
-# reports/data/raw_inventory_kelmarsh_20260908.md.
+# Two sources of truth, cross-checked against each other on 2026-09-09:
 #
-# TODO(m1): cross-check against Kelmarsh_WT_dataSignalMapping.csv, which documents the
-# provider signal definitions. A name establishes that a column exists, not what it
-# measures, and three of the mappings below are judgement calls flagged inline.
+#   1. the header row of Turbine_Data_Kelmarsh_<n>_<period>.csv inside the staged
+#      Kelmarsh_SCADA_<year>_*.zip archives (299 columns, Greenbyte export, UTF-8) --
+#      every name below was verified to exist there verbatim;
+#   2. Kelmarsh_WT_dataSignalMapping.csv, which gives the manufacturer definition of
+#      each Greenbyte signal -- this is what establishes what a column *measures*, as
+#      opposed to merely that it exists.
+#
+# See reports/data/raw_inventory_kelmarsh_20260908.md.
 
 source: kelmarsh
 site: "Kelmarsh"
-mapping_status: "resolved from the SCADA header; 1 channel unresolved, 3 to confirm"
+mapping_status: "resolved: 12 of 13 mapped and confirmed; 1 verified absent from the record"
 
 # Confirmed from the file preamble ("# Time zone: UTC"), which settles the timezone
 # question the source specification raised for this record.
@@ -36,30 +38,33 @@ channels:
   nacelle_position_deg: "Nacelle position (°)"
   wind_direction_deg: "Wind direction (°)"
 
-  # Two plausible ambient sensors exist: "Nacelle ambient temperature (°C)" and
-  # "Ambient temperature (converter) (°C)". The nacelle sensor is taken as outdoor air;
-  # the converter one reads inside the cabinet.
-  # TODO(m1): confirm against the signal mapping file.
+  # Two plausible ambient sensors exist. CONFIRMED by the signal mapping: this one is
+  # "Outdoor temp. nacelle", while "Ambient temperature (converter)" is "Temperature of
+  # converter inlet air" -- cabinet air, not outdoor air.
   ambient_temp_c: "Nacelle ambient temperature (°C)"
 
+  # CONFIRMED by the signal mapping: "Inside temperature nacelle".
   nacelle_temp_c: "Nacelle temperature (°C)"
 
-  # No column names a gearbox bearing directly. The candidates are ambiguous:
-  # "Front bearing temperature (°C)", "Rear bearing temperature (°C)" and
-  # "Rotor bearing temp (°C)" could belong to the main shaft or to the gearbox.
-  # Left unresolved on purpose -- mapping a main-bearing sensor onto a gearbox channel
-  # would corrupt exactly the drivetrain signal this project exists to model.
-  # TODO(m1): resolve from Kelmarsh_WT_dataSignalMapping.csv.
+  # VERIFIED ABSENT, not merely unmapped. The signal mapping resolves every bearing
+  # column on this machine, and none of them is a gearbox bearing:
+  #   Front bearing temperature -> "Axle bearing temperature 1"   (main shaft)
+  #   Rear bearing temperature  -> "Axle bearing temperature 2"   (main shaft)
+  #   Rotor bearing temp        -> "Temperature of rotor bearing" (main bearing)
+  # Kelmarsh publishes no gearbox bearing temperature. This is a fact about the record
+  # rather than a gap in this file, and it is exactly the kind of per-site channel
+  # absence the modality-shift evaluation has to handle.
   gearbox_bearing_temp_c: null
 
+  # CONFIRMED by the signal mapping: "Gear oil temperature".
   gearbox_oil_temp_c: "Gear oil temperature (°C)"
 
-  # Front and rear generator bearings are both published; front is taken as canonical.
-  # TODO(m1): consider carrying both, as with the pitch channels.
+  # CONFIRMED: front is "Temperature of bearing 1", rear is "Temperature of bearing 2".
+  # Front is taken as canonical. TODO(m1): consider carrying both, as with pitch.
   generator_bearing_temp_c: "Generator bearing front temperature (°C)"
 
-  # Stator temperature is the generator winding temperature on this machine.
-  # TODO(m1): confirm against the signal mapping file.
+  # CONFIRMED by the signal mapping: "Temperature for generator stator", which is the
+  # generator winding temperature on this machine.
   generator_winding_temp_c: "Stator temperature 1 (°C)"
 
 # Columns identified but deliberately left outside the canonical channel set, recorded
@@ -80,3 +85,23 @@ observed_but_unmapped:
 # ", Min" and ", Standard deviation". They are excluded here: the 10-minute mean is the
 # canonical value, and whether the spread columns earn their place is an M1 feature
 # question, not a channel-mapping one.
+
+# Findings from the cross-check that are not mapping decisions, recorded here because
+# they affect M1 and would otherwise be lost:
+#
+# 1. Main-shaft bearing temperatures ARE published ("Axle bearing temperature 1" and
+#    "2", plus "Temperature of rotor bearing"). The canonical channel list has no
+#    main-bearing channel, so a real drivetrain signal is currently discarded.
+#    TODO(m1): decide whether to add main_bearing_temp_c to the canonical list. It
+#    must be decided before any training run: the channel list fixes the channel token
+#    ids and the offset of every block after them (ADR-0003).
+#
+# 2. Unit discrepancy in the provider metadata. The SCADA header says "Power (kW)"
+#    while Kelmarsh_WT_dataSignalMapping.csv records the unit of signal 5 as "kWh".
+#    A 10-minute average of active power is kW, so the mapping file is most likely
+#    wrong -- but "most likely" is not verified.
+#    TODO(m1): confirm against the power curve before trusting the magnitudes, since
+#    the plausibility bound for power_kw depends on which one is right.
+#
+# 3. Rated power is 2050 kW and the model is a Senvion MM92, confirmed per turbine in
+#    Kelmarsh_WT_static.csv. This matches the bound configured in telemetry_v0.yaml.

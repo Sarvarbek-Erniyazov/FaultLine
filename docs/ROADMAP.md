@@ -19,26 +19,41 @@ public SCADA sources staged, checksum-verified and documented.
 
 No model code beyond typed stubs. No training. No tokenizer fitted on real data.
 
-**Done when**
+**Done when** (status as of 2026-09-09)
 
-- [ ] `uv pip install -e ".[dev]"` succeeds and `faultline --help` lists every command.
-- [ ] `ruff check`, `mypy --strict src/` and `pytest -q` all pass; tests run in under
-      60 seconds and touch no real data and no network.
-- [ ] `docs/COURSE_PORT.md` maps every notebook cell to a module, function, config key
+- [x] `uv pip install -e ".[dev]"` succeeds and `faultline --help` lists every command.
+- [x] `ruff check`, `mypy --strict src/` and `pytest -q` all pass; tests run in under
+      60 seconds and touch no real data and no network. *(242 tests, 2.1 s.)*
+- [x] `docs/COURSE_PORT.md` maps every notebook cell to a module, function, config key
       and test, and lists every semantic change with its justification.
-- [ ] `faultline text run` on the committed fixture corpus produces
+- [x] `faultline text run` on the committed fixture corpus produces
       `reports/data/<run_id>/` with a stats report per stage and a `run.json`.
-- [ ] Telemetry stages, adapter discovery, event horizon labelling, split assignment,
+- [x] Telemetry stages, adapter discovery, event horizon labelling, split assignment,
       `VocabLayout`, `QuantileBinTokenizer` and `JointVocab` are implemented and unit
       tested on synthetic data.
-- [ ] Tier-1 files for all four sources are downloaded and md5-verified, with
-      manifests committed under `data/cards/manifests/`.
-- [ ] One raw inventory report per source in `reports/data/`, and one dataset card per
-      source in `data/cards/`, each answering the free-text question with evidence or
-      an explicit `UNVERIFIED`.
-- [ ] `tests/test_naming.py` passes; the banned strings appear only in ADR-0002.
-- [ ] Remote exists, the `m0` tag is pushed, and no data, secret or file over 5 MB is
-      in the history.
+- [ ] **Tier-1 files for all four sources downloaded and md5-verified.** *Partial:
+      Kelmarsh (11/11, 3.69 GB) and Penmanshiel (8/16, 1.65 GB) are staged and
+      verified; Hill of Towie and CARE have not started. Zenodo was unavailable for
+      long stretches of the staging window — two separate outages returning HTTP 504
+      and then connection timeouts, including on its own front page. The downloader is
+      resumable and skips verified files, so finishing is one command:*
+      `faultline download telemetry --tier 1 --attempts 60`.
+- [x] One raw inventory report per source in `reports/data/`, and one dataset card per
+      source in `data/cards/`. *Kelmarsh and Penmanshiel answer the free-text question
+      with evidence (`VERIFIED no`, a controlled vocabulary); Hill of Towie and CARE
+      are explicitly `UNVERIFIED` because nothing is staged to inspect.*
+- [x] `tests/test_naming.py` passes; the banned strings appear only in ADR-0002.
+- [ ] **Remote exists, the `m0` tag is pushed, and no data, secret or file over 5 MB is
+      in the history.** *Remote and history are done and verified. The tag is
+      deliberately withheld until the staging criterion above is met — tagging a
+      milestone that fails one of its own stated criteria is exactly the kind of
+      quiet overstatement this project is built to avoid. Tag with:*
+      `git tag -a m0 -m "M0: skeleton, pipelines, data staging" && git push --tags`.
+
+**Beyond the original M0 scope, because the evidence allowed it:** the Kelmarsh
+adapter's loaders are implemented and tested against a committed excerpt of the real
+archive, and its channel map is resolved (12 of 13 channels, cross-checked against
+the provider signal mapping). Both were scheduled for M1.
 
 ---
 

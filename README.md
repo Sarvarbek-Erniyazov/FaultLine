@@ -18,8 +18,16 @@ What exists today: the repository skeleton and tooling, the text pipeline ported
 course reference notebook into a tested package, the telemetry pipeline (canonical schemas,
 per-source archive readers, cleaning/filtering/imputation/event stages) exercised on
 synthetic fixtures, the joint vocabulary layout and the quantile-bin tokenizer, a
-checksum-verifying downloader, and four public SCADA datasets staged with dataset cards and
-manifests. What does not exist: any model, any training loop, any evaluation number.
+checksum-verifying downloader, and dataset cards plus checksum manifests for four public
+SCADA sources. What does not exist: any model, any training loop, any evaluation number.
+
+**Staging is partial.** Kelmarsh is complete (11 files, 3.69 GB, all md5-verified) and
+Penmanshiel is part-way (8 of 16, 1.65 GB); Hill of Towie and CARE have not started,
+because Zenodo was unavailable for long stretches of the staging window. Their dataset
+cards say `UNVERIFIED` rather than implying otherwise. The downloader resumes and skips
+verified files, so finishing is one command:
+`faultline download telemetry --tier 1 --attempts 60`, after which
+`faultline inspect telemetry && faultline cards build` regenerates the evidence.
 
 ## Scientific framing
 

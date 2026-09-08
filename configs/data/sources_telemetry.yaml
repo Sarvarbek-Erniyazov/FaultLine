@@ -1,0 +1,167 @@
+# Telemetry source specification.
+#
+# One entry per public SCADA dataset. Record ids are pinned to a *version*, not to
+# the concept DOI, so that a new upload by the provider cannot silently change what
+# a run consumed; the concept DOI is recorded alongside for citation. The downloader
+# fails loudly if a configured file name is absent from the pinned record.
+#
+# Tiers exist because the full corpus is ~35 GB and this project runs on one
+# workstation: tier 1 is the minimum that supports M1, tier 2 is everything else.
+#
+# Provenance of every value below: the Zenodo record metadata and the provider
+# README of each record. Anything not established there is marked TODO(m1).
+
+version: 0
+
+defaults:
+  api_base: "https://zenodo.org/api/records"
+  # Verified against the checksum published in the record metadata (md5:<hex>).
+  verify_checksums: true
+  # Partial files are resumed with an HTTP Range request rather than restarted.
+  resume: true
+
+sources:
+  kelmarsh:
+    provider: "Cubico Sustainable Investments Ltd"
+    zenodo_record: 16807551 # v4, published 2025-08-12
+    concept_doi: "10.5281/zenodo.5841833"
+    license: "CC-BY-4.0"
+    attribution: "Cubico Sustainable Investments Ltd, Kelmarsh wind farm data, Zenodo, doi:10.5281/zenodo.5841833 (CC BY 4.0)"
+    site:
+      name: "Kelmarsh"
+      country: "UK"
+      oem: "Senvion MM92"
+      n_turbines: 6
+      rated_kw: 2050
+      period: "2016-2024"
+    timezone: "TODO(m1): confirm UTC vs Europe/London from the SCADA file headers"
+    intended_use: "training / validation site"
+    tiers:
+      1:
+        - "Kelmarsh_SCADA_2016_3082.zip"
+        - "Kelmarsh_SCADA_2017_3083.zip"
+        - "Kelmarsh_SCADA_2018_3084.zip"
+        - "Kelmarsh_SCADA_2019_3085.zip"
+        - "Kelmarsh_SCADA_2020_3086.zip"
+        - "Kelmarsh_SCADA_2021_4456.zip"
+        - "Kelmarsh_SCADA_2022_4457.zip"
+        - "Kelmarsh_SCADA_2023_5961.zip"
+        - "Kelmarsh_SCADA_2024_5962.zip"
+        - "Kelmarsh_WT_dataSignalMapping.csv"
+        - "Kelmarsh_WT_static.csv"
+      2:
+        - "Kelmarsh_PMU_4459.zip"
+        - "Kelmarsh_PMU_2023_2024_5968.zip"
+        - "Kelmarsh_Grid_Meter_4458.zip"
+        - "Kelmarsh_12.3MW_6xSenvion_MM92.kmz"
+
+  penmanshiel:
+    provider: "Cubico Sustainable Investments Ltd"
+    zenodo_record: 16807304 # v3, published 2025-08-13
+    concept_doi: "10.5281/zenodo.5946807"
+    license: "CC-BY-4.0"
+    attribution: "Cubico Sustainable Investments Ltd, Penmanshiel wind farm data, Zenodo, doi:10.5281/zenodo.5946807 (CC BY 4.0)"
+    site:
+      name: "Penmanshiel"
+      country: "UK"
+      oem: "Senvion MM82"
+      n_turbines: 14
+      rated_kw: 2050
+      period: "2016-2024"
+      note: "turbine WT03 is absent from the record"
+    timezone: "TODO(m1): confirm UTC vs Europe/London from the SCADA file headers"
+    intended_use: "training / validation site"
+    tiers:
+      1:
+        - "Penmanshiel_SCADA_2016_WT01-10_3107.zip"
+        - "Penmanshiel_SCADA_2016_WT11-15_3107.zip"
+        - "Penmanshiel_SCADA_2017_WT01-10_3114.zip"
+        - "Penmanshiel_SCADA_2017_WT11-15_3115.zip"
+        - "Penmanshiel_SCADA_2018_WT01-10_3113.zip"
+        - "Penmanshiel_SCADA_2018_WT11-15_3116.zip"
+        - "Penmanshiel_SCADA_2019_WT01-10_3112.zip"
+        - "Penmanshiel_SCADA_2019_WT11-15_3117.zip"
+        - "Penmanshiel_SCADA_2020_WT01-10_3109.zip"
+        - "Penmanshiel_SCADA_2020_WT11-15_3118.zip"
+        - "Penmanshiel_SCADA_2021_WT01-10_4460.zip"
+        - "Penmanshiel_SCADA_2021_WT11-15_4461.zip"
+        - "Penmanshiel_SCADA_2022_WT01-10_4462.zip"
+        - "Penmanshiel_SCADA_2022_WT11-15_4463.zip"
+        - "Penmanshiel_WT_dataSignalMapping.xlsx"
+        - "Penmanshiel_WT_static.csv"
+      2:
+        - "Penmanshiel_SCADA_2023_02_WT_01-10_5981.zip"
+        - "Penmanshiel_SCADA_2023_03_WT_01-10_5982.zip"
+        - "Penmanshiel_SCADA_2023_Q2_WT_01-10_5977.zip"
+        - "Penmanshiel_SCADA_2023_Q3_Q4_WT_01-10_5973.zip"
+        - "Penmanshiel_SCADA_2023_WT_11-15_5964.zip"
+        - "Penmanshiel_SCADA_2024_WT_11-15_5966.zip"
+        - "Penmanshiel_PMU_4465.zip"
+        - "Penmanshiel_PMU_2023_2024_5969.zip"
+        - "Penmanshiel_Grid_4464.zip"
+        - "Penmanshiel_28.7MW_14xSenvion_MM82.kmz"
+
+  hill_of_towie:
+    provider: "RES on behalf of TRIG"
+    zenodo_record: 14870023 # v1.0.0, single version
+    concept_doi: "10.5281/zenodo.14870023"
+    license: "CC-BY-4.0"
+    attribution: "RES on behalf of The Renewables Infrastructure Group, Hill of Towie wind farm data, Zenodo, doi:10.5281/zenodo.14870023 (CC BY 4.0)"
+    site:
+      name: "Hill of Towie"
+      country: "UK"
+      oem: "Siemens SWT-2.3-VS-82"
+      n_turbines: 21
+      rated_kw: 2300
+      period: "2016-01..2024-08"
+      note: >-
+        AeroUp retrofits 2021-2023 and TuneUp 2024 are a built-in regime change;
+        install dates are in Hill_of_Towie_AeroUp_install_dates.csv
+    timezone: "TODO(m1): confirm from Hill_of_Towie_tables_description.csv"
+    intended_use: "held-out site; also the temporal-drift axis"
+    tiers:
+      # One pre-retrofit year and one post-retrofit year is the minimum that lets the
+      # regime change be measured; the remaining years are tier 2.
+      1:
+        - "Hill_of_Towie_tables_description.csv"
+        - "Hill_of_Towie_turbine_fields_description.csv"
+        - "Hill_of_Towie_grid_fields_description.csv"
+        - "Hill_of_Towie_alarms_description.csv"
+        - "Hill_of_Towie_turbine_metadata.csv"
+        - "Hill_of_Towie_AeroUp_install_dates.csv"
+        - "Hill_of_Towie_ShutdownDuration.zip"
+        - "2019.zip"
+        - "2023.zip"
+      2:
+        - "2016.zip"
+        - "2017.zip"
+        - "2018.zip"
+        - "2020.zip"
+        - "2021.zip"
+        - "2022.zip"
+        - "2024.zip"
+
+  care:
+    provider: "Fraunhofer IEE"
+    zenodo_record: 15846963 # v6, published 2025-07-09 (label corrections; not v1)
+    concept_doi: "10.5281/zenodo.10958774"
+    license: "CC-BY-SA-4.0" # share-alike: see docs/DATA_LICENSES.md
+    attribution: "Gueck, Bruns, Dupont, CARE to Compare, Fraunhofer IEE, Zenodo, doi:10.5281/zenodo.10958774 (CC BY-SA 4.0)"
+    cite: "Gueck, Bruns, Dupont (2024), CARE to Compare, Data 9(12):138, doi:10.3390/data9120138"
+    site:
+      name: "CARE farms A/B/C (anonymised)"
+      country: "PT / DE"
+      oem: "TODO(m1): not published; turbines are anonymised"
+      n_turbines: 36
+      rated_kw: 0 # TODO(m1): not published per farm
+      period: "89 turbine-years"
+      note: >-
+        farm A is 5 onshore turbines in Portugal, farms B and C are offshore in
+        Germany; 86/257/957 features per farm; 95 datasets, 45 with labelled
+        anomaly events; event_info files carry event descriptions
+    timezone: "TODO(m1): confirm from the record README"
+    intended_use: "labelled anomaly events for evaluation and label cross-check"
+    tiers:
+      1:
+        - "CARE_To_Compare.zip"
+      2: []

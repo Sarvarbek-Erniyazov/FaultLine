@@ -1,0 +1,72 @@
+# Operator-narrative text sources. PLANNED, M2. Nothing here is downloaded.
+#
+# Every entry is `enabled: false` and stays that way until two things are true:
+#
+#   1. the licence or public-domain status is verified in writing, from the
+#      publisher's own terms page, and recorded in docs/DATA_LICENSES.md (ADR-0004);
+#   2. an access route is confirmed that does not involve scraping a site whose
+#      terms forbid it.
+#
+# Why this corpus exists at all: public SCADA event logs carry template-like alarm
+# and status strings, not open-ended language (ADR-0001, and see the raw inventory
+# reports for the evidence). A language model needs language. Incident and event
+# narratives written by operators of power and process plants are the closest public
+# text to the telemetry domain: same equipment vocabulary, same failure reasoning,
+# and written by the same kind of people who would read this model's output.
+#
+# The candidates below are recorded as research leads, not as verified sources. Each
+# one needs its terms checked before it can be enabled, and the check goes in the
+# card, not in a commit message.
+
+version: 0
+
+defaults:
+  enabled: false
+  # PII policy for narrative corpora (ADR-0005): mask contact details, keep numbers.
+  # "pressure fell to 850000 Pa" is the content, not an identifier.
+  pii:
+    mask_emails: true
+    mask_phones: true
+    mask_digits: false
+
+sources:
+  us_federal_incident_reports:
+    enabled: false
+    description: >-
+      Incident, event and inspection narratives published by United States federal
+      agencies covering power generation, pipelines and process plants. Works of the
+      US federal government are generally not subject to domestic copyright, which is
+      what makes this family the strongest candidate.
+    license: "TODO(m2): verify per publisher; US federal works are usually public domain, but this must be confirmed per dataset and recorded here"
+    access: "TODO(m2): identify the bulk download or API endpoint; no scraping"
+    expected_documents: "TODO(m2): unknown until the endpoint is identified"
+    notes: >-
+      Narratives are the target field, not the structured incident metadata. Check
+      whether reports are redacted at source, and whether the same incident appears
+      in multiple filings -- exact deduplication will not catch that, which is why
+      the pipeline reserves a MinHash strategy.
+
+  eu_and_national_safety_authority_reports:
+    enabled: false
+    description: >-
+      Public incident and event reports from European and national safety or energy
+      regulators covering power and process installations.
+    license: "TODO(m2): verify per publisher; several publish under CC BY or an equivalent open licence, but this varies by country and must be checked individually"
+    access: "TODO(m2): identify per-publisher bulk access"
+    expected_documents: "TODO(m2)"
+    notes: >-
+      Language coverage must be checked: a corpus that is mostly machine-translated
+      would teach the model translation artefacts rather than operator language.
+
+  open_licensed_technical_incident_corpora:
+    enabled: false
+    description: >-
+      Existing research corpora of maintenance and incident narratives released under
+      CC0, CC BY or a permissive licence.
+    license: "TODO(m2): verify per corpus"
+    access: "TODO(m2): per-corpus"
+    expected_documents: "TODO(m2)"
+    notes: >-
+      Preferred where they exist, because the licence question is already settled by
+      the publisher. Watch for corpora that are themselves scraped from sources with
+      restrictive terms -- an open licence on a derived work does not launder that.

@@ -90,6 +90,23 @@ rejected by the `Stage` base class.
 documents. The filter report samples documents the filters *dropped*, which is the
 only cheap way to notice a threshold quietly deleting good text.
 
+## A wart found by running the port, and kept
+
+Two behaviours inherited from the notebook are wrong for FaultLine's corpora but are
+preserved anyway, because a port that quietly "improves" its source cannot be checked
+against it. Both are recorded here and carry a TODO:
+
+1. **The tag-stripping regex eats prose comparisons.** `<[^>]+>` is greedy about angle
+   brackets, so `2 < 3 and 4 > 1` cleans to `2   1`. Harmless on TinyStories; not
+   harmless in text describing thresholds. Covered by a test that asserts the lossy
+   behaviour explicitly (`tests/data/text/test_clean.py`), so the day it is fixed, the
+   fix is deliberate.
+2. **The phone regex masks long digit runs that are not phone numbers.** The M0
+   fixture run turned `Serial number 8812349900` into `Serial number <PHONE>`. This
+   matters more than it looks: ADR-0005 turns *digit* masking off to protect technical
+   content, and the phone pattern then does much of the same damage anyway. See
+   ADR-0005 for the analysis and the M2 replacement plan.
+
 ## What was deliberately not changed
 
 The regexes, the NFKC normalisation, the kept control characters, the four threshold

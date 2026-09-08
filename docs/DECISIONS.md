@@ -194,6 +194,23 @@ number in an unusual format the phone pattern misses. This is why the decision i
 per corpus and recorded on each card rather than set globally, and why a narrative
 corpus admitted at M2 must be spot-checked for identifiers before it is enabled.
 
+**Observed defect, deferred rather than hidden.** The M0 fixture run
+(`reports/data/20260908-221358_all_text_34e5612d/pii_stats_report.md`) shows the
+inherited phone pattern masking the sentence "Serial number 8812349900 was recorded
+on the replacement bearing" as `Serial number <PHONE>`. The course regex,
+`(?<!\d)(?:\+?\d[\d\s().-]{7,}\d)(?!\d)`, matches any run of nine or more digits, so
+in a maintenance corpus it eats serial numbers, work-order references and asset tags
+— exactly the identifiers that tie a narrative to a machine.
+
+Turning `mask_digits` off therefore does **not** fully protect technical content; the
+phone pattern still does damage that digit masking was blamed for. The regex is left
+unchanged at M0 because the port is meant to be checkable against the original
+(`docs/COURSE_PORT.md`), and because the fixture corpus is the wrong evidence base for
+redesigning it. **TODO(m2): replace the phone pattern with one anchored on telephone
+formatting (country codes, separators, plausible lengths) and measure its false
+positives against the real narrative corpus before enabling it.** Until then, any
+corpus enabled at M2 records this limitation on its card.
+
 ---
 
 ## ADR-0006 Telemetry canonical schema and missingness as a feature

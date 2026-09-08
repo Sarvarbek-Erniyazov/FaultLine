@@ -115,7 +115,11 @@ def test_open_member_reads_a_loose_file(tmp_path: Path) -> None:
         assert handle.read() == b"x\n"
 
 
-def test_loaders_raise_with_an_actionable_todo(tmp_path: Path) -> None:
+def test_unimplemented_loaders_raise_with_an_actionable_todo(tmp_path: Path) -> None:
+    # Kelmarsh has real loaders (see test_kelmarsh_adapter.py). The other three wait on
+    # their own inspection evidence, and must say what is needed rather than guess at a
+    # column layout -- a wrong guess there is silent and produces a plausible table
+    # built from the wrong columns.
     member = RawMember(
         archive=tmp_path / "x.zip",
         name="a.csv",
@@ -124,7 +128,9 @@ def test_loaders_raise_with_an_actionable_todo(tmp_path: Path) -> None:
         compressed_size=1,
         in_archive=True,
     )
-    for adapter_class in ADAPTERS.values():
+    pending = {name: cls for name, cls in ADAPTERS.items() if name != "kelmarsh"}
+    assert set(pending) == {"penmanshiel", "hill_of_towie", "care"}
+    for adapter_class in pending.values():
         adapter = adapter_class()
         with pytest.raises(NotImplementedError, match="TODO"):
             adapter.load_scada(member)

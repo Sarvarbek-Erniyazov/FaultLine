@@ -15,13 +15,12 @@ from pathlib import Path
 
 import pandas as pd
 
-from faultline.data.telemetry.adapters.base import RawMember
+from faultline.data.telemetry.adapters.base import RawMember, sniff_csv_layout
 from faultline.data.telemetry.inspect import (
     free_text_verdict,
     pick_column,
     profile_event_table,
     read_member_table,
-    sniff_csv_layout,
 )
 
 # The turbine-data layout: a commented preamble whose LAST line is the header.

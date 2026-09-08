@@ -15,6 +15,7 @@ loader raises rather than guessing at a column layout.
 
 from __future__ import annotations
 
+import io
 import zipfile
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -301,3 +302,128 @@ class BaseAdapter:
             NotImplementedError: In the base adapter.
         """
         raise NotImplementedError(f"{self.source_id}: load_events is not implemented")
+
+
+def sniff_csv_layout(blob: bytes, probe_lines: int = 40) -> tuple[int, list[str] | None]:
+    """Work out where the real header of a CSV member starts.
+
+    Several providers prefix an export with a commented preamble, and they do not
+    agree on what follows it. Greenbyte exports (Kelmarsh, Penmanshiel) put a
+    ``#`` block of provenance lines at the top; in the status tables a clean header
+    row follows, while in the turbine-data tables the **last comment line is itself
+    the header**, prefixed with ``# ``.
+
+    Getting this wrong is not a loud failure. The preamble parses as data, the
+    columns come out as nonsense, and an inspection concludes that a table has no
+    message column when it plainly does -- which is exactly the kind of false
+    negative this whole module exists to avoid.
+
+    Args:
+        blob: Leading bytes of the member.
+        probe_lines: How many lines to examine.
+
+    Returns:
+        A tuple of the number of leading lines to skip, and explicit column names
+        when the header had to be recovered from a comment line.
+    """
+    lines = blob.decode("utf-8", errors="replace").splitlines()[:probe_lines]
+    comments = 0
+    for line in lines:
+        if line.startswith("#"):
+            comments += 1
+        else:
+            break
+    if comments == 0:
+        return 0, None
+
+    header_candidate = lines[comments - 1].lstrip("#").strip()
+    following = lines[comments] if len(lines) > comments else ""
+    # Quote-aware on both sides: these headers quote any field containing a comma
+    # ("Wind speed, Maximum (m/s)"), so counting raw commas overstates the width and
+    # the header would be missed.
+    candidate_fields = _split_csv_header(header_candidate)
+    if len(candidate_fields) > 2 and len(candidate_fields) == len(_split_csv_header(following)):
+        return comments, [name.strip() for name in candidate_fields]
+    return comments, None
+
+
+def _split_csv_header(line: str) -> list[str]:
+    """Split a header line on commas that are not inside double quotes.
+
+    Args:
+        line: Raw header line.
+
+    Returns:
+        The field names, still carrying their surrounding quotes if any.
+    """
+    fields: list[str] = []
+    current: list[str] = []
+    quoted = False
+    for char in line:
+        if char == '"':
+            quoted = not quoted
+            continue
+        if char == "," and not quoted:
+            fields.append("".join(current))
+            current = []
+            continue
+        current.append(char)
+    fields.append("".join(current))
+    return fields
+
+
+def read_csv_member(
+    member: RawMember, nrows: int | None = None, usecols: list[str] | None = None
+) -> pd.DataFrame:
+    """Read a CSV member into a DataFrame, honouring the provider preamble.
+
+    Args:
+        member: Member to read.
+        nrows: Row cap, or ``None`` for the whole member.
+        usecols: Columns to keep; all of them when omitted.
+
+    Returns:
+        The parsed table.
+    """
+    with open_member(member) as handle:
+        blob = handle.read()
+    skiprows, names = sniff_csv_layout(blob[:65_536])
+    return pd.read_csv(
+        io.BytesIO(blob),
+        sep=None,
+        engine="python",
+        skiprows=skiprows,
+        names=names,
+        header=None if names else "infer",
+        usecols=usecols,
+        nrows=nrows,
+        on_bad_lines="skip",
+        encoding_errors="replace",
+    )
+
+
+def read_preamble(member: RawMember, probe_bytes: int = 8192) -> dict[str, str]:
+    """Extract the ``# key: value`` provenance lines a provider prepends to an export.
+
+    Greenbyte exports state the turbine, the turbine type and -- importantly -- the
+    timezone this way. Reading it beats inferring any of them from a file name.
+
+    Args:
+        member: Member to read.
+        probe_bytes: How many leading bytes to examine.
+
+    Returns:
+        A mapping of the key/value comment lines found, keys lowercased.
+    """
+    with open_member(member) as handle:
+        blob = handle.read(probe_bytes)
+    fields: dict[str, str] = {}
+    for line in blob.decode("utf-8", errors="replace").splitlines():
+        if not line.startswith("#"):
+            break
+        body = line.lstrip("#").strip()
+        if ":" in body:
+            key, _, value = body.partition(":")
+            if key.strip() and value.strip() and len(key) < 40:
+                fields[key.strip().lower()] = value.strip()
+    return fields

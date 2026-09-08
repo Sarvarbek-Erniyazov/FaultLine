@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+title: "FaultLine: risk-calibrated joint telemetry-text sequence modeling for cyber-physical event risk under shift"
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - family-names: Erniyazov
+    given-names: Sarvarbek
+    affiliation: "Chonnam National University"
+repository-code: "https://github.com/Sarvarbek-Erniyazov/FaultLine"
+license: MIT
+version: 0.1.0
+date-released: "2026-09-09"
+abstract: >-
+  A from-scratch decoder-only sequence model over a joint vocabulary of byte-level BPE
+  text tokens and per-channel quantile-bin telemetry tokens, targeting calibrated event
+  risk with selective abstention for wind-turbine SCADA under site, modality and
+  temporal shift. Status: M0 -- skeleton, data pipelines and data staging only.
+keywords:
+  - sequence modeling
+  - risk calibration
+  - selective prediction
+  - wind energy
+  - SCADA

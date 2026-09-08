@@ -1,0 +1,33 @@
+# Run `pre-commit install` once after creating the environment.
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.7.1
+    hooks:
+      - id: nbstripout
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-added-large-files
+        args: [--maxkb=5000]
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-yaml
+      - id: detect-private-key
+
+  - repo: local
+    hooks:
+      - id: no-data-files
+        name: block data-stage and checkpoint files
+        language: fail
+        entry: >-
+          staged path lives under a data stage or checkpoints/ and must never be committed;
+          only dataset cards, manifests, configs and reports enter git
+        files: '^(data/(raw|cleaned|filtered|final)/|checkpoints/)'

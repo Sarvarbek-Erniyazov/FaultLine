@@ -1,0 +1,41 @@
+# environments & secrets
+.venv/
+.env
+*.env
+!.env.example
+__pycache__/
+*.pyc
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# data stages -- never committed (cards and manifests are tracked separately)
+data/raw/
+data/cleaned/
+data/filtered/
+data/final/
+
+# artifacts
+checkpoints/
+*.ckpt
+*.pt
+*.safetensors
+*.onnx
+*.bin
+*.npy
+*.npz
+*.parquet
+*.zip
+*.tar.gz
+
+# reference material
+notebooks/_reference/
+notebooks/**/*.ipynb_checkpoints/
+
+# editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

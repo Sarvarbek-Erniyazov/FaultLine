@@ -1,0 +1,121 @@
+# Telemetry pipeline configuration, version 0.
+#
+# PROVISIONAL. Every threshold below is a starting judgement, not a measured value:
+# no real SCADA data had been profiled when this file was written (M0 staged the
+# archives; it did not analyse them). Each key states where its value came from and
+# what would change it. The M1 stats report is what turns these into evidence-backed
+# numbers, and that revision lands as telemetry_v1.yaml -- this file is never edited
+# after a run has used it.
+
+telemetry:
+  # ---------------------------------------------------------------------------
+  # grid
+  # ---------------------------------------------------------------------------
+  freq: "10min" # all four providers publish 10-minute aggregated SCADA
+  timezone_default: "UTC" # TODO(m1): confirm per source from file headers; see the dataset cards
+
+  # Canonical channels, in the order that fixes channel token identifiers (ADR-0003).
+  # Reordering this list after M1 invalidates every trained checkpoint.
+  channels:
+    - wind_speed_ms
+    - power_kw
+    - rotor_speed_rpm
+    - generator_speed_rpm
+    - pitch_angle_deg
+    - nacelle_position_deg
+    - wind_direction_deg
+    - ambient_temp_c
+    - nacelle_temp_c
+    - gearbox_bearing_temp_c
+    - gearbox_oil_temp_c
+    - generator_bearing_temp_c
+    - generator_winding_temp_c
+
+  # ---------------------------------------------------------------------------
+  # plausibility bounds: values outside become NaN and are counted per channel
+  # ---------------------------------------------------------------------------
+  # Provenance: physical limits of the machine class, not measured percentiles.
+  # Every bound is provisional -- revisit with the M1 stats report.
+  bounds:
+    wind_speed_ms: { min: 0.0, max: 60.0 } # provisional: above cut-out; anemometer saturation
+    power_kw: { min: -100.0, max: 2255.0 } # provisional: 1.1 x 2050 kW rated (Senvion); negative = house load
+    rotor_speed_rpm: { min: 0.0, max: 30.0 } # provisional: large geared machines run well below this
+    generator_speed_rpm: { min: 0.0, max: 2500.0 } # provisional: doubly-fed generator range
+    pitch_angle_deg: { min: -5.0, max: 95.0 } # provisional: feathered is ~90 deg
+    nacelle_position_deg: { min: 0.0, max: 360.0 } # provisional: full circle
+    wind_direction_deg: { min: 0.0, max: 360.0 } # provisional: full circle
+    ambient_temp_c: { min: -40.0, max: 60.0 } # provisional: sensor range, not site climate
+    nacelle_temp_c: { min: -40.0, max: 80.0 } # provisional
+    gearbox_bearing_temp_c: { min: -40.0, max: 150.0 } # provisional
+    gearbox_oil_temp_c: { min: -40.0, max: 150.0 } # provisional
+    generator_bearing_temp_c: { min: -40.0, max: 200.0 } # provisional
+    generator_winding_temp_c: { min: -40.0, max: 250.0 } # provisional
+
+  # Per-source overrides where the machine differs from the defaults above.
+  bounds_overrides:
+    hill_of_towie:
+      power_kw: { min: -100.0, max: 2530.0 } # 1.1 x 2300 kW rated (Siemens SWT-2.3-VS-82)
+    care:
+      # TODO(m1): CARE is anonymised and may be normalised rather than in physical
+      # units. Bounds cannot be set until the record README and channel scales are read.
+      {}
+
+  # ---------------------------------------------------------------------------
+  # cleaning
+  # ---------------------------------------------------------------------------
+  clean:
+    duplicate_timestamps: "mean" # mean|first. Provisional: duplicates are usually re-exports of the same interval
+    apply_bounds: true
+    drop_all_nan_rows: false # a fully-missing timestep is itself evidence; keep it and let the mask carry it
+
+  # ---------------------------------------------------------------------------
+  # filtering
+  # ---------------------------------------------------------------------------
+  filter:
+    min_channel_nonnull_frac: 0.50 # provisional: a channel present for under half a turbine-year is unusable
+    min_turbine_year_nonnull_frac: 0.30 # provisional: drop turbine-years that are mostly holes
+    segment_break_steps: 6 # provisional: a gap of one hour (6 x 10 min) starts a new segment
+    min_segment_steps: 144 # provisional: keep segments of at least one day
+
+  # ---------------------------------------------------------------------------
+  # imputation (always accompanied by a boolean mask column, ADR-0006)
+  # ---------------------------------------------------------------------------
+  impute:
+    max_impute_steps: 3 # provisional: fill gaps up to 30 minutes; longer gaps stay missing
+    method: "linear" # linear|ffill
+
+  # ---------------------------------------------------------------------------
+  # events and labels
+  # ---------------------------------------------------------------------------
+  events:
+    horizon_steps: 144 # provisional: 24 h risk horizon at 10-minute resolution
+    lowercase_messages: true
+    collapse_whitespace: true
+    # TODO(m1): the code-to-category mapping cannot be written before the raw
+    # inventory reports are read. Kelmarsh and Penmanshiel status codes, the Hill of
+    # Towie alarm table and the CARE event_info files each use their own vocabulary.
+    fault_categories: [] # TODO(m1): fill from data/cards/<source>.md
+    fault_codes: [] # TODO(m1): fill from data/cards/<source>.md
+    default_is_fault: null # null = unknown rather than false; an unmapped code is not evidence of no fault
+
+  # ---------------------------------------------------------------------------
+  # tokenizer fitting (fit on the training split only)
+  # ---------------------------------------------------------------------------
+  tokenizer:
+    n_bins: 64 # provisional: 64 bins x 13 channels is small next to a 16k text vocabulary
+    sample_rows: 500000 # provisional: enough for stable quantiles, cheap on 8 GB of VRAM budget
+    seed: 20260909
+
+  # ---------------------------------------------------------------------------
+  # final stage
+  # ---------------------------------------------------------------------------
+  final:
+    splits_config: "configs/data/splits_v0.yaml" # site and time split specification
+    write_masks: true # never false: the imputation masks are model inputs (ADR-0006)
+
+  # ---------------------------------------------------------------------------
+  # reporting
+  # ---------------------------------------------------------------------------
+  report:
+    top_n_messages: 20
+    percentile_channels: [] # empty = every configured channel

@@ -1,0 +1,30 @@
+# Channel map: Hill of Towie
+#
+# Maps each canonical FaultLine channel onto the column name published by the source.
+# A value of null or a TODO string means the mapping is unresolved and the channel is
+# skipped by the adapter rather than guessed at.
+#
+# Source of truth: Hill_of_Towie_turbine_fields_description.csv, staged with tier 1,
+# read together with Hill_of_Towie_tables_description.csv which names the tables.
+# Not parsed at M0 (Zenodo outage during the staging window). This is the held-out
+# site, so a mis-mapped channel here would silently corrupt the headline result --
+# fill it from the description CSVs and record the evidence on the dataset card.
+
+source: hill_of_towie
+site: "Hill of Towie"
+mapping_status: "unresolved - TODO(m1)"
+
+channels:
+  wind_speed_ms: null # TODO(m1)
+  power_kw: null # TODO(m1)
+  rotor_speed_rpm: null # TODO(m1)
+  generator_speed_rpm: null # TODO(m1)
+  pitch_angle_deg: null # TODO(m1)
+  nacelle_position_deg: null # TODO(m1)
+  wind_direction_deg: null # TODO(m1)
+  ambient_temp_c: null # TODO(m1)
+  nacelle_temp_c: null # TODO(m1)
+  gearbox_bearing_temp_c: null # TODO(m1)
+  gearbox_oil_temp_c: null # TODO(m1)
+  generator_bearing_temp_c: null # TODO(m1)
+  generator_winding_temp_c: null # TODO(m1)

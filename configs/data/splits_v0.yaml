@@ -1,0 +1,43 @@
+# Site and time split specification, version 0.
+#
+# NOT EXECUTED AT M0. This file defines the schema and records the intended design
+# with a worked example; it is applied for the first time at M1, once the telemetry
+# has actually been ingested and the real coverage per site and year is known.
+#
+# Splits are never random. The endpoint is performance under shift, so the split has
+# to reproduce the deployment situation: a site the model has never seen, and a
+# period after the one it was trained on.
+#
+# Two axes are encoded, and the site axis dominates:
+#
+#   1. holdout_sites   -- whole wind farms removed from training (leave-farm-out).
+#                         Every row of a held-out site takes holdout_site_split,
+#                         regardless of its timestamp.
+#   2. time            -- inside the remaining sites, a temporal cut: up to
+#                         train_until is train, up to val_until is val, later rows
+#                         take late_period_split.
+#
+# The temporal cut is a real cut, not a shuffle: validation must sit strictly after
+# training, or the drift results are meaningless.
+
+version: 0
+seed: 20260909
+
+site_column: "site"
+time_column: "timestamp_utc"
+
+# Hill of Towie is the held-out site: a different manufacturer (Siemens, not
+# Senvion), a different control system, and a documented mid-record retrofit. It is
+# the closest thing this corpus has to a genuinely new deployment.
+holdout_sites:
+  - "hill_of_towie"
+holdout_site_split: "test"
+
+# Worked example. TODO(m1): replace these dates once the per-site coverage tables
+# from the ingest and clean reports show where the data actually starts and stops.
+# Kelmarsh and Penmanshiel both publish 2016-2024, so a 2016-2021 / 2022 / 2023-2024
+# cut gives roughly a 6 / 1 / 2 year shape -- provisional until measured.
+time:
+  train_until: "2021-12-31T23:59:59Z"
+  val_until: "2022-12-31T23:59:59Z"
+late_period_split: "test"

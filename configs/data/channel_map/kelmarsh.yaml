@@ -1,0 +1,30 @@
+# Channel map: Kelmarsh
+#
+# Maps each canonical FaultLine channel onto the column name published by the source.
+# A value of null or a TODO string means the mapping is unresolved and the channel is
+# skipped by the adapter rather than guessed at.
+#
+# Source of truth: Kelmarsh_WT_dataSignalMapping.csv, staged with tier 1.
+# It was not parsed at M0 because the Zenodo record was unreachable during the
+# staging window (service outage; see the M0 report). Fill this file from that CSV
+# before implementing KelmarshAdapter.load_scada -- do not infer column names from
+# the channel names below, which are FaultLine's vocabulary, not the provider's.
+
+source: kelmarsh
+site: "Kelmarsh"
+mapping_status: "unresolved - TODO(m1)"
+
+channels:
+  wind_speed_ms: null # TODO(m1)
+  power_kw: null # TODO(m1)
+  rotor_speed_rpm: null # TODO(m1)
+  generator_speed_rpm: null # TODO(m1)
+  pitch_angle_deg: null # TODO(m1)
+  nacelle_position_deg: null # TODO(m1)
+  wind_direction_deg: null # TODO(m1)
+  ambient_temp_c: null # TODO(m1)
+  nacelle_temp_c: null # TODO(m1)
+  gearbox_bearing_temp_c: null # TODO(m1)
+  gearbox_oil_temp_c: null # TODO(m1)
+  generator_bearing_temp_c: null # TODO(m1)
+  generator_winding_temp_c: null # TODO(m1)

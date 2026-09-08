@@ -1,0 +1,132 @@
+"""Site and time split assignment.
+
+The evaluation endpoint is performance *under shift*, so splits are never random.
+Two axes are encoded here: whole sites held out (leave-wind-farm-out) and a temporal
+cut inside the training sites (drift). The assignment is a pure function of
+``(site, timestamp)`` and a configuration, so a split can be reproduced from the
+YAML alone without touching the data.
+"""
+
+from __future__ import annotations
+
+from datetime import datetime
+from typing import Any, Literal
+
+import numpy as np
+import pandas as pd
+from pydantic import Field, model_validator
+
+from faultline.config import StrictModel
+
+Split = Literal["train", "val", "test"]
+SPLITS: tuple[Split, ...] = ("train", "val", "test")
+
+
+class TimeSplitSpec(StrictModel):
+    """The temporal cut applied inside the training sites.
+
+    Attributes:
+        train_until: Last timestamp assigned to ``train`` (inclusive).
+        val_until: Last timestamp assigned to ``val`` (inclusive); must be later
+            than ``train_until``.
+    """
+
+    train_until: datetime
+    val_until: datetime
+
+    @model_validator(mode="after")
+    def _ordered(self) -> TimeSplitSpec:
+        """Reject a validation cut that does not follow the training cut."""
+        if self.val_until <= self.train_until:
+            raise ValueError("time.val_until must be strictly after time.train_until")
+        return self
+
+
+class SplitsConfig(StrictModel):
+    """Specification of one split of the corpus.
+
+    Attributes:
+        version: Version of this split specification.
+        seed: Seed reserved for any future randomized tie-breaking; unused today.
+        site_column: Column naming the site.
+        time_column: Column holding the UTC timestamp.
+        holdout_sites: Sites removed from training entirely.
+        holdout_site_split: Split label given to every row of a held-out site.
+        time: Temporal cut applied to the remaining sites.
+        late_period_split: Split label for training-site rows after ``val_until``.
+    """
+
+    version: int = 0
+    seed: int = 20260909
+    site_column: str = "site"
+    time_column: str = "timestamp_utc"
+    holdout_sites: list[str] = Field(default_factory=list)
+    holdout_site_split: Split = "test"
+    time: TimeSplitSpec
+    late_period_split: Split = "test"
+
+
+def _as_utc(value: datetime) -> pd.Timestamp:
+    """Coerce a configured datetime to a UTC-aware pandas timestamp.
+
+    A naive value in the YAML is interpreted as UTC rather than local time, so the
+    same configuration cuts the corpus identically on every machine.
+
+    Args:
+        value: Timestamp from the split configuration.
+
+    Returns:
+        The equivalent UTC-aware timestamp.
+    """
+    stamp = pd.Timestamp(value)
+    return stamp.tz_localize("UTC") if stamp.tzinfo is None else stamp.tz_convert("UTC")
+
+
+def assign_splits(frame: pd.DataFrame, config: SplitsConfig) -> pd.Series[Any]:
+    """Assign a split label to every row of a table.
+
+    Rows belonging to a held-out site take ``holdout_site_split`` regardless of
+    time, so the site axis dominates the time axis. Remaining rows are cut by
+    timestamp: up to ``train_until`` is ``train``, up to ``val_until`` is ``val``,
+    and anything later takes ``late_period_split``.
+
+    Args:
+        frame: Table containing the site and timestamp columns named by ``config``.
+        config: Split specification.
+
+    Returns:
+        A string Series of split labels aligned with ``frame.index``.
+
+    Raises:
+        KeyError: If either configured column is missing from the table.
+    """
+    for column in (config.site_column, config.time_column):
+        if column not in frame.columns:
+            raise KeyError(f"column {column!r} required by the split spec is missing")
+
+    stamps = pd.to_datetime(frame[config.time_column], utc=True)
+    train_until = _as_utc(config.time.train_until)
+    val_until = _as_utc(config.time.val_until)
+
+    labels = np.full(len(frame), config.late_period_split, dtype=object)
+    labels[(stamps <= train_until).to_numpy()] = "train"
+    labels[((stamps > train_until) & (stamps <= val_until)).to_numpy()] = "val"
+
+    if config.holdout_sites:
+        held_out = frame[config.site_column].astype(str).isin(config.holdout_sites).to_numpy()
+        labels[held_out] = config.holdout_site_split
+
+    return pd.Series(labels, index=frame.index, name="split", dtype="object")
+
+
+def split_counts(labels: pd.Series[Any]) -> dict[str, int]:
+    """Count rows per split, always reporting all three labels.
+
+    Args:
+        labels: Split labels produced by :func:`assign_splits`.
+
+    Returns:
+        A mapping from split name to row count, including zeros.
+    """
+    counts = labels.value_counts().to_dict()
+    return {split: int(counts.get(split, 0)) for split in SPLITS}

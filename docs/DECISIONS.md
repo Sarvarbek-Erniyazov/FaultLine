@@ -102,7 +102,13 @@ relaxed only by superseding this record and stating why.
 
 ## ADR-0003 Joint vocabulary layout
 
-**Status:** Accepted · **Date:** 2026-09-09
+**Status:** Accepted, amended to v2 on 2026-09-09 · **Date:** 2026-09-09
+
+> The v1 decision is kept below verbatim; the v2 amendment follows it. The
+> amendment changes the block *order* and replaces count-derived offsets with
+> fixed capacities. It does not change what a block contains.
+
+### v1 (superseded by the v2 amendment below)
 
 **Decision.** One identifier space, partitioned into contiguous, disjoint blocks in
 this order:
@@ -139,6 +145,62 @@ identifier is represented identically across physically unrelated channels.
 **Consequence to respect.** The canonical channel order in
 `src/faultline/data/telemetry/schemas.py` fixes the channel identifiers. Reordering
 that list after M1 invalidates every trained checkpoint.
+
+### v2 amendment — fixed-capacity blocks, telemetry first
+
+**Date:** 2026-09-09
+
+**What changes.** The blocks keep their contents and gain two properties: a fixed
+capacity, and an order that puts text last.
+
+| block | range | capacity | contents |
+| --- | --- | --- | --- |
+| specials | `[0, 32)` | 32 | structural tokens plus reserved slots |
+| channel | `[32, 96)` | 64 | one identifier per canonical SCADA channel |
+| bin | `[96, 1120)` | 1024 | quantile bins, **shared across all channels** |
+| time | `[1120, 1184)` | 64 | reserved time markers |
+| text | `[1184, 1184 + 32768)` | 32768 | byte-level BPE tokens |
+
+**Every offset above derives from the capacities, never from the counts in use.**
+A vocabulary fitted with 13 channels and 64 bins and one fitted with 40 channels and
+256 bins put the bin block at 96 and the text block at 1184 alike. Slots between the
+count in use and the capacity are reserved: they decode to their block with no name,
+and they are not encodable.
+
+**Why v1 was not good enough.** In v1 the text block sat second, at `[32, 32 + V_text)`,
+and every telemetry offset was `32 + V_text + …`. That makes every telemetry
+identifier a function of a number that is not known until M2. The v1 text says the
+two tokenizers can be "fitted independently and concatenated at M3", and they can —
+but only by *renumbering* the telemetry side when the text vocabulary size arrives.
+Anything already written down in telemetry identifiers is then stale.
+
+That is not hypothetical. M1 tokenizes the SCADA corpus into shards on disk, and
+those shards are the expensive artefact: re-emitting them is a full pass over ~20 GB
+of archives. Under v1, training the M2 tokenizer invalidates all of them.
+
+**The rule this buys.** *Telemetry identifiers are a stable prefix.* Identifiers
+below 1184 are fixed for the life of the project. An M1 telemetry-only vocabulary is
+exactly that prefix; M2 fits a text tokenizer of any size up to 32768 against local
+identifiers; M3 concatenates by appending, and every M1 shard is still valid, byte
+for byte. The bin block is oversized for the same reason the specials block always
+was — headroom that is never used costs one integer, and a block that has to move
+costs every checkpoint and every shard.
+
+**Cost, stated.** The reserved slots are real: a telemetry-only M1 vocabulary is
+1184 identifiers of which around 110 carry meaning, so roughly 91% of the embedding
+rows are unused at M1. At M1 widths that is a few hundred thousand parameters — a
+rounding error against the activation memory that actually constrains an 8 GB card,
+and it shrinks to noise once the text block is populated at M3. Compactness was the
+v1 rationale for sharing one bin range across channels, and that part stands: what is
+traded away here is a slice of the *embedding table*, not the quadratic part of the
+budget.
+
+**What would change this decision.** A measured M1 result where the unused embedding
+rows are a material share of the memory budget, which would mean shrinking the bin or
+text capacity before any checkpoint exists — not after. After M1 the capacities are
+frozen: raising one moves every later block, so it supersedes this record rather than
+editing a constant. `VocabLayout.__post_init__` raises on capacity overflow so that
+the choice cannot be made by accident.
 
 ---
 

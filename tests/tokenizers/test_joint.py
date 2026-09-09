@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 
 from faultline.tokenizers.joint import JointVocab
-from faultline.tokenizers.layout import VocabLayout
+from faultline.tokenizers.layout import TELEMETRY_PREFIX_SIZE, VocabLayout
 from faultline.tokenizers.quantile_bins import QuantileBinTokenizer
 from faultline.tokenizers.text_bpe import TextBPETokenizer
 
@@ -50,7 +50,10 @@ def vocab(bin_tokenizer: QuantileBinTokenizer) -> JointVocab:
 
 
 def test_sizes_sum_correctly(vocab: JointVocab) -> None:
-    assert vocab.size == 32 + 100 + 2 + 8
+    # ADR-0003 v2: the telemetry blocks are a fixed-capacity prefix, so the size
+    # depends on the text vocabulary alone -- not on how many channels or bins the
+    # bin tokenizer happened to fit.
+    assert vocab.size == TELEMETRY_PREFIX_SIZE + 100
     assert vocab.size == vocab.layout.total_size
 
 

@@ -17,6 +17,8 @@ missing, because fitting on real data is an M1 activity.
   the tokenizer is trained on.
 
 `joint_v0.yaml` (M3)
-: The four block sizes of the joint vocabulary (ADR-0003). Because the blocks are
-  contiguous and laid out by size, the M1 and M2 tokenizers are fitted independently
-  against local ids and concatenated here without retokenizing anything.
+: How much of each block the fitted vocabulary uses (ADR-0003). The block *offsets*
+  are not configurable: they derive from the fixed capacities in
+  `faultline.tokenizers.layout`, so the M1 and M2 tokenizers are fitted independently
+  against local ids and concatenated here by appending text to a telemetry prefix
+  that never moves -- no retokenizing, and no M1 shard invalidated.

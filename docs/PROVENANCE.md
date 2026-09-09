@@ -1,10 +1,5 @@
 # Provenance and independence
 
-> **Draft for the author to review, edit and sign.** The placeholders marked
-> `<author fills in>` describe the author's other work and must be completed by the
-> author, not by anyone else. Nothing in this file should be taken as accurate until
-> it is signed.
-
 ## Statement
 
 FaultLine is a personal research project by Sarvarbek Erniyazov.
@@ -38,16 +33,16 @@ FaultLine is a personal research project by Sarvarbek Erniyazov.
 
 ## How this project differs from the author's other work
 
-The author fills in the right-hand column. The point of the table is that the two
-bodies of work should differ on *every* row; if a row ends up matching, that row
-needs an explanation in this file rather than a shrug.
+The point of the table is that the two bodies of work should differ on *every* row;
+if a row ends up matching, that row needs an explanation in this file rather than a
+shrug.
 
 | dimension | FaultLine | the author's other work |
 | --- | --- | --- |
-| **Endpoint** | Calibrated probability of a fault or shutdown event within a horizon, with abstention as a first-class output; scored by AUPRC, event-level F1, false alarms per hour, detection delay, and risk–coverage behaviour under shift. | `<author fills in>` |
-| **Model class** | A single decoder-only transformer pretrained from scratch over a joint discrete vocabulary of text tokens and per-channel quantile-bin telemetry tokens. | `<author fills in>` |
-| **Data** | Four public wind-farm SCADA records (CC BY 4.0 and CC BY-SA 4.0) plus a public-domain operator-narrative text corpus. Nothing proprietary; nothing under embargo. | `<author fills in>` |
-| **Ownership** | Personal hardware, personal time, sole authorship; code MIT-licensed by the author. | `<author fills in>` |
+| **Endpoint** | Calibrated probability of a fault or shutdown event within a horizon, with abstention as a first-class output; scored by AUPRC, event-level F1, false alarms per hour, detection delay, and risk–coverage behaviour under shift. | Point forecasts of energy output (solar generation, building load); evaluated by forecast-error metrics (MSE/RMSE) against baselines, with no abstention or calibrated risk control. |
+| **Model class** | A single decoder-only transformer pretrained from scratch over a joint discrete vocabulary of text tokens and per-channel quantile-bin telemetry tokens. | Spatio-temporal graph neural networks with a mixture-of-experts layer (Fed-ST-MoE) trained under federated learning across distributed clients; no tokenization, no language-model architecture. |
+| **Data** | Four public wind-farm SCADA records (CC BY 4.0 and CC BY-SA 4.0) plus a public-domain operator-narrative text corpus. Nothing proprietary; nothing under embargo. | Institutional/project telemetry from the TIPA-funded distributed-energy research program (2026–2028) and prior PhD datasets; not public, not redistributed here, and not used in any form in this repository. |
+| **Ownership** | Personal hardware, personal time, sole authorship; code MIT-licensed by the author. | Conducted under TIPA grant RS-2026-25529976 as Lead AI Architect (work-package role), under advisor supervision, with deliverable ownership shared per the grant/lab agreement. |
 
 ## Third-party material used
 
@@ -65,4 +60,4 @@ evaluation design.
 
 ## Signature
 
-Signed: `<author fills in>` · Date: `<author fills in>`
+Signed: Sarvarbek Erniyazov · Date: 2026-09-08

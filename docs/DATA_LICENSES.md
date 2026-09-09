@@ -55,8 +55,16 @@ it needs to not be trapped by it. The plan: keep CARE out of the *training* corp
 entirely and use it only for evaluation and label cross-check, which is exactly the
 role assigned on its dataset card. If CARE is ever admitted to training, that
 decision gets its own ADR and the weights are released under CC BY-SA 4.0 or not
-released at all. **TODO(m1): confirm this restriction is enforced in code once the
-CARE adapter loads, not merely stated here.**
+released at all.
+
+**Enforced in code since 2026-09-09.** `configs/data/splits_v0.yaml` carries
+`eval_only_sources: [care]`, and `assign_splits` labels every row of such a source
+`test`, applied after both the site and the time axis so that neither can override
+it. A frame that lacks the source column raises rather than silently skipping the
+constraint — the failure mode worth guarding against is not a wrong label, it is a
+licence rule that quietly did not run. The CARE adapter still does not load, so
+nothing reaches the splitter yet; the restriction is in place ahead of the data
+rather than after it.
 
 ## Excluded sources, and why
 

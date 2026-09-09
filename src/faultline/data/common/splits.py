@@ -6,12 +6,22 @@ cut inside the training sites (drift). The assignment is a pure function of
 ``(site, timestamp)`` and a configuration, so a split can be reproduced from the
 YAML alone without touching the data.
 
-The split specification is also where one modelling rule is enforced rather than
-merely written down: **an evaluation that holds a whole site out may read core
-channels only.** An extended channel is one that is not published by every training
-site, so a leave-site-out score that depends on it is partly a measurement of
-instrumentation differences between sites, which is not the quantity the project
-reports. The check runs at configuration-validation time, before any data is read.
+The split specification is also where two rules are enforced rather than merely
+written down.
+
+**An evaluation that holds a whole site out may read core channels only.** An
+extended channel is one that is not published by every training site, so a
+leave-site-out score that depends on it is partly a measurement of instrumentation
+differences between sites, which is not the quantity the project reports. The check
+runs at configuration-validation time, before any data is read.
+
+**A source listed in ``eval_only_sources`` never lands in train or val.** This one is
+a licence constraint, not a modelling preference: CARE is CC BY-SA 4.0, and whether
+model weights trained on share-alike data are adapted material is genuinely
+unsettled (``docs/DATA_LICENSES.md``, ADR-0004). The project's answer is to not need
+the answer -- CARE is used for evaluation and label cross-check only. That is worth
+nothing as a sentence in a document, so it is applied last in :func:`assign_splits`,
+after the site and time axes, and it overrides both.
 """
 
 from __future__ import annotations
@@ -64,6 +74,10 @@ class SplitsConfig(StrictModel):
         late_period_split: Split label for training-site rows after ``val_until``.
         eval_channels: Canonical channels the evaluation reads. When any site is
             held out, every name here must be a ``core`` channel.
+        source_column: Column naming the source a row came from.
+        eval_only_sources: Sources that may never enter training or validation.
+            Every row of such a source is labelled ``test``, whatever the site and
+            time axes say. This is a licence constraint (ADR-0004), not a tunable.
     """
 
     version: int = 0
@@ -75,6 +89,8 @@ class SplitsConfig(StrictModel):
     time: TimeSplitSpec
     late_period_split: Split = "test"
     eval_channels: list[str] = Field(default_factory=list)
+    source_column: str = "source"
+    eval_only_sources: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _leave_site_out_reads_core_channels_only(self) -> SplitsConfig:
@@ -124,24 +140,35 @@ def _as_utc(value: datetime) -> pd.Timestamp:
 def assign_splits(frame: pd.DataFrame, config: SplitsConfig) -> pd.Series[Any]:
     """Assign a split label to every row of a table.
 
-    Rows belonging to a held-out site take ``holdout_site_split`` regardless of
-    time, so the site axis dominates the time axis. Remaining rows are cut by
-    timestamp: up to ``train_until`` is ``train``, up to ``val_until`` is ``val``,
-    and anything later takes ``late_period_split``.
+    Three rules, applied in strengthening order. Rows are first cut by timestamp: up
+    to ``train_until`` is ``train``, up to ``val_until`` is ``val``, anything later
+    takes ``late_period_split``. Rows belonging to a held-out site then take
+    ``holdout_site_split`` regardless of time, so the site axis dominates the time
+    axis. Finally, rows from an evaluation-only source are forced to ``test``,
+    overriding both.
 
     Args:
-        frame: Table containing the site and timestamp columns named by ``config``.
+        frame: Table containing the site and timestamp columns named by ``config``,
+            and the source column when ``eval_only_sources`` is configured.
         config: Split specification.
 
     Returns:
         A string Series of split labels aligned with ``frame.index``.
 
     Raises:
-        KeyError: If either configured column is missing from the table.
+        KeyError: If a configured column the specification needs is missing. In
+            particular, a missing source column with ``eval_only_sources`` set is
+            fatal: the alternative is silently not applying a licence constraint.
     """
     for column in (config.site_column, config.time_column):
         if column not in frame.columns:
             raise KeyError(f"column {column!r} required by the split spec is missing")
+    if config.eval_only_sources and config.source_column not in frame.columns:
+        raise KeyError(
+            f"column {config.source_column!r} is missing, so eval_only_sources "
+            f"{config.eval_only_sources} cannot be enforced. This is a licence "
+            "constraint (ADR-0004, docs/DATA_LICENSES.md) and is not skipped quietly."
+        )
 
     stamps = pd.to_datetime(frame[config.time_column], utc=True)
     train_until = _as_utc(config.time.train_until)
@@ -154,6 +181,14 @@ def assign_splits(frame: pd.DataFrame, config: SplitsConfig) -> pd.Series[Any]:
     if config.holdout_sites:
         held_out = frame[config.site_column].astype(str).isin(config.holdout_sites).to_numpy()
         labels[held_out] = config.holdout_site_split
+
+    # Applied last, and not configurable: an evaluation-only source is test, whatever
+    # the axes above decided. See docs/DATA_LICENSES.md.
+    if config.eval_only_sources:
+        restricted = (
+            frame[config.source_column].astype(str).isin(config.eval_only_sources).to_numpy()
+        )
+        labels[restricted] = "test"
 
     return pd.Series(labels, index=frame.index, name="split", dtype="object")
 

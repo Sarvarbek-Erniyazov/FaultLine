@@ -25,6 +25,24 @@ seed: 20260909
 
 site_column: "site"
 time_column: "timestamp_utc"
+source_column: "source"
+
+# Sources that may never enter training or validation. Every row of one is labelled
+# test, overriding both the site and the time axis.
+#
+# CARE is CC BY-SA 4.0. Whether model weights trained on share-alike data are
+# "adapted material" is genuinely unsettled and the answer differs by jurisdiction
+# (docs/DATA_LICENSES.md). This project does not need to resolve that question -- it
+# needs to not be trapped by it -- so CARE supplies labelled events for evaluation
+# and label cross-check, and never training telemetry. ADR-0004.
+#
+# This is a licence constraint, not a modelling preference: it is enforced in
+# splits.py rather than left as a sentence in a document, and a frame without a
+# source column is an error rather than a quiet exemption. Admitting CARE to
+# training would need its own decision record and would put the weights under
+# CC BY-SA 4.0 or leave them unreleased.
+eval_only_sources:
+  - "care"
 
 # Hill of Towie is the held-out site: a different manufacturer (Siemens, not
 # Senvion), a different control system, and a documented mid-record retrofit. It is

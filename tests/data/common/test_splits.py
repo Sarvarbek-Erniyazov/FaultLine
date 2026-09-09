@@ -22,6 +22,26 @@ def config(**overrides: object) -> SplitsConfig:
     return SplitsConfig.model_validate(payload)
 
 
+def care_rows() -> pd.DataFrame:
+    """Rows from a mix of sources, including the evaluation-only one."""
+    return pd.DataFrame(
+        {
+            "source": ["kelmarsh", "care", "care", "care", "penmanshiel"],
+            "site": ["kelmarsh", "farm_a", "farm_b", "farm_c", "penmanshiel"],
+            "timestamp_utc": pd.to_datetime(
+                [
+                    "2019-06-01",  # train period
+                    "2019-06-01",  # train period, but CARE
+                    "2022-06-01",  # val period, but CARE
+                    "2023-06-01",  # already test
+                    "2019-06-01",  # train period
+                ],
+                utc=True,
+            ),
+        }
+    )
+
+
 def rows() -> pd.DataFrame:
     return pd.DataFrame(
         {
@@ -84,6 +104,55 @@ def test_unknown_eval_channel_is_rejected_either_way() -> None:
 
 def test_eval_channels_defaults_to_empty() -> None:
     assert config().eval_channels == []
+
+
+# -- evaluation-only sources (ADR-0004, docs/DATA_LICENSES.md) ------------------------
+
+
+def test_the_shipped_config_keeps_care_out_of_training(repo_root: Path) -> None:
+    loaded = load_config(repo_root / "configs" / "data" / "splits_v0.yaml", SplitsConfig)
+    assert loaded.eval_only_sources == ["care"]
+    assert loaded.source_column == "source"
+
+
+def test_an_eval_only_source_never_enters_train_or_val() -> None:
+    spec = config(eval_only_sources=["care"], holdout_sites=[])
+    labels = assign_splits(care_rows(), spec)
+    assert list(labels) == ["train", "test", "test", "test", "train"]
+    # the licence claim, stated the way the licence states it
+    care = care_rows()["source"] == "care"
+    assert set(labels[care.to_numpy()]) == {"test"}
+
+
+def test_the_eval_only_rule_overrides_both_other_axes() -> None:
+    # A CARE row sitting in the training period at a site that is not held out would
+    # be train on every other axis. It is test anyway.
+    spec = config(eval_only_sources=["care"], holdout_sites=["hill_of_towie"])
+    labels = assign_splits(care_rows(), spec)
+    assert labels.iloc[1] == "test"
+    assert split_counts(labels) == {"train": 2, "val": 0, "test": 3}
+
+
+def test_a_missing_source_column_is_fatal_when_the_rule_is_configured() -> None:
+    # The failure mode worth guarding against is not a wrong label; it is a licence
+    # constraint that quietly did not run.
+    with pytest.raises(KeyError, match="licence constraint"):
+        assign_splits(rows(), config(eval_only_sources=["care"]))
+
+
+def test_no_source_column_is_needed_when_the_rule_is_not_configured() -> None:
+    assert len(assign_splits(rows(), config())) == len(rows())
+
+
+def test_an_unlisted_source_is_unaffected() -> None:
+    spec = config(eval_only_sources=["care"], holdout_sites=[])
+    labels = assign_splits(care_rows(), spec)
+    assert labels.iloc[0] == "train"  # kelmarsh
+    assert labels.iloc[4] == "train"  # penmanshiel
+
+
+def test_eval_only_sources_defaults_to_empty() -> None:
+    assert config().eval_only_sources == []
 
 
 def test_site_holdout_dominates_the_time_cut() -> None:

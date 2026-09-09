@@ -117,6 +117,25 @@ pretraining loop.
 
 ## M3 — joint model, modality shift, streaming demonstration
 
+**Hypothesis under test**
+
+> **H3.** Pretraining on the operator-narrative corpus improves cross-OEM transfer of
+> status semantics under leave-site-out evaluation, relative to the same joint
+> architecture with the narrative pretraining ablated. (ADR-0007.)
+
+H3 exists because ADR-0007 routes SCADA status messages through the BPE text pathway
+instead of a per-OEM code book. That choice only pays off if narrative pretraining
+transfers meaning across manufacturers, so the choice and the hypothesis are tested
+together: **larger** held-out-site advantage on event types whose status strings share
+vocabulary with the narrative corpus than on those that do not. A flat difference
+falsifies H3 and supersedes ADR-0007.
+
+H1 and H2 are reserved for the two claims the project already carries — that the joint
+model beats both single-modality baselines, and that calibrated abstention degrades
+gracefully under modality shift. They are stated as milestone criteria below rather
+than as numbered hypotheses, and will be written out as H1 and H2 when there are M1
+results to phrase them against.
+
 **Work**
 
 - Concatenate the M1 and M2 vocabularies per ADR-0003; no retokenization.
@@ -134,6 +153,8 @@ pretraining loop.
 - [ ] A reproducible ONNX export plus a CPU streaming demonstration with measured
       latency.
 - [ ] An honest limitations section: where the model fails and what would fix it.
+- [ ] **H3 tested, with the narrative-pretraining ablation actually run** — reported
+      whichever way it comes out, and ADR-0007 superseded if it comes out flat.
 
 ---
 

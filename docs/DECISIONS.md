@@ -311,3 +311,81 @@ dropped at inference — becomes impossible to interpret. Short gaps are filled 
 **Related rule.** Unmapped event codes yield `is_fault = None`, never `False`.
 Silence about a code is not evidence that it is benign, and defaulting to `False`
 would silently inflate precision.
+---
+
+## ADR-0007 Status messages go through the text pathway, not a code book
+
+**Status:** Accepted · **Date:** 2026-09-09
+
+**Decision.** Status and alarm messages from the SCADA event logs are encoded
+through the **text pathway** — the byte-level BPE tokenizer, emitted inside
+`<txt> … </txt>` — and **not** as categorical tokens in a block of their own. The
+event `code` and `category` fields stay structured and keep their role as label and
+structure sources (ADR-0006); this record is about the message *string*.
+
+**Context, and why the obvious answer is the wrong one.** ADR-0001 rests on the
+finding that these messages are a controlled vocabulary rather than prose, and the
+inventory confirmed it: `VERIFIED no` for Kelmarsh, at most 75 distinct strings per
+turbine-year with a mean length of 14.7 characters. The natural reading of that
+finding is "so encode them categorically" — one identifier per distinct message,
+like the channel tokens. That reading is wrong, and it is wrong for the same reason
+the finding was worth checking.
+
+**Why not a code book.**
+
+1. **A code book is per-OEM, and the headline result is leave-site-out.** Kelmarsh
+   and Penmanshiel are Senvion; Hill of Towie is Siemens and is the held-out site.
+   A code book fitted on the training sites has no identifier for a Siemens message,
+   so every status message at the held-out site becomes `<unk>` — on precisely the
+   axis the project reports. The text side would contribute nothing exactly where it
+   is supposed to contribute most.
+2. **The strings are compositional English, and subwords cross the OEM boundary.**
+   "Overload generator fan 1", "Battery charge cycle axis 2 error", "Gearbox warm-up
+   stage", "Absence of wind during run-up". A code book treats
+   `Overload generator fan 1` and `Overload generator fan 2` as unrelated symbols.
+   BPE does not, and the same subwords appear in the narrative corpus and in the
+   canonical channel names. A different manufacturer describing the same failure in
+   different words still shares most of the vocabulary.
+3. **Choosing a code book now would be choosing it permanently.** Under ADR-0003 v2
+   the blocks have fixed capacities and text sits last. A categorical message block
+   would have to be carved out of the prefix, which moves the text offset and
+   invalidates every shard and checkpoint after it. Routing messages through the
+   text block costs no new block at all. A decision that cannot be revisited should
+   not be made on convenience.
+
+**What this gives up, stated.** A code book is cheaper: one token per message
+against roughly four or five BPE tokens, and exact message identity available to the
+model for free. The text route spends sequence length on strings that carry little
+entropy *within* a site — "System OK" and "Wind < start wind" together are over 80%
+of the status rows in every Kelmarsh turbine-year inventoried. The cost is bounded,
+because status rows are sparse next to 10-minute telemetry, but it is a real cost and
+not a free lunch.
+
+**Consequence for the text pipeline.** Routing these strings through the text
+pathway puts them through the text cleaning stage, and the second most common
+Kelmarsh status message is `Wind < start wind`. The inherited tag-stripping regex
+`<[^>]+>` consumes everything between a `<` and the next `>`, so a message with a
+`<` followed anywhere later by a `>` is silently gutted. That defect was recorded in
+`docs/COURSE_PORT.md` as harmless on TinyStories; this decision is what makes it not
+harmless, and `configs/data/text_v1.yaml` is where it is fixed.
+
+**H3, the hypothesis this creates — tested at M3.**
+
+> **H3.** Pretraining on the operator-narrative corpus improves cross-OEM transfer of
+> status semantics under leave-site-out evaluation, relative to the same joint
+> architecture with the narrative pretraining ablated.
+
+Made falsifiable: the joint model's held-out-site advantage over the telemetry-only
+M1 model should be **larger** for event types whose status strings share vocabulary
+with the narrative corpus than for event types whose strings do not. If the
+advantage is flat across that split, the text pathway is carrying site identity
+rather than meaning, H3 is false, and this record is superseded rather than the
+result being reported as support for it.
+
+The ablation is the test, not the joint-versus-telemetry comparison on its own: a
+joint model can beat a telemetry-only model by having more parameters.
+
+**What would change this decision.** An M2 finding that no adequately licensed
+narrative corpus is reachable, which removes the mechanism H3 depends on and
+re-opens the code book; or an M3 probe showing message representations cluster by
+site rather than by meaning.

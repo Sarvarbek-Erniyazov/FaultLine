@@ -23,7 +23,7 @@ No model code beyond typed stubs. No training. No tokenizer fitted on real data.
 
 - [x] `uv pip install -e ".[dev]"` succeeds and `faultline --help` lists every command.
 - [x] `ruff check`, `mypy --strict src/` and `pytest -q` all pass; tests run in under
-      60 seconds and touch no real data and no network. *(242 tests, 2.1 s.)*
+      60 seconds and touch no real data and no network. *(322 tests, 2.6 s.)*
 - [x] `docs/COURSE_PORT.md` maps every notebook cell to a module, function, config key
       and test, and lists every semantic change with its justification.
 - [x] `faultline text run` on the committed fixture corpus produces
@@ -50,10 +50,33 @@ No model code beyond typed stubs. No training. No tokenizer fitted on real data.
       quiet overstatement this project is built to avoid. Tag with:*
       `git tag -a m0 -m "M0: skeleton, pipelines, data staging" && git push --tags`.
 
-**Beyond the original M0 scope, because the evidence allowed it:** the Kelmarsh
-adapter's loaders are implemented and tested against a committed excerpt of the real
-archive, and its channel map is resolved (12 of 13 channels, cross-checked against
-the provider signal mapping). Both were scheduled for M1.
+**Beyond the original M0 scope, because the evidence allowed it.** All of the
+following was scheduled for M1 and was brought forward once the staged Kelmarsh
+archives made it answerable:
+
+- The Kelmarsh adapter's loaders are implemented and tested against a committed
+  excerpt of the real archive, and its channel map is resolved — 13 of 14 channels,
+  cross-checked against the provider signal mapping, with the fourteenth
+  (`gearbox_bearing_temp_c`) verified *absent* from the record rather than left
+  unmapped.
+- `main_bearing_temp_c` was added to the canonical channel list, and every canonical
+  channel now declares a `core` or `extended` tier. A leave-site-out evaluation may
+  read core channels only, enforced in split-config validation.
+- Two `TODO(m1)` questions were closed by measurement rather than by re-reading
+  metadata that contradicted itself: the Kelmarsh power column is **kW** (median
+  per-turbine-year p99.5 of 2,057 against a rated 2,050, six times what a 10-minute
+  energy total would reach), and its timestamps are **UTC** (no daylight-saving
+  fingerprint in any of 54 turbine-years). `faultline inspect resolve` and
+  `reports/data/resolved_kelmarsh_20260909.md` are the evidence.
+- Found while measuring, and now a documented M1 obligation: the Kelmarsh 2023 and
+  2024 exports repeat every timestamp about 41 times.
+- ADR-0003 was amended to v2 — fixed-capacity blocks with telemetry as a stable
+  prefix — so that M1 shards survive the M2 tokenizer. ADR-0007 was added, routing
+  status messages through the text pathway and stating hypothesis H3.
+- `configs/data/text_v1.yaml` fixes the two regex defects the M0 fixture run
+  exposed, leaving `text_v0.yaml` untouched as the faithful port.
+- CARE's evaluation-only restriction is enforced in `assign_splits`, closing the
+  `TODO(m1)` in `docs/DATA_LICENSES.md`.
 
 ---
 
@@ -66,9 +89,12 @@ trained from scratch, evaluated as a risk model rather than a forecaster.
 
 - Implement the source adapters' loaders against the M0 inventory evidence; fill the
   channel maps from the provider signal-mapping files.
-- Resolve every `TODO(m1)` in the configs — plausibility bounds, timezones, fault
-  code mappings, split dates — against the stats reports, and freeze the result as
-  `telemetry_v1.yaml`.
+- Resolve every remaining `TODO(m1)` in the configs — plausibility bounds, the three
+  unmeasured timezones, fault code mappings, split dates — against the stats reports,
+  and freeze the result as `telemetry_v1.yaml`. Kelmarsh's timezone and its power
+  bound are already measured; the rest are not.
+- Decide how ingest collapses the repeated timestamps in the Kelmarsh 2023 and 2024
+  exports, and prove the choice loses no values.
 - Fit `QuantileBinTokenizer` on the training split only.
 - Model, training loop, checkpointing; multi-seed runs.
 - Risk evaluation: AUPRC, event-level F1, false alarms per hour, detection delay.

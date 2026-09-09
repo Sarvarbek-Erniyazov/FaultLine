@@ -25,6 +25,7 @@ are provisional physical judgements, not code.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Literal
 
 import pandas as pd
 import pyarrow as pa
@@ -36,6 +37,10 @@ INDEX_COLUMNS: tuple[str, ...] = ("source", "site", "turbine_id", "timestamp_utc
 IMPUTED_SUFFIX = "__imputed"
 
 
+#: Whether a channel may be depended on by an evaluation that holds a whole site out.
+ChannelTier = Literal["core", "extended"]
+
+
 @dataclass(frozen=True)
 class ChannelSpec:
     """One canonical SCADA channel.
@@ -45,30 +50,72 @@ class ChannelSpec:
         unit: Physical unit of the values.
         description: What the channel measures.
         group: Coarse grouping, used for reports and for modality-drop experiments.
+        tier: ``core`` if the channel is published by every training site, so a
+            leave-site-out evaluation can depend on it; ``extended`` otherwise. A
+            channel is ``extended`` until its presence at every training site is
+            verified, which is why a newly added channel starts there.
     """
 
     name: str
     unit: str
     description: str
     group: str
+    tier: ChannelTier
 
 
-#: The canonical channel list for M1. Chosen as the intersection that the three
-#: named sources plausibly share; CARE is anonymised and is mapped separately.
+#: The canonical channel list for M1, with the tier each channel is declared at.
+#:
+#: **Order is identity.** Position in this tuple fixes the channel token identifier
+#: (ADR-0003), so a channel is only ever appended -- never inserted, never reordered.
+#:
+#: The core/extended split is a *declaration*, checked at M1 rather than assumed:
+#: core is the set a leave-site-out evaluation is allowed to depend on, and the M1
+#: ingest fails if a core channel turns out to be absent at a training site. Only
+#: Kelmarsh's channel map is resolved at M0, so the one evidence-backed assignment
+#: today is a negative: Kelmarsh publishes no gearbox bearing temperature at all,
+#: which puts that channel in extended whatever the other sites carry.
+#: TODO(m1): re-derive the tiers from the resolved Penmanshiel and Hill of Towie
+#: maps, and demote any core channel not actually present at every training site.
 CANONICAL_CHANNELS: tuple[ChannelSpec, ...] = (
-    ChannelSpec("wind_speed_ms", "m/s", "Nacelle anemometer wind speed", "environment"),
-    ChannelSpec("power_kw", "kW", "Active power output", "production"),
-    ChannelSpec("rotor_speed_rpm", "rpm", "Rotor rotational speed", "drivetrain"),
-    ChannelSpec("generator_speed_rpm", "rpm", "Generator rotational speed", "drivetrain"),
-    ChannelSpec("pitch_angle_deg", "deg", "Blade pitch angle", "control"),
-    ChannelSpec("nacelle_position_deg", "deg", "Nacelle yaw position", "control"),
-    ChannelSpec("wind_direction_deg", "deg", "Wind direction", "environment"),
-    ChannelSpec("ambient_temp_c", "degC", "Ambient air temperature", "environment"),
-    ChannelSpec("nacelle_temp_c", "degC", "Nacelle internal temperature", "environment"),
-    ChannelSpec("gearbox_bearing_temp_c", "degC", "Gearbox bearing temperature", "temperature"),
-    ChannelSpec("gearbox_oil_temp_c", "degC", "Gearbox oil temperature", "temperature"),
-    ChannelSpec("generator_bearing_temp_c", "degC", "Generator bearing temperature", "temperature"),
-    ChannelSpec("generator_winding_temp_c", "degC", "Generator winding temperature", "temperature"),
+    ChannelSpec("wind_speed_ms", "m/s", "Nacelle anemometer wind speed", "environment", "core"),
+    ChannelSpec("power_kw", "kW", "Active power output", "production", "core"),
+    ChannelSpec("rotor_speed_rpm", "rpm", "Rotor rotational speed", "drivetrain", "core"),
+    ChannelSpec("generator_speed_rpm", "rpm", "Generator rotational speed", "drivetrain", "core"),
+    ChannelSpec("pitch_angle_deg", "deg", "Blade pitch angle", "control", "core"),
+    ChannelSpec("nacelle_position_deg", "deg", "Nacelle yaw position", "control", "core"),
+    ChannelSpec("wind_direction_deg", "deg", "Wind direction", "environment", "core"),
+    ChannelSpec("ambient_temp_c", "degC", "Ambient air temperature", "environment", "core"),
+    # Below here is drivetrain and enclosure instrumentation, which is where SCADA
+    # records stop agreeing with each other: what a machine measures depends on its
+    # gearbox, its generator and its vintage.
+    ChannelSpec(
+        "nacelle_temp_c", "degC", "Nacelle internal temperature", "environment", "extended"
+    ),
+    ChannelSpec(
+        "gearbox_bearing_temp_c", "degC", "Gearbox bearing temperature", "temperature", "extended"
+    ),
+    ChannelSpec("gearbox_oil_temp_c", "degC", "Gearbox oil temperature", "temperature", "extended"),
+    ChannelSpec(
+        "generator_bearing_temp_c",
+        "degC",
+        "Generator bearing temperature",
+        "temperature",
+        "extended",
+    ),
+    ChannelSpec(
+        "generator_winding_temp_c",
+        "degC",
+        "Generator winding temperature",
+        "temperature",
+        "extended",
+    ),
+    # Appended 2026-09-09, after the Kelmarsh signal-mapping cross-check found a
+    # published main-shaft bearing temperature the canonical list was discarding
+    # (signal 447, "Temperature of rotor bearing"). Appended rather than filed with
+    # the other bearing channels, because position is identity.
+    ChannelSpec(
+        "main_bearing_temp_c", "degC", "Main shaft bearing temperature", "drivetrain", "extended"
+    ),
 )
 
 #: Canonical channel names in identifier order. This order fixes the channel token
@@ -76,6 +123,38 @@ CANONICAL_CHANNELS: tuple[ChannelSpec, ...] = (
 CHANNEL_NAMES: tuple[str, ...] = tuple(spec.name for spec in CANONICAL_CHANNELS)
 
 CHANNELS_BY_NAME: dict[str, ChannelSpec] = {spec.name: spec for spec in CANONICAL_CHANNELS}
+
+#: Channels a leave-site-out evaluation may depend on, in identifier order.
+CORE_CHANNELS: tuple[str, ...] = tuple(
+    spec.name for spec in CANONICAL_CHANNELS if spec.tier == "core"
+)
+
+#: Channels that are not published everywhere, in identifier order.
+EXTENDED_CHANNELS: tuple[str, ...] = tuple(
+    spec.name for spec in CANONICAL_CHANNELS if spec.tier == "extended"
+)
+
+
+def channel_tier(name: str) -> ChannelTier:
+    """Return the tier a canonical channel is declared at.
+
+    Args:
+        name: Canonical channel name.
+
+    Returns:
+        ``core`` or ``extended``.
+
+    Raises:
+        KeyError: If the name is not a canonical channel. Treating an unknown name
+            as extended would let a typo quietly disable the core-only rule.
+    """
+    try:
+        return CHANNELS_BY_NAME[name].tier
+    except KeyError as exc:
+        raise KeyError(
+            f"{name!r} is not a canonical channel; known channels: {', '.join(CHANNEL_NAMES)}"
+        ) from exc
+
 
 #: Long-format SCADA: one row per (turbine, timestamp, channel).
 SCADA_LONG_SCHEMA = pa.schema(

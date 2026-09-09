@@ -5,6 +5,13 @@ Two axes are encoded here: whole sites held out (leave-wind-farm-out) and a temp
 cut inside the training sites (drift). The assignment is a pure function of
 ``(site, timestamp)`` and a configuration, so a split can be reproduced from the
 YAML alone without touching the data.
+
+The split specification is also where one modelling rule is enforced rather than
+merely written down: **an evaluation that holds a whole site out may read core
+channels only.** An extended channel is one that is not published by every training
+site, so a leave-site-out score that depends on it is partly a measurement of
+instrumentation differences between sites, which is not the quantity the project
+reports. The check runs at configuration-validation time, before any data is read.
 """
 
 from __future__ import annotations
@@ -17,6 +24,7 @@ import pandas as pd
 from pydantic import Field, model_validator
 
 from faultline.config import StrictModel
+from faultline.data.telemetry.schemas import CHANNELS_BY_NAME, CORE_CHANNELS
 
 Split = Literal["train", "val", "test"]
 SPLITS: tuple[Split, ...] = ("train", "val", "test")
@@ -54,6 +62,8 @@ class SplitsConfig(StrictModel):
         holdout_site_split: Split label given to every row of a held-out site.
         time: Temporal cut applied to the remaining sites.
         late_period_split: Split label for training-site rows after ``val_until``.
+        eval_channels: Canonical channels the evaluation reads. When any site is
+            held out, every name here must be a ``core`` channel.
     """
 
     version: int = 0
@@ -64,6 +74,35 @@ class SplitsConfig(StrictModel):
     holdout_site_split: Split = "test"
     time: TimeSplitSpec
     late_period_split: Split = "test"
+    eval_channels: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _leave_site_out_reads_core_channels_only(self) -> SplitsConfig:
+        """Reject an extended channel in a configuration that holds a site out.
+
+        Raises:
+            ValueError: If ``eval_channels`` names something that is not a canonical
+                channel, or names an ``extended`` channel while ``holdout_sites`` is
+                non-empty.
+        """
+        unknown = [name for name in self.eval_channels if name not in CHANNELS_BY_NAME]
+        if unknown:
+            raise ValueError(
+                f"eval_channels names {unknown}, which are not canonical channels. "
+                "A typo must fail here rather than silently escape the core-only rule."
+            )
+        if not self.holdout_sites:
+            return self
+        extended = [name for name in self.eval_channels if CHANNELS_BY_NAME[name].tier != "core"]
+        if extended:
+            raise ValueError(
+                f"holdout_sites is set, so this is a leave-site-out evaluation, but "
+                f"eval_channels names extended channels {extended}. An extended "
+                "channel is not published by every training site, so a held-out-site "
+                "score that depends on it partly measures instrumentation differences "
+                f"rather than transfer. Core channels: {', '.join(CORE_CHANNELS)}."
+            )
+        return self
 
 
 def _as_utc(value: datetime) -> pd.Timestamp:

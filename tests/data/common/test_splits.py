@@ -10,6 +10,7 @@ from pydantic import ValidationError
 
 from faultline.config import load_config
 from faultline.data.common.splits import SplitsConfig, assign_splits, split_counts
+from faultline.data.telemetry.schemas import CORE_CHANNELS, EXTENDED_CHANNELS
 
 
 def config(**overrides: object) -> SplitsConfig:
@@ -51,6 +52,38 @@ def test_shipped_split_config_loads(repo_root: Path) -> None:
     loaded = load_config(repo_root / "configs" / "data" / "splits_v0.yaml", SplitsConfig)
     assert loaded.holdout_sites == ["hill_of_towie"]
     assert loaded.time.val_until > loaded.time.train_until
+    # The shipped config holds a site out, so it must read core channels only.
+    assert loaded.eval_channels
+    assert set(loaded.eval_channels) <= set(CORE_CHANNELS)
+
+
+def test_leave_site_out_rejects_extended_channels() -> None:
+    # An extended channel is not published by every training site, so a held-out-site
+    # score computed over it measures instrumentation as well as transfer.
+    with pytest.raises(ValidationError, match="extended channels"):
+        config(eval_channels=[CORE_CHANNELS[0], EXTENDED_CHANNELS[0]])
+
+
+def test_core_channels_are_accepted_for_leave_site_out() -> None:
+    spec = config(eval_channels=list(CORE_CHANNELS))
+    assert spec.eval_channels == list(CORE_CHANNELS)
+
+
+def test_extended_channels_are_allowed_when_no_site_is_held_out() -> None:
+    # Without a held-out site the rule does not apply: a within-site evaluation may
+    # read whatever that site publishes.
+    spec = config(holdout_sites=[], eval_channels=list(EXTENDED_CHANNELS))
+    assert spec.eval_channels == list(EXTENDED_CHANNELS)
+
+
+def test_unknown_eval_channel_is_rejected_either_way() -> None:
+    for holdout in ([], ["hill_of_towie"]):
+        with pytest.raises(ValidationError, match="not canonical channels"):
+            config(holdout_sites=holdout, eval_channels=["gearbox_bearing_temp"])
+
+
+def test_eval_channels_defaults_to_empty() -> None:
+    assert config().eval_channels == []
 
 
 def test_site_holdout_dominates_the_time_cut() -> None:

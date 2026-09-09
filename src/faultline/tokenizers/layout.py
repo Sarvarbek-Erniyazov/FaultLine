@@ -57,7 +57,7 @@ SPECIAL_TOKENS: tuple[str, ...] = (
 
 #: Structural tokens plus reserved slots for structural tokens added later.
 SPECIALS_CAPACITY = 32
-#: Canonical SCADA channels. 13 are defined today; the headroom covers channels a
+#: Canonical SCADA channels. 14 are defined today; the headroom covers channels a
 #: later site publishes that the current canonical list does not carry.
 CHANNEL_CAPACITY = 64
 #: Quantile bins, shared across channels. 64 are configured today; the headroom

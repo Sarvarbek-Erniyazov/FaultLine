@@ -41,3 +41,24 @@ time:
   train_until: "2021-12-31T23:59:59Z"
   val_until: "2022-12-31T23:59:59Z"
 late_period_split: "test"
+
+# Channels the evaluation is allowed to read. Because holdout_sites is non-empty,
+# this is a leave-site-out evaluation, and config validation rejects any channel
+# declared "extended" in src/faultline/data/telemetry/schemas.py.
+#
+# The reason is not tidiness. An extended channel is one that is not published by
+# every training site -- Kelmarsh, for instance, publishes no gearbox bearing
+# temperature at all. A held-out-site score computed over such a channel mixes
+# transfer with instrumentation differences between sites, and the two cannot be
+# separated afterwards. Channels outside this list are still ingested, still
+# tokenised and still available to the modality-shift experiments at M3; they are
+# excluded only from the headline leave-site-out number.
+eval_channels:
+  - wind_speed_ms
+  - power_kw
+  - rotor_speed_rpm
+  - generator_speed_rpm
+  - pitch_angle_deg
+  - nacelle_position_deg
+  - wind_direction_deg
+  - ambient_temp_c

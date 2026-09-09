@@ -17,7 +17,7 @@
 
 source: kelmarsh
 site: "Kelmarsh"
-mapping_status: "resolved: 12 of 13 mapped and confirmed; 1 verified absent from the record"
+mapping_status: "resolved: 13 of 14 mapped and confirmed; 1 verified absent from the record"
 
 # Confirmed from the file preamble ("# Time zone: UTC"), which settles the timezone
 # question the source specification raised for this record.
@@ -67,6 +67,14 @@ channels:
   # generator winding temperature on this machine.
   generator_winding_temp_c: "Stator temperature 1 (°C)"
 
+  # CONFIRMED by the signal mapping: signal 447, "Temperature of rotor bearing",
+  # degC. On an MM92 the rotor bearing is the main shaft bearing, which is what this
+  # canonical channel names. Distinct from the two axle bearing temperatures
+  # ("Front"/"Rear bearing temperature" -> "Axle bearing temperature 1"/"2"), which
+  # stay unmapped: carrying all three is an M1 feature question, and this one is the
+  # channel the signal mapping names unambiguously.
+  main_bearing_temp_c: "Rotor bearing temp (°C)"
+
 # Columns identified but deliberately left outside the canonical channel set, recorded
 # so that the exclusion is a visible decision rather than an oversight.
 observed_but_unmapped:
@@ -78,7 +86,6 @@ observed_but_unmapped:
   - "Blade angle (pitch position) B (°)"
   - "Blade angle (pitch position) C (°)"
   - "Ambient temperature (converter) (°C)"
-  - "Rotor bearing temp (°C)"
   - "Long Term Wind (m/s)"
 
 # The export also publishes per-column aggregates such as "<channel>, Max (°C)",
@@ -89,12 +96,14 @@ observed_but_unmapped:
 # Findings from the cross-check that are not mapping decisions, recorded here because
 # they affect M1 and would otherwise be lost:
 #
-# 1. Main-shaft bearing temperatures ARE published ("Axle bearing temperature 1" and
-#    "2", plus "Temperature of rotor bearing"). The canonical channel list has no
-#    main-bearing channel, so a real drivetrain signal is currently discarded.
-#    TODO(m1): decide whether to add main_bearing_temp_c to the canonical list. It
-#    must be decided before any training run: the channel list fixes the channel token
-#    ids and the offset of every block after them (ADR-0003).
+# 1. RESOLVED 2026-09-09. Main-shaft bearing temperatures ARE published ("Axle
+#    bearing temperature 1" and "2", plus "Temperature of rotor bearing"), and the
+#    canonical channel list had no main-bearing channel, so a real drivetrain signal
+#    was being discarded. main_bearing_temp_c was appended to the canonical list and
+#    mapped above. Appended, not inserted: the channel list fixes the channel token
+#    ids, and under ADR-0003 v2 the channel block is a fixed-capacity prefix, so an
+#    append costs nothing and an insert would move every later id. Declared
+#    "extended", not "core": it is confirmed present at Kelmarsh only.
 #
 # 2. Unit discrepancy in the provider metadata. The SCADA header says "Power (kW)"
 #    while Kelmarsh_WT_dataSignalMapping.csv records the unit of signal 5 as "kWh".

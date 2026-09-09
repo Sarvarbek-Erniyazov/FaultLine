@@ -30,9 +30,13 @@ def test_get_adapter_loads_the_channel_map(repo_root: Path) -> None:
     # Kelmarsh was resolved at M0 from the real SCADA header.
     assert adapter.channel_map["power_kw"] == "Power (kW)"
     assert adapter.channel_map["wind_speed_ms"] == "Wind speed (m/s)"
-    assert len(adapter.channel_map) == 12
-    # The one channel with no unambiguous column is absent rather than guessed: the
-    # candidates could belong to the main shaft or to the gearbox.
+    # The main-shaft bearing was added to the canonical list on 2026-09-09 and mapped
+    # from signal 447, "Temperature of rotor bearing".
+    assert adapter.channel_map["main_bearing_temp_c"] == "Rotor bearing temp (°C)"
+    assert len(adapter.channel_map) == 13
+    # The one channel this record does not publish is absent rather than guessed: the
+    # signal mapping resolves every bearing column, and none of them is a gearbox
+    # bearing.
     assert "gearbox_bearing_temp_c" not in adapter.channel_map
 
 

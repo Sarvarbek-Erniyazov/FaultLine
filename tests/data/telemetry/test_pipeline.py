@@ -55,8 +55,9 @@ def synthetic_turbine_year(rows: int = 500) -> pd.DataFrame:
 def test_shipped_config_loads(config_path: Path) -> None:
     config = load_telemetry_config(config_path)
     assert config.freq == "10min"
-    assert len(config.channels) == 13
+    assert len(config.channels) == 14
     assert config.channels[0] == "wind_speed_ms"
+    assert config.channels[-1] == "main_bearing_temp_c"
     assert config.bounds["wind_speed_ms"].max == 60.0
     # unmapped codes must remain unknown, never assumed benign (ADR-0006)
     assert config.events.default_is_fault is None

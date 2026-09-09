@@ -15,21 +15,29 @@ telemetry:
   timezone_default: "UTC" # TODO(m1): confirm per source from file headers; see the dataset cards
 
   # Canonical channels, in the order that fixes channel token identifiers (ADR-0003).
-  # Reordering this list after M1 invalidates every trained checkpoint.
+  # Reordering this list after M1 invalidates every trained checkpoint; a channel is
+  # appended, never inserted.
+  #
+  # The core/extended tier of each channel is declared in
+  # src/faultline/data/telemetry/schemas.py, which is the single source of truth for
+  # it; the annotations below are a reading aid, not a second declaration. core means
+  # the channel is published by every training site, so a leave-site-out evaluation
+  # may depend on it (enforced in configs/data/splits_*.yaml).
   channels:
-    - wind_speed_ms
-    - power_kw
-    - rotor_speed_rpm
-    - generator_speed_rpm
-    - pitch_angle_deg
-    - nacelle_position_deg
-    - wind_direction_deg
-    - ambient_temp_c
-    - nacelle_temp_c
-    - gearbox_bearing_temp_c
-    - gearbox_oil_temp_c
-    - generator_bearing_temp_c
-    - generator_winding_temp_c
+    - wind_speed_ms # core
+    - power_kw # core
+    - rotor_speed_rpm # core
+    - generator_speed_rpm # core
+    - pitch_angle_deg # core
+    - nacelle_position_deg # core
+    - wind_direction_deg # core
+    - ambient_temp_c # core
+    - nacelle_temp_c # extended
+    - gearbox_bearing_temp_c # extended - verified absent from the Kelmarsh record
+    - gearbox_oil_temp_c # extended
+    - generator_bearing_temp_c # extended
+    - generator_winding_temp_c # extended
+    - main_bearing_temp_c # extended - added 2026-09-09; see data/cards/kelmarsh.md
 
   # ---------------------------------------------------------------------------
   # plausibility bounds: values outside become NaN and are counted per channel
@@ -50,6 +58,11 @@ telemetry:
     gearbox_oil_temp_c: { min: -40.0, max: 150.0 } # provisional
     generator_bearing_temp_c: { min: -40.0, max: 200.0 } # provisional
     generator_winding_temp_c: { min: -40.0, max: 250.0 } # provisional
+    # Provisional, and set by analogy with the gearbox bearing bound rather than from
+    # a measured distribution: the channel was added after the M0 signal-mapping
+    # cross-check and no main-bearing values have been profiled yet.
+    # TODO(m1): set from the measured percentiles like every other bound here.
+    main_bearing_temp_c: { min: -40.0, max: 150.0 } # provisional
 
   # Per-source overrides where the machine differs from the defaults above.
   bounds_overrides:

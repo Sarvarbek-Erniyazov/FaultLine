@@ -268,9 +268,20 @@ Turning `mask_digits` off therefore does **not** fully protect technical content
 phone pattern still does damage that digit masking was blamed for. The regex is left
 unchanged at M0 because the port is meant to be checkable against the original
 (`docs/COURSE_PORT.md`), and because the fixture corpus is the wrong evidence base for
-redesigning it. **TODO(m2): replace the phone pattern with one anchored on telephone
-formatting (country codes, separators, plausible lengths) and measure its false
-positives against the real narrative corpus before enabling it.** Until then, any
+redesigning it.
+
+**Resolved in part, 2026-09-09.** `configs/data/text_v1.yaml` selects a replacement
+pattern anchored on telephone formatting — an explicit country code, or separated
+groups of at least two digits in one of three conventional shapes — instead of on
+digit count. It still masks `+44 1234 567890` and `020 7946 0958`; it no longer masks
+`Serial number 8812349900`. `text_v0.yaml` is untouched and still selects the course
+regex, so the port stays checkable, and the defaults in code are v0. The golden diff
+test enumerates every string the two versions disagree on.
+
+That does **not** settle the second half of the request above.
+**TODO(m2): measure v1's false-positive rate against the real narrative corpus before
+trusting it there.** A pattern validated on nine hand-written cases and a synthetic
+fixture is a pattern that has not met real text. Until that measurement exists, any
 corpus enabled at M2 records this limitation on its card.
 
 ---

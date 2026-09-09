@@ -1,0 +1,106 @@
+# Text corpus pipeline configuration, version 1.
+#
+# This is the configuration FaultLine uses from M2 onward. text_v0.yaml stays exactly
+# as it is: it is the faithful port of the course reference notebook, and it is what
+# makes the port checkable against its source. This file is where FaultLine departs
+# from it, and every departure is one line plus the reason for it.
+#
+# Two departures, both regexes, both found by running the port over the committed
+# fixture corpus at M0 rather than by reading it:
+#
+#   clean.html_tag_pattern: v1   the notebook's <[^>]+> treats every "<" as the start
+#                                of markup, so "2 < 3 and 4 > 1" cleans to "2   1".
+#                                Recorded in docs/COURSE_PORT.md as a wart that was
+#                                harmless on TinyStories. ADR-0007 makes it harmful:
+#                                status messages now go through this pipeline, and
+#                                the second most frequent Kelmarsh status message is
+#                                "Wind < start wind". v1 requires a letter after the
+#                                "<", so a comparison operator is left alone.
+#
+#   pii.phone_pattern: v1        the notebook's phone regex masks any run of nine or
+#                                more digits, so "Serial number 8812349900" becomes
+#                                "Serial number <PHONE>". ADR-0005 recorded this and
+#                                asked for a pattern anchored on telephone formatting
+#                                instead; v1 is that pattern. It still masks
+#                                "+44 1234 567890" and "020 7946 0958".
+#
+# Both regexes live side by side in src/faultline/data/text/patterns.py, and
+# tests/data/text/test_pattern_versions.py enumerates exactly which fixture strings
+# the two versions disagree on -- including the ones they deliberately agree on.
+#
+# Everything else below is identical to v0, deliberately: a version bump that also
+# quietly moves a threshold cannot be attributed to either change.
+#
+# This file is versioned, not edited: a run copies it into its own report directory
+# and records its hash. Changing a threshold means writing text_v2.yaml.
+
+text:
+  io:
+    corpus_name: "fixture_smoke" # the committed synthetic fixture; real corpora arrive at M2
+    input_path: null # null = <data_root>/raw/text/<corpus_name>.jsonl
+    text_field: "text" # course default
+
+  # ---------------------------------------------------------------------------
+  # cleaning (notebook cell 16)
+  # ---------------------------------------------------------------------------
+  clean:
+    unescape_html_entities: true # course default
+    remove_html_tags: true # course default
+    html_tag_pattern: "v1" # FaultLine departure (ADR-0007); v0 keeps the course regex
+    unicode_form: "NFKC" # course default
+    remove_control_chars: true # course default (keeps newline and tab)
+    normalize_whitespace: true # course default
+    drop_empty: true # course default (notebook cell 17 counted these as empty_removed)
+
+  # ---------------------------------------------------------------------------
+  # quality filtering (notebook cell 21, FILTER_CONFIG)
+  # ---------------------------------------------------------------------------
+  filter:
+    min_chars: 200 # course default
+    max_chars: 100000 # course default
+    min_alpha_ratio: 0.30 # course default
+    max_repeated_line_ratio: 0.30 # course default
+
+  # ---------------------------------------------------------------------------
+  # deduplication (notebook cells 27-28)
+  # ---------------------------------------------------------------------------
+  dedup:
+    strategy: "exact" # course default. TODO(m2): "minhash" for near-duplicates, which the
+      # operator-narrative corpus will need -- the same incident is
+      # republished with small edits across sources
+    lowercase: true # course default (document_hash lowercased before hashing)
+    strip: true # course default
+
+  # ---------------------------------------------------------------------------
+  # PII scrubbing (notebook cells 32-34)
+  # ---------------------------------------------------------------------------
+  pii:
+    mask_emails: true # course default
+    mask_phones: true # course default
+    mask_digits: false # FaultLine override (ADR-0005): the course masked any run of six or
+      # more digits, which is right for TinyStories and destructive for
+      # operator narratives, where quantities are the technical content
+    phone_pattern: "v1" # FaultLine departure (ADR-0005): the course regex masked serial
+      # numbers, which mask_digits: false alone did not prevent
+    email_placeholder: "<EMAIL>" # course default
+    phone_placeholder: "<PHONE>" # course default
+    number_placeholder: "<NUMBER>" # course default
+
+  # ---------------------------------------------------------------------------
+  # final corpus (extends the notebook, which wrote one flat file)
+  # ---------------------------------------------------------------------------
+  final:
+    shard_size: 5000 # FaultLine addition: the notebook wrote a single JSONL file
+    split_fractions: # FaultLine addition: the notebook had no splits
+      train: 0.98
+      val: 0.01
+      test: 0.01
+    split_seed: 20260909 # mixed into the per-document hash, so the assignment survives re-runs
+
+  # ---------------------------------------------------------------------------
+  # reporting (extends notebook cell 37)
+  # ---------------------------------------------------------------------------
+  report:
+    sample_size: 5 # documents sampled per report section
+    sample_chars: 200 # truncation length for sampled documents
+    sample_seed: 20260909

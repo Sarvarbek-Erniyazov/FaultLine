@@ -43,7 +43,7 @@ is preserved exactly.** No stage was reordered.
 | 08 | write raw JSONL | `data.text.pipeline.write_jsonl` | `text.io.corpus_name` | `tests/data/text/test_pipeline.py::test_jsonl_round_trip` | — |
 | 10 | `load_jsonl` reading the whole corpus into a list | `data.text.pipeline.read_jsonl` | — | `tests/data/text/test_pipeline.py::test_jsonl_round_trip` | **Changed.** Streams a generator instead of materialising the corpus. The notebook held four full copies of TinyStories in memory at once; that does not survive a real corpus on 32 GB |
 | 11 | raw document and character counts | `data.common.report.counts_table`, `percentile_summary` | — | `tests/data/common/test_report.py` | Extended: percentiles as well as totals |
-| 16 | `remove_html`, `normalize_unicode`, `remove_control_characters`, `normalize_whitespace`, `clean_text` | `data.text.clean.*` | `text.clean.*` | `tests/data/text/test_clean.py` | **None.** Regexes, NFKC, the kept control characters (`\n`, `\t`) and the chain order are identical. Each step gained an on/off switch, defaulting to the notebook behaviour |
+| 16 | `remove_html`, `normalize_unicode`, `remove_control_characters`, `normalize_whitespace`, `clean_text` | `data.text.clean.*`, `data.text.patterns.*` | `text.clean.*` | `tests/data/text/test_clean.py`, `test_pattern_versions.py` | **None at v0.** Regexes, NFKC, the kept control characters (`\n`, `\t`) and the chain order are identical. Each step gained an on/off switch, defaulting to the notebook behaviour. `text_v1.yaml` selects a replacement tag pattern; see below |
 | 17 | cleaning loop, `cleaning_stats` counters, drop empty | `data.text.pipeline.CleanStage.run` | `text.clean.drop_empty` | `tests/data/text/test_pipeline.py::test_clean_stage_counts` | — |
 | 18 | write cleaned JSONL | `CleanStage` output | — | same | — |
 | 21 | `FILTER_CONFIG` dict | `configs/data/text_v0.yaml` → `text.filter` | `min_chars`, `max_chars`, `min_alpha_ratio`, `max_repeated_line_ratio` | `tests/data/text/test_filter.py` | **Key names preserved exactly.** Values preserved exactly (200 / 100000 / 0.30 / 0.30) |
@@ -52,7 +52,7 @@ is preserved exactly.** No stage was reordered.
 | 24 | write filtered JSONL | `FilterStage` output | — | — | — |
 | 27 | `document_hash` (strip, lowercase, SHA-256) | `data.text.dedup.document_hash` | `text.dedup.lowercase`, `text.dedup.strip` | `tests/data/text/test_dedup.py` | **None.** Normalisation made configurable, defaulting to the notebook behaviour |
 | 28 | dedup loop over a `seen_hashes` set | `data.text.dedup.ExactDeduplicator`, `pipeline.DedupStage.run` | `text.dedup.strategy` | `tests/data/text/test_dedup.py::test_exact_deduplicator` | Extended: `strategy` key with `exact` implemented and `minhash` rejected as `TODO(m2)`, rather than silently doing nothing |
-| 32 | `EMAIL_PATTERN`, `PHONE_PATTERN`, `NUMBER_PATTERN` | `data.text.pii.*` | — | `tests/data/text/test_pii.py` | **None.** All three regexes are byte-identical to the notebook |
+| 32 | `EMAIL_PATTERN`, `PHONE_PATTERN`, `NUMBER_PATTERN` | `data.text.pii.*`, `data.text.patterns.*` | `text.pii.phone_pattern` | `tests/data/text/test_pii.py`, `test_pattern_versions.py` | **None at v0.** All three regexes are byte-identical to the notebook and are what the default selects. `text_v1.yaml` selects a replacement phone pattern; see below |
 | 33 | `scrub_pii`, always masking all three classes | `data.text.pii.scrub_pii` | `text.pii.mask_emails`, `mask_phones`, `mask_digits` | `tests/data/text/test_pii.py::test_digit_masking_is_off_by_default` | **CHANGED — ADR-0005.** Each class is toggleable, and `mask_digits` defaults to **`false`**. See below |
 | 34 | PII loop with totals | `pipeline.PIIStage.run` | `text.pii.*` | `tests/data/text/test_pipeline.py` | Extended: counts documents touched per class, not only replacement totals |
 | 35 | write one flat final JSONL | `pipeline.FinalStage.run`, `ShardWriter` | `text.final.shard_size`, `split_fractions`, `split_seed` | `tests/data/text/test_pipeline.py::test_final_stage_splits_and_shards` | **CHANGED.** The notebook wrote a single file with no splits. FaultLine assigns train/val/test deterministically from a hash of the document and shards the output. See below |
@@ -64,7 +64,8 @@ is preserved exactly.** No stage was reordered.
 
 ## Semantic changes, justified
 
-Five, and no others.
+Five in the code, and no others. A sixth and seventh are available by configuration
+and off by default; they are the two regex replacements described further down.
 
 **1. Digit masking is off by default (ADR-0005).** The notebook masks any run of six
 or more digits. Correct for TinyStories; destructive for operator narratives, where
@@ -90,22 +91,62 @@ rejected by the `Stage` base class.
 documents. The filter report samples documents the filters *dropped*, which is the
 only cheap way to notice a threshold quietly deleting good text.
 
-## A wart found by running the port, and kept
+## Two warts found by running the port, kept in v0 and fixed in v1
 
-Two behaviours inherited from the notebook are wrong for FaultLine's corpora but are
-preserved anyway, because a port that quietly "improves" its source cannot be checked
-against it. Both are recorded here and carry a TODO:
+Two behaviours inherited from the notebook are wrong for FaultLine's corpora. Both
+are **preserved exactly in `text_v0.yaml`**, because a port that quietly "improves"
+its source cannot be checked against it, and both are **fixed in `text_v1.yaml`**,
+which is what FaultLine actually uses.
 
 1. **The tag-stripping regex eats prose comparisons.** `<[^>]+>` is greedy about angle
    brackets, so `2 < 3 and 4 > 1` cleans to `2   1`. Harmless on TinyStories; not
    harmless in text describing thresholds. Covered by a test that asserts the lossy
-   behaviour explicitly (`tests/data/text/test_clean.py`), so the day it is fixed, the
-   fix is deliberate.
+   behaviour explicitly (`tests/data/text/test_clean.py`).
 2. **The phone regex masks long digit runs that are not phone numbers.** The M0
    fixture run turned `Serial number 8812349900` into `Serial number <PHONE>`. This
    matters more than it looks: ADR-0005 turns *digit* masking off to protect technical
-   content, and the phone pattern then does much of the same damage anyway. See
-   ADR-0005 for the analysis and the M2 replacement plan.
+   content, and the phone pattern then does much of the same damage anyway.
+
+### v0 is the port; v1 is what FaultLine uses
+
+`configs/data/text_v0.yaml` is the faithful port and **is not edited**. Every value in
+it is the notebook's, and that is the whole point: it is the artefact against which
+the port can be checked. Runs that used it keep meaning what they meant.
+
+`configs/data/text_v1.yaml` is FaultLine's configuration **from M2 onward**. It
+differs from v0 in exactly two keys, and a test asserts that it differs in exactly
+those two and no others (`tests/data/text/test_pattern_versions.py`):
+
+| key | v0 | v1 | why |
+| --- | --- | --- | --- |
+| `clean.html_tag_pattern` | `v0` | `v1` | v1 requires a letter after the `<`, so a comparison operator is not read as markup |
+| `pii.phone_pattern` | `v0` | `v1` | v1 is anchored on telephone formatting — country code, separators, plausible grouping — instead of on digit count |
+
+Both regexes live side by side in `src/faultline/data/text/patterns.py`, and the
+**defaults in code are `v0`**: a caller who constructs a `CleanConfig` or a
+`PIIConfig` without saying anything gets the notebook's behaviour. v1 is opt-in
+through configuration, which is what keeps "v0 is a faithful port" a checkable
+statement rather than a claim in a document.
+
+**What changed the priority on the tag regex.** ADR-0007 routes SCADA status
+messages through the text pathway. The second most frequent Kelmarsh status message
+is `Wind < start wind`. Under v0 that message, combined with any later `>` in the
+same document, loses everything between them — so a defect that was cosmetic on
+TinyStories now destroys the event vocabulary that ADR-0001 rests on.
+
+**What the phone fix is measured against, and what is still owed.** The golden diff
+test enumerates every string the two versions disagree on. Over the committed fixture
+corpus, exactly two documents change: `doc-033` (`Serial number 8812349900`) and
+`doc-041` (a line of single digits). The two documents holding real telephone numbers
+are masked identically by both versions. ADR-0005 also asked for the false-positive
+rate to be measured against the real narrative corpus before the pattern is trusted;
+that corpus is an M2 artefact, so **TODO(m2): measure v1's false positives on the
+real corpus** stands. What is settled now is that v1 does not eat serial numbers.
+
+**What the fixture does not cover, stated.** No document in `sample.jsonl` uses a
+bare `<` as a comparison, so the committed corpus exercises the phone fix and not the
+tag fix. That gap is asserted by a test rather than left to be discovered, and the
+tag fix is covered by the explicit case table instead.
 
 ## What was deliberately not changed
 
@@ -113,3 +154,7 @@ The regexes, the NFKC normalisation, the kept control characters, the four thres
 values and their key names, the hash normalisation, the placeholder strings, and the
 stage order. Where the port could have "improved" the course logic, it did not:
 matching behaviour is what makes the port checkable against the original.
+
+That still holds after `text_v1.yaml`. The v0 regexes are unchanged and remain the
+default in code; v1 adds an alternative next to them and a configuration key that
+selects it. Nothing in the port was edited to make the fix possible.

@@ -5,6 +5,10 @@ The transform order is the notebook order and must not be changed casually: enti
 decoding before tag stripping means an escaped ``&lt;b&gt;`` is stripped as markup,
 which is what the reference pipeline did.
 
+The tag regex has two generations, selected by ``clean.html_tag_pattern`` and
+defined side by side in :mod:`faultline.data.text.patterns`. The default is the
+notebook's, so nothing here silently improves on the port.
+
 All functions here are pure: they take and return strings and never touch the
 filesystem.
 """
@@ -17,8 +21,8 @@ import unicodedata
 from typing import Literal
 
 from faultline.config import StrictModel
+from faultline.data.text.patterns import HTML_TAG_PATTERNS, PatternVersion
 
-_HTML_TAG = re.compile(r"<[^>]+>")
 _INLINE_WHITESPACE = re.compile(r"[ \t]+")
 _BLANK_LINES = re.compile(r"\n\s*\n+")
 
@@ -35,6 +39,10 @@ class CleanConfig(StrictModel):
     Attributes:
         unescape_html_entities: Decode ``&amp;`` style entities before tag removal.
         remove_html_tags: Replace ``<...>`` spans with a single space.
+        html_tag_pattern: Which generation of the tag regex to apply. ``v0`` is the
+            course notebook's, which also eats prose comparisons such as
+            ``2 < 3``; ``v1`` requires a letter after the ``<``. Defaults to ``v0``
+            so the port keeps behaving like the port.
         unicode_form: Unicode normalization form applied to every document.
         remove_control_chars: Drop Unicode category ``C`` characters other than
             newline and tab.
@@ -44,22 +52,24 @@ class CleanConfig(StrictModel):
 
     unescape_html_entities: bool = True
     remove_html_tags: bool = True
+    html_tag_pattern: PatternVersion = "v0"
     unicode_form: NormalizationForm = "NFKC"
     remove_control_chars: bool = True
     normalize_whitespace: bool = True
     drop_empty: bool = True
 
 
-def remove_html(text: str) -> str:
+def remove_html(text: str, version: PatternVersion = "v0") -> str:
     """Remove HTML/XML-like tags, replacing each with a space.
 
     Args:
         text: Input document.
+        version: Which generation of the tag regex to apply.
 
     Returns:
         The document with tag spans replaced by single spaces.
     """
-    return _HTML_TAG.sub(" ", text)
+    return HTML_TAG_PATTERNS[version].sub(" ", text)
 
 
 def normalize_unicode(text: str, form: NormalizationForm = "NFKC") -> str:
@@ -121,7 +131,7 @@ def clean_text(text: str, config: CleanConfig | None = None) -> str:
     if cfg.unescape_html_entities:
         text = html.unescape(text)
     if cfg.remove_html_tags:
-        text = remove_html(text)
+        text = remove_html(text, cfg.html_tag_pattern)
     text = normalize_unicode(text, cfg.unicode_form)
     if cfg.remove_control_chars:
         text = remove_control_characters(text)

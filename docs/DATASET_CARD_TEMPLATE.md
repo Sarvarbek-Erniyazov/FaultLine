@@ -1,8 +1,8 @@
 # Dataset card template
 
 The fields every card in `data/cards/` must answer. Cards are **generated** by
-`faultline cards build` from the source specification, the checksum manifest and the
-raw inventory report — this file documents the contract, it is not a form to fill in
+`faultline cards build` from the source specification, the checksum manifest, the
+raw inventory report and the resolution report — this file documents the contract, it is not a form to fill in
 by hand. Editing a generated card by hand is a bug: the next build overwrites it, and
 the edit was not backed by evidence anyway.
 
@@ -55,6 +55,16 @@ here"; `UNVERIFIED` reads as "nobody has checked", which is the truth.
   This is the field that ADR-0001 rests on: whether the paired text in this record is
   open-ended language or a controlled vocabulary that supplies only labels and
   structure. It is the single most consequential line on the card.
+
+### Questions resolved by measurement
+- One row per question the provider metadata could not settle, with the verdict and
+  the measurement behind it, from `faultline inspect resolve`
+- `UNVERIFIED` until something has actually been measured
+
+  A provider that states a unit in one file and a different unit for the same signal
+  in another has not told you the unit; a header line asserting a timezone is a claim
+  by the exporter, not a property of the timestamps. Where metadata contradicts
+  itself or asserts without evidence, the card carries the measurement instead.
 
 ### Use in FaultLine
 - Intended role: training site, validation site, held-out site, label source,

@@ -12,7 +12,12 @@ telemetry:
   # grid
   # ---------------------------------------------------------------------------
   freq: "10min" # all four providers publish 10-minute aggregated SCADA
-  timezone_default: "UTC" # TODO(m1): confirm per source from file headers; see the dataset cards
+  # Kelmarsh is measured UTC (reports/data/resolved_kelmarsh_20260909.md). This key is
+  # the assumption applied to a source that has not been measured, and it stays a
+  # default rather than becoming a fact.
+  # TODO(m1): measure the remaining three with `faultline inspect resolve` and record
+  # each verdict against its own source in configs/data/sources_telemetry.yaml.
+  timezone_default: "UTC"
 
   # Canonical channels, in the order that fixes channel token identifiers (ADR-0003).
   # Reordering this list after M1 invalidates every trained checkpoint; a channel is
@@ -46,7 +51,14 @@ telemetry:
   # Every bound is provisional -- revisit with the M1 stats report.
   bounds:
     wind_speed_ms: { min: 0.0, max: 60.0 } # provisional: above cut-out; anemometer saturation
-    power_kw: { min: -100.0, max: 2255.0 } # provisional: 1.1 x 2050 kW rated (Senvion); negative = house load
+    # MEASURED 2026-09-09, and the only bound in this file that is. The unit of the
+    # Kelmarsh power column was ambiguous in the provider metadata (header "kW",
+    # signal mapping "kWh"); it is kW. The upper bound is 1.1 x the 2050 kW rating,
+    # which sits above every measured p99.5 (highest 2,062) and every measured
+    # maximum (highest 2,089). The lower bound stays a judgement: house load when
+    # the machine is idle, measured no lower than -21.2 kW across 54 turbine-years.
+    # Evidence: reports/data/resolved_kelmarsh_20260909.md.
+    power_kw: { min: -100.0, max: 2255.0 }
     rotor_speed_rpm: { min: 0.0, max: 30.0 } # provisional: large geared machines run well below this
     generator_speed_rpm: { min: 0.0, max: 2500.0 } # provisional: doubly-fed generator range
     pitch_angle_deg: { min: -5.0, max: 95.0 } # provisional: feathered is ~90 deg

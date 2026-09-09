@@ -194,6 +194,71 @@ def inspect_telemetry(
         typer.echo(f"{name}: wrote {report_path}")
 
 
+@inspect_app.command(
+    "resolve",
+    help="Measure the power scale and the DST fingerprint of a staged record.",
+)
+def inspect_resolve(
+    source: Annotated[
+        str, typer.Option("--source", help="Source id whose archives are measured.")
+    ] = "kelmarsh",
+    config: ConfigOption = Path("configs/data/sources_telemetry.yaml"),
+    timestamp_column: Annotated[
+        str, typer.Option("--timestamp-column", help="Timestamp column as published.")
+    ] = "Date and time",
+    power_column: Annotated[
+        str, typer.Option("--power-column", help="Power column as published.")
+    ] = "Power (kW)",
+    energy_column: Annotated[
+        str | None, typer.Option("--energy-column", help="Separate energy column, if any.")
+    ] = "Energy Export (kWh)",
+    zone: Annotated[
+        str, typer.Option("--zone", help="Local zone the timestamps are tested against.")
+    ] = "Europe/London",
+    max_members: Annotated[
+        int | None, typer.Option("--max-members", help="Cap on SCADA members read.")
+    ] = None,
+) -> None:
+    """Measure the power scale and the DST fingerprint of a staged record.
+
+    Answers two questions the provider metadata contradicts itself about: whether
+    the power column is a mean power or an energy total, and whether the timestamps
+    are UTC or local civil time. Both are measured from the staged archives; neither
+    is taken from a header.
+
+    Args:
+        source: Source whose staged archives are measured.
+        config: Source specification file.
+        timestamp_column: Timestamp column as published.
+        power_column: Power column as published.
+        energy_column: Separate energy column, when the export publishes one.
+        zone: Local zone the timestamps are tested against.
+        max_members: Cap on the number of SCADA members read.
+
+    Raises:
+        typer.Exit: With code 1 if the source id is unknown.
+    """
+    from faultline.data.telemetry.resolve import resolve_source
+    from faultline.download.zenodo import load_sources_config
+
+    paths = ProjectPaths.resolve()
+    spec = load_sources_config(config)
+    if source not in spec.sources:
+        typer.echo(f"unknown source {source!r}; configured: {', '.join(spec.sources)}")
+        raise typer.Exit(code=1)
+    report = resolve_source(
+        source=source,
+        spec=spec.sources[source],
+        paths=paths,
+        timestamp_column=timestamp_column,
+        power_column=power_column,
+        energy_column=energy_column,
+        candidate_zone=zone,
+        max_members=max_members,
+    )
+    typer.echo(f"{source}: wrote {report}")
+
+
 @cards_app.command(
     "build",
     help="Render dataset cards from record metadata, manifests and inventory reports.",

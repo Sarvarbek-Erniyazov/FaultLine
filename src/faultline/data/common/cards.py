@@ -35,6 +35,12 @@ UNVERIFIED = "UNVERIFIED"
 
 _VERDICT_LINE = re.compile(r"^\*\*(VERIFIED yes|VERIFIED no|UNVERIFIED)\*\*\s*-\s*(.*)$", re.M)
 
+#: A ``## Question`` heading followed by the ``**VERDICT x** - why`` line under it,
+#: as ``faultline inspect resolve`` writes them.
+_RESOLUTION = re.compile(
+    r"^## (?P<question>.+?)\n+\*\*VERDICT (?P<verdict>[^*]+?)\*\*\s*-\s*(?P<why>.+?)$", re.M
+)
+
 
 def latest_inventory(reports_dir: Path, source: str) -> Path | None:
     """Find the most recent raw inventory report for a source.
@@ -70,6 +76,42 @@ def extract_verdict(report_path: Path | None) -> tuple[str, str]:
     if match is None:
         return UNVERIFIED, f"no verdict line found in {report_path.name}"
     return match.group(1), match.group(2).strip()
+
+
+def latest_resolution(reports_dir: Path, source: str) -> Path | None:
+    """Find the most recent resolution report for a source.
+
+    Args:
+        reports_dir: The ``reports/data`` directory.
+        source: Source identifier.
+
+    Returns:
+        The newest matching report, or ``None`` when nothing has been measured yet.
+    """
+    candidates = sorted(reports_dir.glob(f"resolved_{source}_*.md"))
+    return candidates[-1] if candidates else None
+
+
+def extract_resolutions(report_path: Path | None) -> list[tuple[str, str, str]]:
+    """Read the measured verdicts out of a resolution report.
+
+    Args:
+        report_path: Report to read, or ``None``.
+
+    Returns:
+        ``(question, verdict, rationale)`` triples, empty when nothing was measured.
+    """
+    if report_path is None or not report_path.is_file():
+        return []
+    text = report_path.read_text(encoding="utf-8")
+    return [
+        (
+            match.group("question").strip(),
+            match.group("verdict").strip(),
+            match.group("why").strip(),
+        )
+        for match in _RESOLUTION.finditer(text)
+    ]
 
 
 def _staging_rows(manifest: SourceManifest | None) -> list[tuple[str, object, object, object]]:
@@ -141,6 +183,8 @@ def build_card(source: str, spec: SourceSpec, paths: ProjectPaths) -> Path:
     manifest = read_manifest(manifest_path(paths.manifests_dir, source))
     inventory = latest_inventory(paths.data_reports_dir, source)
     verdict, rationale = extract_verdict(inventory)
+    resolution = latest_resolution(paths.data_reports_dir, source)
+    resolutions = extract_resolutions(resolution)
     channel_map = paths.configs_dir / "data" / "channel_map" / f"{source}.yaml"
 
     staged = _staging_rows(manifest)
@@ -222,6 +266,25 @@ def build_card(source: str, spec: SourceSpec, paths: ProjectPaths) -> Path:
             "above; do not edit this field by hand.",
         )
     )
+
+    if resolutions and resolution is not None:
+        resolved_body = (
+            table(
+                ["question", "verdict", "evidence"],
+                [(question, f"**{answer}**", why) for question, answer, why in resolutions],
+            )
+            + "\nThese are questions the provider metadata could not settle, because it either "
+            "contradicted itself or asserted without evidence. They were measured from the "
+            "staged archives by `faultline inspect resolve`; the per-turbine-year tables behind "
+            f"each verdict are in `reports/data/{resolution.name}`. Do not edit this section by "
+            "hand."
+        )
+    else:
+        resolved_body = (
+            f"{UNVERIFIED} - nothing has been measured for this source yet. Run "
+            f"`faultline inspect resolve --source {source}` once its archives are staged."
+        )
+    parts.append(section("Questions resolved by measurement", resolved_body))
 
     parts.append(
         section(

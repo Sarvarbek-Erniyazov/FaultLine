@@ -83,6 +83,17 @@ class SourceAdapter(Protocol):
         """
         ...
 
+    def turbine_id(self, member: RawMember) -> str:
+        """Identify the turbine a member belongs to.
+
+        Args:
+            member: Member to identify.
+
+        Returns:
+            The turbine identifier.
+        """
+        ...
+
     def load_scada(self, member: RawMember) -> pd.DataFrame:
         """Read one SCADA member into the canonical wide schema.
 
@@ -275,6 +286,23 @@ class BaseAdapter:
             logger.error("cannot read archive %s: %s", path.name, exc)
             return []
 
+    def turbine_id(self, member: RawMember) -> str:
+        """Identify the turbine a member belongs to.
+
+        The default falls back to the member's file stem. A provider that states the
+        turbine inside the file -- as the Greenbyte exports do in their preamble --
+        should override this, because a file name is a naming convention and a
+        preamble line is data.
+
+        Args:
+            member: Member to identify.
+
+        Returns:
+            The turbine identifier.
+        """
+        stem = (member.name or member.archive.name).rsplit("/", 1)[-1]
+        return stem.removesuffix(".csv")
+
     def load_scada(self, member: RawMember) -> pd.DataFrame:
         """Read one SCADA member into the canonical wide schema.
 
@@ -400,6 +428,54 @@ def read_csv_member(
         on_bad_lines="skip",
         encoding_errors="replace",
     )
+
+
+def read_csv_member_columns(
+    member: RawMember, columns: list[str], probe_bytes: int = 65_536
+) -> pd.DataFrame:
+    """Stream selected columns out of a CSV member without materializing it.
+
+    :func:`read_csv_member` reads the whole member into memory and lets pandas sniff
+    the separator. That is right for a status table of a few thousand rows and wrong
+    for a turbine-year of 10-minute SCADA: those members are several hundred
+    megabytes uncompressed and 299 columns wide, and a pass that needs two of those
+    columns should not pay for the other 297.
+
+    Columns the member does not have are skipped rather than raising, because a
+    provider dropping a signal in one year is normal and must surface as absent
+    data.
+
+    Args:
+        member: Member to read.
+        columns: Column names to keep, in the caller's order.
+        probe_bytes: Leading bytes used to work out the header layout.
+
+    Returns:
+        The requested columns that exist, in the member's own column order.
+    """
+    with open_member(member) as handle:
+        head = handle.read(probe_bytes)
+    skiprows, names = sniff_csv_layout(head)
+    header_line = head.decode("utf-8", errors="replace").splitlines()[max(skiprows - 1, 0)]
+    separator = max(",;\t", key=header_line.count)
+
+    available = names if names is not None else _split_csv_header(header_line)
+    wanted = [name for name in columns if name in available]
+    if not wanted:
+        return pd.DataFrame()
+
+    with open_member(member) as handle:
+        return pd.read_csv(
+            handle,
+            sep=separator,
+            skiprows=skiprows,
+            names=names,
+            header=None if names else "infer",
+            usecols=wanted,
+            on_bad_lines="skip",
+            encoding="utf-8",
+            encoding_errors="replace",
+        )
 
 
 def read_preamble(member: RawMember, probe_bytes: int = 8192) -> dict[str, str]:

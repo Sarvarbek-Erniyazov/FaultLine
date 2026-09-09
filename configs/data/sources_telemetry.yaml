@@ -34,7 +34,20 @@ sources:
       n_turbines: 6
       rated_kw: 2050
       period: "2016-2024"
-    timezone: "UTC" # CONFIRMED 2026-09-09 from the file preamble ("# Time zone: UTC")
+    # MEASURED 2026-09-09, not merely read. The preamble line "# Time zone: UTC" is a
+    # claim by the exporter; the timestamps themselves were tested for the fingerprint
+    # UK civil time leaves and cannot hide. Across all 54 staged turbine-years, every
+    # spring-forward hour is fully populated and no autumn fall-back hour repeats a
+    # label. Evidence: reports/data/resolved_kelmarsh_20260909.md.
+    timezone: "UTC"
+    # The power column is in kW, MEASURED 2026-09-09. The provider's own signal
+    # mapping records signal 5 ("Power" / "Actual value of active power") in kWh,
+    # which contradicts the SCADA header's "Power (kW)" and would have moved the
+    # plausibility bound by a factor of six. The median per-turbine-year p99.5 is
+    # 2,057 kW against a rated 2,050 kW, six times what a 10-minute energy total
+    # would reach; the record separately publishes "Energy Export (kWh)" for energy.
+    # The mapping file's unit for signal 5 is wrong. Evidence, per turbine-year:
+    # reports/data/resolved_kelmarsh_20260909.md.
     intended_use: "training / validation site"
     tiers:
       1:
@@ -69,7 +82,12 @@ sources:
       rated_kw: 2050
       period: "2016-2024"
       note: "turbine WT03 is absent from the record"
-    timezone: "UTC" # CONFIRMED 2026-09-09 from the file preamble ("# Time zone: UTC")
+    # CONFIRMED 2026-09-09 from the file preamble ("# Time zone: UTC"), which is the
+    # same claim Kelmarsh makes and which measurement upheld there. Not yet measured
+    # here. TODO(m1): run `faultline inspect resolve --source penmanshiel` once tier 1
+    # is complete -- a shared publisher is a reason to expect the same answer, not
+    # evidence of it.
+    timezone: "UTC"
     intended_use: "training / validation site"
     tiers:
       1:

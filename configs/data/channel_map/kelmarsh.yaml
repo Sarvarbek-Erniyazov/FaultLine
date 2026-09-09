@@ -105,12 +105,23 @@ observed_but_unmapped:
 #    append costs nothing and an insert would move every later id. Declared
 #    "extended", not "core": it is confirmed present at Kelmarsh only.
 #
-# 2. Unit discrepancy in the provider metadata. The SCADA header says "Power (kW)"
-#    while Kelmarsh_WT_dataSignalMapping.csv records the unit of signal 5 as "kWh".
-#    A 10-minute average of active power is kW, so the mapping file is most likely
-#    wrong -- but "most likely" is not verified.
-#    TODO(m1): confirm against the power curve before trusting the magnitudes, since
-#    the plausibility bound for power_kw depends on which one is right.
+# 2. RESOLVED 2026-09-09. The SCADA header says "Power (kW)" while
+#    Kelmarsh_WT_dataSignalMapping.csv records the unit of signal 5 as "kWh". The
+#    header is right and the mapping file is wrong, measured rather than assumed:
+#    the median per-turbine-year p99.5 over all 54 staged turbine-years is 2,057,
+#    against a rated 2,050 kW and six times the 341.7 kWh a 10-minute energy total
+#    could reach. The record also publishes "Energy Export (kWh)" separately
+#    ("Entire active energy generation"), so energy is not what this column is for.
+#    Evidence: reports/data/resolved_kelmarsh_20260909.md.
 #
 # 3. Rated power is 2050 kW and the model is a Senvion MM92, confirmed per turbine in
 #    Kelmarsh_WT_static.csv. This matches the bound configured in telemetry_v0.yaml.
+#
+# 4. FOUND 2026-09-09 while measuring the above, and unrelated to the channel map.
+#    The 2023 and 2024 exports repeat every timestamp roughly 41 times: 2,174,760
+#    rows over the 52,560 distinct 10-minute labels of the year, with the surplus
+#    rows carrying the same labels again. The 2016-2022 exports do not. This is a
+#    real property of the archives, not a parsing artefact.
+#    TODO(m1): decide how ingest collapses those rows and prove the choice loses no
+#    values. clean.duplicate_timestamps: "mean" would happen to survive it, but the
+#    memory cost of reading 2.2M rows per turbine-year would not.

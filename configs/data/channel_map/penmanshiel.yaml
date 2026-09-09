@@ -28,3 +28,8 @@ channels:
   gearbox_oil_temp_c: null # TODO(m1)
   generator_bearing_temp_c: null # TODO(m1)
   generator_winding_temp_c: null # TODO(m1)
+  # Appended to the canonical list on 2026-09-09 after the Kelmarsh signal-mapping
+  # cross-check found a published main-shaft bearing temperature. Declared here so
+  # that this map states 14 open questions rather than 13, and so the card counts
+  # against the canonical list rather than against a stale copy of it.
+  main_bearing_temp_c: null # TODO(m1)

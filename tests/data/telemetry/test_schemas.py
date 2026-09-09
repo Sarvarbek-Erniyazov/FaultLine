@@ -59,6 +59,18 @@ def test_the_shipped_config_lists_exactly_the_canonical_channels(repo_root: Path
     assert tuple(payload["telemetry"]["channels"]) == CHANNEL_NAMES
 
 
+def test_every_channel_map_declares_the_whole_canonical_list(repo_root: Path) -> None:
+    # A map that declares fewer channels than the canonical list does not read as
+    # incomplete -- it reads as complete, because the card counts resolved entries
+    # against declared ones. Adding a canonical channel has to reach every map.
+    maps = sorted((repo_root / "configs" / "data" / "channel_map").glob("*.yaml"))
+    assert maps, "no channel maps found"
+    for path in maps:
+        payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+        declared = tuple(payload.get("channels") or {})
+        assert declared == CHANNEL_NAMES, f"{path.name} declares {declared}"
+
+
 def test_every_channel_has_a_plausibility_bound(repo_root: Path) -> None:
     payload = yaml.safe_load(
         (repo_root / "configs" / "data" / "telemetry_v0.yaml").read_text(encoding="utf-8")

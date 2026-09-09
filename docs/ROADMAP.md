@@ -32,7 +32,7 @@ No model code beyond typed stubs. No training. No tokenizer fitted on real data.
       `VocabLayout`, `QuantileBinTokenizer` and `JointVocab` are implemented and unit
       tested on synthetic data.
 - [ ] **Tier-1 files for all four sources downloaded and md5-verified.** *Partial:
-      Kelmarsh (11/11, 3.69 GB) and Penmanshiel (8/16, 1.65 GB) are staged and
+      Kelmarsh (11/11, 3.69 GB) and Penmanshiel (8/16, 1.92 GB) are staged and
       verified; Hill of Towie and CARE have not started. Zenodo was unavailable for
       long stretches of the staging window — two separate outages returning HTTP 504
       and then connection timeouts, including on its own front page. The downloader is

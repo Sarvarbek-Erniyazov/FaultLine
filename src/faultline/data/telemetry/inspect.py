@@ -8,15 +8,18 @@ either confirmed or overturned with evidence rather than belief.
 Nothing is extracted to disk. Archives are listed and sampled in place, headers are
 sniffed from the first lines of one member per class, and every status, alarm or
 event table found is profiled: row count, unique codes, unique messages, the share
-of rows carrying non-empty free text, and the twenty most frequent messages.
+of rows carrying non-empty free text, and the twenty most frequent messages. Where
+the provider documents its event codes in a separate file, that file is read too,
+and the report measures how much of the event log it actually describes.
 
 The output is one Markdown report per source under ``reports/data/``, which is
-tracked, so the verdict is auditable without re-downloading 20 GB.
+tracked, so the verdict is auditable without re-downloading the archives.
 """
 
 from __future__ import annotations
 
 from collections import Counter
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -64,10 +67,44 @@ MAX_PARSE_BYTES = 200 * 1024 * 1024
 #: Row cap when profiling one event table.
 MAX_PARSE_ROWS = 500_000
 
+#: Cap on the number of event members parsed per source. Every member is still
+#: listed, and every event member left unparsed is reported with the reason, so the
+#: cap bounds the work without hiding what it skipped.
+MAX_EVENT_MEMBERS = 200
+
+#: Per-table "top messages" sections rendered in a report. The per-table summary row
+#: covers every parsed table; this only keeps a 98-table report readable.
+MAX_TOP_SECTIONS = 12
+
+#: Suffixes whose leading bytes are worth printing as a header sample. A workbook or
+#: a nested archive decodes to noise.
+TEXT_SUFFIXES: tuple[str, ...] = (".csv", ".txt", ".md", ".json")
+
 #: Heuristic thresholds for the free-text verdict. These classify, they do not
 #: decide: the raw counts are printed next to the verdict in every report.
 TEMPLATE_MAX_UNIQUE = 500
 TEMPLATE_MAX_MEAN_CHARS = 60
+
+
+@dataclass
+class EventEvidence:
+    """What the inspection read from a source's event members, and what it did not.
+
+    Attributes:
+        profiles: One profile per parsed event table.
+        candidates: Event members discovered, parsed or not.
+        skipped: Event members that were not parsed, each with the reason.
+        cap: The member cap that was in force.
+        code_file: The provider file documenting event codes, when the adapter names one.
+        code_table: That file as published, or ``None`` when it is not staged.
+    """
+
+    profiles: list[dict[str, Any]]
+    candidates: int
+    skipped: list[tuple[RawMember, str]]
+    cap: int
+    code_file: str | None = None
+    code_table: pd.DataFrame | None = None
 
 
 def sniff_lines(member: RawMember, n_lines: int = 30, max_bytes: int = 64_000) -> list[str]:
@@ -79,7 +116,7 @@ def sniff_lines(member: RawMember, n_lines: int = 30, max_bytes: int = 64_000) -
         max_bytes: Maximum number of bytes to read.
 
     Returns:
-        Decoded lines, with undecodable bytes replaced.
+        Decoded lines with trailing whitespace removed and undecodable bytes replaced.
     """
     try:
         with open_member(member) as handle:
@@ -88,7 +125,30 @@ def sniff_lines(member: RawMember, n_lines: int = 30, max_bytes: int = 64_000) -
         logger.warning("cannot sniff %s: %s", member.label, exc)
         return []
     text = blob.decode("utf-8", errors="replace")
-    return text.splitlines()[:n_lines]
+    return [line.rstrip() for line in text.splitlines()[:n_lines]]
+
+
+def sample_headers(members: list[RawMember], n_lines: int = 30) -> dict[str, list[str]]:
+    """Sample the leading lines of the first text member of each kind.
+
+    Args:
+        members: Discovered members.
+        n_lines: Lines to keep per sample.
+
+    Returns:
+        Header samples keyed by member label.
+    """
+    sniffs: dict[str, list[str]] = {}
+    seen_kinds: set[str] = set()
+    for member in members:
+        name = (member.name or member.archive.name).lower()
+        if member.kind in seen_kinds or member.size == 0 or not name.endswith(TEXT_SUFFIXES):
+            continue
+        lines = sniff_lines(member, n_lines=n_lines)
+        if lines:
+            sniffs[member.label] = lines
+            seen_kinds.add(member.kind)
+    return sniffs
 
 
 def read_member_table(member: RawMember, nrows: int | None = MAX_PARSE_ROWS) -> pd.DataFrame | None:
@@ -129,6 +189,27 @@ def pick_column(columns: list[str], hints: tuple[str, ...]) -> str | None:
     return None
 
 
+def normalise_code(value: object) -> str:
+    """Render an event code the same way whichever file it was read from.
+
+    pandas reads an integer column as float as soon as it holds a gap, so the same
+    code arrives as ``127`` from one file and ``127.0`` from another. Both must count
+    as one code, and both must match the provider's description of code 127.
+
+    Args:
+        value: A code as parsed.
+
+    Returns:
+        The code as text, with integral numbers rendered without a decimal part.
+    """
+    text = str(value).strip()
+    try:
+        number = float(text)
+    except ValueError:
+        return text
+    return str(int(number)) if number.is_integer() else text
+
+
 def profile_event_table(member: RawMember, frame: pd.DataFrame) -> dict[str, Any]:
     """Profile one candidate event table.
 
@@ -138,7 +219,8 @@ def profile_event_table(member: RawMember, frame: pd.DataFrame) -> dict[str, Any
 
     Returns:
         A mapping of profile statistics, including the columns chosen as the
-        message and code columns and the twenty most frequent messages.
+        message and code columns, the twenty most frequent messages, and the full
+        count of every code so that codes can be pooled across tables.
     """
     columns = [str(name) for name in frame.columns]
     message_column = pick_column(columns, MESSAGE_HINTS)
@@ -156,9 +238,13 @@ def profile_event_table(member: RawMember, frame: pd.DataFrame) -> dict[str, Any
         "free_text_fraction": 0.0,
         "mean_message_chars": 0.0,
         "top_messages": {},
+        "code_counts": Counter(),
     }
     if code_column is not None:
         profile["unique_codes"] = int(frame[code_column].nunique(dropna=True))
+        profile["code_counts"] = Counter(
+            normalise_code(value) for value in frame[code_column].dropna().tolist()
+        )
     if message_column is None:
         return profile
 
@@ -169,6 +255,114 @@ def profile_event_table(member: RawMember, frame: pd.DataFrame) -> dict[str, Any
     profile["mean_message_chars"] = float(non_empty.str.len().mean()) if len(non_empty) else 0.0
     profile["top_messages"] = dict(Counter(non_empty.tolist()).most_common(20))
     return profile
+
+
+def pooled_codes(profiles: list[dict[str, Any]]) -> Counter[str]:
+    """Pool the event codes of every parsed table.
+
+    Args:
+        profiles: Profiles produced by :func:`profile_event_table`.
+
+    Returns:
+        Row counts per code across all tables.
+    """
+    codes: Counter[str] = Counter()
+    for profile in profiles:
+        codes.update(profile.get("code_counts", {}))
+    return codes
+
+
+def read_code_table(adapter: BaseAdapter, members: list[RawMember]) -> pd.DataFrame | None:
+    """Read the provider's own description of its event codes, if it ships one.
+
+    Args:
+        adapter: Source adapter; its ``CODE_DESCRIPTIONS`` names the file.
+        members: Discovered members.
+
+    Returns:
+        The file as published, or ``None`` when the adapter names no such file or it
+        is not staged.
+    """
+    wanted = adapter.CODE_DESCRIPTIONS
+    if wanted is None:
+        return None
+    for member in members:
+        name = (member.name or member.archive.name).rsplit("/", 1)[-1]
+        if name.lower() == wanted.lower():
+            return read_csv_member(member)
+    logger.warning("%s: code description file %s is not staged", adapter.source_id, wanted)
+    return None
+
+
+def code_description_map(frame: pd.DataFrame | None) -> dict[str, str]:
+    """Map each documented code to its description.
+
+    Args:
+        frame: A provider code description table, or ``None``.
+
+    Returns:
+        Descriptions keyed by normalised code; empty when the table is absent or has
+        no recognisable code and description columns.
+    """
+    if frame is None:
+        return {}
+    columns = [str(name) for name in frame.columns]
+    code_column = pick_column(columns, ("code",))
+    text_column = pick_column(columns, ("description", "text", "message"))
+    if code_column is None or text_column is None:
+        return {}
+    rows = frame[[code_column, text_column]].dropna()
+    return {
+        normalise_code(code): str(text).strip()
+        for code, text in rows.itertuples(index=False, name=None)
+    }
+
+
+def collect_event_evidence(
+    adapter: BaseAdapter, members: list[RawMember], max_event_members: int = MAX_EVENT_MEMBERS
+) -> EventEvidence:
+    """Parse every event member within the caps, and record the ones left unparsed.
+
+    Args:
+        adapter: Source adapter.
+        members: Discovered members.
+        max_event_members: Cap on the number of event members parsed.
+
+    Returns:
+        The profiles, the members skipped with their reasons, and the provider's code
+        description table when the adapter names one.
+    """
+    candidates = [member for member in members if member.kind in EVENT_KINDS]
+    profiles: list[dict[str, Any]] = []
+    skipped: list[tuple[RawMember, str]] = []
+    for index, member in enumerate(candidates):
+        if index >= max_event_members:
+            skipped.append((member, f"beyond the cap of {max_event_members} members"))
+            continue
+        if member.size > MAX_PARSE_BYTES:
+            skipped.append(
+                (
+                    member,
+                    f"{member.size / 1e6:.1f} MB exceeds the parse cap of "
+                    f"{MAX_PARSE_BYTES / 1e6:.1f} MB",
+                )
+            )
+            continue
+        frame = read_member_table(member)
+        if frame is None or frame.empty:
+            skipped.append(
+                (member, "not a parseable CSV table" if frame is None else "parsed as empty")
+            )
+            continue
+        profiles.append(profile_event_table(member, frame))
+    return EventEvidence(
+        profiles=profiles,
+        candidates=len(candidates),
+        skipped=skipped,
+        cap=max_event_members,
+        code_file=adapter.CODE_DESCRIPTIONS,
+        code_table=read_code_table(adapter, members),
+    )
 
 
 def free_text_verdict(
@@ -241,15 +435,112 @@ def inventory_members(adapter: BaseAdapter, raw_dir: Path) -> list[RawMember]:
     return members
 
 
+def codes_section(evidence: EventEvidence, codes: Counter[str]) -> str:
+    """Render the event codes pooled over every parsed table.
+
+    Args:
+        evidence: Event evidence for the source.
+        codes: Pooled code counts.
+
+    Returns:
+        A Markdown section, or an empty string when no table carries a code column.
+    """
+    if not codes:
+        return ""
+    described = code_description_map(evidence.code_table)
+    total = sum(codes.values())
+    with_codes = sum(1 for profile in evidence.profiles if profile["code_column"])
+    summary = kv_table(
+        {
+            "tables with a code column": f"{with_codes} of {len(evidence.profiles)}",
+            "rows carrying a code": total,
+            "distinct codes": len(codes),
+        }
+    )
+    headers = ["code", "rows", "share"]
+    rows: list[tuple[object, ...]] = []
+    for code, count in codes.most_common(20):
+        row: tuple[object, ...] = (code, count, f"{count / total * 100:.2f}%")
+        if evidence.code_file is not None:
+            row = (*row, truncate(described.get(code, "-"), 60))
+        rows.append(row)
+    if evidence.code_file is not None:
+        headers.append(f"description in {evidence.code_file}")
+    return section(
+        "Event codes (all parsed tables pooled)",
+        summary + "\n**Top 20 codes**\n\n" + table(headers, rows),
+    )
+
+
+def code_descriptions_section(evidence: EventEvidence, codes: Counter[str]) -> str:
+    """Render the provider's code description file and how much of the log it covers.
+
+    Args:
+        evidence: Event evidence for the source.
+        codes: Pooled code counts.
+
+    Returns:
+        A Markdown section, or an empty string when the adapter names no such file.
+    """
+    if evidence.code_file is None:
+        return ""
+    if evidence.code_table is None:
+        return section(
+            "Provider code descriptions",
+            f"_`{evidence.code_file}` is named by the adapter but is not staged._",
+        )
+    frame = evidence.code_table
+    described = code_description_map(frame)
+    total = sum(codes.values())
+    covered = sum(count for code, count in codes.items() if code in described)
+    lengths = [len(text) for text in described.values()]
+    summary = kv_table(
+        {
+            "file": evidence.code_file,
+            "rows in the file": len(frame),
+            "codes described": len(described),
+            "distinct descriptions": len(set(described.values())),
+            "mean description length (chars)": round(sum(lengths) / len(lengths), 1)
+            if lengths
+            else 0.0,
+            "parsed event rows carrying a described code": (
+                f"{covered:,} of {total:,} ({covered / total * 100:.1f}%)" if total else "n/a"
+            ),
+            "distinct codes in the parsed tables that it describes": (
+                f"{len(set(described) & set(codes))} of {len(codes)}"
+            ),
+        }
+    )
+    columns = [str(name) for name in frame.columns]
+    code_column = pick_column(columns, ("code",))
+    listing = table(
+        [*columns, "rows in parsed tables"],
+        [
+            (
+                *(truncate(str(value), 60) for value in record),
+                codes.get(normalise_code(record[columns.index(code_column)]), 0)
+                if code_column is not None
+                else "-",
+            )
+            for record in frame.itertuples(index=False, name=None)
+        ],
+    )
+    return section(
+        "Provider code descriptions",
+        summary + "\n**The file as published**\n\n" + listing,
+    )
+
+
 def build_report(
     source: str,
     spec: SourceSpec,
     raw_dir: Path,
     members: list[RawMember],
-    profiles: list[dict[str, Any]],
+    evidence: EventEvidence,
     sniffs: dict[str, list[str]],
     max_members: int,
     repo_root: Path,
+    classification: str,
 ) -> str:
     """Render the raw inventory report.
 
@@ -258,17 +549,20 @@ def build_report(
         spec: Source specification from the download config.
         raw_dir: Directory the archives were read from.
         members: Discovered members.
-        profiles: Event table profiles.
+        evidence: What was read from the event members.
         sniffs: Header samples, keyed by member label.
         max_members: Cap applied to the per-member listing.
         repo_root: Repository root, used to record the commit.
+        classification: Where the adapter's member classification comes from.
 
     Returns:
         A Markdown document.
     """
+    profiles = evidence.profiles
     verdict, rationale = free_text_verdict(profiles, members_staged=len(members))
     archives = sorted({member.archive for member in members})
     by_kind: Counter[str] = Counter(member.kind for member in members)
+    codes = pooled_codes(profiles)
 
     parts = [
         f"# Raw inventory: {source}\n\n",
@@ -282,6 +576,11 @@ def build_report(
                 "staged directory": str(raw_dir),
                 "files staged": len(archives),
                 "members discovered": len(members),
+                "member classification": classification,
+                "event members parsed": (
+                    f"{len(profiles)} of {evidence.candidates} (caps: {evidence.cap} members, "
+                    f"{MAX_PARSE_BYTES / 1e6:.1f} MB and {MAX_PARSE_ROWS:,} rows per member)"
+                ),
                 "generated (UTC)": datetime.now(tz=UTC).isoformat(timespec="seconds"),
                 "git_sha": git_sha(repo_root),
             }
@@ -296,6 +595,9 @@ def build_report(
             "open-ended language or a controlled vocabulary.",
         )
     )
+
+    parts.append(codes_section(evidence, codes))
+    parts.append(code_descriptions_section(evidence, codes))
 
     parts.append(
         section(
@@ -367,15 +669,20 @@ def build_report(
                 ),
             )
         )
-        for profile in profiles:
-            if profile["top_messages"]:
-                parts.append(
-                    section(
-                        f"Top messages: {truncate(str(profile['member']), 60)}",
-                        top_values_table(profile["top_messages"], n=20, label="message"),
-                        level=3,
-                    )
+        with_top = [profile for profile in profiles if profile["top_messages"]]
+        for profile in with_top[:MAX_TOP_SECTIONS]:
+            parts.append(
+                section(
+                    f"Top messages: {truncate(str(profile['member']), 60)}",
+                    top_values_table(profile["top_messages"], n=20, label="message"),
+                    level=3,
                 )
+            )
+        if len(with_top) > MAX_TOP_SECTIONS:
+            parts.append(
+                f"\n_Per-table top messages are shown for the first {MAX_TOP_SECTIONS} of "
+                f"{len(with_top)} tables with messages; the table above covers all of them._\n"
+            )
     else:
         parts.append(
             section(
@@ -383,6 +690,20 @@ def build_report(
                 "_None. Either this record publishes no status, alarm or event table, or the "
                 "adapter classification patterns did not recognise it. TODO(m1): confirm "
                 "against the provider README before concluding the record has no events._",
+            )
+        )
+
+    if evidence.skipped:
+        parts.append(
+            section(
+                "Event members not parsed",
+                table(
+                    ["member", "uncompressed (MB)", "reason"],
+                    [
+                        (truncate(member.label, 80), round(member.size / 1e6, 1), reason)
+                        for member, reason in evidence.skipped
+                    ],
+                ),
             )
         )
 
@@ -422,7 +743,7 @@ def inspect_source(
     spec: SourceSpec,
     paths: ProjectPaths,
     max_members: int = 5000,
-    max_event_members: int = 12,
+    max_event_members: int = MAX_EVENT_MEMBERS,
 ) -> Path:
     """Inventory one source's staged archives and write its report.
 
@@ -431,7 +752,7 @@ def inspect_source(
         spec: Source specification from the download config.
         paths: Resolved project paths.
         max_members: Cap on the member listing in the report.
-        max_event_members: Cap on the number of event tables profiled.
+        max_event_members: Cap on the number of event tables parsed.
 
     Returns:
         The path of the written report.
@@ -439,33 +760,18 @@ def inspect_source(
     adapter = get_adapter(source, paths.configs_dir)
     raw_dir = paths.source_dir("raw", "telemetry", source)
     members = inventory_members(adapter, raw_dir)
-
-    sniffs: dict[str, list[str]] = {}
-    seen_kinds: set[str] = set()
-    for member in members:
-        if member.kind in seen_kinds or member.size == 0:
-            continue
-        lines = sniff_lines(member)
-        if lines:
-            sniffs[member.label] = lines
-            seen_kinds.add(member.kind)
-
-    profiles: list[dict[str, Any]] = []
-    for member in [m for m in members if m.kind in EVENT_KINDS][:max_event_members]:
-        frame = read_member_table(member)
-        if frame is None or frame.empty:
-            continue
-        profiles.append(profile_event_table(member, frame))
+    evidence = collect_event_evidence(adapter, members, max_event_members)
 
     report = build_report(
         source=source,
         spec=spec,
         raw_dir=raw_dir,
         members=members,
-        profiles=profiles,
-        sniffs=sniffs,
+        evidence=evidence,
+        sniffs=sample_headers(members),
         max_members=max_members,
         repo_root=paths.repo_root,
+        classification=adapter.CLASSIFICATION_SOURCE,
     )
     stamp = datetime.now(tz=UTC).strftime("%Y%m%d")
     destination = paths.data_reports_dir / f"raw_inventory_{source}_{stamp}.md"

@@ -16,11 +16,19 @@ from pathlib import Path
 import pandas as pd
 
 from faultline.data.telemetry.adapters.base import RawMember, sniff_csv_layout
+from faultline.data.telemetry.adapters.hill_of_towie import HillOfTowieAdapter
+from faultline.data.telemetry.adapters.kelmarsh import KelmarshAdapter
 from faultline.data.telemetry.inspect import (
+    code_description_map,
+    collect_event_evidence,
     free_text_verdict,
+    normalise_code,
     pick_column,
+    pooled_codes,
     profile_event_table,
+    read_code_table,
     read_member_table,
+    sample_headers,
 )
 
 # The turbine-data layout: a commented preamble whose LAST line is the header.
@@ -187,3 +195,93 @@ def test_empty_dataframe_profile(tmp_path: Path) -> None:
     profile = profile_event_table(member, pd.DataFrame({"Message": []}))
     assert profile["rows"] == 0
     assert profile["free_text_fraction"] == 0.0
+
+
+# The Hill of Towie alarm log layout: codes only, one file per month for all turbines.
+ALARM_LOG = (
+    b"TimeOn,TimeOff,StationNr,Alarmcode\n"
+    b"2019-01-01 00:04:48,,2304525,127\n"
+    b"2019-01-03 13:59:13,,2304519,25\n"
+    b"2019-01-03 13:59:56,,2304519,20\n"
+    b"2019-01-03 14:01:06,,2304519,25\n"
+)
+
+ALARM_DESCRIPTIONS = (
+    b"Alarm Code,Description,Stopping\n"
+    b"20,Large generator Cut-in,0\n"
+    b"25,Fast cut-out of generator,0\n"
+    b'8210,"Stopped, due to icing",1\n'
+)
+
+
+def test_normalise_code_treats_float_and_integer_renderings_as_one_code() -> None:
+    assert normalise_code(127) == "127"
+    assert normalise_code(127.0) == "127"
+    assert normalise_code(" 127 ") == "127"
+    assert normalise_code("A12") == "A12"
+    assert normalise_code(2.5) == "2.5"
+
+
+def test_profile_counts_every_code_for_pooling(tmp_path: Path) -> None:
+    member = member_for(tmp_path, "tblAlarmLog_2019_01.csv", ALARM_LOG)
+    frame = read_member_table(member)
+    assert frame is not None
+    profile = profile_event_table(member, frame)
+    assert profile["code_column"] == "Alarmcode"
+    assert profile["message_column"] is None
+    assert profile["code_counts"] == {"127": 1, "25": 2, "20": 1}
+
+
+def test_codes_pool_across_tables(tmp_path: Path) -> None:
+    first = member_for(tmp_path, "tblAlarmLog_2019_01.csv", ALARM_LOG)
+    second = member_for(tmp_path, "tblAlarmLog_2019_02.csv", ALARM_LOG)
+    profiles = []
+    for member in (first, second):
+        frame = read_member_table(member)
+        assert frame is not None
+        profiles.append(profile_event_table(member, frame))
+    assert pooled_codes(profiles) == {"127": 2, "25": 4, "20": 2}
+
+
+def test_provider_code_descriptions_are_read_and_keyed_by_code(tmp_path: Path) -> None:
+    (tmp_path / "Hill_of_Towie_alarms_description.csv").write_bytes(ALARM_DESCRIPTIONS)
+    adapter = HillOfTowieAdapter()
+    frame = read_code_table(adapter, adapter.discover(tmp_path))
+    assert frame is not None
+    assert len(frame) == 3
+    # the quoted description keeps its internal comma
+    assert code_description_map(frame) == {
+        "20": "Large generator Cut-in",
+        "25": "Fast cut-out of generator",
+        "8210": "Stopped, due to icing",
+    }
+
+
+def test_missing_code_description_file_is_none_not_an_error(tmp_path: Path) -> None:
+    assert read_code_table(HillOfTowieAdapter(), []) is None
+    assert read_code_table(KelmarshAdapter(), []) is None  # names no such file
+    assert code_description_map(None) == {}
+
+
+def test_event_evidence_reports_members_beyond_the_cap(tmp_path: Path) -> None:
+    archive = tmp_path / "2019.zip"
+    with zipfile.ZipFile(archive, "w") as handle:
+        for month in ("01", "02", "03"):
+            handle.writestr(f"tblAlarmLog_2019_{month}.csv", ALARM_LOG)
+    adapter = HillOfTowieAdapter()
+    evidence = collect_event_evidence(adapter, adapter.discover(tmp_path), max_event_members=2)
+    assert evidence.candidates == 3
+    assert len(evidence.profiles) == 2
+    assert len(evidence.skipped) == 1
+    member, reason = evidence.skipped[0]
+    assert member.name == "tblAlarmLog_2019_03.csv"
+    assert "cap of 2" in reason
+
+
+def test_header_samples_skip_binary_members(tmp_path: Path) -> None:
+    (tmp_path / "Penmanshiel_WT_dataSignalMapping.xlsx").write_bytes(b"PK\x03\x04\x00binary\t\n")
+    (tmp_path / "Penmanshiel_WT_static.csv").write_bytes(b"Title,Rated power  \n1,2050\n")
+    samples = sample_headers(KelmarshAdapter().discover(tmp_path))
+    assert list(samples) == ["Penmanshiel_WT_static.csv"]
+    # trailing whitespace is stripped so a generated report passes the repository hooks
+    assert samples["Penmanshiel_WT_static.csv"][0] == "Title,Rated power"

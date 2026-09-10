@@ -9,6 +9,7 @@ import pytest
 
 from faultline.data.telemetry.adapters import ADAPTERS, get_adapter
 from faultline.data.telemetry.adapters.base import RawMember, load_channel_map, open_member
+from faultline.data.telemetry.adapters.hill_of_towie import HillOfTowieAdapter
 from faultline.data.telemetry.adapters.kelmarsh import KelmarshAdapter
 
 
@@ -65,6 +66,37 @@ def test_unknown_source_is_rejected(repo_root: Path) -> None:
 )
 def test_classification(name: str, kind: str) -> None:
     assert KelmarshAdapter().classify(name) == kind
+
+
+@pytest.mark.parametrize(
+    ("name", "kind"),
+    [
+        ("tblAlarmLog_2019_01.csv", "alarm_log"),
+        ("tblSCTurbine_2019_01.csv", "scada_10min"),
+        # The turbine table that carries active power; a generic "grid" rule sent it
+        # to "other".
+        ("tblSCTurGrid_2019_01.csv", "scada_10min"),
+        ("tblSCTurFlag_2019_01.csv", "scada_10min"),
+        ("tblSCTurTemp_2023_12.csv", "scada_10min"),
+        ("tblGrid_2019_01.csv", "other"),
+        ("tblGridScientific_2019_01.csv", "other"),
+        ("tblDailySummary_2019_01.csv", "other"),
+        ("ShutdownDuration.csv", "status_events"),
+        ("Hill_of_Towie_alarms_description.csv", "metadata"),
+        ("Hill_of_Towie_tables_description.csv", "metadata"),
+        ("Hill_of_Towie_turbine_fields_description.csv", "metadata"),
+    ],
+)
+def test_hill_of_towie_classification_follows_the_provider_table_names(
+    name: str, kind: str
+) -> None:
+    assert HillOfTowieAdapter().classify(name) == kind
+
+
+def test_classification_source_is_stated_for_every_adapter() -> None:
+    for adapter_class in ADAPTERS.values():
+        assert adapter_class.CLASSIFICATION_SOURCE
+    assert "tables_description" in HillOfTowieAdapter.CLASSIFICATION_SOURCE
 
 
 def test_discover_lists_archive_members_without_extracting(tmp_path: Path) -> None:

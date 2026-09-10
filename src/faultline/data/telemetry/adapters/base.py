@@ -196,6 +196,15 @@ class BaseAdapter:
         ("scada", "scada_10min"),
     )
 
+    #: Where :attr:`PATTERNS` come from. Every inventory report prints it, so a reader
+    #: can tell a classification taken from the provider's own documentation from one
+    #: inferred from file names.
+    CLASSIFICATION_SOURCE: ClassVar[str] = "file-name substring patterns in the adapter"
+
+    #: A loose file in which the provider documents its event codes, if it ships one.
+    #: The inventory reads it and measures how much of the event log it describes.
+    CODE_DESCRIPTIONS: ClassVar[str | None] = None
+
     @classmethod
     def from_configs(cls, configs_dir: Path) -> BaseAdapter:
         """Build an adapter with its channel map loaded from the configs directory.

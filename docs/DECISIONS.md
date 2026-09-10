@@ -13,7 +13,8 @@ research record.
 
 ## ADR-0001 Domain and design choice
 
-**Status:** Accepted · **Date:** 2026-09-09
+**Status:** Accepted, qualified on 2026-09-10 by the inventory evidence below ·
+**Date:** 2026-09-09
 
 **Decision.** Build a joint telemetry–text sequence model with risk-calibrated
 abstention for wind-turbine event risk: one decoder-only transformer pretrained from
@@ -53,6 +54,73 @@ this record is superseded rather than quietly ignored.
 genuinely open-ended operator prose in volume; or an M2 finding that no adequately
 licensed narrative corpus is reachable, in which case the text side is re-scoped and
 the change is recorded here.
+
+### Evidence, 2026-09-10 — all four sources inspected
+
+Every tier-1 file is staged and md5-verified (37 files, 17.44 GB), and
+`faultline inspect telemetry` has profiled every status, alarm and event table in all
+four records, pooling the text across tables. The verdicts, and the measurements they
+follow from (`reports/data/raw_inventory_<source>_20260910.md`):
+
+| source | event tables | rows | rows with text | distinct strings | mean length | distinct strings occurring once | verdict |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Kelmarsh | 54 status tables | 504,180 | 504,180 | 217 | 14.1 chars, 2.3 words | 14.7% | `VERIFIED no` — a code book |
+| Penmanshiel | 98 status tables | 839,303 | 839,303 | 231 | 13.9 chars, 2.4 words | 11.3% | `VERIFIED no` — a code book |
+| Hill of Towie | 24 monthly alarm logs | 1,004,341 | 0 | none (429 distinct codes) | — | — | `VERIFIED no` — codes only |
+| CARE | 3 `event_info` files, one per farm | 95 | 45 | 35 | 55.9 chars, 8.4 words | 85.7% | `VERIFIED short written descriptions` |
+
+The verdict vocabulary gained a label so that the last row could be said at all. A
+code book and a set of short written descriptions are both small and both short; what
+separates them is recurrence — a code book's labels recur by construction, while a
+description written for one event mostly occurs once — and that is what the verdict
+now follows. The thresholds live in `src/faultline/data/telemetry/inspect.py` and every
+report prints them beside its verdict.
+
+Three things the table compresses:
+
+- **Kelmarsh.** The "at most 75 distinct strings per turbine-year" quoted in ADR-0007
+  came from the first 12 of 54 turbine-years. Over all 54 the most in any one
+  turbine-year is 81, and the record-wide code book is 217 strings. The conclusion does
+  not move.
+- **Hill of Towie.** The alarm log is `TimeOn, TimeOff, StationNr, Alarmcode` and nothing
+  else. The only text for its codes is `Hill_of_Towie_alarms_description.csv`, which
+  describes 12 codes in 23.8 characters on average. Those 12 cover 88.8% of alarm rows
+  but only 8 of the 429 codes that occur, because generator cut-in and cut-out (codes 20
+  and 25) are 88% of the log on their own. The held-out site has *less* status text
+  than the training sites, not different text.
+- **CARE.** Its event descriptions are the only operator-written text in the four
+  records: root-cause notes such as "Turbine is stopped due to a main bearing damage",
+  some carrying alarm codes or work-order tags, some partly in German (CARE, CC BY-SA
+  4.0). Farm A's twelve are short category labels, five distinct; farms B and C carry
+  the notes. In all it is 45 strings and about 2,500 characters.
+
+**What this does to the decision.**
+
+(a) **CARE's text cannot be training text, whatever it contains.** CARE is
+evaluation-only — `eval_only_sources: [care]` in `configs/data/splits_v0.yaml`, enforced
+in `assign_splits` — and it is CC BY-SA 4.0, so anything trained on it would inherit the
+share-alike question that `docs/DATA_LICENSES.md` deliberately leaves open. Its
+descriptions can serve as labels and as a check on what an event label means; they
+cannot pretrain the language-model side. **The M2 operator-narrative corpus is required
+regardless of what CARE turned out to hold.**
+
+(b) **The original conclusion is qualified, not restated.** "Public SCADA event logs
+carry template-like alarm and status messages — a controlled vocabulary of a few hundred
+fixed strings" holds for Kelmarsh and Penmanshiel. For Hill of Towie it overstates
+what is there: there is no string vocabulary, only codes. For CARE it is false: the text
+is richer than a code book, short root-cause descriptions written per event. That
+richness is real, and it is also tiny — 35 distinct strings is not a corpus — and (a)
+bars it from training in any case. So the design stands, for a narrower reason than it
+was first given: not "public SCADA text is never language", but "the only public SCADA
+text that is language is too small to train on and licensed out of training".
+
+**Consequence for ADR-0007, recorded here so it is not rediscovered later.** ADR-0007
+routes status *strings* through the text pathway and argues from the held-out site
+receiving Siemens messages. The held-out site receives codes. Unless its alarm codes
+are rendered as text through a code description — and the provider describes 12 of the
+429 that occur — the text pathway has nothing to carry there, and H3 cannot be tested
+at that site as stated. TODO(m1): decide how Hill of Towie alarm codes enter the text
+pathway, if at all, before ADR-0007 is relied on.
 
 ---
 
@@ -400,3 +468,11 @@ joint model can beat a telemetry-only model by having more parameters.
 narrative corpus is reachable, which removes the mechanism H3 depends on and
 re-opens the code book; or an M3 probe showing message representations cluster by
 site rather than by meaning.
+
+**Evidence note, 2026-09-10.** Two facts above were measured on part of the data and
+have since been measured on all of it; see the evidence section of ADR-0001. Pooled over
+all 54 Kelmarsh turbine-years, the most distinct strings in one turbine-year is 81, not
+75. And the held-out site, Hill of Towie, publishes alarm codes with no message strings
+at all, so point 1's "every status message at the held-out site becomes `<unk>`" has no
+messages to apply to until its codes are given text. The decision is not changed by
+this note; its TODO(m1) is recorded in ADR-0001.

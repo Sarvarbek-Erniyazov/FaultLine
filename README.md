@@ -146,10 +146,14 @@ evaluation, ONNX/CPU streaming demonstration. Criteria for each are in
 
 ## Limitations
 
-- **The paired text in public SCADA data is not language.** Status and alarm logs are
-  template-like codes and short fixed strings, not open-ended prose. The operator-narrative
-  corpus is what makes the text side a language model; the SCADA event logs are a label and
-  structure source. This is recorded as ADR-0001 and it is the central risk of the design.
+- **The paired text in public SCADA data is almost never language.** Measured over all four
+  records: Kelmarsh and Penmanshiel publish a code book of short recurring status strings,
+  Hill of Towie publishes alarm codes with no text at all, and CARE's only text is 35 short
+  root-cause descriptions written per event — richer than a code book, far too small to
+  train on, and evaluation-only under its share-alike licence. The operator-narrative corpus
+  is what makes the text side a language model; the SCADA event logs are a label and
+  structure source. This is ADR-0001, qualified by its 2026-09-10 evidence, and it is the
+  central risk of the design.
 - Site coverage is small (four sources, three of them UK onshore), so "under site shift"
   means a handful of held-out farms, not a population.
 - CARE is anonymised: channel names are opaque, so its channel map is unresolved at M0.

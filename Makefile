@@ -3,7 +3,7 @@
 .PHONY: install lint format typecheck test check text-smoke naming
 
 install:
-	uv pip install -e ".[dev]"
+	uv sync --extra dev
 	pre-commit install
 
 lint:

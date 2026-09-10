@@ -103,9 +103,8 @@ missingness is itself a shift signal (ADR-0006).
 ## Quickstart
 
 ```bash
-# environment (uv recommended; python -m venv works identically)
-uv venv
-uv pip install -e ".[dev]"
+# environment: uv installing exactly what uv.lock pins (docs/ENVIRONMENT.md)
+uv sync --extra dev
 pre-commit install
 
 faultline --help
@@ -134,8 +133,9 @@ Set `FAULTLINE_DATA_ROOT` (see `.env.example`) to keep the archives off the repo
 
 One RTX 4060 (8 GB VRAM), 32 GB RAM with roughly 10 GB typically free, a single researcher.
 Every design choice — vocabulary size, context length, model size, the tiered download — is
-made against that budget rather than against a cluster. Torch is deliberately not a dependency
-at M0; M1 pins the CUDA build matching the recorded driver.
+made against that budget rather than against a cluster. torch is pinned in `uv.lock` to the
+CUDA 13.2 build that matches the recorded driver (616.56, CUDA 13.4); see
+[docs/ENVIRONMENT.md](docs/ENVIRONMENT.md).
 
 ## Roadmap
 

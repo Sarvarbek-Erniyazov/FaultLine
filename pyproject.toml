@@ -34,12 +34,10 @@ dependencies = [
     "python-dotenv>=1",
     "huggingface_hub>=0.23",
     "openpyxl>=3.1",
+    # M1. The CUDA build is chosen by the index in [tool.uv.sources] below, not by this
+    # line, and uv.lock pins the exact wheel. See docs/ENVIRONMENT.md.
+    "torch>=2.14,<2.15",
 ]
-
-# NOTE (M1): torch is deliberately NOT a dependency at M0 -- no model code is trained here.
-# M1 installs the CUDA build matching the driver recorded in reports/ (RTX 4060, driver 616.56,
-# CUDA UMD 13.4), e.g. `uv pip install torch --index-url https://download.pytorch.org/whl/cu124`.
-# Pin the wheel index in that milestone's own commit, not here.
 
 [project.optional-dependencies]
 dev = [
@@ -64,6 +62,24 @@ Repository = "https://github.com/Sarvarbek-Erniyazov/FaultLine"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/faultline"]
+
+# The one supported environment is uv with the committed uv.lock (docs/ENVIRONMENT.md).
+[tool.uv]
+# The machines this project runs on. macOS is left out because the CUDA index below
+# publishes no wheel for it, and a lock that pretends otherwise does not install.
+environments = ["sys_platform == 'win32'", "sys_platform == 'linux'"]
+
+# torch comes from the PyTorch CUDA 13.2 index and from nowhere else. cu132 is the newest
+# CUDA build published for torch 2.14 and the newest the recorded driver runs: RTX 4060,
+# driver 616.56, CUDA UMD 13.4 (nvidia-smi, 2026-09-10). A driver runs any CUDA runtime
+# up to its own version, so cu132 is the build that matches it, not merely one that works.
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu132" }]
+
+[[tool.uv.index]]
+name = "pytorch-cu132"
+url = "https://download.pytorch.org/whl/cu132"
+explicit = true
 
 [tool.ruff]
 line-length = 100

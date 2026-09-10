@@ -12,14 +12,30 @@
 | members discovered | 319 |
 | member classification | provider table names, as defined in Hill_of_Towie_tables_description.csv (tblAlarmLog: 'Log of stopping and non-stopping events/alarms'); ShutdownDuration.csv is not in that file and is classified from its header |
 | event members parsed | 24 of 25 (caps: 200 members, 209.7 MB and 500,000 rows per member) |
-| generated (UTC) | 2026-09-10T09:12:58+00:00 |
-| git_sha | 9d3170cbb704dc41d0d85c67fed2106af8640e70 |
+| generated (UTC) | 2026-09-10T09:22:27+00:00 |
+| git_sha | aac5d7110773da2a7337e045b61237a5001db107 |
 
 ## Free-text verdict
 
-**VERIFIED no** - event tables were found and parsed, but none carries a non-empty message column
+**VERIFIED no** - codes only: 24 event tables and 1,004,341 rows were parsed, and not one row carries a message
 
 This is the evidence behind ADR-0001: whether the paired text in this record is open-ended language or a controlled vocabulary.
+
+Thresholds applied: more than 500 distinct strings is open-ended text; within that, a set in which at least 50% of the distinct strings occur exactly once was written per event, otherwise it is a code book; written descriptions averaging at most 200 characters are short. The measurements are pooled over every parsed event table and listed in the next section.
+
+## Text measurements (all parsed tables pooled)
+
+| field | value |
+| --- | --- |
+| event tables parsed | 24 |
+| rows | 1,004,341 |
+| rows with a non-empty message | 0 (0.0%) |
+| distinct messages | 0 |
+| mean length (characters) | 0 |
+| mean length (words) | 0 |
+| distinct messages occurring exactly once | 0.0% |
+| most distinct messages in one table | 0 |
+| longest mean length in one table (characters) | 0 |
 
 ## Event codes (all parsed tables pooled)
 

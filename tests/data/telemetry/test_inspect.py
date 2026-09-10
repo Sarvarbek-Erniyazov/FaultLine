@@ -150,36 +150,70 @@ def test_profile_of_a_status_table(tmp_path: Path) -> None:
 def test_verdict_when_nothing_is_staged() -> None:
     # Distinct from "searched and found nothing": reporting an empty data directory as
     # a finding about the record would be a false negative dressed up as evidence.
-    verdict, rationale = free_text_verdict([], members_staged=0)
+    verdict, rationale = free_text_verdict(None, members_staged=0)
     assert verdict == "UNVERIFIED"
     assert "absence of evidence" in rationale
 
 
 def test_verdict_when_archives_are_staged_but_hold_no_event_table() -> None:
-    verdict, rationale = free_text_verdict([], members_staged=42)
+    verdict, rationale = free_text_verdict(None, members_staged=42)
     assert verdict == "UNVERIFIED"
     assert "archives are staged" in rationale
 
 
-def test_verdict_when_no_message_column_exists() -> None:
-    verdict, _ = free_text_verdict([{"message_column": None, "unique_messages": 0}])
+def test_verdict_for_codes_only() -> None:
+    # The Hill of Towie alarm log: a million rows, a code on every one, no text.
+    verdict, rationale = free_text_verdict(measure_text([_text_profile(1_004_341, {})]))
+    assert verdict == "VERIFIED no"
+    assert rationale.startswith("codes only")
+
+
+def test_verdict_for_a_code_book() -> None:
+    # What the Kelmarsh status tables look like: every row carries a message, but a
+    # few dozen short labels recur thousands of times.
+    counts = {
+        "System OK": 911,
+        "Wind < start wind": 753,
+        "Brake accumulator defect": 68,
+        "Manual yaw": 33,
+        "Grid loss": 7,
+        "4-20 mA vane 2": 1,
+    }
+    verdict, rationale = free_text_verdict(measure_text([_text_profile(2_122, counts)]))
+    assert verdict == "VERIFIED no"
+    assert rationale.startswith("a code book")
+    assert "ADR-0001 holds" in rationale
+
+
+def test_long_labels_that_recur_are_still_a_code_book() -> None:
+    # Length does not decide; recurrence does. Long labels drawn from a fixed list are
+    # still a code book.
+    stem = "Converter cabinet temperature supervision error, stage " * 2
+    counts = {f"{stem}{i}": 40 for i in range(50)}
+    verdict, _ = free_text_verdict(measure_text([_text_profile(2_000, counts)]))
     assert verdict == "VERIFIED no"
 
 
-def test_verdict_for_a_controlled_vocabulary() -> None:
-    # What the real Kelmarsh status tables look like: every row carries a message, but
-    # only a few dozen distinct short strings exist. That is a code book, not language.
-    verdict, rationale = free_text_verdict(
-        [{"message_column": "Message", "unique_messages": 75, "mean_message_chars": 14.7}]
-    )
-    assert verdict == "VERIFIED no"
-    assert "template-like" in rationale
+def test_verdict_for_short_written_descriptions() -> None:
+    # What the CARE event_info files look like: a few dozen descriptions, most written
+    # once for the event they describe. Neither a code book nor a corpus.
+    counts = {"Hydraulic group": 6, "high temperature in transformer cell": 3}
+    counts |= {f"Pitch failure - defect encoder on axis {i}, rectified": 1 for i in range(30)}
+    verdict, rationale = free_text_verdict(measure_text([_text_profile(95, counts)]))
+    assert verdict == "VERIFIED short written descriptions"
+    assert "closed set of 32 strings" in rationale
+    assert "qualified rather than overturned" in rationale
+
+
+def test_long_written_descriptions_are_not_called_short() -> None:
+    counts = {("The turbine stopped. " * 15) + str(i): 1 for i in range(10)}
+    verdict, _ = free_text_verdict(measure_text([_text_profile(10, counts)]))
+    assert verdict == "VERIFIED written descriptions"
 
 
 def test_verdict_for_genuinely_open_ended_text() -> None:
-    verdict, rationale = free_text_verdict(
-        [{"message_column": "narrative", "unique_messages": 20_000, "mean_message_chars": 480.0}]
-    )
+    counts = {f"narrative number {i} about a gearbox": 1 for i in range(20_000)}
+    verdict, rationale = free_text_verdict(measure_text([_text_profile(20_000, counts)]))
     assert verdict == "VERIFIED yes"
     assert "revisit ADR-0001" in rationale
 

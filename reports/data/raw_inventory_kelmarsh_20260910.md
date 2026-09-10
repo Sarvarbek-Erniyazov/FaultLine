@@ -10,14 +10,90 @@
 | staged directory | C:\Users\sharg\Desktop\github\FaultLine\data\raw\telemetry\kelmarsh |
 | files staged | 11 |
 | members discovered | 110 |
-| generated (UTC) | 2026-09-10T08:56:56+00:00 |
-| git_sha | c6b5de4cc72ac9735301ce1f1dcdbfa84ae4ccff |
+| member classification | file-name substring patterns in the adapter |
+| event members parsed | 54 of 54 (caps: 200 members, 209.7 MB and 500,000 rows per member) |
+| generated (UTC) | 2026-09-10T09:22:22+00:00 |
+| git_sha | aac5d7110773da2a7337e045b61237a5001db107 |
 
 ## Free-text verdict
 
-**VERIFIED no** - messages are present but template-like: at most 75 distinct strings with a mean length of 14.7 characters, which is a controlled vocabulary rather than open-ended language (ADR-0001 holds)
+**VERIFIED no** - a code book: 217 distinct strings over 504,180 rows with text, mean length 14.1 characters (2.3 words), 14.7% of the distinct strings occurring exactly once; at most 81 distinct strings in any one table. A closed set of recurring labels, not open-ended language (ADR-0001 holds)
 
 This is the evidence behind ADR-0001: whether the paired text in this record is open-ended language or a controlled vocabulary.
+
+Thresholds applied: more than 500 distinct strings is open-ended text; within that, a set in which at least 50% of the distinct strings occur exactly once was written per event, otherwise it is a code book; written descriptions averaging at most 200 characters are short. The measurements are pooled over every parsed event table and listed in the next section.
+
+## Text measurements (all parsed tables pooled)
+
+| field | value |
+| --- | --- |
+| event tables parsed | 54 |
+| rows | 504,180 |
+| rows with a non-empty message | 504,180 (100.0%) |
+| distinct messages | 217 |
+| mean length (characters) | 14.1 |
+| mean length (words) | 2.3 |
+| distinct messages occurring exactly once | 14.7% |
+| most distinct messages in one table | 81 |
+| longest mean length in one table (characters) | 15.5 |
+
+**Top 20 messages** (share of rows with a message)
+
+| message | count | share |
+| --- | --- | --- |
+| Automatic start-up | 60,842 | 12.07% |
+| Run-up | 59,555 | 11.81% |
+| System OK | 58,454 | 11.59% |
+| Wind < start wind | 57,746 | 11.45% |
+| Mains connection | 54,765 | 10.86% |
+| Brake program 50 | 54,707 | 10.85% |
+| Mains run-up | 54,614 | 10.83% |
+| Mains operation | 54,583 | 10.83% |
+| Bypass limit switches | 4,830 | 0.96% |
+| Absence of wind during run-up | 4,363 | 0.87% |
+| System test 1 | 3,244 | 0.64% |
+| Brake program 52 | 3,035 | 0.60% |
+| System test 2 | 3,024 | 0.60% |
+| System test 3 | 3,003 | 0.60% |
+| Battery test | 2,607 | 0.52% |
+| Brake program 180 | 2,503 | 0.50% |
+| Brake program 60 | 2,499 | 0.50% |
+| Technical curtailment | 1,440 | 0.29% |
+| High yaw motor current | 1,274 | 0.25% |
+| Brake program 170 | 1,206 | 0.24% |
+
+## Event codes (all parsed tables pooled)
+
+| field | value |
+| --- | --- |
+| tables with a code column | 54 of 54 |
+| rows carrying a code | 504,180 |
+| distinct codes | 216 |
+
+**Top 20 codes**
+
+| code | rows | share |
+| --- | --- | --- |
+| 100130 | 60,842 | 12.07% |
+| 100180 | 59,555 | 11.81% |
+| 0 | 58,454 | 11.59% |
+| 10 | 57,746 | 11.45% |
+| 100190 | 54,765 | 10.86% |
+| 100070 | 54,707 | 10.85% |
+| 100200 | 54,614 | 10.83% |
+| 100210 | 54,583 | 10.83% |
+| 100110 | 4,830 | 0.96% |
+| 65 | 4,363 | 0.87% |
+| 100140 | 3,244 | 0.64% |
+| 100060 | 3,035 | 0.60% |
+| 100150 | 3,024 | 0.60% |
+| 100160 | 3,003 | 0.60% |
+| 710 | 2,607 | 0.52% |
+| 100030 | 2,503 | 0.50% |
+| 100050 | 2,499 | 0.50% |
+| 108 | 1,440 | 0.29% |
+| 6052 | 1,274 | 0.25% |
+| 100035 | 1,206 | 0.24% |
 
 ## Staged files
 
@@ -59,79 +135,121 @@ This is the evidence behind ADR-0001: whether the paired text in this record is 
 | Kelmarsh_SCADA_2017_3083.zip::Status_Kelmarsh_4_2017-01-01_… | 6,505 | 9 | Code | Message | 62 | 62 | 100.0% | 14 |
 | Kelmarsh_SCADA_2017_3083.zip::Status_Kelmarsh_5_2017-01-01_… | 7,696 | 9 | Code | Message | 62 | 62 | 100.0% | 14 |
 | Kelmarsh_SCADA_2017_3083.zip::Status_Kelmarsh_6_2017-01-01_… | 11,514 | 9 | Code | Message | 58 | 58 | 100.0% | 13.9 |
+| Kelmarsh_SCADA_2018_3084.zip::Status_Kelmarsh_1_2018-01-01_… | 10,674 | 9 | Code | Message | 67 | 67 | 100.0% | 14 |
+| Kelmarsh_SCADA_2018_3084.zip::Status_Kelmarsh_2_2018-01-01_… | 9,443 | 9 | Code | Message | 78 | 78 | 100.0% | 14 |
+| Kelmarsh_SCADA_2018_3084.zip::Status_Kelmarsh_3_2018-01-01_… | 12,515 | 9 | Code | Message | 71 | 71 | 100.0% | 14.5 |
+| Kelmarsh_SCADA_2018_3084.zip::Status_Kelmarsh_4_2018-01-01_… | 9,933 | 9 | Code | Message | 68 | 68 | 100.0% | 13.9 |
+| Kelmarsh_SCADA_2018_3084.zip::Status_Kelmarsh_5_2018-01-01_… | 11,444 | 9 | Code | Message | 72 | 72 | 100.0% | 13.9 |
+| Kelmarsh_SCADA_2018_3084.zip::Status_Kelmarsh_6_2018-01-01_… | 15,954 | 9 | Code | Message | 77 | 77 | 100.0% | 13.9 |
+| Kelmarsh_SCADA_2019_3085.zip::Status_Kelmarsh_1_2019-01-01_… | 7,821 | 9 | Code | Message | 63 | 63 | 100.0% | 14.1 |
+| Kelmarsh_SCADA_2019_3085.zip::Status_Kelmarsh_2_2019-01-01_… | 7,830 | 9 | Code | Message | 58 | 58 | 100.0% | 13.9 |
+| Kelmarsh_SCADA_2019_3085.zip::Status_Kelmarsh_3_2019-01-01_… | 11,902 | 9 | Code | Message | 54 | 54 | 100.0% | 13.8 |
+| Kelmarsh_SCADA_2019_3085.zip::Status_Kelmarsh_4_2019-01-01_… | 8,838 | 9 | Code | Message | 66 | 66 | 100.0% | 13.9 |
+| Kelmarsh_SCADA_2019_3085.zip::Status_Kelmarsh_5_2019-01-01_… | 9,163 | 9 | Code | Message | 56 | 56 | 100.0% | 13.8 |
+| Kelmarsh_SCADA_2019_3085.zip::Status_Kelmarsh_6_2019-01-01_… | 13,772 | 9 | Code | Message | 54 | 54 | 100.0% | 13.9 |
+| Kelmarsh_SCADA_2020_3086.zip::Status_Kelmarsh_1_2020-01-01_… | 8,737 | 9 | Code | Message | 65 | 65 | 100.0% | 14 |
+| Kelmarsh_SCADA_2020_3086.zip::Status_Kelmarsh_2_2020-01-01_… | 7,532 | 9 | Code | Message | 66 | 66 | 100.0% | 14.1 |
+| Kelmarsh_SCADA_2020_3086.zip::Status_Kelmarsh_3_2020-01-01_… | 11,192 | 9 | Code | Message | 62 | 62 | 100.0% | 13.9 |
+| Kelmarsh_SCADA_2020_3086.zip::Status_Kelmarsh_4_2020-01-01_… | 8,601 | 9 | Code | Message | 55 | 55 | 100.0% | 14 |
+| Kelmarsh_SCADA_2020_3086.zip::Status_Kelmarsh_5_2020-01-01_… | 9,400 | 9 | Code | Message | 51 | 51 | 100.0% | 13.9 |
+| Kelmarsh_SCADA_2020_3086.zip::Status_Kelmarsh_6_2020-01-01_… | 12,053 | 9 | Code | Message | 58 | 58 | 100.0% | 14.2 |
+| Kelmarsh_SCADA_2021_4456.zip::Status_Kelmarsh_1_2021-01-01_… | 9,997 | 11 | Code | Message | 72 | 72 | 100.0% | 14 |
+| Kelmarsh_SCADA_2021_4456.zip::Status_Kelmarsh_2_2021-01-01_… | 7,717 | 11 | Code | Message | 60 | 60 | 100.0% | 14.4 |
+| Kelmarsh_SCADA_2021_4456.zip::Status_Kelmarsh_3_2021-01-01_… | 12,262 | 11 | Code | Message | 62 | 62 | 100.0% | 14.3 |
+| Kelmarsh_SCADA_2021_4456.zip::Status_Kelmarsh_4_2021-01-01_… | 10,311 | 11 | Code | Message | 60 | 60 | 100.0% | 14.1 |
+| Kelmarsh_SCADA_2021_4456.zip::Status_Kelmarsh_5_2021-01-01_… | 11,008 | 11 | Code | Message | 73 | 73 | 100.0% | 14 |
+| Kelmarsh_SCADA_2021_4456.zip::Status_Kelmarsh_6_2021-01-01_… | 14,033 | 11 | Code | Message | 62 | 62 | 100.0% | 14 |
+| Kelmarsh_SCADA_2022_4457.zip::Status_Kelmarsh_1_2022-01-01_… | 11,385 | 11 | Code | Message | 79 | 79 | 100.0% | 14.1 |
+| Kelmarsh_SCADA_2022_4457.zip::Status_Kelmarsh_2_2022-01-01_… | 10,739 | 11 | Code | Message | 81 | 81 | 100.0% | 14.1 |
+| Kelmarsh_SCADA_2022_4457.zip::Status_Kelmarsh_3_2022-01-01_… | 13,714 | 11 | Code | Message | 60 | 60 | 100.0% | 13.9 |
+| Kelmarsh_SCADA_2022_4457.zip::Status_Kelmarsh_4_2022-01-01_… | 9,526 | 11 | Code | Message | 66 | 66 | 100.0% | 14 |
+| Kelmarsh_SCADA_2022_4457.zip::Status_Kelmarsh_5_2022-01-01_… | 11,197 | 11 | Code | Message | 69 | 69 | 100.0% | 14.2 |
+| Kelmarsh_SCADA_2022_4457.zip::Status_Kelmarsh_6_2022-01-01_… | 13,289 | 11 | Code | Message | 72 | 72 | 100.0% | 14.3 |
+| Kelmarsh_SCADA_2023_5961.zip::Status_Kelmarsh_1_2023-01-01_… | 7,997 | 11 | Code | Message | 64 | 64 | 100.0% | 14 |
+| Kelmarsh_SCADA_2023_5961.zip::Status_Kelmarsh_2_2023-01-01_… | 7,652 | 11 | Code | Message | 60 | 60 | 100.0% | 14.3 |
+| Kelmarsh_SCADA_2023_5961.zip::Status_Kelmarsh_3_2023-01-01_… | 10,556 | 11 | Code | Message | 54 | 54 | 100.0% | 13.9 |
+| Kelmarsh_SCADA_2023_5961.zip::Status_Kelmarsh_4_2023-01-01_… | 8,970 | 11 | Code | Message | 79 | 79 | 100.0% | 15.5 |
+| Kelmarsh_SCADA_2023_5961.zip::Status_Kelmarsh_5_2023-01-01_… | 10,705 | 11 | Code | Message | 73 | 73 | 100.0% | 14.2 |
+| Kelmarsh_SCADA_2023_5961.zip::Status_Kelmarsh_6_2023-01-01_… | 12,143 | 11 | Code | Message | 61 | 61 | 100.0% | 14.2 |
+| Kelmarsh_SCADA_2024_5962.zip::Status_Kelmarsh_1_2024-01-01_… | 9,437 | 11 | Code | Message | 64 | 64 | 100.0% | 14.3 |
+| Kelmarsh_SCADA_2024_5962.zip::Status_Kelmarsh_2_2024-01-01_… | 8,748 | 11 | Code | Message | 55 | 55 | 100.0% | 14.2 |
+| Kelmarsh_SCADA_2024_5962.zip::Status_Kelmarsh_3_2024-01-01_… | 12,781 | 11 | Code | Message | 54 | 54 | 100.0% | 13.8 |
+| Kelmarsh_SCADA_2024_5962.zip::Status_Kelmarsh_4_2024-01-01_… | 8,365 | 11 | Code | Message | 67 | 67 | 100.0% | 14.2 |
+| Kelmarsh_SCADA_2024_5962.zip::Status_Kelmarsh_5_2024-01-01_… | 9,700 | 11 | Code | Message | 54 | 54 | 100.0% | 14.3 |
+| Kelmarsh_SCADA_2024_5962.zip::Status_Kelmarsh_6_2024-01-01_… | 11,993 | 11 | Code | Message | 69 | 69 | 100.0% | 14.5 |
 
 ### Top messages: Kelmarsh_SCADA_2016_3082.zip::Status_Kelmarsh_1_2016-01-03_…
 
 | message | count | share |
 | --- | --- | --- |
-| System OK | 911 | 44.61% |
-| Wind < start wind | 753 | 36.88% |
-| Brake accumulator defect | 68 | 3.33% |
-| Absence of wind during run-up | 67 | 3.28% |
-| Battery test | 40 | 1.96% |
-| Manual yaw | 33 | 1.62% |
-| Data communication unavailable | 28 | 1.37% |
-| Manual stop - on site | 27 | 1.32% |
-| Timeout brake closed | 22 | 1.08% |
-| Comm. failure FPM | 18 | 0.88% |
-| Cable autounwind | 10 | 0.49% |
-| Gearbox warm-up stage | 10 | 0.49% |
-| High rotor speed nacelle | 8 | 0.39% |
-| Overload generator fan 1 | 8 | 0.39% |
-| Overload generator fan 2 | 8 | 0.39% |
-| Overload generator fan 3 | 8 | 0.39% |
-| Battery charge cycle axis 1 error | 6 | 0.29% |
-| Battery charge cycle axis 2 error | 6 | 0.29% |
-| Battery charge cycle axis 3 error | 6 | 0.29% |
+| System OK | 911 | 42.93% |
+| Wind < start wind | 753 | 35.49% |
+| Brake accumulator defect | 68 | 3.20% |
+| Absence of wind during run-up | 67 | 3.16% |
+| Battery test | 40 | 1.89% |
+| Manual yaw | 33 | 1.56% |
+| Data communication unavailable | 28 | 1.32% |
+| Manual stop - on site | 27 | 1.27% |
+| Timeout brake closed | 22 | 1.04% |
+| Comm. failure FPM | 18 | 0.85% |
+| Cable autounwind | 10 | 0.47% |
+| Gearbox warm-up stage | 10 | 0.47% |
+| High rotor speed nacelle | 8 | 0.38% |
+| Overload generator fan 1 | 8 | 0.38% |
+| Overload generator fan 2 | 8 | 0.38% |
+| Overload generator fan 3 | 8 | 0.38% |
+| Battery charge cycle axis 1 error | 6 | 0.28% |
+| Battery charge cycle axis 2 error | 6 | 0.28% |
+| Battery charge cycle axis 3 error | 6 | 0.28% |
 | Hydraulic oil flushing operation | 5 | 0.24% |
 
 ### Top messages: Kelmarsh_SCADA_2016_3082.zip::Status_Kelmarsh_2_2016-01-03_…
 
 | message | count | share |
 | --- | --- | --- |
-| System OK | 763 | 44.88% |
-| Wind < start wind | 679 | 39.94% |
-| Absence of wind during run-up | 46 | 2.71% |
-| Battery test | 42 | 2.47% |
-| Data communication unavailable | 28 | 1.65% |
-| Manual yaw | 21 | 1.24% |
-| Manual stop - on site | 19 | 1.12% |
-| Gear heating enabled | 11 | 0.65% |
-| Cable autounwind | 10 | 0.59% |
-| Gearbox warm-up stage | 10 | 0.59% |
-| Timeout brake closed | 10 | 0.59% |
-| Breakdown obstacle light | 8 | 0.47% |
-| Frequency converter not ready | 8 | 0.47% |
-| Oscillation encoder tower | 8 | 0.47% |
-| Grid loss | 7 | 0.41% |
-| Manual stop - remote | 7 | 0.41% |
-| Brake accumulator defect | 6 | 0.35% |
-| Comm. failure FPM | 6 | 0.35% |
-| Safety chain open | 6 | 0.35% |
-| Frequency converter error | 5 | 0.29% |
+| System OK | 763 | 42.63% |
+| Wind < start wind | 679 | 37.93% |
+| Absence of wind during run-up | 46 | 2.57% |
+| Battery test | 42 | 2.35% |
+| Data communication unavailable | 28 | 1.56% |
+| Manual yaw | 21 | 1.17% |
+| Manual stop - on site | 19 | 1.06% |
+| Gear heating enabled | 11 | 0.61% |
+| Cable autounwind | 10 | 0.56% |
+| Gearbox warm-up stage | 10 | 0.56% |
+| Timeout brake closed | 10 | 0.56% |
+| Breakdown obstacle light | 8 | 0.45% |
+| Frequency converter not ready | 8 | 0.45% |
+| Oscillation encoder tower | 8 | 0.45% |
+| Grid loss | 7 | 0.39% |
+| Manual stop - remote | 7 | 0.39% |
+| Brake accumulator defect | 6 | 0.34% |
+| Comm. failure FPM | 6 | 0.34% |
+| Safety chain open | 6 | 0.34% |
+| Frequency converter error | 5 | 0.28% |
 
 ### Top messages: Kelmarsh_SCADA_2016_3082.zip::Status_Kelmarsh_3_2016-01-03_…
 
 | message | count | share |
 | --- | --- | --- |
-| System OK | 1,354 | 48.46% |
-| Wind < start wind | 1,122 | 40.16% |
-| Absence of wind during run-up | 103 | 3.69% |
-| Battery test | 41 | 1.47% |
-| Data communication unavailable | 27 | 0.97% |
-| Manual stop - on site | 24 | 0.86% |
-| Gearbox warm-up stage | 22 | 0.79% |
-| Manual yaw | 21 | 0.75% |
-| Cable autounwind | 12 | 0.43% |
-| Comm. failure FPM | 11 | 0.39% |
-| Oscillation encoder tower | 9 | 0.32% |
-| Timeout brake closed | 9 | 0.32% |
+| System OK | 1,354 | 47.13% |
+| Wind < start wind | 1,122 | 39.05% |
+| Absence of wind during run-up | 103 | 3.59% |
+| Battery test | 41 | 1.43% |
+| Data communication unavailable | 27 | 0.94% |
+| Manual stop - on site | 24 | 0.84% |
+| Gearbox warm-up stage | 22 | 0.77% |
+| Manual yaw | 21 | 0.73% |
+| Cable autounwind | 12 | 0.42% |
+| Comm. failure FPM | 11 | 0.38% |
+| Oscillation encoder tower | 9 | 0.31% |
+| Timeout brake closed | 9 | 0.31% |
 | Grid loss | 6 | 0.21% |
-| Brake accumulator defect | 5 | 0.18% |
-| Gear heating enabled | 5 | 0.18% |
-| Overload generator fan 1 | 5 | 0.18% |
-| Overload generator fan 2 | 5 | 0.18% |
-| Overload generator fan 3 | 5 | 0.18% |
+| Brake accumulator defect | 5 | 0.17% |
+| Gear heating enabled | 5 | 0.17% |
+| Overload generator fan 1 | 5 | 0.17% |
+| Overload generator fan 2 | 5 | 0.17% |
+| Overload generator fan 3 | 5 | 0.17% |
 | 4-20 mA vane 2 | 4 | 0.14% |
 | 4-20mA anemometer 2 | 4 | 0.14% |
 
@@ -139,24 +257,24 @@ This is the evidence behind ADR-0001: whether the paired text in this record is 
 
 | message | count | share |
 | --- | --- | --- |
-| System OK | 895 | 47.81% |
-| Wind < start wind | 738 | 39.42% |
-| Absence of wind during run-up | 59 | 3.15% |
-| Battery test | 45 | 2.40% |
-| Data communication unavailable | 28 | 1.50% |
-| Manual yaw | 17 | 0.91% |
-| Manual stop - on site | 15 | 0.80% |
-| Cable autounwind | 10 | 0.53% |
-| Timeout brake closed | 8 | 0.43% |
-| Brake accumulator defect | 7 | 0.37% |
-| Comm. failure FPM | 6 | 0.32% |
-| Grid loss | 6 | 0.32% |
-| Frequency converter not ready | 5 | 0.27% |
-| Gearbox warm-up stage | 5 | 0.27% |
-| Hydraulic oil flushing operation | 5 | 0.27% |
-| Overload generator fan 1 | 5 | 0.27% |
-| Overload generator fan 2 | 5 | 0.27% |
-| Overload generator fan 3 | 5 | 0.27% |
+| System OK | 895 | 46.40% |
+| Wind < start wind | 738 | 38.26% |
+| Absence of wind during run-up | 59 | 3.06% |
+| Battery test | 45 | 2.33% |
+| Data communication unavailable | 28 | 1.45% |
+| Manual yaw | 17 | 0.88% |
+| Manual stop - on site | 15 | 0.78% |
+| Cable autounwind | 10 | 0.52% |
+| Timeout brake closed | 8 | 0.41% |
+| Brake accumulator defect | 7 | 0.36% |
+| Comm. failure FPM | 6 | 0.31% |
+| Grid loss | 6 | 0.31% |
+| Frequency converter not ready | 5 | 0.26% |
+| Gearbox warm-up stage | 5 | 0.26% |
+| Hydraulic oil flushing operation | 5 | 0.26% |
+| Overload generator fan 1 | 5 | 0.26% |
+| Overload generator fan 2 | 5 | 0.26% |
+| Overload generator fan 3 | 5 | 0.26% |
 | High frequency - P reduction | 4 | 0.21% |
 | Manual stop - remote | 4 | 0.21% |
 
@@ -164,21 +282,21 @@ This is the evidence behind ADR-0001: whether the paired text in this record is 
 
 | message | count | share |
 | --- | --- | --- |
-| System OK | 936 | 45.48% |
-| Wind < start wind | 812 | 39.46% |
-| Absence of wind during run-up | 65 | 3.16% |
-| Battery test | 47 | 2.28% |
-| Data communication unavailable | 27 | 1.31% |
-| Gear heating enabled | 24 | 1.17% |
-| Manual yaw | 24 | 1.17% |
-| Manual stop - on site | 19 | 0.92% |
-| Comm. failure FPM | 18 | 0.87% |
-| Cable autounwind | 16 | 0.78% |
-| Timeout brake closed | 15 | 0.73% |
-| Gearbox warm-up stage | 11 | 0.53% |
-| Overload generator fan 1 | 7 | 0.34% |
-| Overload generator fan 2 | 7 | 0.34% |
-| Overload generator fan 3 | 7 | 0.34% |
+| System OK | 936 | 44.23% |
+| Wind < start wind | 812 | 38.37% |
+| Absence of wind during run-up | 65 | 3.07% |
+| Battery test | 47 | 2.22% |
+| Data communication unavailable | 27 | 1.28% |
+| Gear heating enabled | 24 | 1.13% |
+| Manual yaw | 24 | 1.13% |
+| Manual stop - on site | 19 | 0.90% |
+| Comm. failure FPM | 18 | 0.85% |
+| Cable autounwind | 16 | 0.76% |
+| Timeout brake closed | 15 | 0.71% |
+| Gearbox warm-up stage | 11 | 0.52% |
+| Overload generator fan 1 | 7 | 0.33% |
+| Overload generator fan 2 | 7 | 0.33% |
+| Overload generator fan 3 | 7 | 0.33% |
 | Breakdown obstacle light | 5 | 0.24% |
 | Grid loss | 5 | 0.24% |
 | Hydraulic oil flushing operation | 5 | 0.24% |
@@ -189,22 +307,22 @@ This is the evidence behind ADR-0001: whether the paired text in this record is 
 
 | message | count | share |
 | --- | --- | --- |
-| System OK | 1,493 | 47.84% |
-| Wind < start wind | 1,282 | 41.08% |
-| Absence of wind during run-up | 135 | 4.33% |
-| Battery test | 43 | 1.38% |
-| Data communication unavailable | 28 | 0.90% |
-| Manual yaw | 18 | 0.58% |
-| Manual stop - on site | 13 | 0.42% |
+| System OK | 1,493 | 46.82% |
+| Wind < start wind | 1,282 | 40.20% |
+| Absence of wind during run-up | 135 | 4.23% |
+| Battery test | 43 | 1.35% |
+| Data communication unavailable | 28 | 0.88% |
+| Manual yaw | 18 | 0.56% |
+| Manual stop - on site | 13 | 0.41% |
 | Overload generator fan 1 | 12 | 0.38% |
-| Cable autounwind | 10 | 0.32% |
-| Overload generator fan 2 | 10 | 0.32% |
-| Overload generator fan 3 | 10 | 0.32% |
-| Timeout brake closed | 10 | 0.32% |
-| Battery charge cycle axis 1 error | 8 | 0.26% |
-| Battery charge cycle axis 2 error | 8 | 0.26% |
-| Battery charge cycle axis 3 error | 8 | 0.26% |
-| Brake accumulator defect | 8 | 0.26% |
+| Cable autounwind | 10 | 0.31% |
+| Overload generator fan 2 | 10 | 0.31% |
+| Overload generator fan 3 | 10 | 0.31% |
+| Timeout brake closed | 10 | 0.31% |
+| Battery charge cycle axis 1 error | 8 | 0.25% |
+| Battery charge cycle axis 2 error | 8 | 0.25% |
+| Battery charge cycle axis 3 error | 8 | 0.25% |
+| Brake accumulator defect | 8 | 0.25% |
 | Comm. failure FPM | 7 | 0.22% |
 | Frequency converter not ready | 7 | 0.22% |
 | Gearbox warm-up stage | 6 | 0.19% |
@@ -214,72 +332,72 @@ This is the evidence behind ADR-0001: whether the paired text in this record is 
 
 | message | count | share |
 | --- | --- | --- |
-| System OK | 1,005 | 13.98% |
-| Automatic start-up | 861 | 11.98% |
-| Run-up | 852 | 11.85% |
-| Wind < start wind | 801 | 11.14% |
-| Mains connection | 796 | 11.07% |
-| Mains operation | 796 | 11.07% |
-| Mains run-up | 796 | 11.07% |
-| Brake program 50 | 791 | 11.00% |
-| Absence of wind during run-up | 65 | 0.90% |
-| Bypass limit switches | 56 | 0.78% |
-| Brake program 180 | 50 | 0.70% |
-| System test 1 | 50 | 0.70% |
-| System test 2 | 50 | 0.70% |
-| System test 3 | 50 | 0.70% |
-| Battery test | 48 | 0.67% |
-| Manual stop - on site | 29 | 0.40% |
-| Brake program 52 | 26 | 0.36% |
-| Manual yaw | 25 | 0.35% |
+| System OK | 1,005 | 13.65% |
+| Automatic start-up | 861 | 11.69% |
+| Run-up | 852 | 11.57% |
+| Wind < start wind | 801 | 10.88% |
+| Mains connection | 796 | 10.81% |
+| Mains operation | 796 | 10.81% |
+| Mains run-up | 796 | 10.81% |
+| Brake program 50 | 791 | 10.74% |
+| Absence of wind during run-up | 65 | 0.88% |
+| Bypass limit switches | 56 | 0.76% |
+| Brake program 180 | 50 | 0.68% |
+| System test 1 | 50 | 0.68% |
+| System test 2 | 50 | 0.68% |
+| System test 3 | 50 | 0.68% |
+| Battery test | 48 | 0.65% |
+| Manual stop - on site | 29 | 0.39% |
+| Brake program 52 | 26 | 0.35% |
+| Manual yaw | 25 | 0.34% |
 | Data communication unavailable | 21 | 0.29% |
-| Brake program 170 | 20 | 0.28% |
+| Brake program 170 | 20 | 0.27% |
 
 ### Top messages: Kelmarsh_SCADA_2017_3083.zip::Status_Kelmarsh_2_2017-01-01_…
 
 | message | count | share |
 | --- | --- | --- |
-| System OK | 826 | 13.25% |
-| Automatic start-up | 750 | 12.03% |
-| Run-up | 742 | 11.90% |
-| Wind < start wind | 700 | 11.23% |
-| Mains connection | 699 | 11.21% |
-| Mains operation | 699 | 11.21% |
-| Mains run-up | 699 | 11.21% |
-| Brake program 50 | 676 | 10.84% |
-| Bypass limit switches | 57 | 0.91% |
-| Battery test | 50 | 0.80% |
-| Absence of wind during run-up | 47 | 0.75% |
-| System test 1 | 47 | 0.75% |
-| System test 2 | 47 | 0.75% |
-| System test 3 | 47 | 0.75% |
-| Brake program 180 | 39 | 0.63% |
-| Brake program 52 | 32 | 0.51% |
-| Brake program 170 | 23 | 0.37% |
+| System OK | 826 | 12.94% |
+| Automatic start-up | 750 | 11.75% |
+| Run-up | 742 | 11.63% |
+| Wind < start wind | 700 | 10.97% |
+| Mains connection | 699 | 10.95% |
+| Mains operation | 699 | 10.95% |
+| Mains run-up | 699 | 10.95% |
+| Brake program 50 | 676 | 10.59% |
+| Bypass limit switches | 57 | 0.89% |
+| Battery test | 50 | 0.78% |
+| Absence of wind during run-up | 47 | 0.74% |
+| System test 1 | 47 | 0.74% |
+| System test 2 | 47 | 0.74% |
+| System test 3 | 47 | 0.74% |
+| Brake program 180 | 39 | 0.61% |
+| Brake program 52 | 32 | 0.50% |
+| Brake program 170 | 23 | 0.36% |
 | Manual stop - on site | 19 | 0.30% |
-| Cable autounwind | 18 | 0.29% |
+| Cable autounwind | 18 | 0.28% |
 | Data communication unavailable | 17 | 0.27% |
 
 ### Top messages: Kelmarsh_SCADA_2017_3083.zip::Status_Kelmarsh_3_2017-01-01_…
 
 | message | count | share |
 | --- | --- | --- |
-| System OK | 1,334 | 14.04% |
-| Automatic start-up | 1,154 | 12.14% |
-| Run-up | 1,143 | 12.03% |
-| Wind < start wind | 1,123 | 11.82% |
-| Brake program 50 | 1,079 | 11.35% |
-| Mains connection | 1,062 | 11.17% |
-| Mains run-up | 1,061 | 11.16% |
-| Mains operation | 1,060 | 11.15% |
-| Absence of wind during run-up | 84 | 0.88% |
-| Bypass limit switches | 61 | 0.64% |
-| Battery test | 53 | 0.56% |
+| System OK | 1,334 | 13.80% |
+| Automatic start-up | 1,154 | 11.93% |
+| Run-up | 1,143 | 11.82% |
+| Wind < start wind | 1,123 | 11.61% |
+| Brake program 50 | 1,079 | 11.16% |
+| Mains connection | 1,062 | 10.98% |
+| Mains run-up | 1,061 | 10.97% |
+| Mains operation | 1,060 | 10.96% |
+| Absence of wind during run-up | 84 | 0.87% |
+| Bypass limit switches | 61 | 0.63% |
+| Battery test | 53 | 0.55% |
 | System test 1 | 47 | 0.49% |
 | System test 2 | 47 | 0.49% |
 | System test 3 | 47 | 0.49% |
 | Brake program 180 | 45 | 0.47% |
-| Brake program 52 | 30 | 0.32% |
+| Brake program 52 | 30 | 0.31% |
 | Data communication unavailable | 21 | 0.22% |
 | Cable autounwind | 18 | 0.19% |
 | Manual yaw | 18 | 0.19% |
@@ -289,76 +407,78 @@ This is the evidence behind ADR-0001: whether the paired text in this record is 
 
 | message | count | share |
 | --- | --- | --- |
-| System OK | 871 | 13.74% |
-| Automatic start-up | 762 | 12.02% |
-| Run-up | 754 | 11.90% |
-| Wind < start wind | 701 | 11.06% |
-| Brake program 50 | 695 | 10.97% |
-| Mains connection | 694 | 10.95% |
-| Mains operation | 693 | 10.93% |
-| Mains run-up | 693 | 10.93% |
-| Absence of wind during run-up | 68 | 1.07% |
-| Bypass limit switches | 55 | 0.87% |
-| Battery test | 51 | 0.80% |
-| System test 1 | 47 | 0.74% |
-| System test 2 | 47 | 0.74% |
-| System test 3 | 47 | 0.74% |
-| Brake program 180 | 38 | 0.60% |
-| Breakdown obstacle light | 28 | 0.44% |
-| Brake program 52 | 27 | 0.43% |
-| Data communication unavailable | 26 | 0.41% |
-| Brake program 170 | 22 | 0.35% |
-| Manual stop - on site | 19 | 0.30% |
+| System OK | 871 | 13.39% |
+| Automatic start-up | 762 | 11.71% |
+| Run-up | 754 | 11.59% |
+| Wind < start wind | 701 | 10.78% |
+| Brake program 50 | 695 | 10.68% |
+| Mains connection | 694 | 10.67% |
+| Mains operation | 693 | 10.65% |
+| Mains run-up | 693 | 10.65% |
+| Absence of wind during run-up | 68 | 1.05% |
+| Bypass limit switches | 55 | 0.85% |
+| Battery test | 51 | 0.78% |
+| System test 1 | 47 | 0.72% |
+| System test 2 | 47 | 0.72% |
+| System test 3 | 47 | 0.72% |
+| Brake program 180 | 38 | 0.58% |
+| Breakdown obstacle light | 28 | 0.43% |
+| Brake program 52 | 27 | 0.42% |
+| Data communication unavailable | 26 | 0.40% |
+| Brake program 170 | 22 | 0.34% |
+| Manual stop - on site | 19 | 0.29% |
 
 ### Top messages: Kelmarsh_SCADA_2017_3083.zip::Status_Kelmarsh_5_2017-01-01_…
 
 | message | count | share |
 | --- | --- | --- |
-| System OK | 1,031 | 13.74% |
-| Automatic start-up | 904 | 12.05% |
-| Run-up | 894 | 11.92% |
-| Wind < start wind | 851 | 11.34% |
-| Brake program 50 | 822 | 10.96% |
-| Mains connection | 817 | 10.89% |
-| Mains run-up | 816 | 10.88% |
-| Mains operation | 815 | 10.86% |
-| Bypass limit switches | 80 | 1.07% |
-| Absence of wind during run-up | 73 | 0.97% |
-| System test 1 | 57 | 0.76% |
-| System test 2 | 56 | 0.75% |
-| System test 3 | 56 | 0.75% |
-| Battery test | 51 | 0.68% |
-| Brake program 180 | 50 | 0.67% |
-| Brake program 60 | 37 | 0.49% |
-| Brake program 52 | 28 | 0.37% |
-| Brake program 170 | 23 | 0.31% |
-| Brake program 200 | 21 | 0.28% |
-| Data communication unavailable | 20 | 0.27% |
+| System OK | 1,031 | 13.40% |
+| Automatic start-up | 904 | 11.75% |
+| Run-up | 894 | 11.62% |
+| Wind < start wind | 851 | 11.06% |
+| Brake program 50 | 822 | 10.68% |
+| Mains connection | 817 | 10.62% |
+| Mains run-up | 816 | 10.60% |
+| Mains operation | 815 | 10.59% |
+| Bypass limit switches | 80 | 1.04% |
+| Absence of wind during run-up | 73 | 0.95% |
+| System test 1 | 57 | 0.74% |
+| System test 2 | 56 | 0.73% |
+| System test 3 | 56 | 0.73% |
+| Battery test | 51 | 0.66% |
+| Brake program 180 | 50 | 0.65% |
+| Brake program 60 | 37 | 0.48% |
+| Brake program 52 | 28 | 0.36% |
+| Brake program 170 | 23 | 0.30% |
+| Brake program 200 | 21 | 0.27% |
+| Data communication unavailable | 20 | 0.26% |
 
 ### Top messages: Kelmarsh_SCADA_2017_3083.zip::Status_Kelmarsh_6_2017-01-01_…
 
 | message | count | share |
 | --- | --- | --- |
-| System OK | 1,577 | 13.97% |
-| Automatic start-up | 1,403 | 12.43% |
-| Run-up | 1,361 | 12.06% |
-| Wind < start wind | 1,290 | 11.43% |
-| Brake program 50 | 1,268 | 11.23% |
-| Mains connection | 1,233 | 10.92% |
-| Mains run-up | 1,233 | 10.92% |
-| Mains operation | 1,231 | 10.91% |
-| Absence of wind during run-up | 114 | 1.01% |
-| Bypass limit switches | 105 | 0.93% |
-| Brake program 60 | 65 | 0.58% |
-| System test 1 | 65 | 0.58% |
-| Brake program 52 | 58 | 0.51% |
-| System test 2 | 54 | 0.48% |
-| System test 3 | 54 | 0.48% |
-| Battery test | 47 | 0.42% |
-| Brake program 180 | 38 | 0.34% |
+| System OK | 1,577 | 13.70% |
+| Automatic start-up | 1,403 | 12.19% |
+| Run-up | 1,361 | 11.82% |
+| Wind < start wind | 1,290 | 11.20% |
+| Brake program 50 | 1,268 | 11.01% |
+| Mains connection | 1,233 | 10.71% |
+| Mains run-up | 1,233 | 10.71% |
+| Mains operation | 1,231 | 10.69% |
+| Absence of wind during run-up | 114 | 0.99% |
+| Bypass limit switches | 105 | 0.91% |
+| Brake program 60 | 65 | 0.56% |
+| System test 1 | 65 | 0.56% |
+| Brake program 52 | 58 | 0.50% |
+| System test 2 | 54 | 0.47% |
+| System test 3 | 54 | 0.47% |
+| Battery test | 47 | 0.41% |
+| Brake program 180 | 38 | 0.33% |
 | Brake program 170 | 34 | 0.30% |
-| Data communication unavailable | 29 | 0.26% |
-| Open disc brake | 28 | 0.25% |
+| Data communication unavailable | 29 | 0.25% |
+| Open disc brake | 28 | 0.24% |
+
+_Per-table top messages are shown for the first 12 of 54 tables with messages; the pooled measurements above cover all of them._
 
 ## Header samples (first lines, one member per kind)
 

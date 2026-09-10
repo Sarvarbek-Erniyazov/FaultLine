@@ -48,13 +48,23 @@ here"; `UNVERIFIED` reads as "nobody has checked", which is the truth.
 ### Event, alarm and status logs
 - Present in the record? Which member?
 - Row count, unique codes, unique messages
-- **Free text present: `VERIFIED yes` / `VERIFIED no` / `UNVERIFIED`**, with the
-  evidence — the share of rows carrying a non-empty message and the mean message
-  length, from the inventory report
+- **Free-text verdict**, with the evidence — rows, rows with a message, distinct
+  strings, mean length, and the share of distinct strings that occur exactly once,
+  pooled over every parsed event table, from the inventory report. One of:
+  - `VERIFIED no` — codes only (no message text at all), or a code book: a closed set
+    of labels that recur, most distinct strings occurring more than once
+  - `VERIFIED short written descriptions` — a closed set (at most 500 distinct
+    strings) of which most occur exactly once, i.e. written per event rather than
+    drawn from a code book; `VERIFIED written descriptions` when they average more
+    than 200 characters
+  - `VERIFIED yes` — open-ended text, more than 500 distinct strings
+  - `UNVERIFIED` — nothing staged, or no event table found
 
   This is the field that ADR-0001 rests on: whether the paired text in this record is
   open-ended language or a controlled vocabulary that supplies only labels and
-  structure. It is the single most consequential line on the card.
+  structure. It is the single most consequential line on the card. The labels are not
+  forced into yes/no: a record whose text is richer than a code book but far too small
+  to be a corpus says exactly that.
 
 ### Questions resolved by measurement
 - One row per question the provider metadata could not settle, with the verdict and

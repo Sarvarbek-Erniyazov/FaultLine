@@ -10,14 +10,90 @@
 | staged directory | C:\Users\sharg\Desktop\github\FaultLine\data\raw\telemetry\penmanshiel |
 | files staged | 16 |
 | members discovered | 198 |
-| generated (UTC) | 2026-09-10T08:56:56+00:00 |
-| git_sha | c6b5de4cc72ac9735301ce1f1dcdbfa84ae4ccff |
+| member classification | file-name substring patterns in the adapter |
+| event members parsed | 98 of 98 (caps: 200 members, 209.7 MB and 500,000 rows per member) |
+| generated (UTC) | 2026-09-10T09:22:25+00:00 |
+| git_sha | aac5d7110773da2a7337e045b61237a5001db107 |
 
 ## Free-text verdict
 
-**VERIFIED no** - messages are present but template-like: at most 73 distinct strings with a mean length of 15.9 characters, which is a controlled vocabulary rather than open-ended language (ADR-0001 holds)
+**VERIFIED no** - a code book: 231 distinct strings over 839,303 rows with text, mean length 13.9 characters (2.4 words), 11.3% of the distinct strings occurring exactly once; at most 78 distinct strings in any one table. A closed set of recurring labels, not open-ended language (ADR-0001 holds)
 
 This is the evidence behind ADR-0001: whether the paired text in this record is open-ended language or a controlled vocabulary.
+
+Thresholds applied: more than 500 distinct strings is open-ended text; within that, a set in which at least 50% of the distinct strings occur exactly once was written per event, otherwise it is a code book; written descriptions averaging at most 200 characters are short. The measurements are pooled over every parsed event table and listed in the next section.
+
+## Text measurements (all parsed tables pooled)
+
+| field | value |
+| --- | --- |
+| event tables parsed | 98 |
+| rows | 839,303 |
+| rows with a non-empty message | 839,303 (100.0%) |
+| distinct messages | 231 |
+| mean length (characters) | 13.9 |
+| mean length (words) | 2.4 |
+| distinct messages occurring exactly once | 11.3% |
+| most distinct messages in one table | 78 |
+| longest mean length in one table (characters) | 16.3 |
+
+**Top 20 messages** (share of rows with a message)
+
+| message | count | share |
+| --- | --- | --- |
+| System OK | 119,819 | 14.28% |
+| Wind < start wind | 111,208 | 13.25% |
+| Automatic start-up | 95,165 | 11.34% |
+| Run-up | 92,186 | 10.98% |
+| Mains connection | 87,612 | 10.44% |
+| Mains run-up | 87,417 | 10.42% |
+| Mains operation | 87,193 | 10.39% |
+| Brake program 50 | 81,986 | 9.77% |
+| Brake program 52 | 8,545 | 1.02% |
+| Bypass limit switches | 6,556 | 0.78% |
+| System test 1 | 4,930 | 0.59% |
+| System test 2 | 4,409 | 0.53% |
+| System test 3 | 4,351 | 0.52% |
+| Battery test | 4,293 | 0.51% |
+| Brake program 60 | 3,868 | 0.46% |
+| Brake program 180 | 3,424 | 0.41% |
+| Max. wind speed | 3,348 | 0.40% |
+| Absence of wind during run-up | 2,668 | 0.32% |
+| P output externally reduced | 1,852 | 0.22% |
+| Cable autounwind | 1,845 | 0.22% |
+
+## Event codes (all parsed tables pooled)
+
+| field | value |
+| --- | --- |
+| tables with a code column | 98 of 98 |
+| rows carrying a code | 839,303 |
+| distinct codes | 231 |
+
+**Top 20 codes**
+
+| code | rows | share |
+| --- | --- | --- |
+| 0 | 119,819 | 14.28% |
+| 10 | 111,208 | 13.25% |
+| 100130 | 95,165 | 11.34% |
+| 100180 | 92,186 | 10.98% |
+| 100190 | 87,612 | 10.44% |
+| 100200 | 87,417 | 10.42% |
+| 100210 | 87,193 | 10.39% |
+| 100070 | 81,986 | 9.77% |
+| 100060 | 8,545 | 1.02% |
+| 100110 | 6,556 | 0.78% |
+| 100140 | 4,930 | 0.59% |
+| 100150 | 4,409 | 0.53% |
+| 100160 | 4,351 | 0.52% |
+| 710 | 4,293 | 0.51% |
+| 100050 | 3,868 | 0.46% |
+| 100030 | 3,424 | 0.41% |
+| 64 | 3,348 | 0.40% |
+| 65 | 2,668 | 0.32% |
+| 9000 | 1,852 | 0.22% |
+| 6200 | 1,845 | 0.22% |
 
 ## Staged files
 
@@ -64,306 +140,394 @@ This is the evidence behind ADR-0001: whether the paired text in this record is 
 | Penmanshiel_SCADA_2016_WT11-15_3107.zip::Status_Penmanshiel… | 1,025 | 9 | Code | Message | 67 | 67 | 100.0% | 15.7 |
 | Penmanshiel_SCADA_2016_WT11-15_3107.zip::Status_Penmanshiel… | 1,086 | 9 | Code | Message | 73 | 73 | 100.0% | 15.5 |
 | Penmanshiel_SCADA_2016_WT11-15_3107.zip::Status_Penmanshiel… | 907 | 9 | Code | Message | 41 | 41 | 100.0% | 15 |
+| Penmanshiel_SCADA_2016_WT11-15_3107.zip::Status_Penmanshiel… | 1,053 | 9 | Code | Message | 77 | 77 | 100.0% | 15.3 |
+| Penmanshiel_SCADA_2016_WT11-15_3107.zip::Status_Penmanshiel… | 1,093 | 9 | Code | Message | 65 | 65 | 100.0% | 16.3 |
+| Penmanshiel_SCADA_2017_WT01-10_3114.zip::Status_Penmanshiel… | 3,998 | 9 | Code | Message | 40 | 40 | 100.0% | 13.8 |
+| Penmanshiel_SCADA_2017_WT01-10_3114.zip::Status_Penmanshiel… | 2,820 | 9 | Code | Message | 45 | 45 | 100.0% | 13.4 |
+| Penmanshiel_SCADA_2017_WT01-10_3114.zip::Status_Penmanshiel… | 2,083 | 9 | Code | Message | 35 | 35 | 100.0% | 14 |
+| Penmanshiel_SCADA_2017_WT01-10_3114.zip::Status_Penmanshiel… | 2,910 | 9 | Code | Message | 36 | 36 | 100.0% | 13.4 |
+| Penmanshiel_SCADA_2017_WT01-10_3114.zip::Status_Penmanshiel… | 2,644 | 9 | Code | Message | 37 | 37 | 100.0% | 13.6 |
+| Penmanshiel_SCADA_2017_WT01-10_3114.zip::Status_Penmanshiel… | 3,099 | 9 | Code | Message | 48 | 48 | 100.0% | 13.7 |
+| Penmanshiel_SCADA_2017_WT01-10_3114.zip::Status_Penmanshiel… | 2,481 | 9 | Code | Message | 39 | 39 | 100.0% | 13.3 |
+| Penmanshiel_SCADA_2017_WT01-10_3114.zip::Status_Penmanshiel… | 3,206 | 9 | Code | Message | 39 | 39 | 100.0% | 13.3 |
+| Penmanshiel_SCADA_2017_WT01-10_3114.zip::Status_Penmanshiel… | 3,213 | 9 | Code | Message | 28 | 28 | 100.0% | 13.2 |
+| Penmanshiel_SCADA_2017_WT11-15_3115.zip::Status_Penmanshiel… | 2,300 | 9 | Code | Message | 43 | 43 | 100.0% | 13.4 |
+| Penmanshiel_SCADA_2017_WT11-15_3115.zip::Status_Penmanshiel… | 1,983 | 9 | Code | Message | 33 | 33 | 100.0% | 13.3 |
+| Penmanshiel_SCADA_2017_WT11-15_3115.zip::Status_Penmanshiel… | 1,562 | 9 | Code | Message | 44 | 44 | 100.0% | 14.7 |
+| Penmanshiel_SCADA_2017_WT11-15_3115.zip::Status_Penmanshiel… | 2,309 | 9 | Code | Message | 33 | 33 | 100.0% | 13.2 |
+| Penmanshiel_SCADA_2017_WT11-15_3115.zip::Status_Penmanshiel… | 2,172 | 9 | Code | Message | 39 | 39 | 100.0% | 13.3 |
+| Penmanshiel_SCADA_2018_WT01-10_3113.zip::Status_Penmanshiel… | 8,508 | 9 | Code | Message | 58 | 58 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2018_WT01-10_3113.zip::Status_Penmanshiel… | 10,059 | 9 | Code | Message | 72 | 72 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2018_WT01-10_3113.zip::Status_Penmanshiel… | 8,476 | 9 | Code | Message | 62 | 62 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2018_WT01-10_3113.zip::Status_Penmanshiel… | 12,004 | 9 | Code | Message | 58 | 58 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2018_WT01-10_3113.zip::Status_Penmanshiel… | 9,339 | 9 | Code | Message | 61 | 61 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2018_WT01-10_3113.zip::Status_Penmanshiel… | 10,998 | 9 | Code | Message | 59 | 59 | 100.0% | 13.8 |
+| Penmanshiel_SCADA_2018_WT01-10_3113.zip::Status_Penmanshiel… | 8,551 | 9 | Code | Message | 63 | 63 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2018_WT01-10_3113.zip::Status_Penmanshiel… | 10,046 | 9 | Code | Message | 58 | 58 | 100.0% | 13.8 |
+| Penmanshiel_SCADA_2018_WT01-10_3113.zip::Status_Penmanshiel… | 10,617 | 9 | Code | Message | 66 | 66 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2018_WT11-15_3116.zip::Status_Penmanshiel… | 8,440 | 9 | Code | Message | 60 | 60 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2018_WT11-15_3116.zip::Status_Penmanshiel… | 7,304 | 9 | Code | Message | 64 | 64 | 100.0% | 14 |
+| Penmanshiel_SCADA_2018_WT11-15_3116.zip::Status_Penmanshiel… | 8,099 | 9 | Code | Message | 56 | 56 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2018_WT11-15_3116.zip::Status_Penmanshiel… | 8,522 | 9 | Code | Message | 64 | 64 | 100.0% | 14 |
+| Penmanshiel_SCADA_2018_WT11-15_3116.zip::Status_Penmanshiel… | 7,876 | 9 | Code | Message | 58 | 58 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2019_WT01-10_3112.zip::Status_Penmanshiel… | 9,839 | 9 | Code | Message | 63 | 63 | 100.0% | 14 |
+| Penmanshiel_SCADA_2019_WT01-10_3112.zip::Status_Penmanshiel… | 11,846 | 9 | Code | Message | 71 | 71 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2019_WT01-10_3112.zip::Status_Penmanshiel… | 10,607 | 9 | Code | Message | 64 | 64 | 100.0% | 13.8 |
+| Penmanshiel_SCADA_2019_WT01-10_3112.zip::Status_Penmanshiel… | 12,857 | 9 | Code | Message | 73 | 73 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2019_WT01-10_3112.zip::Status_Penmanshiel… | 12,044 | 9 | Code | Message | 73 | 73 | 100.0% | 13.8 |
+| Penmanshiel_SCADA_2019_WT01-10_3112.zip::Status_Penmanshiel… | 12,606 | 9 | Code | Message | 71 | 71 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2019_WT01-10_3112.zip::Status_Penmanshiel… | 9,245 | 9 | Code | Message | 63 | 63 | 100.0% | 14.1 |
+| Penmanshiel_SCADA_2019_WT01-10_3112.zip::Status_Penmanshiel… | 11,883 | 9 | Code | Message | 60 | 60 | 100.0% | 13.8 |
+| Penmanshiel_SCADA_2019_WT01-10_3112.zip::Status_Penmanshiel… | 12,372 | 9 | Code | Message | 64 | 64 | 100.0% | 13.8 |
+| Penmanshiel_SCADA_2019_WT11-15_3117.zip::Status_Penmanshiel… | 9,321 | 9 | Code | Message | 65 | 65 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2019_WT11-15_3117.zip::Status_Penmanshiel… | 8,039 | 9 | Code | Message | 68 | 68 | 100.0% | 14.1 |
+| Penmanshiel_SCADA_2019_WT11-15_3117.zip::Status_Penmanshiel… | 9,956 | 9 | Code | Message | 61 | 61 | 100.0% | 13.8 |
+| Penmanshiel_SCADA_2019_WT11-15_3117.zip::Status_Penmanshiel… | 10,526 | 9 | Code | Message | 68 | 68 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2019_WT11-15_3117.zip::Status_Penmanshiel… | 8,666 | 9 | Code | Message | 72 | 72 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2020_WT01-10_3109.zip::Status_Penmanshiel… | 10,274 | 9 | Code | Message | 63 | 63 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2020_WT01-10_3109.zip::Status_Penmanshiel… | 11,914 | 9 | Code | Message | 76 | 76 | 100.0% | 14 |
+| Penmanshiel_SCADA_2020_WT01-10_3109.zip::Status_Penmanshiel… | 11,177 | 9 | Code | Message | 59 | 59 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2020_WT01-10_3109.zip::Status_Penmanshiel… | 13,386 | 9 | Code | Message | 56 | 56 | 100.0% | 13.8 |
+| Penmanshiel_SCADA_2020_WT01-10_3109.zip::Status_Penmanshiel… | 12,246 | 9 | Code | Message | 55 | 55 | 100.0% | 13.8 |
+| Penmanshiel_SCADA_2020_WT01-10_3109.zip::Status_Penmanshiel… | 13,426 | 9 | Code | Message | 67 | 67 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2020_WT01-10_3109.zip::Status_Penmanshiel… | 10,474 | 9 | Code | Message | 57 | 57 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2020_WT01-10_3109.zip::Status_Penmanshiel… | 13,015 | 9 | Code | Message | 67 | 67 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2020_WT01-10_3109.zip::Status_Penmanshiel… | 13,459 | 9 | Code | Message | 64 | 64 | 100.0% | 13.8 |
+| Penmanshiel_SCADA_2020_WT11-15_3118.zip::Status_Penmanshiel… | 10,097 | 9 | Code | Message | 58 | 58 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2020_WT11-15_3118.zip::Status_Penmanshiel… | 8,592 | 9 | Code | Message | 63 | 63 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2020_WT11-15_3118.zip::Status_Penmanshiel… | 9,897 | 9 | Code | Message | 59 | 59 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2020_WT11-15_3118.zip::Status_Penmanshiel… | 11,039 | 9 | Code | Message | 65 | 65 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2020_WT11-15_3118.zip::Status_Penmanshiel… | 9,634 | 9 | Code | Message | 78 | 78 | 100.0% | 14.1 |
+| Penmanshiel_SCADA_2021_WT01-10_4460.zip::Status_Penmanshiel… | 12,787 | 11 | Code | Message | 59 | 59 | 100.0% | 13.8 |
+| Penmanshiel_SCADA_2021_WT01-10_4460.zip::Status_Penmanshiel… | 17,142 | 11 | Code | Message | 60 | 60 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2021_WT01-10_4460.zip::Status_Penmanshiel… | 13,366 | 11 | Code | Message | 77 | 77 | 100.0% | 14.1 |
+| Penmanshiel_SCADA_2021_WT01-10_4460.zip::Status_Penmanshiel… | 15,774 | 11 | Code | Message | 57 | 57 | 100.0% | 13.8 |
+| Penmanshiel_SCADA_2021_WT01-10_4460.zip::Status_Penmanshiel… | 13,335 | 11 | Code | Message | 69 | 69 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2021_WT01-10_4460.zip::Status_Penmanshiel… | 16,059 | 11 | Code | Message | 64 | 64 | 100.0% | 14 |
+| Penmanshiel_SCADA_2021_WT01-10_4460.zip::Status_Penmanshiel… | 14,272 | 11 | Code | Message | 63 | 63 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2021_WT01-10_4460.zip::Status_Penmanshiel… | 14,242 | 11 | Code | Message | 77 | 77 | 100.0% | 14.1 |
+| Penmanshiel_SCADA_2021_WT01-10_4460.zip::Status_Penmanshiel… | 15,373 | 11 | Code | Message | 64 | 64 | 100.0% | 13.8 |
+| Penmanshiel_SCADA_2021_WT11-15_4461.zip::Status_Penmanshiel… | 11,808 | 11 | Code | Message | 67 | 67 | 100.0% | 14 |
+| Penmanshiel_SCADA_2021_WT11-15_4461.zip::Status_Penmanshiel… | 10,719 | 11 | Code | Message | 68 | 68 | 100.0% | 14.2 |
+| Penmanshiel_SCADA_2021_WT11-15_4461.zip::Status_Penmanshiel… | 11,875 | 11 | Code | Message | 67 | 67 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2021_WT11-15_4461.zip::Status_Penmanshiel… | 12,452 | 11 | Code | Message | 59 | 59 | 100.0% | 13.8 |
+| Penmanshiel_SCADA_2021_WT11-15_4461.zip::Status_Penmanshiel… | 10,307 | 11 | Code | Message | 73 | 73 | 100.0% | 14.2 |
+| Penmanshiel_SCADA_2022_WT01-10_4462.zip::Status_Penmanshiel… | 9,983 | 11 | Code | Message | 57 | 57 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2022_WT01-10_4462.zip::Status_Penmanshiel… | 11,537 | 11 | Code | Message | 58 | 58 | 100.0% | 14 |
+| Penmanshiel_SCADA_2022_WT01-10_4462.zip::Status_Penmanshiel… | 9,591 | 11 | Code | Message | 61 | 61 | 100.0% | 14.5 |
+| Penmanshiel_SCADA_2022_WT01-10_4462.zip::Status_Penmanshiel… | 13,219 | 11 | Code | Message | 59 | 59 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2022_WT01-10_4462.zip::Status_Penmanshiel… | 11,027 | 11 | Code | Message | 67 | 67 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2022_WT01-10_4462.zip::Status_Penmanshiel… | 13,676 | 11 | Code | Message | 64 | 64 | 100.0% | 13.8 |
+| Penmanshiel_SCADA_2022_WT01-10_4462.zip::Status_Penmanshiel… | 14,809 | 11 | Code | Message | 62 | 62 | 100.0% | 14 |
+| Penmanshiel_SCADA_2022_WT01-10_4462.zip::Status_Penmanshiel… | 12,149 | 11 | Code | Message | 66 | 66 | 100.0% | 14.1 |
+| Penmanshiel_SCADA_2022_WT01-10_4462.zip::Status_Penmanshiel… | 12,743 | 11 | Code | Message | 54 | 54 | 100.0% | 13.8 |
+| Penmanshiel_SCADA_2022_WT11-15_4463.zip::Status_Penmanshiel… | 9,620 | 11 | Code | Message | 75 | 75 | 100.0% | 14.1 |
+| Penmanshiel_SCADA_2022_WT11-15_4463.zip::Status_Penmanshiel… | 8,812 | 11 | Code | Message | 70 | 70 | 100.0% | 14.2 |
+| Penmanshiel_SCADA_2022_WT11-15_4463.zip::Status_Penmanshiel… | 10,080 | 11 | Code | Message | 59 | 59 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2022_WT11-15_4463.zip::Status_Penmanshiel… | 10,060 | 11 | Code | Message | 68 | 68 | 100.0% | 13.9 |
+| Penmanshiel_SCADA_2022_WT11-15_4463.zip::Status_Penmanshiel… | 8,668 | 11 | Code | Message | 65 | 65 | 100.0% | 14.2 |
 
 ### Top messages: Penmanshiel_SCADA_2016_WT01-10_3107.zip::Status_Penmanshiel…
 
 | message | count | share |
 | --- | --- | --- |
-| Wind < start wind | 1,126 | 43.54% |
-| System OK | 936 | 36.19% |
-| P output externally reduced | 144 | 5.57% |
-| Manual yaw | 50 | 1.93% |
-| Brake accumulator defect | 48 | 1.86% |
-| Externally stopped | 48 | 1.86% |
-| Manual stop - on site | 32 | 1.24% |
-| Comm. failure FPM | 30 | 1.16% |
-| Absence of wind during run-up | 20 | 0.77% |
-| Battery charge cycle axis 1 error | 20 | 0.77% |
-| Battery charge cycle axis 2 error | 20 | 0.77% |
-| Battery charge cycle axis 3 error | 20 | 0.77% |
-| Battery test | 20 | 0.77% |
-| High frequency - P reduction | 14 | 0.54% |
-| Timeout brake closed | 14 | 0.54% |
-| Cable autounwind | 12 | 0.46% |
-| Frequency converter not ready | 10 | 0.39% |
-| Gearbox warm-up stage | 10 | 0.39% |
-| Grid loss | 6 | 0.23% |
-| Transient voltage peak | 6 | 0.23% |
+| Wind < start wind | 1,126 | 41.73% |
+| System OK | 936 | 34.69% |
+| P output externally reduced | 144 | 5.34% |
+| Manual yaw | 50 | 1.85% |
+| Brake accumulator defect | 48 | 1.78% |
+| Externally stopped | 48 | 1.78% |
+| Manual stop - on site | 32 | 1.19% |
+| Comm. failure FPM | 30 | 1.11% |
+| Absence of wind during run-up | 20 | 0.74% |
+| Battery charge cycle axis 1 error | 20 | 0.74% |
+| Battery charge cycle axis 2 error | 20 | 0.74% |
+| Battery charge cycle axis 3 error | 20 | 0.74% |
+| Battery test | 20 | 0.74% |
+| High frequency - P reduction | 14 | 0.52% |
+| Timeout brake closed | 14 | 0.52% |
+| Cable autounwind | 12 | 0.44% |
+| Frequency converter not ready | 10 | 0.37% |
+| Gearbox warm-up stage | 10 | 0.37% |
+| Gear heating enabled | 6 | 0.22% |
+| Grid loss | 6 | 0.22% |
 
 ### Top messages: Penmanshiel_SCADA_2016_WT01-10_3107.zip::Status_Penmanshiel…
 
 | message | count | share |
 | --- | --- | --- |
-| Wind < start wind | 696 | 43.99% |
-| System OK | 550 | 34.77% |
-| P output externally reduced | 70 | 4.42% |
-| Externally stopped | 46 | 2.91% |
-| Vane 2 defect | 41 | 2.59% |
-| Manual stop - on site | 27 | 1.71% |
-| Manual yaw | 23 | 1.45% |
-| Battery test | 22 | 1.39% |
-| Comm. failure FPM | 18 | 1.14% |
-| Gear heating enabled | 12 | 0.76% |
-| Cable autounwind | 11 | 0.70% |
-| Absence of wind during run-up | 10 | 0.63% |
-| Timeout brake closed | 9 | 0.57% |
-| Frequency converter not ready | 8 | 0.51% |
-| Grid loss | 7 | 0.44% |
-| Overload generator fan 1 | 7 | 0.44% |
-| Repeating error BP52 | 7 | 0.44% |
-| Brake accumulator defect | 6 | 0.38% |
-| Overload generator fan 2 | 6 | 0.38% |
-| Overload generator fan 3 | 6 | 0.38% |
+| Wind < start wind | 696 | 42.00% |
+| System OK | 550 | 33.19% |
+| P output externally reduced | 70 | 4.22% |
+| Externally stopped | 46 | 2.78% |
+| Vane 2 defect | 41 | 2.47% |
+| Manual stop - on site | 27 | 1.63% |
+| Manual yaw | 23 | 1.39% |
+| Battery test | 22 | 1.33% |
+| Comm. failure FPM | 18 | 1.09% |
+| Gear heating enabled | 12 | 0.72% |
+| Cable autounwind | 11 | 0.66% |
+| Absence of wind during run-up | 10 | 0.60% |
+| Timeout brake closed | 9 | 0.54% |
+| Frequency converter not ready | 8 | 0.48% |
+| Grid loss | 7 | 0.42% |
+| Overload generator fan 1 | 7 | 0.42% |
+| Repeating error BP52 | 7 | 0.42% |
+| Brake accumulator defect | 6 | 0.36% |
+| Overload generator fan 2 | 6 | 0.36% |
+| Overload generator fan 3 | 6 | 0.36% |
 
 ### Top messages: Penmanshiel_SCADA_2016_WT01-10_3107.zip::Status_Penmanshiel…
 
 | message | count | share |
 | --- | --- | --- |
-| Wind < start wind | 566 | 42.37% |
-| System OK | 479 | 35.85% |
-| P output externally reduced | 51 | 3.82% |
-| Manual stop - on site | 33 | 2.47% |
-| Manual yaw | 26 | 1.95% |
-| Externally stopped | 24 | 1.80% |
-| Battery test | 22 | 1.65% |
-| Comm. failure FPM | 21 | 1.57% |
-| Low gearbox oil pressure | 18 | 1.35% |
-| Absence of wind during run-up | 12 | 0.90% |
-| High temp. gen. bearing 1 | 12 | 0.90% |
-| Battery charge cycle axis 1 error | 9 | 0.67% |
-| Battery charge cycle axis 2 error | 9 | 0.67% |
-| Battery charge cycle axis 3 error | 9 | 0.67% |
-| Cable autounwind | 8 | 0.60% |
-| Frequency converter not ready | 8 | 0.60% |
-| Gearbox warm-up stage | 8 | 0.60% |
-| Repeating error BP52 | 8 | 0.60% |
-| Grid loss | 7 | 0.52% |
-| High frequency - P reduction | 6 | 0.45% |
-
-### Top messages: Penmanshiel_SCADA_2016_WT01-10_3107.zip::Status_Penmanshiel…
-
-| message | count | share |
-| --- | --- | --- |
-| Wind < start wind | 716 | 50.03% |
-| System OK | 476 | 33.26% |
-| P output externally reduced | 31 | 2.17% |
-| Manual stop - on site | 26 | 1.82% |
-| Battery test | 19 | 1.33% |
-| Externally stopped | 17 | 1.19% |
-| Manual yaw | 16 | 1.12% |
-| Absence of wind during run-up | 15 | 1.05% |
-| Comm. failure FPM | 15 | 1.05% |
-| Repeating error BP52 | 12 | 0.84% |
-| Cable autounwind | 11 | 0.77% |
-| Missing gear oil (high rpm) | 11 | 0.77% |
-| Battery charge cycle axis 1 error | 10 | 0.70% |
-| Battery charge cycle axis 2 error | 10 | 0.70% |
-| Battery charge cycle axis 3 error | 10 | 0.70% |
+| Wind < start wind | 566 | 39.66% |
+| System OK | 479 | 33.57% |
+| P output externally reduced | 51 | 3.57% |
+| Manual stop - on site | 33 | 2.31% |
+| Manual yaw | 26 | 1.82% |
+| Externally stopped | 24 | 1.68% |
+| Battery test | 22 | 1.54% |
+| Comm. failure FPM | 21 | 1.47% |
+| Low gearbox oil pressure | 18 | 1.26% |
+| Absence of wind during run-up | 12 | 0.84% |
+| High temp. gen. bearing 1 | 12 | 0.84% |
+| Battery charge cycle axis 1 error | 9 | 0.63% |
+| Battery charge cycle axis 2 error | 9 | 0.63% |
+| Battery charge cycle axis 3 error | 9 | 0.63% |
+| Cable autounwind | 8 | 0.56% |
 | Frequency converter not ready | 8 | 0.56% |
 | Gearbox warm-up stage | 8 | 0.56% |
-| Max. wind speed | 7 | 0.49% |
-| Timeout brake closed | 7 | 0.49% |
-| Grid loss | 6 | 0.42% |
+| Repeating error BP52 | 8 | 0.56% |
+| Grid loss | 7 | 0.49% |
+| Brake accumulator defect | 6 | 0.42% |
 
 ### Top messages: Penmanshiel_SCADA_2016_WT01-10_3107.zip::Status_Penmanshiel…
 
 | message | count | share |
 | --- | --- | --- |
-| Wind < start wind | 537 | 33.60% |
-| System OK | 478 | 29.91% |
-| Vane 2 defect | 326 | 20.40% |
-| P output externally reduced | 50 | 3.13% |
-| Externally stopped | 32 | 2.00% |
-| Comm. failure FPM | 22 | 1.38% |
-| Battery test | 19 | 1.19% |
-| Manual yaw | 17 | 1.06% |
-| Manual stop - on site | 16 | 1.00% |
-| Timeout brake closed | 12 | 0.75% |
-| Brake accumulator defect | 11 | 0.69% |
-| Absence of wind during run-up | 10 | 0.63% |
-| Pitch measuring system 1><2 | 10 | 0.63% |
-| Battery charge cycle axis 1 error | 9 | 0.56% |
-| Battery charge cycle axis 2 error | 9 | 0.56% |
-| Battery charge cycle axis 3 error | 9 | 0.56% |
-| Cable autounwind | 9 | 0.56% |
-| Gearbox warm-up stage | 9 | 0.56% |
-| Repeating error BP52 | 7 | 0.44% |
-| Safety chain open | 6 | 0.38% |
+| Wind < start wind | 716 | 47.73% |
+| System OK | 476 | 31.73% |
+| P output externally reduced | 31 | 2.07% |
+| Manual stop - on site | 26 | 1.73% |
+| Battery test | 19 | 1.27% |
+| Externally stopped | 17 | 1.13% |
+| Manual yaw | 16 | 1.07% |
+| Absence of wind during run-up | 15 | 1.00% |
+| Comm. failure FPM | 15 | 1.00% |
+| Repeating error BP52 | 12 | 0.80% |
+| Cable autounwind | 11 | 0.73% |
+| Missing gear oil (high rpm) | 11 | 0.73% |
+| Battery charge cycle axis 1 error | 10 | 0.67% |
+| Battery charge cycle axis 2 error | 10 | 0.67% |
+| Battery charge cycle axis 3 error | 10 | 0.67% |
+| Frequency converter not ready | 8 | 0.53% |
+| Gearbox warm-up stage | 8 | 0.53% |
+| Max. wind speed | 7 | 0.47% |
+| Timeout brake closed | 7 | 0.47% |
+| Grid loss | 6 | 0.40% |
 
 ### Top messages: Penmanshiel_SCADA_2016_WT01-10_3107.zip::Status_Penmanshiel…
 
 | message | count | share |
 | --- | --- | --- |
-| Wind < start wind | 821 | 46.07% |
-| System OK | 597 | 33.50% |
-| P output externally reduced | 68 | 3.82% |
-| Battery charge cycle axis 1 error | 54 | 3.03% |
-| Externally stopped | 52 | 2.92% |
-| Manual stop - on site | 30 | 1.68% |
-| Comm. failure FPM | 26 | 1.46% |
-| Absence of wind during run-up | 24 | 1.35% |
-| Battery test | 24 | 1.35% |
-| Battery charge cycle axis 2 error | 12 | 0.67% |
-| Battery charge cycle axis 3 error | 12 | 0.67% |
-| Manual yaw | 12 | 0.67% |
-| Frequency converter not ready | 9 | 0.51% |
-| Cable autounwind | 8 | 0.45% |
-| Repeating error BP52 | 7 | 0.39% |
-| Grid loss | 6 | 0.34% |
-| Gearbox warm-up stage | 5 | 0.28% |
-| High frequency - P reduction | 5 | 0.28% |
-| Park master stop | 5 | 0.28% |
-| Timeout brake closed | 5 | 0.28% |
+| Wind < start wind | 537 | 31.89% |
+| System OK | 478 | 28.38% |
+| Vane 2 defect | 326 | 19.36% |
+| P output externally reduced | 50 | 2.97% |
+| Externally stopped | 32 | 1.90% |
+| Comm. failure FPM | 22 | 1.31% |
+| Battery test | 19 | 1.13% |
+| Manual yaw | 17 | 1.01% |
+| Manual stop - on site | 16 | 0.95% |
+| Timeout brake closed | 12 | 0.71% |
+| Brake accumulator defect | 11 | 0.65% |
+| Absence of wind during run-up | 10 | 0.59% |
+| Pitch measuring system 1><2 | 10 | 0.59% |
+| Battery charge cycle axis 1 error | 9 | 0.53% |
+| Battery charge cycle axis 2 error | 9 | 0.53% |
+| Battery charge cycle axis 3 error | 9 | 0.53% |
+| Cable autounwind | 9 | 0.53% |
+| Gearbox warm-up stage | 9 | 0.53% |
+| Repeating error BP52 | 7 | 0.42% |
+| Frequency converter not ready | 6 | 0.36% |
 
 ### Top messages: Penmanshiel_SCADA_2016_WT01-10_3107.zip::Status_Penmanshiel…
 
 | message | count | share |
 | --- | --- | --- |
-| Wind < start wind | 383 | 34.57% |
-| System OK | 376 | 33.94% |
-| Overfrequency | 96 | 8.66% |
-| P output externally reduced | 51 | 4.60% |
-| Externally stopped | 47 | 4.24% |
-| Manual stop - on site | 24 | 2.17% |
-| Battery test | 19 | 1.71% |
-| Absence of wind during run-up | 15 | 1.35% |
-| Manual yaw | 15 | 1.35% |
-| Battery charge cycle axis 1 error | 10 | 0.90% |
-| Battery charge cycle axis 2 error | 10 | 0.90% |
-| Battery charge cycle axis 3 error | 10 | 0.90% |
-| Comm. failure FPM | 10 | 0.90% |
-| Frequency converter not ready | 8 | 0.72% |
-| Brake accumulator defect | 6 | 0.54% |
-| High frequency - P reduction | 6 | 0.54% |
-| Park master stop | 6 | 0.54% |
-| Timeout brake closed | 6 | 0.54% |
-| Cable panel breaker open | 5 | 0.45% |
-| Repeating error BP52 | 5 | 0.45% |
+| Wind < start wind | 821 | 44.55% |
+| System OK | 597 | 32.39% |
+| P output externally reduced | 68 | 3.69% |
+| Battery charge cycle axis 1 error | 54 | 2.93% |
+| Externally stopped | 52 | 2.82% |
+| Manual stop - on site | 30 | 1.63% |
+| Comm. failure FPM | 26 | 1.41% |
+| Absence of wind during run-up | 24 | 1.30% |
+| Battery test | 24 | 1.30% |
+| Battery charge cycle axis 2 error | 12 | 0.65% |
+| Battery charge cycle axis 3 error | 12 | 0.65% |
+| Manual yaw | 12 | 0.65% |
+| Frequency converter not ready | 9 | 0.49% |
+| Cable autounwind | 8 | 0.43% |
+| Repeating error BP52 | 7 | 0.38% |
+| Grid loss | 6 | 0.33% |
+| Brake accumulator defect | 5 | 0.27% |
+| Gearbox warm-up stage | 5 | 0.27% |
+| High frequency - P reduction | 5 | 0.27% |
+| Park master stop | 5 | 0.27% |
 
 ### Top messages: Penmanshiel_SCADA_2016_WT01-10_3107.zip::Status_Penmanshiel…
 
 | message | count | share |
 | --- | --- | --- |
-| Wind < start wind | 486 | 38.73% |
-| System OK | 459 | 36.57% |
-| Overfrequency | 63 | 5.02% |
-| P output externally reduced | 54 | 4.30% |
-| Externally stopped | 47 | 3.75% |
-| Battery test | 19 | 1.51% |
-| Manual yaw | 16 | 1.27% |
-| Frequency converter not ready | 15 | 1.20% |
-| Manual stop - on site | 15 | 1.20% |
-| Absence of wind during run-up | 10 | 0.80% |
-| Brake accumulator defect | 10 | 0.80% |
-| Comm. failure FPM | 10 | 0.80% |
-| Repeating error BP52 | 9 | 0.72% |
-| Battery charge cycle axis 1 error | 7 | 0.56% |
-| Battery charge cycle axis 2 error | 7 | 0.56% |
-| Battery charge cycle axis 3 error | 7 | 0.56% |
-| Gearbox warm-up stage | 6 | 0.48% |
-| Cable autounwind | 5 | 0.40% |
-| Park master stop | 5 | 0.40% |
-| Timeout brake closed | 5 | 0.40% |
+| Wind < start wind | 383 | 32.62% |
+| System OK | 376 | 32.03% |
+| Overfrequency | 96 | 8.18% |
+| P output externally reduced | 51 | 4.34% |
+| Externally stopped | 47 | 4.00% |
+| Manual stop - on site | 24 | 2.04% |
+| Battery test | 19 | 1.62% |
+| Absence of wind during run-up | 15 | 1.28% |
+| Manual yaw | 15 | 1.28% |
+| Battery charge cycle axis 1 error | 10 | 0.85% |
+| Battery charge cycle axis 2 error | 10 | 0.85% |
+| Battery charge cycle axis 3 error | 10 | 0.85% |
+| Comm. failure FPM | 10 | 0.85% |
+| Frequency converter not ready | 8 | 0.68% |
+| Brake accumulator defect | 6 | 0.51% |
+| High frequency - P reduction | 6 | 0.51% |
+| Park master stop | 6 | 0.51% |
+| Timeout brake closed | 6 | 0.51% |
+| Cable panel breaker open | 5 | 0.43% |
+| Repeating error BP52 | 5 | 0.43% |
 
 ### Top messages: Penmanshiel_SCADA_2016_WT01-10_3107.zip::Status_Penmanshiel…
 
 | message | count | share |
 | --- | --- | --- |
-| System OK | 513 | 41.04% |
-| Wind < start wind | 468 | 37.44% |
-| P output externally reduced | 63 | 5.04% |
-| Externally stopped | 47 | 3.76% |
-| Manual stop - on site | 23 | 1.84% |
-| Manual yaw | 18 | 1.44% |
-| Battery test | 17 | 1.36% |
-| Comm. failure FPM | 15 | 1.20% |
-| Repeating error BP52 | 12 | 0.96% |
-| Absence of wind during run-up | 11 | 0.88% |
-| Frequency converter not ready | 11 | 0.88% |
-| Missing gear oil (high rpm) | 9 | 0.72% |
-| Brake accumulator defect | 8 | 0.64% |
-| Overfrequency | 8 | 0.64% |
-| Gearbox warm-up stage | 7 | 0.56% |
-| Battery charge cycle axis 1 error | 4 | 0.32% |
-| Battery charge cycle axis 2 error | 4 | 0.32% |
-| Battery charge cycle axis 3 error | 4 | 0.32% |
-| Cable autounwind | 4 | 0.32% |
-| Grid loss | 4 | 0.32% |
+| Wind < start wind | 486 | 36.79% |
+| System OK | 459 | 34.75% |
+| Overfrequency | 63 | 4.77% |
+| P output externally reduced | 54 | 4.09% |
+| Externally stopped | 47 | 3.56% |
+| Battery test | 19 | 1.44% |
+| Manual yaw | 16 | 1.21% |
+| Frequency converter not ready | 15 | 1.14% |
+| Manual stop - on site | 15 | 1.14% |
+| Absence of wind during run-up | 10 | 0.76% |
+| Brake accumulator defect | 10 | 0.76% |
+| Comm. failure FPM | 10 | 0.76% |
+| Repeating error BP52 | 9 | 0.68% |
+| Battery charge cycle axis 1 error | 7 | 0.53% |
+| Battery charge cycle axis 2 error | 7 | 0.53% |
+| Battery charge cycle axis 3 error | 7 | 0.53% |
+| Gearbox warm-up stage | 6 | 0.45% |
+| Cable autounwind | 5 | 0.38% |
+| Park master stop | 5 | 0.38% |
+| Timeout brake closed | 5 | 0.38% |
+
+### Top messages: Penmanshiel_SCADA_2016_WT01-10_3107.zip::Status_Penmanshiel…
+
+| message | count | share |
+| --- | --- | --- |
+| System OK | 513 | 39.64% |
+| Wind < start wind | 468 | 36.17% |
+| P output externally reduced | 63 | 4.87% |
+| Externally stopped | 47 | 3.63% |
+| Manual stop - on site | 23 | 1.78% |
+| Manual yaw | 18 | 1.39% |
+| Battery test | 17 | 1.31% |
+| Comm. failure FPM | 15 | 1.16% |
+| Repeating error BP52 | 12 | 0.93% |
+| Absence of wind during run-up | 11 | 0.85% |
+| Frequency converter not ready | 11 | 0.85% |
+| Missing gear oil (high rpm) | 9 | 0.70% |
+| Brake accumulator defect | 8 | 0.62% |
+| Overfrequency | 8 | 0.62% |
+| Gearbox warm-up stage | 7 | 0.54% |
+| Battery charge cycle axis 1 error | 4 | 0.31% |
+| Battery charge cycle axis 2 error | 4 | 0.31% |
+| Battery charge cycle axis 3 error | 4 | 0.31% |
+| Cable autounwind | 4 | 0.31% |
+| Grid loss | 4 | 0.31% |
 
 ### Top messages: Penmanshiel_SCADA_2016_WT11-15_3107.zip::Status_Penmanshiel…
 
 | message | count | share |
 | --- | --- | --- |
-| Wind < start wind | 418 | 43.68% |
-| System OK | 302 | 31.56% |
-| P output externally reduced | 53 | 5.54% |
-| Externally stopped | 45 | 4.70% |
-| Overfrequency | 24 | 2.51% |
-| Battery test | 17 | 1.78% |
-| Manual yaw | 16 | 1.67% |
-| Comm. failure FPM | 13 | 1.36% |
-| Manual stop - on site | 12 | 1.25% |
-| Brake accumulator defect | 8 | 0.84% |
-| Repeating error BP52 | 7 | 0.73% |
-| Lightning protection defect | 6 | 0.63% |
-| Timeout brake closed | 6 | 0.63% |
-| Cable autounwind | 5 | 0.52% |
-| Max. wind speed | 5 | 0.52% |
-| Park master stop | 5 | 0.52% |
-| Absence of wind during run-up | 4 | 0.42% |
-| Frequency converter not ready | 4 | 0.42% |
-| Overload generator fan 3 | 4 | 0.42% |
-| Overload generator fan 2 | 3 | 0.31% |
+| Wind < start wind | 418 | 40.78% |
+| System OK | 302 | 29.46% |
+| P output externally reduced | 53 | 5.17% |
+| Externally stopped | 45 | 4.39% |
+| Overfrequency | 24 | 2.34% |
+| Battery test | 17 | 1.66% |
+| Manual yaw | 16 | 1.56% |
+| Comm. failure FPM | 13 | 1.27% |
+| Manual stop - on site | 12 | 1.17% |
+| Brake accumulator defect | 8 | 0.78% |
+| Repeating error BP52 | 7 | 0.68% |
+| Lightning protection defect | 6 | 0.59% |
+| Timeout brake closed | 6 | 0.59% |
+| Cable autounwind | 5 | 0.49% |
+| Max. wind speed | 5 | 0.49% |
+| Park master stop | 5 | 0.49% |
+| Absence of wind during run-up | 4 | 0.39% |
+| Frequency converter not ready | 4 | 0.39% |
+| Overload generator fan 3 | 4 | 0.39% |
+| Battery charge cycle axis 1 error | 3 | 0.29% |
 
 ### Top messages: Penmanshiel_SCADA_2016_WT11-15_3107.zip::Status_Penmanshiel…
 
 | message | count | share |
 | --- | --- | --- |
-| System OK | 314 | 31.24% |
-| Wind < start wind | 297 | 29.55% |
-| Overfrequency | 165 | 16.42% |
-| P output externally reduced | 56 | 5.57% |
-| Externally stopped | 45 | 4.48% |
-| Manual stop - on site | 23 | 2.29% |
-| Max. wind speed | 17 | 1.69% |
-| Battery test | 14 | 1.39% |
-| Manual yaw | 13 | 1.29% |
-| Comm. failure FPM | 10 | 1.00% |
-| Battery charge cycle axis 1 error | 6 | 0.60% |
-| Battery charge cycle axis 2 error | 6 | 0.60% |
-| Battery charge cycle axis 3 error | 6 | 0.60% |
-| Repeating error BP52 | 6 | 0.60% |
-| Timeout brake closed | 6 | 0.60% |
-| Error brake resistor CHP | 5 | 0.50% |
-| Brake accumulator defect | 4 | 0.40% |
-| Cable autounwind | 4 | 0.40% |
-| Manual stop - remote | 4 | 0.40% |
-| Pitch batteries charging cycle | 4 | 0.40% |
+| System OK | 314 | 28.91% |
+| Wind < start wind | 297 | 27.35% |
+| Overfrequency | 165 | 15.19% |
+| P output externally reduced | 56 | 5.16% |
+| Externally stopped | 45 | 4.14% |
+| Manual stop - on site | 23 | 2.12% |
+| Max. wind speed | 17 | 1.57% |
+| Battery test | 14 | 1.29% |
+| Manual yaw | 13 | 1.20% |
+| Comm. failure FPM | 10 | 0.92% |
+| Battery charge cycle axis 1 error | 6 | 0.55% |
+| Battery charge cycle axis 2 error | 6 | 0.55% |
+| Battery charge cycle axis 3 error | 6 | 0.55% |
+| Repeating error BP52 | 6 | 0.55% |
+| Timeout brake closed | 6 | 0.55% |
+| Error brake resistor CHP | 5 | 0.46% |
+| Brake accumulator defect | 4 | 0.37% |
+| Cable autounwind | 4 | 0.37% |
+| Manual stop - remote | 4 | 0.37% |
+| Pitch batteries charging cycle | 4 | 0.37% |
 
 ### Top messages: Penmanshiel_SCADA_2016_WT11-15_3107.zip::Status_Penmanshiel…
 
 | message | count | share |
 | --- | --- | --- |
-| System OK | 337 | 38.38% |
-| Wind < start wind | 326 | 37.13% |
-| P output externally reduced | 50 | 5.69% |
-| Externally stopped | 42 | 4.78% |
-| Battery test | 16 | 1.82% |
-| Max. wind speed | 15 | 1.71% |
-| Overfrequency | 13 | 1.48% |
-| Comm. failure FPM | 12 | 1.37% |
-| Manual stop - on site | 11 | 1.25% |
-| Manual yaw | 9 | 1.03% |
-| Frequency converter not ready | 7 | 0.80% |
-| Brake accumulator defect | 6 | 0.68% |
-| Cable autounwind | 6 | 0.68% |
-| Timeout brake closed | 6 | 0.68% |
-| Repeating error BP52 | 5 | 0.57% |
-| Grid loss | 4 | 0.46% |
-| Park master stop | 4 | 0.46% |
-| Absence of wind during run-up | 3 | 0.34% |
-| High frequency - P reduction | 3 | 0.34% |
-| Tower oscillation Y level 1 | 3 | 0.34% |
+| System OK | 337 | 37.16% |
+| Wind < start wind | 326 | 35.94% |
+| P output externally reduced | 50 | 5.51% |
+| Externally stopped | 42 | 4.63% |
+| Battery test | 16 | 1.76% |
+| Max. wind speed | 15 | 1.65% |
+| Overfrequency | 13 | 1.43% |
+| Comm. failure FPM | 12 | 1.32% |
+| Manual stop - on site | 11 | 1.21% |
+| Manual yaw | 9 | 0.99% |
+| Frequency converter not ready | 7 | 0.77% |
+| Brake accumulator defect | 6 | 0.66% |
+| Cable autounwind | 6 | 0.66% |
+| Timeout brake closed | 6 | 0.66% |
+| Repeating error BP52 | 5 | 0.55% |
+| Grid loss | 4 | 0.44% |
+| Park master stop | 4 | 0.44% |
+| Absence of wind during run-up | 3 | 0.33% |
+| High frequency - P reduction | 3 | 0.33% |
+| Tower oscillation Y level 1 | 3 | 0.33% |
+
+_Per-table top messages are shown for the first 12 of 98 tables with messages; the pooled measurements above cover all of them._
 
 ## Header samples (first lines, one member per kind)
 
@@ -437,39 +601,39 @@ Timestamp start,Timestamp end,Duration,Status,Code,Message,Comment,Service contr
 2016-06-10 11:34:58,2016-06-10 11:37:56,00:02:58,Warning,5100,Service obstacle light,,Warnings (27),
 ```
 
-**Penmanshiel_WT_dataSignalMapping.xlsx**
+**Penmanshiel_WT_static.csv**
 
 ```text
-PK     ! ��1ŏ  �   �[Content_Types].xml ��(�                                                                                                                                                 
-�XV`�΃�o�.A�6L��TL�w��+^:K`�E����`,f���E|�"	��e���ګ`�{�JA��ϭ�pi�
-�b�R
-/"�[
-�7?��bk���
-E�Ga"_h����͹i�[d
-��U	ҕ3;�� $V dt���e?�w��`�����/	��������If�!�R��ڕ�>�J���f�
-��.�87��<�
-px>W��n�(�4K�m�Ǹ}�nL;��-A�һ�!9�j4W&�=������߄1
-?��.���
-��Od�ex���?   �� PK     ! ^�e  �  
- �_rels/.rels ��(�                                                                                                                                                                                   
-��H�C���n ���]&��*`����Q�A��$�F��؟?��)��8��|h�*��r)�j6���|)W�R���`ϖ�<Q����j�L=�4���\lP���= �Ѐ!cG6u*����58�
-��<���COq0J�����<��yٛ��մg}
-��3+��H֐Y9��|l�5�D_STҰ~J� �\��%�'�\N���0PD�A��y�O�
-��r�刦��t�
-��w���
-����c�<,���F�ɷ,>   �� PK     ! c�{�t  o     xl/workbook.xml�U]o�:}����w�� *]5t+���Ͷ/�*�bp֘&U��}�����*�{#bc�p8�93�~]7���U'd� zB���B��}L��i�Cdu��%�e���;����_�+���R>Y �v	��^ƶ�oXw"���B
--� ��
-�X�������
-��5�@��Ĳۡ5�1p
-SO��Y�\�B�
-��j��ⱕ��k{M}k��
-�O
-��M`:xU#
-%;��' moH�O�M�#X��qH����09ܳR�'Y{��
-��?F� �A+1
-�'��=7��.D��6ҵ�r��5&S5�j����	�R���
-�/ǽ���x�3B��^���*�������w�PA9��a�ך��i>��
-n��S�
+﻿Wind Farm,Title,Alternative Title,Identity,Manufacturer,Model,Rated power (kW),Hub Height (m),Rotor Diameter (m),Latitude,Longitude,Elevation (m),Country,Commercial Operations Date,
+Penmanshiel,Penmanshiel 01,T01,MM82/59 82765-01,Senvion,MM82,2050,59,82,55.902502,-2.306389,212.26,UK,01/09/2016,
+Penmanshiel,Penmanshiel 02,T02,MM82/59 82766-02,Senvion,MM82,2050,59,82,55.900008,-2.301268,200.46,UK,01/09/2016,
+Penmanshiel,Penmanshiel 04,T04,MM82/59 82768-04,Senvion,MM82,2050,59,82,55.905943,-2.30269,208.91,UK,01/09/2016,
+Penmanshiel,Penmanshiel 05,T05,MM82/59 82769-05,Senvion,MM82,2050,59,82,55.903294,-2.298367,201.38,UK,01/09/2016,
+Penmanshiel,Penmanshiel 06,T06,MM82/59 82770-06,Senvion,MM82,2050,59,82,55.900951,-2.293967,199.03,UK,01/09/2016,
+Penmanshiel,Penmanshiel 07,T07,MM82/59 82771-07,Senvion,MM82,2050,59,82,55.898741,-2.289856,180.24,UK,01/09/2016,
+Penmanshiel,Penmanshiel 08,T08,MM82/59 82772-08,Senvion,MM82,2050,59,82,55.907915,-2.297314,200.13,UK,01/09/2016,
+Penmanshiel,Penmanshiel 09,T09,MM82/59 82773-09,Senvion,MM82,2050,59,82,55.90499,-2.291806,187.04,UK,01/09/2016,
+Penmanshiel,Penmanshiel 10,T10,MM82/59 82774-10,Senvion,MM82,2050,59,82,55.903032,-2.287585,186.88,UK,01/09/2016,
+Penmanshiel,Penmanshiel 11,T11,MM82/59 82775-11,Senvion,MM82,2050,59,82,55.900852,-2.282371,204.84,UK,01/09/2016,
+Penmanshiel,Penmanshiel 12,T12,MM82/59 82776-12,Senvion,MM82,2050,59,82,55.908703,-2.290986,219.31,UK,01/09/2016,
+Penmanshiel,Penmanshiel 13,T13,MM82/59 82777-13,Senvion,MM82,2050,59,82,55.907026,-2.285887,220,UK,01/09/2016,
+Penmanshiel,Penmanshiel 14,T14,MM82/59 82778-14,Senvion,MM82,2050,59,82,55.90505,-2.28165,219.46,UK,01/09/2016,
+Penmanshiel,Penmanshiel 15,T15,MM82/59 82767-15,Senvion,MM82,2050,59,82,55.902463,-2.277329,228.15,UK,01/09/2016,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,
 ```
 
 ## Member listing (198 of 198)

@@ -88,10 +88,19 @@ MAX_TOP_SECTIONS = 12
 #: a nested archive decodes to noise.
 TEXT_SUFFIXES: tuple[str, ...] = (".csv", ".txt", ".md", ".json")
 
-#: Heuristic thresholds for the free-text verdict. These classify, they do not
-#: decide: the raw counts are printed next to the verdict in every report.
+#: Thresholds for the free-text verdict. They classify, they do not decide: every
+#: report prints them next to the verdict, with the measurements they were applied to.
+#:
+#: More distinct strings than this is open-ended text rather than a closed set.
 TEMPLATE_MAX_UNIQUE = 500
-TEMPLATE_MAX_MEAN_CHARS = 60
+#: Within a closed set, what separates a code book from written descriptions is not
+#: length but recurrence: a code book's labels recur by construction, while a
+#: description written for one event mostly occurs once. At or above this share of
+#: distinct strings occurring exactly once, the set was written, not looked up.
+WRITTEN_MIN_ONCE_SHARE = 0.5
+#: Written descriptions averaging no more than this many characters are a line or
+#: two, not a paragraph.
+SHORT_MAX_MEAN_CHARS = 200
 
 
 @dataclass
@@ -457,19 +466,26 @@ def collect_event_evidence(
 
 
 def free_text_verdict(
-    profiles: list[dict[str, Any]], members_staged: int | None = None
+    measurements: TextMeasurements | None, members_staged: int | None = None
 ) -> tuple[str, str]:
-    """Decide what the inspected event tables say about free text.
+    """Decide what the parsed event tables say about free text.
+
+    The verdict follows the measurements and is not forced into yes or no. A code book
+    and a set of short written descriptions can both be small and short; what
+    separates them is recurrence, so that is what decides between them.
 
     Args:
-        profiles: Profiles produced by :func:`profile_event_table`.
+        measurements: Text pooled over every parsed event table, or ``None`` when no
+            event table was parsed.
         members_staged: How many members were discovered for the source. Pass it so
             that "nothing is staged" is not reported as "searched and found nothing":
             the two read almost identically and mean entirely different things.
 
     Returns:
-        A ``(verdict, rationale)`` pair, where the verdict is one of
-        ``VERIFIED yes``, ``VERIFIED no`` or ``UNVERIFIED``.
+        A ``(verdict, rationale)`` pair. The verdict is ``UNVERIFIED``; ``VERIFIED no``
+        for codes only or a code book; ``VERIFIED short written descriptions`` for a
+        closed set written per event (``VERIFIED written descriptions`` when they run
+        longer than a line or two); or ``VERIFIED yes`` for open-ended text.
     """
     if members_staged == 0:
         return (
@@ -478,31 +494,45 @@ def free_text_verdict(
             "This is an absence of evidence, not evidence of absence. Run "
             "`faultline download telemetry --tier 1 --source <id>` and inspect again",
         )
-    if not profiles:
+    if measurements is None or measurements.tables == 0:
         return (
             "UNVERIFIED",
-            "archives are staged, but no status, alarm or event member was found in them; "
+            "archives are staged, but no status, alarm or event member was parsed from them; "
             "either this record publishes none, or the classification patterns missed it",
         )
-    with_messages = [p for p in profiles if p["message_column"] and p["unique_messages"] > 0]
-    if not with_messages:
+    m = measurements
+    if m.text_rows == 0:
         return (
             "VERIFIED no",
-            "event tables were found and parsed, but none carries a non-empty message column",
+            f"codes only: {m.tables} event tables and {m.rows:,} rows were parsed, and not "
+            "one row carries a message",
         )
-    unique = max(p["unique_messages"] for p in with_messages)
-    mean_chars = max(p["mean_message_chars"] for p in with_messages)
-    if unique <= TEMPLATE_MAX_UNIQUE and mean_chars <= TEMPLATE_MAX_MEAN_CHARS:
+    shape = (
+        f"{m.distinct:,} distinct strings over {m.text_rows:,} rows with text, mean length "
+        f"{m.mean_chars:.1f} characters ({m.mean_words:.1f} words), "
+        f"{m.once_share * 100:.1f}% of the distinct strings occurring exactly once"
+    )
+    if m.distinct > TEMPLATE_MAX_UNIQUE:
         return (
-            "VERIFIED no",
-            f"messages are present but template-like: at most {unique} distinct strings "
-            f"with a mean length of {mean_chars:.1f} characters, which is a controlled "
-            "vocabulary rather than open-ended language (ADR-0001 holds)",
+            "VERIFIED yes",
+            f"open-ended text: {shape}; revisit ADR-0001, the paired text may be usable",
+        )
+    if m.once_share >= WRITTEN_MIN_ONCE_SHARE:
+        label = (
+            "VERIFIED short written descriptions"
+            if m.mean_chars <= SHORT_MAX_MEAN_CHARS
+            else "VERIFIED written descriptions"
+        )
+        return (
+            label,
+            f"a closed set of {m.distinct} strings written per event rather than drawn from "
+            f"a code book: {shape}. Richer than a code book and far too little to be a "
+            "corpus, so ADR-0001 is qualified rather than overturned",
         )
     return (
-        "VERIFIED yes",
-        f"messages look open-ended: up to {unique} distinct strings with a mean length of "
-        f"{mean_chars:.1f} characters; revisit ADR-0001, the paired text may be usable",
+        "VERIFIED no",
+        f"a code book: {shape}; at most {m.max_table_distinct} distinct strings in any one "
+        "table. A closed set of recurring labels, not open-ended language (ADR-0001 holds)",
     )
 
 
@@ -684,7 +714,8 @@ def build_report(
         A Markdown document.
     """
     profiles = evidence.profiles
-    verdict, rationale = free_text_verdict(profiles, members_staged=len(members))
+    measurements = measure_text(profiles) if profiles else None
+    verdict, rationale = free_text_verdict(measurements, members_staged=len(members))
     archives = sorted({member.archive for member in members})
     by_kind: Counter[str] = Counter(member.kind for member in members)
     codes = pooled_codes(profiles)
@@ -726,12 +757,18 @@ def build_report(
             "Free-text verdict",
             f"**{verdict}** - {rationale}\n\n"
             "This is the evidence behind ADR-0001: whether the paired text in this record is "
-            "open-ended language or a controlled vocabulary.",
+            "open-ended language or a controlled vocabulary.\n\n"
+            f"Thresholds applied: more than {TEMPLATE_MAX_UNIQUE} distinct strings is "
+            "open-ended text; within that, a set in which at least "
+            f"{WRITTEN_MIN_ONCE_SHARE * 100:.0f}% of the distinct strings occur exactly once "
+            "was written per event, otherwise it is a code book; written descriptions "
+            f"averaging at most {SHORT_MAX_MEAN_CHARS} characters are short. The measurements "
+            "are pooled over every parsed event table and listed in the next section.",
         )
     )
 
-    if profiles:
-        parts.append(text_section(measure_text(profiles), licence_note))
+    if measurements is not None:
+        parts.append(text_section(measurements, licence_note))
     parts.append(codes_section(evidence, codes))
     parts.append(code_descriptions_section(evidence, codes))
 

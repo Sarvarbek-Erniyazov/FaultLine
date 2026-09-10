@@ -41,10 +41,21 @@ def test_get_adapter_loads_the_channel_map(repo_root: Path) -> None:
     assert "gearbox_bearing_temp_c" not in adapter.channel_map
 
 
+def test_penmanshiel_channel_map_agrees_with_kelmarsh_column_for_column(repo_root: Path) -> None:
+    # Resolved on 2026-09-10 from Penmanshiel's own headers and signal-mapping workbook,
+    # not copied from Kelmarsh. That the two Senvion records agree is the finding, and
+    # this pins it -- including the gearbox bearing temperature neither of them has.
+    penmanshiel = get_adapter("penmanshiel", repo_root / "configs").channel_map
+    kelmarsh = get_adapter("kelmarsh", repo_root / "configs").channel_map
+    assert len(penmanshiel) == 13
+    assert "gearbox_bearing_temp_c" not in penmanshiel
+    assert penmanshiel == kelmarsh
+
+
 def test_unresolved_channel_maps_stay_empty(repo_root: Path) -> None:
-    # The other three sources are still TODO(m1), so their maps resolve to nothing
+    # Hill of Towie and CARE are still TODO(m1), so their maps resolve to nothing
     # rather than to something plausible and wrong.
-    for source in ("penmanshiel", "hill_of_towie", "care"):
+    for source in ("hill_of_towie", "care"):
         assert get_adapter(source, repo_root / "configs").channel_map == {}
 
 

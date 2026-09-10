@@ -4,10 +4,11 @@ Fourteen Senvion MM82 turbines, 2016-2024, published as zips split by turbine
 range as well as by year, so a single year spans two archives. Turbine WT03 is
 absent from the record.
 
-Same publisher as Kelmarsh and, on the published file names, the same layout --
-but the signal mapping ships as .xlsx here rather than .csv, so the channel map
-could not be filled at M0 without opening the workbook. Discovery is implemented;
-the loaders wait on inspection.
+Same publisher as Kelmarsh and, on the published file names, the same layout. The
+signal mapping ships as .xlsx here rather than .csv; it was read on 2026-09-10 and
+the channel map resolved from it and from the headers of all 98 turbine-year members
+(configs/data/channel_map/penmanshiel.yaml). Discovery is implemented; the loaders
+still wait on inspection.
 """
 
 from __future__ import annotations

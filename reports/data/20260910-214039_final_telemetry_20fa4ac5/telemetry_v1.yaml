@@ -1,0 +1,164 @@
+# Telemetry pipeline configuration, version 1.
+#
+# The M1 configuration. telemetry_v0.yaml is left untouched: it is what M0 declared, and
+# an old report stays reproducible only while the file it names does not move.
+#
+# What v1 changes, and on what evidence:
+#
+#   1. THE CORE CHANNEL SET IS FROZEN HERE (core_channels / extended_channels below).
+#      v0 declared eight core channels on Kelmarsh evidence alone. v1 derives them from
+#      the resolved channel maps: core means present at BOTH training sites (Kelmarsh,
+#      Penmanshiel) AND mappable at the held-out site (Hill of Towie). Everything else
+#      is extended. Each channel carries a one-line evidence note, and
+#      tests/data/telemetry/test_core_channels.py fails if this list and the maps ever
+#      disagree. Full evidence: reports/data/channel_maps_20260910.md.
+#   2. Three risk horizons are labelled side by side (events.horizons_steps), and none
+#      is primary. Choosing one is a decision for the gate-1 base rates, not for this
+#      file.
+#   3. Per-source event labelling (status strings -> categories -> is_fault, the Hill of
+#      Towie downtime threshold) lives in its own file, events.labels_config, because
+#      it is a mapping of hundreds of provider strings and not a pipeline threshold.
+#   4. The split specification is splits_v1.yaml.
+#
+# Everything else is copied from v0 with its provenance comment, and what v0 left
+# provisional is still provisional here and still says so. A run never edits this file
+# once it has read it; a change is telemetry_v2.yaml.
+
+telemetry:
+  freq: "10min" # all four providers publish 10-minute aggregated SCADA
+  # Measured per source, not assumed: Kelmarsh UTC (resolved_kelmarsh_*.md); Hill of
+  # Towie UTC and interval-end labelled (resolved_hill_of_towie_*.md, M1a step 4);
+  # Penmanshiel declares UTC in every preamble. CARE is anonymised and has no timezone
+  # to measure (configs/data/sources_telemetry.yaml). This key applies only to a naive
+  # timestamp an adapter has not already localised.
+  timezone_default: "UTC"
+
+  # Canonical channels, in the order that fixes channel token identifiers (ADR-0003).
+  # Unchanged from v0: a channel is appended, never inserted or reordered.
+  channels:
+    - wind_speed_ms
+    - power_kw
+    - rotor_speed_rpm
+    - generator_speed_rpm
+    - pitch_angle_deg
+    - nacelle_position_deg
+    - wind_direction_deg
+    - ambient_temp_c
+    - nacelle_temp_c
+    - gearbox_bearing_temp_c
+    - gearbox_oil_temp_c
+    - generator_bearing_temp_c
+    - generator_winding_temp_c
+    - main_bearing_temp_c
+
+  # FROZEN 2026-09-10. Present at both training sites AND mappable at the held-out site.
+  # K = Kelmarsh, P = Penmanshiel (same Greenbyte column at both, confirmed against
+  # each site's own signal mapping), HoT = Hill of Towie (<table>.<field>).
+  core_channels:
+    wind_speed_ms: "K/P 'Wind speed (m/s)', signal 1; HoT tblSCTurbine.wtc_AcWindSp_mean, wind speed from the active sensor"
+    power_kw: "K/P 'Power (kW)', signal 5, measured kW at Kelmarsh; HoT tblSCTurGrid.wtc_ActPower_mean, active power in kW"
+    rotor_speed_rpm: "K/P 'Rotor speed (RPM)', signal 54; HoT tblSCTurbine.wtc_MainSRpm_mean, main shaft rpm"
+    generator_speed_rpm: "K/P 'Generator RPM (RPM)', signal 86; HoT tblSCTurbine.wtc_GenRpm_mean"
+    pitch_angle_deg: "K/P blade A pitch, signal 80; HoT tblSCTurbine.wtc_PitcPosA_mean, blade A"
+    nacelle_position_deg: "K/P 'Nacelle position', signal 3; HoT tblSCTurbine.wtc_NacelPos_mean, yaw angle relative to North"
+    wind_direction_deg: "K/P 'Wind direction', signal 2; HoT tblSCTurbine.wtc_ActualWindDirection_mean, published in 2023 only (2019: 0 of 12 months), so half the staged held-out period reads it as missing"
+    ambient_temp_c: "K/P 'Nacelle ambient temperature', signal 24 outdoor temp.; HoT tblSCTurTemp.wtc_AmbieTmp_mean"
+    nacelle_temp_c: "K/P 'Nacelle temperature', signal 25 inside nacelle; HoT tblSCTurTemp.wtc_NacelTmp_mean"
+    gearbox_oil_temp_c: "K/P 'Gear oil temperature', signal 178; HoT tblSCTurTemp.wtc_GeOilTmp_mean"
+    generator_bearing_temp_c: "K/P front bearing, signal 119; HoT tblSCTurTemp.wtc_GenBeRTm_mean, drive end (front taken as drive end, an inference)"
+    generator_winding_temp_c: "K/P 'Stator temperature 1', signal 22; HoT tblSCTurTemp.wtc_Gen1U1Tm_mean, winding 1U1"
+    main_bearing_temp_c: "K/P 'Rotor bearing temp', signal 447; HoT tblSCTurTemp.wtc_MainBTmp_mean, main bearing"
+
+  extended_channels:
+    gearbox_bearing_temp_c: "verified absent at both Kelmarsh and Penmanshiel (no gearbox bearing in either signal mapping); HoT publishes four, and tblSCTurTemp.wtc_HSGenTmp_mean is mapped"
+
+  # ---------------------------------------------------------------------------
+  # plausibility bounds: values outside become NaN and are counted per channel
+  # ---------------------------------------------------------------------------
+  # Copied from v0 unchanged. Only power_kw is measured; every other bound is still a
+  # physical limit of the machine class, not a measured percentile.
+  bounds:
+    wind_speed_ms: { min: 0.0, max: 60.0 } # provisional: above cut-out; anemometer saturation
+    # MEASURED 2026-09-09 at Kelmarsh: 1.1 x the 2050 kW rating, above every measured
+    # p99.5 and maximum. Evidence: reports/data/resolved_kelmarsh_20260909.md.
+    power_kw: { min: -100.0, max: 2255.0 }
+    rotor_speed_rpm: { min: 0.0, max: 30.0 } # provisional
+    generator_speed_rpm: { min: 0.0, max: 2500.0 } # provisional: doubly-fed generator range
+    pitch_angle_deg: { min: -5.0, max: 95.0 } # provisional: feathered is ~90 deg
+    nacelle_position_deg: { min: 0.0, max: 360.0 } # provisional: full circle
+    wind_direction_deg: { min: 0.0, max: 360.0 } # provisional: full circle
+    ambient_temp_c: { min: -40.0, max: 60.0 } # provisional: sensor range, not site climate
+    nacelle_temp_c: { min: -40.0, max: 80.0 } # provisional
+    gearbox_bearing_temp_c: { min: -40.0, max: 150.0 } # provisional
+    gearbox_oil_temp_c: { min: -40.0, max: 150.0 } # provisional
+    generator_bearing_temp_c: { min: -40.0, max: 200.0 } # provisional
+    generator_winding_temp_c: { min: -40.0, max: 250.0 } # provisional
+    # TODO(m1): set from the measured percentiles like every other bound here.
+    main_bearing_temp_c: { min: -40.0, max: 150.0 } # provisional, by analogy with gearbox bearing
+
+  bounds_overrides:
+    hill_of_towie:
+      power_kw: { min: -100.0, max: 2530.0 } # 1.1 x 2300 kW rated (Siemens SWT-2.3-VS-82)
+    care:
+      # CARE power is normalised against an unpublished rated power (channel_map/care.yaml,
+      # read -0.02 to 1.04 in one dataset per farm), so the kW bound does not apply.
+      # 1.1 x rated in per-unit, the same margin as the kW bounds.
+      power_kw: { min: -0.1, max: 1.1 }
+
+  # ---------------------------------------------------------------------------
+  # cleaning
+  # ---------------------------------------------------------------------------
+  clean:
+    # Applies to genuinely repeated labels only. The Kelmarsh 2023-2024 export repeats
+    # are collapsed at ingest, where they are proven to carry no conflicting values
+    # (M1a step 4); a repeat that fails that proof stops the ingest rather than
+    # reaching this rule.
+    duplicate_timestamps: "mean" # mean|first. Provisional
+    apply_bounds: true
+    drop_all_nan_rows: false # a fully-missing timestep is itself evidence; the mask carries it
+
+  # ---------------------------------------------------------------------------
+  # filtering (copied from v0; provisional until the step-8 missingness report)
+  # ---------------------------------------------------------------------------
+  filter:
+    min_channel_nonnull_frac: 0.50 # provisional
+    min_turbine_year_nonnull_frac: 0.30 # provisional
+    segment_break_steps: 6 # provisional: a gap of one hour starts a new segment
+    min_segment_steps: 144 # provisional: keep segments of at least one day
+
+  # ---------------------------------------------------------------------------
+  # imputation (always accompanied by a boolean mask column, ADR-0006)
+  # ---------------------------------------------------------------------------
+  impute:
+    max_impute_steps: 3 # provisional: fill gaps up to 30 minutes
+    method: "linear" # linear|ffill
+
+  # ---------------------------------------------------------------------------
+  # events and labels
+  # ---------------------------------------------------------------------------
+  events:
+    # 1 h, 6 h and 24 h at 10-minute resolution, labelled side by side. No horizon is
+    # primary in this file; horizon_steps is deliberately left unset.
+    horizons_steps: [6, 36, 144]
+    # Status strings -> categories -> is_fault per source, and the Hill of Towie
+    # downtime threshold. Written at M1a step 6, before any labelling run reads it.
+    labels_config: "configs/data/events_v1.yaml"
+    lowercase_messages: true
+    collapse_whitespace: true
+    default_is_fault: null # an unmapped code is unknown, never benign (ADR-0006)
+
+  # ---------------------------------------------------------------------------
+  # tokenizer fitting (fit on the training split only)
+  # ---------------------------------------------------------------------------
+  tokenizer:
+    n_bins: 64 # provisional
+    sample_rows: 500000 # provisional
+    seed: 20260909
+
+  final:
+    splits_config: "configs/data/splits_v1.yaml"
+    write_masks: true # never false: the imputation masks are model inputs (ADR-0006)
+
+  report:
+    top_n_messages: 20
+    percentile_channels: [] # empty = every configured channel

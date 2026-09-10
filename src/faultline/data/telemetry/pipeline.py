@@ -35,6 +35,12 @@ from faultline.data.common.splits import (
     split_counts,
 )
 from faultline.data.common.stage import Stage, StageResult
+from faultline.data.common.windows import (
+    assert_segments_within_splits,
+    assert_windows_within_splits,
+    cut_segments_at_splits,
+    window_ends,
+)
 from faultline.data.telemetry import report as telemetry_report
 from faultline.data.telemetry.adapters import ADAPTERS, get_adapter
 from faultline.data.telemetry.adapters.base import FileAccount, RawMember
@@ -663,11 +669,18 @@ class FinalStage(TelemetryStage):
         split_totals: dict[str, int] = {}
         outputs: dict[str, int] = {}
         written: list[Path] = []
+        tally: dict[tuple[str, str], dict[str, int]] = {}
+        checked = {"segments": 0, "windows": 0}
+        sites: dict[str, str] = {}
+        # A configuration that predates side-by-side horizons (v0) names one.
+        single = self.config.events.horizon_steps
+        horizons = list(self.config.events.horizons_steps) or ([single] if single else [])
         rows_in = 0
         rows_out = 0
 
         for source in self.sources:
             destination = stage_source_dir(self.paths, "final", source)
+            labels_dir = stage_source_dir(self.paths, "cleaned", source) / "labels"
             for path in parquet_files(stage_source_dir(self.paths, "filtered", source)):
                 frame = pd.read_parquet(path)
                 rows_in += len(frame)
@@ -675,10 +688,23 @@ class FinalStage(TelemetryStage):
                 for name, value in counts.items():
                     imputed_totals[name] = imputed_totals.get(name, 0) + value
 
-                if splits_config is not None:
+                if splits_config is not None and not imputed.empty:
                     imputed["split"] = assign_splits(imputed, splits_config).to_numpy()
                     for name, value in split_counts(imputed["split"]).items():
                         split_totals[name] = split_totals.get(name, 0) + value
+                    if "site" in imputed.columns:
+                        sites.setdefault(source, str(imputed["site"].iloc[0]))
+                    imputed = _join_labels(imputed, labels_dir / path.name)
+                    if "segment_id" in imputed.columns:
+                        imputed["segment_id"] = cut_segments_at_splits(
+                            imputed["segment_id"].to_numpy(), imputed["split"].to_numpy()
+                        )
+                        checked["segments"] += assert_segments_within_splits(
+                            imputed["segment_id"].to_numpy(), imputed["split"].to_numpy()
+                        )
+                        checked["windows"] += _tally_windows(
+                            imputed, splits_config, horizons, source, tally
+                        )
 
                 rows_out += len(imputed)
                 out_path = destination / path.name
@@ -686,6 +712,11 @@ class FinalStage(TelemetryStage):
                 outputs[out_path.name] = len(imputed)
                 written.append(out_path)
 
+        events = (
+            _events_per_split(self.paths, self.sources, sites, splits_config)
+            if splits_config is not None
+            else {}
+        )
         return StageResult(
             name=self.name,
             rows_in=rows_in,
@@ -696,9 +727,137 @@ class FinalStage(TelemetryStage):
                 "splits": split_totals,
                 "outputs": outputs,
                 "splits_config": str(splits_path),
+                "split_spec": splits_config.model_dump(mode="json") if splits_config else {},
+                "horizons_steps": horizons,
+                "split_windows": tally,
+                "split_events": events,
+                "checked": checked,
             },
             outputs=written,
         )
+
+
+def _join_labels(frame: pd.DataFrame, path: Path) -> pd.DataFrame:
+    """Join a turbine-year's harmonised labels onto its final rows, by timestamp.
+
+    Args:
+        frame: Final rows of one turbine-year.
+        path: The label stage's table for the same turbine-year.
+
+    Returns:
+        The rows with the ``narrow_*`` and ``broad_*`` label columns, where they exist.
+    """
+    if not path.is_file():
+        return frame
+    labels = pd.read_parquet(path)
+    columns = [c for c in labels.columns if c.startswith(("narrow_", "broad_"))]
+    if not columns:
+        return frame
+    labels = labels[["timestamp_utc", *columns]].copy()
+    labels["timestamp_utc"] = pd.to_datetime(labels["timestamp_utc"], utc=True).astype(
+        "datetime64[ns, UTC]"
+    )
+    result = frame.drop(columns=[c for c in columns if c in frame.columns])
+    result["timestamp_utc"] = pd.to_datetime(result["timestamp_utc"], utc=True).astype(
+        "datetime64[ns, UTC]"
+    )
+    return result.merge(labels, on="timestamp_utc", how="left")
+
+
+def _tally_windows(
+    frame: pd.DataFrame,
+    config: SplitsConfig,
+    horizons: list[int],
+    source: str,
+    tally: dict[tuple[str, str], dict[str, int]],
+) -> int:
+    """Count rows, segments, windows and positive windows per split, and check them.
+
+    Args:
+        frame: One turbine-year's final rows, with split, segment and label columns.
+        config: The split specification.
+        horizons: Horizons, in steps.
+        source: Source identifier.
+        tally: Counts per (split, source), updated in place.
+
+    Returns:
+        The number of windows checked for leakage.
+    """
+    from faultline.data.telemetry.labels import LABEL_SETS, label_column
+
+    split = frame["split"].to_numpy(dtype=object)
+    segment = frame["segment_id"].to_numpy()
+    for name in pd.unique(split):
+        entry = tally.setdefault((str(name), source), {})
+        rows = split == name
+        entry["rows"] = entry.get("rows", 0) + int(rows.sum())
+        entry["segments"] = entry.get("segments", 0) + len(
+            {int(s) for s in segment[rows] if s >= 0}
+        )
+    checked = 0
+    for steps in horizons:
+        ends = window_ends(frame, config, steps)
+        checked += assert_windows_within_splits(frame, ends, config, steps)
+        for label_set in LABEL_SETS:
+            column = label_column(label_set, steps)
+            if column not in frame.columns:
+                continue
+            values = frame[column]
+            known = ends & values.notna().to_numpy()
+            positive = ends & values.fillna(False).to_numpy(dtype=bool)
+            for name in pd.unique(split[ends]):
+                entry = tally.setdefault((str(name), source), {})
+                here = split == name
+                entry[f"windows {column}"] = entry.get(f"windows {column}", 0) + int(
+                    (known & here).sum()
+                )
+                entry[f"positive {column}"] = entry.get(f"positive {column}", 0) + int(
+                    (positive & here).sum()
+                )
+    return checked
+
+
+def _events_per_split(
+    paths: ProjectPaths,
+    sources: list[str],
+    sites: dict[str, str],
+    config: SplitsConfig,
+) -> dict[tuple[str, str], dict[str, int]]:
+    """Count each label set's events per split, by the split of the step they start in.
+
+    Args:
+        paths: Resolved project paths.
+        sources: Sources of the run.
+        sites: Site name per source, for a split rule keyed on the site.
+        config: The split specification.
+
+    Returns:
+        Events per (split, source) and label set, counting events on the cleaned grid.
+    """
+    result: dict[tuple[str, str], dict[str, int]] = {}
+    for source in sources:
+        labels_dir = stage_source_dir(paths, "cleaned", source) / "labels"
+        for label_set in ("narrow", "broad"):
+            path = labels_dir / f"events_{label_set}.parquet"
+            if not path.is_file():
+                continue
+            events = pd.read_parquet(path)
+            if "in_grid" in events.columns:
+                events = events[events["in_grid"]]
+            if events.empty:
+                continue
+            probe = pd.DataFrame(
+                {
+                    config.source_column: source,
+                    config.time_column: pd.to_datetime(events["start_utc"], utc=True).to_numpy(),
+                }
+            )
+            if config.site_column != config.source_column:
+                probe[config.site_column] = sites.get(source, source)
+            for name, count in assign_splits(probe, config).value_counts().items():
+                entry = result.setdefault((str(name), source), {})
+                entry[label_set] = entry.get(label_set, 0) + int(count)
+    return result
 
 
 STAGE_CLASSES: dict[str, type[TelemetryStage]] = {

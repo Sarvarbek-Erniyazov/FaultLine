@@ -63,6 +63,20 @@ class TimeSplitSpec(StrictModel):
         return self
 
 
+class WindowSpec(StrictModel):
+    """The windows the leakage checks and the split report are counted on.
+
+    Attributes:
+        context_steps: Steps a model reads, ending at the step it predicts for. Not the
+            model's final context length, which is chosen at gate 2 from the numbers
+            this spec produces; it fixes what "a window" means for the checks.
+        stride_steps: Steps between consecutive window ends.
+    """
+
+    context_steps: int = Field(default=144, gt=0)
+    stride_steps: int = Field(default=1, gt=0)
+
+
 class SplitsConfig(StrictModel):
     """Specification of one split of the corpus.
 
@@ -81,6 +95,7 @@ class SplitsConfig(StrictModel):
         eval_only_sources: Sources that may never enter training or validation.
             Every row of such a source is labelled ``test``, whatever the site and
             time axes say. This is a licence constraint (ADR-0004), not a tunable.
+        windows: The windows the leakage checks are counted on.
     """
 
     version: int = 0
@@ -94,6 +109,7 @@ class SplitsConfig(StrictModel):
     eval_channels: list[str] = Field(default_factory=list)
     source_column: str = "source"
     eval_only_sources: list[str] = Field(default_factory=list)
+    windows: WindowSpec = Field(default_factory=WindowSpec)
 
     @model_validator(mode="after")
     def _leave_site_out_reads_core_channels_only(self) -> SplitsConfig:

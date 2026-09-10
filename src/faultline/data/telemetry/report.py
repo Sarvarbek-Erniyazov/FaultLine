@@ -327,6 +327,8 @@ def final_report(meta: RunMeta, result: StageResult) -> str:
             ),
         )
     )
+    if details.get("split_spec"):
+        parts.append(_splits_section(details))
     parts.append(
         section(
             "Outputs",
@@ -334,6 +336,68 @@ def final_report(meta: RunMeta, result: StageResult) -> str:
         )
     )
     return "".join(parts)
+
+
+def _horizon_label(steps: int) -> str:
+    minutes = steps * 10
+    return f"{minutes // 60}h" if minutes % 60 == 0 else f"{minutes}min"
+
+
+def _splits_section(details: dict[str, Any]) -> str:
+    """The split specification, the leakage checks, and windows and events per split."""
+    spec = details["split_spec"]
+    horizons: list[int] = details.get("horizons_steps", [])
+    windows: dict[tuple[str, str], dict[str, int]] = details.get("split_windows", {})
+    events: dict[tuple[str, str], dict[str, int]] = details.get("split_events", {})
+    checked: dict[str, int] = details.get("checked", {})
+    keys = sorted(
+        set(windows) | set(events), key=lambda k: (("train", "val", "test").index(k[0]), k[1])
+    )
+    body = kv_table(
+        {
+            "held out (every row test)": ", ".join(spec.get("holdout_sites", [])) or "none",
+            "evaluation only (every row test)": ", ".join(spec.get("eval_only_sources", []))
+            or "none",
+            "train up to": spec["time"]["train_until"],
+            "val up to": spec["time"]["val_until"],
+            "after that": spec.get("late_period_split", "test"),
+            "window": f"{spec['windows']['context_steps']} steps of context ending at t, "
+            f"stride {spec['windows']['stride_steps']}; the horizon (t, t + H] inside t's split",
+            "segments checked: none spans two splits": checked.get("segments", 0),
+            "windows checked: no context or horizon crosses a split boundary": checked.get(
+                "windows", 0
+            ),
+        }
+    )
+    body += (
+        "\nSegments are cut where the split changes, and every window is re-checked from "
+        "its timestamps alone: the split at its first context step and at the end of its "
+        "horizon must equal the split at t. A violation stops the stage "
+        "(`windows.LeakageError`), so the counts above are of windows that passed.\n"
+    )
+    for label_set in ("narrow", "broad"):
+        rows = []
+        for key in keys:
+            counts = windows.get(key, {})
+            cells: list[Any] = [
+                key[0],
+                key[1],
+                counts.get("rows", 0),
+                counts.get("segments", 0),
+                events.get(key, {}).get(label_set, 0),
+            ]
+            for steps in horizons:
+                column = f"{label_set}_within_{_horizon_label(steps)}"
+                total = counts.get(f"windows {column}", 0)
+                positive = counts.get(f"positive {column}", 0)
+                share = f" ({positive / total * 100:.2f}%)" if total else ""
+                cells += [total, f"{positive:,}{share}"]
+            rows.append(tuple(cells))
+        headers = ["split", "source", "rows", "segments", f"{label_set} events"]
+        for steps in horizons:
+            headers += [f"windows {_horizon_label(steps)}", f"positive {_horizon_label(steps)}"]
+        body += f"\n**{label_set.capitalize()} label**\n\n" + table(headers, rows)
+    return section("Splits: windows and events per split", body)
 
 
 def events_section(summary: dict[str, Any], top_messages: dict[str, int]) -> str:

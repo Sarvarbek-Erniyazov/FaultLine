@@ -202,6 +202,10 @@ def test_clean_filter_final_on_a_synthetic_turbine_year(
 
     for stage in STAGE_ORDER:
         assert (run_dir / f"{stage}_stats_report.md").is_file()
+    final_report = (run_dir / "final_stats_report.md").read_text(encoding="utf-8")
+    assert "Splits: windows and events per split" in final_report
+    assert final.details["checked"]["segments"] >= 1
+    assert final.details["checked"]["windows"] >= 1
 
 
 def test_long_gaps_are_never_imputed(config_path: Path, repo_paths: ProjectPaths) -> None:

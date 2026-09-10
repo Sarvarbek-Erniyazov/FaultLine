@@ -117,6 +117,13 @@ trained from scratch, evaluated as a risk model rather than a forecaster.
   (14,905,629 less 460 copies = 14,905,169 loaded; the per-file sum had read
   19,304,713); CARE carries 45 labelled anomalies, not the README's 44; a split rule
   that misses the held-out source now fails loudly.*
+- *M1a step 7, 2026-09-11: splits settled and checked (`splits_v1.yaml`, `windows.py`):
+  train 2016-2020, val 2021, late test 2022-2024 at both training sites; Hill of Towie
+  held out, CARE evaluation-only. 1,656 segments and 43,956,756 windows checked, none
+  crossing a split. Narrow events: train 265 / 875, val 39 / 295, late test 415 / 333
+  (Kelmarsh / Penmanshiel), Hill of Towie 693. The late period runs at about twice the
+  training rate: the temporal test is a drift test. Short all-channel gaps now reach
+  imputation instead of being dropped with the long ones.*
 - Fit `QuantileBinTokenizer` on the training split only.
 - Model, training loop, checkpointing; multi-seed runs.
 - Risk evaluation: AUPRC, event-level F1, false alarms per hour, detection delay.

@@ -1,9 +1,9 @@
 # Site and time split specification, version 1.
 #
-# Created 2026-09-10 with the frozen core set. NOT YET READ BY ANY RUN: its time cut is
-# still v0's worked example and is settled at M1a step 7 from the measured per-site
-# coverage, before any run reads this file. From the first run that reads it, it is
-# frozen like every other config.
+# Created 2026-09-10 with the frozen core set. Its time cut was settled at M1a step 7
+# (2026-09-11) from the measured per-site coverage, before any run read the file; the
+# first run to read it was that step's final stage, and from then on it is frozen like
+# every other config.
 #
 # What changed from v0:
 #
@@ -34,12 +34,31 @@ holdout_sites:
   - "hill_of_towie"
 holdout_site_split: "test"
 
-# TODO(m1): M1a step 7 -- set from the ingest and clean coverage tables. Until then this
-# is v0's worked example, carried over so that the file validates.
+# SETTLED 2026-09-11 (M1a step 7) from the cleaned grid, in turbine-years per year:
+# Kelmarsh 5.6 in 2016, then 6.0 a year to 2024; Penmanshiel 7.3 in 2016, then 14.0 a
+# year to 2022; Hill of Towie 21.0 in each of 2019 and 2023 (held out whatever the
+# date). This is the one cut that puts BOTH training sites in train, val and the late
+# test:
+#   train  2016-2020   Kelmarsh 29.6 + Penmanshiel 63.3 = 92.9 turbine-years
+#   val    2021        Kelmarsh  6.0 + Penmanshiel 14.0 = 20.0
+#   test   2022-2024   Kelmarsh 18.0 + Penmanshiel 14.0 = 32.0 (the late period)
+# v0's worked example (train to 2021, val 2022, test 2023-2024) would leave Penmanshiel,
+# which ends in 2022, out of the late test altogether.
+# The narrow event rate rises in the late period at both training sites (label report
+# 20260910-212256: Kelmarsh 18.3, 34.0, 16.8 per turbine-year in 2022-2024 against 6.5
+# to 10.6 before; Penmanshiel 23.8 in 2022). The late test is a drift test, and is read
+# as one.
 time:
-  train_until: "2021-12-31T23:59:59Z"
-  val_until: "2022-12-31T23:59:59Z"
+  train_until: "2020-12-31T23:59:59Z"
+  val_until: "2021-12-31T23:59:59Z"
 late_period_split: "test"
+
+# What "a window" means for the leakage checks and the split report: 144 steps (one day)
+# of context ending at t, the horizon (t, t + H] inside t's split, every step a possible
+# window end. NOT the model's context length, which gate 2 chooses from these numbers.
+windows:
+  context_steps: 144
+  stride_steps: 1
 
 # The frozen core set (configs/data/telemetry_v1.yaml, core_channels).
 eval_channels:

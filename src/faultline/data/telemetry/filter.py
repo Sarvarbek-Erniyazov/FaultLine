@@ -105,9 +105,12 @@ def segment_ids(
 ) -> pd.Series[Any]:
     """Label each row with the identifier of its continuous segment.
 
-    A row counts as present when at least one configured channel is non-null. A run
-    of ``segment_break_steps`` or more absent steps starts a new segment; absent
-    rows themselves are labelled ``-1``.
+    A row counts as present when at least one configured channel is non-null. A run of
+    ``segment_break_steps`` or more absent steps starts a new segment. A shorter run of
+    absent steps stays *inside* its segment and carries the segment's identifier: it is
+    the short gap ADR-0006 says imputation fills, so it must reach imputation as a row
+    rather than be dropped with the long gaps. Absent rows outside every segment -- a
+    long gap, or before the first and after the last present row -- are labelled ``-1``.
 
     Args:
         frame: Wide telemetry table on a regular grid, sorted by time.
@@ -124,27 +127,27 @@ def segment_ids(
 
     present_columns = [name for name in channels if name in frame.columns]
     present = (
-        frame[present_columns].notna().any(axis=1)
+        frame[present_columns].notna().any(axis=1).to_numpy()
         if present_columns
-        else pd.Series(False, index=frame.index)
+        else np.zeros(len(frame), dtype=bool)
     )
+    ids = np.full(len(frame), -1, dtype=np.int64)
+    positions = np.flatnonzero(present)
+    if positions.size == 0:
+        return pd.Series(ids, index=frame.index, name="segment_id")
+
     stamps = pd.to_datetime(frame[column], utc=True)
     step = pd.Timedelta(freq)
+    elapsed = (stamps.iloc[positions].diff() / step).to_numpy()[1:]
+    starts = np.r_[True, elapsed > config.segment_break_steps]
+    ids[positions] = np.cumsum(starts) - 1
 
-    ids = np.full(len(frame), -1, dtype=np.int64)
-    current = -1
-    last_present_time: pd.Timestamp | None = None
-    for position, (is_present, stamp) in enumerate(zip(present.to_numpy(), stamps, strict=True)):
-        if not is_present:
-            continue
-        if last_present_time is None:
-            current += 1
-        else:
-            elapsed_steps = (stamp - last_present_time) / step
-            if elapsed_steps > config.segment_break_steps:
-                current += 1
-        ids[position] = current
-        last_present_time = stamp
+    # An absent row between two present rows of one segment belongs to that segment.
+    marked = pd.Series(np.where(present, ids, np.nan))
+    before = marked.ffill().to_numpy()
+    after = marked.bfill().to_numpy()
+    inside = ~present & ~np.isnan(before) & (before == after)
+    ids[inside] = before[inside].astype(np.int64)
     return pd.Series(ids, index=frame.index, name="segment_id")
 
 

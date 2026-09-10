@@ -82,6 +82,21 @@ def test_short_gaps_do_not_split_a_segment() -> None:
     assert set(ids[ids >= 0]) == {0}
 
 
+def test_a_short_gap_stays_inside_its_segment_so_imputation_can_fill_it() -> None:
+    # ADR-0006: short gaps are imputed, long gaps end a segment. Before M1a step 7 the
+    # short gap's rows were labelled -1 and dropped with the long gaps, so imputation
+    # never saw a gap in which every channel was missing.
+    frame = gridded(30)
+    frame.loc[10:12, ["wind_speed_ms", "power_kw"]] = np.nan
+    frame.loc[0:1, ["wind_speed_ms", "power_kw"]] = np.nan  # before the first present row
+    config = TelemetryFilterConfig(segment_break_steps=6, min_segment_steps=1)
+    ids = segment_ids(frame, ["wind_speed_ms", "power_kw"], config)
+    assert ids.iloc[10:13].tolist() == [0, 0, 0]
+    assert ids.iloc[0:2].tolist() == [-1, -1]
+    filtered, _ = drop_short_segments(frame, ids, config)
+    assert len(filtered) == 28
+
+
 def test_empty_frame_segments() -> None:
     ids = segment_ids(gridded(0), CHANNELS, TelemetryFilterConfig())
     assert ids.empty

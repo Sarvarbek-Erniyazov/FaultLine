@@ -188,10 +188,19 @@ sources:
       n_turbines: 36
       rated_kw: 0 # TODO(m1): not published per farm
       period: "89 turbine-years"
+      # COUNTED 2026-09-11 (M1a step 6c): the record README says "44 out the 95
+      # datasets contain a labeled anomaly event and the other 51 datasets represent
+      # normal behavior". The three event_info files say 45 and 50: 12 + 6 + 27 anomaly
+      # rows in farms A, B and C, 10 + 9 + 31 normal. All 45 anomaly starts fall inside
+      # their dataset's grid and label at least one step
+      # (reports/data/20260910-212256_label_telemetry_20fa4ac5). The table is what the
+      # pipeline reads, so 45 stands. The README prose was not brought in line with it;
+      # this is record v6 ("label corrections"), which fits that, without proving it.
       note: >-
         farm A is 5 onshore turbines in Portugal, farms B and C are offshore in
         Germany; 86/257/957 features per farm; 95 datasets, 45 with labelled
-        anomaly events; event_info files carry event descriptions
+        anomaly events by event_info (12/6/27 in farms A/B/C; the README says 44);
+        event_info files carry event descriptions
     # CLOSED 2026-09-10 as unanswerable by design. The record README states that "the
     # sensor data and time stamps are anonymized". An anonymised timestamp keeps the
     # 10-minute spacing and nothing else, so no timezone can be measured from it and no

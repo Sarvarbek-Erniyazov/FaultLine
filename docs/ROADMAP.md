@@ -112,6 +112,11 @@ trained from scratch, evaluated as a risk model rather than a forecaster.
   held-out site publishes a cause (`tblSCTurFlag`), and pitch lubrication is excluded by
   it. Narrow (technical) per turbine-year: Kelmarsh 13.4, Penmanshiel 16.5, Hill of
   Towie 16.5; broad (any stop): 104.6, 127.7, 137.1.*
+- *M1a step 6c, 2026-09-11: the collapse assertion counts distinct values and holds on
+  all 311 columns of the 12 repeated Kelmarsh files; ingest counts rows per joined unit
+  (14,905,629 less 460 copies = 14,905,169 loaded; the per-file sum had read
+  19,304,713); CARE carries 45 labelled anomalies, not the README's 44; a split rule
+  that misses the held-out source now fails loudly.*
 - Fit `QuantileBinTokenizer` on the training split only.
 - Model, training loop, checkpointing; multi-seed runs.
 - Risk evaluation: AUPRC, event-level F1, false alarms per hour, detection delay.

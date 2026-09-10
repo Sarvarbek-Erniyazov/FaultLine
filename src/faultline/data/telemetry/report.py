@@ -91,21 +91,31 @@ def ingest_report(meta: RunMeta, result: StageResult) -> str:
         )
     )
     files = details.get("files", [])
+    units = details.get("units", [])
     if files:
         repeated = [row for row in files if row[3] > row[5]]
         unequal = [row for row in files if not row[3] == row[4] == row[5]]
+        joined = [row for row in units if row[2] > 1]
+        sources = details.get("sources", {})
+        copies = sum(info.get("identical_copies_dropped", 0) for info in sources.values())
+        loaded = sum(info.get("loaded", 0) for info in sources.values())
+        unit_rows = sum(row[3] for row in units)
         parts.append(
             section(
                 "Row accounting per file",
                 "Every SCADA file goes through the repeated-label rule: drop the rows null in "
                 "every ingested channel, assert that no (label, column) then holds two "
-                "values, and collapse to one row per label. `rows_raw` is rows read, "
-                "`rows_after_null_drop` is rows carrying any ingested value, "
+                "distinct values, and collapse to one row per label. `rows_raw` is rows "
+                "read, `rows_after_null_drop` is rows carrying any ingested value, "
                 "`labels_distinct` is distinct labels read (label and station, where one "
-                "file holds every turbine), `rows_out` is rows kept. A file that does not "
-                "repeat shows `rows_raw == labels_distinct`; a file whose three counts "
-                "agree also had no row without an ingested value. The assertion held for "
-                "every file below, or the run would have stopped.\n\n"
+                "file holds every turbine), `rows_out` is rows kept from that file. A file "
+                "that does not repeat shows `rows_raw == labels_distinct`; a file whose three "
+                "counts agree also had no row without an ingested value. The assertion held "
+                "for every file below, or the run would have stopped.\n\n"
+                "Where a loader joins several files into one unit -- a Hill of Towie month is "
+                "three tables joined on (label, station) -- the files' `rows_out` describe "
+                "the same rows three times and do not add up; the unit's joined rows do. The "
+                "total below is over units.\n\n"
                 + kv_table(
                     {
                         "files": len(files),
@@ -113,10 +123,24 @@ def ingest_report(meta: RunMeta, result: StageResult) -> str:
                         "files where the three counts agree": len(files) - len(unequal),
                         "rows_raw": sum(row[3] for row in files),
                         "rows_after_null_drop": sum(row[4] for row in files),
-                        "rows_out": sum(row[6] for row in files),
+                        "units read": len(units),
+                        "units joining several files": len(joined),
+                        "rows_out, over units (after each unit's join)": unit_rows,
+                        "identical cross-file copies dropped": copies,
+                        "rows loaded (rows_out over units, less the copies)": loaded,
+                        "rows_out over units less the copies equals rows loaded": (
+                            unit_rows - copies == loaded
+                        ),
                     }
                 )
                 + "\n"
+                + (
+                    "**Units that join several files**\n\n"
+                    + table(["source", "unit", "files", "rows after the join"], joined)
+                    + "\n"
+                    if joined
+                    else ""
+                )
                 + table(
                     [
                         "source",

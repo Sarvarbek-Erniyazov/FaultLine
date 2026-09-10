@@ -234,6 +234,22 @@ def assign_splits(frame: pd.DataFrame, config: SplitsConfig) -> pd.Series[Any]:
     if config.holdout_sites:
         held_out = frame[config.site_column].astype(str).isin(config.holdout_sites).to_numpy()
         labels[held_out] = config.holdout_site_split
+        # The v0 failure mode, made loud: a site rule that does not match the held-out
+        # source's rows leaves that source in training without a word. The adapters write
+        # the source id verbatim, so where the frame carries it, it is the check.
+        if config.source_column in frame.columns and config.source_column != config.site_column:
+            from_holdout = (
+                frame[config.source_column].astype(str).isin(config.holdout_sites).to_numpy()
+            )
+            missed = from_holdout & ~held_out
+            if missed.any():
+                sites = sorted(frame.loc[missed, config.site_column].astype(str).unique())
+                raise ValueError(
+                    f"{int(missed.sum())} rows come from held-out source(s) "
+                    f"{sorted(frame.loc[missed, config.source_column].astype(str).unique())} "
+                    f"but the site rule on column {config.site_column!r} does not match them "
+                    f"(it reads {sites}); they would be left in training"
+                )
 
     # Applied last, and not configurable: an evaluation-only source is test, whatever
     # the axes above decided. See docs/DATA_LICENSES.md.

@@ -150,6 +150,34 @@ def test_a_channel_the_held_out_site_cannot_map_fails_on_the_maps(
         check_eval_channels_against_maps(spec, tmp_path / "configs", list(ADAPTERS))
 
 
+def adapter_rows() -> pd.DataFrame:
+    """Rows shaped as the adapters write them: source id verbatim, human site name."""
+    return pd.DataFrame(
+        {
+            "source": ["kelmarsh", "hill_of_towie"],
+            "site": ["Kelmarsh", "Hill of Towie"],
+            "timestamp_utc": pd.to_datetime(["2019-06-01", "2019-06-01"], utc=True),
+        }
+    )
+
+
+def test_the_v0_split_bug_fails_loudly_instead_of_training_on_the_held_out_site(
+    repo_root: Path,
+) -> None:
+    # Regression, M1a step 6c. splits_v0.yaml matches "hill_of_towie" against the site
+    # column, which reads "Hill of Towie": the rule matches nothing, and before this check
+    # the held-out site's 2019 rows were silently assigned to train.
+    v0 = load_config(repo_root / "configs" / "data" / "splits_v0.yaml", SplitsConfig)
+    with pytest.raises(ValueError, match="would be left in training"):
+        assign_splits(adapter_rows(), v0)
+
+
+def test_the_v1_split_holds_the_same_rows_out(repo_root: Path) -> None:
+    v1 = load_config(repo_root / "configs" / "data" / "splits_v1.yaml", SplitsConfig)
+    labels = assign_splits(adapter_rows(), v1)
+    assert list(labels) == ["train", "test"]
+
+
 def test_a_held_out_site_that_names_no_source_is_rejected(repo_root: Path) -> None:
     # The v0 site-column mismatch in miniature: "Hill of Towie" matches no source id.
     spec = config(holdout_sites=["Hill of Towie"])

@@ -239,7 +239,10 @@ class RepeatCheck:
         labels: Distinct labels.
         columns: Value columns read.
         repeating: Columns holding a value on more than one of a label's rows.
-        conflicting: Columns among those whose repeated values differ.
+        conflicting: Columns holding two distinct values for one label: where the
+            ingest's assertion fails.
+        non_numeric: Columns holding a non-null cell that is not a number, which the
+            by-value comparison cannot check.
     """
 
     member: str
@@ -248,6 +251,7 @@ class RepeatCheck:
     columns: int
     repeating: tuple[str, ...]
     conflicting: tuple[str, ...]
+    non_numeric: tuple[str, ...] = ()
 
 
 def dst_transitions(year: int, zone: str) -> tuple[datetime, datetime] | None:
@@ -557,7 +561,10 @@ def check_repeated_columns(
 
     Streams the member in chunks and keeps, per label and column, the count of non-null
     cells and their minimum and maximum. A column holding a value on more than one of a
-    label's rows is *repeating*; one whose repeated values differ is *conflicting*.
+    label's rows is *repeating*; one whose repeated values differ is *conflicting*, which
+    is exactly where the ingest's assertion -- at most one distinct non-null value per
+    (label, column) -- fails. The comparison is by value, so a cell that is not a number
+    cannot take part in it; such columns are counted, never silently read as empty.
 
     Args:
         member: Member to read.
@@ -573,6 +580,7 @@ def check_repeated_columns(
     counts: pd.DataFrame | None = None
     low: pd.DataFrame | None = None
     high: pd.DataFrame | None = None
+    text_cells: pd.Series[Any] | None = None
     rows = 0
     with open_member(member) as handle:
         reader = pd.read_csv(
@@ -587,6 +595,8 @@ def check_repeated_columns(
             rows += len(chunk)
             labels = chunk.pop(label_column).to_numpy()
             values = chunk.apply(pd.to_numeric, errors="coerce")
+            lost = (chunk.notna() & values.isna()).sum()
+            text_cells = lost if text_cells is None else text_cells.add(lost, fill_value=0)
             grouped = values.groupby(labels)
             c, lo, hi = grouped.count(), grouped.min(), grouped.max()
             if counts is None or low is None or high is None:
@@ -600,6 +610,11 @@ def check_repeated_columns(
     repeating = [str(column) for column in counts.columns if bool((counts[column] > 1).any())]
     spread = (high - low).abs()
     conflicting = [str(column) for column in repeating if bool((spread[column] > 1e-9).any())]
+    non_numeric = (
+        [str(column) for column, cells in text_cells.items() if cells > 0]
+        if text_cells is not None
+        else []
+    )
     return RepeatCheck(
         member=member.name or member.archive.name,
         rows=rows,
@@ -607,6 +622,7 @@ def check_repeated_columns(
         columns=len(counts.columns),
         repeating=tuple(repeating),
         conflicting=tuple(conflicting),
+        non_numeric=tuple(non_numeric),
     )
 
 
@@ -1012,16 +1028,28 @@ def build_report(
         worst = max(repeating, key=lambda row: row.rows / max(row.distinct_timestamps, 1))
         columns = sorted({name for check in repeats for name in check.repeating})
         conflicts = sorted({name for check in repeats for name in check.conflicting})
+        textual = sorted({name for check in repeats for name in check.non_numeric})
+        widths = sorted({check.columns for check in repeats})
         read_all = (
-            f"Read across every column of the file, the repeated rows carry values in "
-            f"{len(columns)} column(s) -- {', '.join(f'`{c}`' for c in columns) or 'none'} -- "
+            "The ingest's assertion, tightened at M1a step 6c, is that no (label, column) "
+            "holds more than one *distinct* non-null value. Applied to every column of every "
+            f"file that repeats labels ({len(repeats)} files, "
+            f"{' or '.join(str(w) for w in widths)} value columns each), "
             + (
-                "and not one of those values differs from the value on the label's other rows."
+                "it holds everywhere: no label carries two different values in any column."
                 if not conflicts
-                else f"and {len(conflicts)} of them disagree between rows: "
+                else f"it fails in {len(conflicts)} column(s): "
                 f"{', '.join(f'`{c}`' for c in conflicts)}."
             )
-            + " None of them is an ingested channel.\n\n"
+            + f" {len(columns)} column(s) carry a value on several rows of a label -- "
+            f"{', '.join(f'`{c}`' for c in columns) or 'none'} -- which the assertion allows "
+            "when the value is the same, and the collapse keeps once. "
+            + (
+                f"{len(textual)} column(s) hold cells that are not numbers and cannot be "
+                f"compared by value: {', '.join(f'`{c}`' for c in textual)}.\n\n"
+                if textual
+                else "Every value column is numeric, so every one was compared by value.\n\n"
+            )
             if repeats
             else ""
         )
@@ -1044,7 +1072,7 @@ def build_report(
                 + read_all
                 + "The ingest collapses these files only after asserting the same thing for "
                 "the channels it reads (`src/faultline/data/telemetry/collapse.py`), and stops "
-                "if a label carries two values.\n\n"
+                "if a label carries two different values.\n\n"
                 + table(
                     ["member", "rows", "distinct labels", "factor", "rows with a value"],
                     [
@@ -1064,8 +1092,9 @@ def build_report(
                         [
                             "member",
                             "columns read",
-                            "columns with values on repeated rows",
-                            "columns whose repeated values differ",
+                            "columns with a value on several rows of a label",
+                            "columns with two distinct values for a label (assertion fails)",
+                            "columns with non-numeric cells",
                         ],
                         [
                             (
@@ -1073,6 +1102,7 @@ def build_report(
                                 check.columns,
                                 len(check.repeating),
                                 len(check.conflicting),
+                                len(check.non_numeric),
                             )
                             for check in repeats
                         ],

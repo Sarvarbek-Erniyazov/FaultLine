@@ -19,6 +19,7 @@ synthetic fixtures.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, ClassVar
@@ -36,7 +37,7 @@ from faultline.data.common.splits import (
 from faultline.data.common.stage import Stage, StageResult
 from faultline.data.telemetry import report as telemetry_report
 from faultline.data.telemetry.adapters import ADAPTERS, get_adapter
-from faultline.data.telemetry.adapters.base import FileAccount
+from faultline.data.telemetry.adapters.base import FileAccount, RawMember
 from faultline.data.telemetry.clean import BoundSpec, TelemetryCleanConfig, clean_turbine_frame
 from faultline.data.telemetry.events import EventConfig, normalize_events
 from faultline.data.telemetry.filter import (
@@ -284,6 +285,21 @@ def drop_identical_copies(
     return deduped.reset_index(drop=True), before - len(deduped), differing
 
 
+def unit_label(unit: Sequence[RawMember]) -> str:
+    """Name a unit of files read together: the file, or the archive and every member.
+
+    Args:
+        unit: The members a loader reads together.
+
+    Returns:
+        A label for the ingest report.
+    """
+    if len(unit) == 1:
+        return unit[0].label
+    names = " + ".join(member.name.rsplit("/", 1)[-1] for member in unit)
+    return f"{unit[0].archive.name}::{names}"
+
+
 def turbine_year_name(turbine_id: str, year: int) -> str:
     """Build the file stem for one turbine-year.
 
@@ -347,8 +363,12 @@ class IngestStage(TelemetryStage):
         Every SCADA file is read through the repeated-label rule
         (:mod:`faultline.data.telemetry.collapse`) and accounted for: rows read, rows
         left after dropping those with no ingested value, distinct labels, rows kept.
-        A file whose repeats carry conflicting values raises and stops the run, because
+        A file whose repeats carry two different values raises and stops the run, because
         that is genuine duplication and not something ingest may resolve.
+
+        Rows are also accounted per *unit*, the files a loader reads together. Hill of
+        Towie publishes a month as three tables joined into one row per (label, station),
+        so its per-file row counts are not additive; the unit's joined rows are.
 
         Args:
             ctx: Active run context.
@@ -363,6 +383,7 @@ class IngestStage(TelemetryStage):
         not_implemented: dict[str, str] = {}
         outputs: list[Path] = []
         accounts: list[tuple[str, FileAccount]] = []
+        units: list[tuple[str, str, int, int]] = []
         rows_out = 0
 
         for source in self.sources:
@@ -386,6 +407,7 @@ class IngestStage(TelemetryStage):
                     logger.error("%s: cannot load %s: %s", source, labels, exc)
                     continue
                 accounts.extend((source, account) for account in unit_accounts)
+                units.append((source, unit_label(unit), len(unit), len(frame)))
                 if not frame.empty:
                     frames.append(frame)
 
@@ -406,6 +428,7 @@ class IngestStage(TelemetryStage):
                 combined, copies, conflicts = drop_identical_copies(
                     pd.concat(frames, ignore_index=True), self.config.channels
                 )
+                info["rows_joined"] = sum(rows for s, _, _, rows in units if s == source)
                 info["identical_copies_dropped"] = copies
                 info["differing_copies_kept"] = conflicts
                 rows_out += len(combined)
@@ -449,6 +472,7 @@ class IngestStage(TelemetryStage):
                 "member_kinds": member_kinds,
                 "not_implemented": not_implemented,
                 "files": files,
+                "units": units,
             },
             outputs=outputs,
         )

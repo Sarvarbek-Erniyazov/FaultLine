@@ -12,8 +12,8 @@
 | value-identical copies of a label dropped across files | not applicable |
 | members read | 54 |
 | label offset applied | 0 min |
-| generated (UTC) | 2026-09-10T14:17:24+00:00 |
-| git_sha | dded9436d9495c754c83ef750a1e20a95372ea46 |
+| generated (UTC) | 2026-09-10T21:51:35+00:00 |
+| git_sha | 4aff202e3ef865531e6b712c056cbf7d962da613 |
 
 ## Power column unit
 
@@ -158,9 +158,9 @@ A local-time series is missing every observation in the spring-forward hour and 
 
 12 of 54 members repeat their timestamp labels. The worst is `Turbine_Data_Kelmarsh_1_2023-01-01_-_2024-01-01_228.csv`: 2,174,760 rows over 52,560 distinct labels, a factor of 41.4.
 
-This is an export-format change and not duplicated data. Once the rows that carry no ingested value are dropped, every label occurs once (`rows with a value` equals `distinct`, and there are no duplicate labels among them), so the autumn half of the test above applies to these members as well. Read across every column of the file, the repeated rows carry values in 9 column(s) -- `Equivalent Full Load Hours (s)`, `Production-based Contractual Avail.`, `Production-based Contractual Avail. (Custom)`, `Production-based Contractual Avail. (Global)`, `Production-based IEC B.2.2 (Users View)`, `Production-based IEC B.2.3 (Users View)`, `Production-based IEC B.3.2 (Manufacturers View)`, `Production-based System Avail.`, `Production-based System Avail. (virtual)` -- and not one of those values differs from the value on the label's other rows. None of them is an ingested channel.
+This is an export-format change and not duplicated data. Once the rows that carry no ingested value are dropped, every label occurs once (`rows with a value` equals `distinct`, and there are no duplicate labels among them), so the autumn half of the test above applies to these members as well. The ingest's assertion, tightened at M1a step 6c, is that no (label, column) holds more than one *distinct* non-null value. Applied to every column of every file that repeats labels (12 files, 311 value columns each), it holds everywhere: no label carries two different values in any column. 9 column(s) carry a value on several rows of a label -- `Equivalent Full Load Hours (s)`, `Production-based Contractual Avail.`, `Production-based Contractual Avail. (Custom)`, `Production-based Contractual Avail. (Global)`, `Production-based IEC B.2.2 (Users View)`, `Production-based IEC B.2.3 (Users View)`, `Production-based IEC B.3.2 (Manufacturers View)`, `Production-based System Avail.`, `Production-based System Avail. (virtual)` -- which the assertion allows when the value is the same, and the collapse keeps once. Every value column is numeric, so every one was compared by value.
 
-The ingest collapses these files only after asserting the same thing for the channels it reads (`src/faultline/data/telemetry/collapse.py`), and stops if a label carries two values.
+The ingest collapses these files only after asserting the same thing for the channels it reads (`src/faultline/data/telemetry/collapse.py`), and stops if a label carries two different values.
 
 | member | rows | distinct labels | factor | rows with a value |
 | --- | --- | --- | --- | --- |
@@ -177,17 +177,17 @@ The ingest collapses these files only after asserting the same thing for the cha
 | Turbine_Data_Kelmarsh_5_2024-01-01_-_2025-01-01_232.csv | 2,174,904 | 52,704 | 41.3 | 52,493 |
 | Turbine_Data_Kelmarsh_6_2024-01-01_-_2025-01-01_233.csv | 2,174,904 | 52,704 | 41.3 | 51,868 |
 
-| member | columns read | columns with values on repeated rows | columns whose repeated values differ |
-| --- | --- | --- | --- |
-| Turbine_Data_Kelmarsh_1_2023-01-01_-_2024-01-01_228.csv | 311 | 9 | 0 |
-| Turbine_Data_Kelmarsh_2_2023-01-01_-_2024-01-01_229.csv | 311 | 9 | 0 |
-| Turbine_Data_Kelmarsh_3_2023-01-01_-_2024-01-01_230.csv | 311 | 9 | 0 |
-| Turbine_Data_Kelmarsh_4_2023-01-01_-_2024-01-01_231.csv | 311 | 9 | 0 |
-| Turbine_Data_Kelmarsh_5_2023-01-01_-_2024-01-01_232.csv | 311 | 9 | 0 |
-| Turbine_Data_Kelmarsh_6_2023-01-01_-_2024-01-01_233.csv | 311 | 9 | 0 |
-| Turbine_Data_Kelmarsh_1_2024-01-01_-_2025-01-01_228.csv | 311 | 9 | 0 |
-| Turbine_Data_Kelmarsh_2_2024-01-01_-_2025-01-01_229.csv | 311 | 9 | 0 |
-| Turbine_Data_Kelmarsh_3_2024-01-01_-_2025-01-01_230.csv | 311 | 9 | 0 |
-| Turbine_Data_Kelmarsh_4_2024-01-01_-_2025-01-01_231.csv | 311 | 9 | 0 |
-| Turbine_Data_Kelmarsh_5_2024-01-01_-_2025-01-01_232.csv | 311 | 9 | 0 |
-| Turbine_Data_Kelmarsh_6_2024-01-01_-_2025-01-01_233.csv | 311 | 9 | 0 |
+| member | columns read | columns with a value on several rows of a label | columns with two distinct values for a label (assertion fails) | columns with non-numeric cells |
+| --- | --- | --- | --- | --- |
+| Turbine_Data_Kelmarsh_1_2023-01-01_-_2024-01-01_228.csv | 311 | 9 | 0 | 0 |
+| Turbine_Data_Kelmarsh_2_2023-01-01_-_2024-01-01_229.csv | 311 | 9 | 0 | 0 |
+| Turbine_Data_Kelmarsh_3_2023-01-01_-_2024-01-01_230.csv | 311 | 9 | 0 | 0 |
+| Turbine_Data_Kelmarsh_4_2023-01-01_-_2024-01-01_231.csv | 311 | 9 | 0 | 0 |
+| Turbine_Data_Kelmarsh_5_2023-01-01_-_2024-01-01_232.csv | 311 | 9 | 0 | 0 |
+| Turbine_Data_Kelmarsh_6_2023-01-01_-_2024-01-01_233.csv | 311 | 9 | 0 | 0 |
+| Turbine_Data_Kelmarsh_1_2024-01-01_-_2025-01-01_228.csv | 311 | 9 | 0 | 0 |
+| Turbine_Data_Kelmarsh_2_2024-01-01_-_2025-01-01_229.csv | 311 | 9 | 0 | 0 |
+| Turbine_Data_Kelmarsh_3_2024-01-01_-_2025-01-01_230.csv | 311 | 9 | 0 | 0 |
+| Turbine_Data_Kelmarsh_4_2024-01-01_-_2025-01-01_231.csv | 311 | 9 | 0 | 0 |
+| Turbine_Data_Kelmarsh_5_2024-01-01_-_2025-01-01_232.csv | 311 | 9 | 0 | 0 |
+| Turbine_Data_Kelmarsh_6_2024-01-01_-_2025-01-01_233.csv | 311 | 9 | 0 | 0 |

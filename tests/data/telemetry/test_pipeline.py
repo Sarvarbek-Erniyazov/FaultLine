@@ -127,6 +127,42 @@ def test_ingest_accounts_for_every_row_of_every_file(
     assert (ingest_dir(repo_paths, SOURCE) / "events.parquet").is_file()
 
 
+def test_a_month_of_three_joined_tables_is_counted_once(
+    repo_root: Path, repo_paths: ProjectPaths
+) -> None:
+    # Hill of Towie: one month, three tables, two stations, two labels. Summing the
+    # tables' rows_out counted every row three times (M1a step 6c).
+    raw = repo_paths.source_dir("raw", "telemetry", "hill_of_towie")
+    (raw / "Hill_of_Towie_turbine_metadata.csv").write_text(
+        "Turbine Name,Station ID\nT01,2304510\nT02,2304511\n", encoding="utf-8"
+    )
+    rows = [
+        f"2019-03-01 00:{m}0:00,{station}" for m in (1, 2) for station in ("2304510", "2304511")
+    ]
+    tables = {
+        "tblSCTurbine_2019_03.csv": "wtc_AcWindSp_mean",
+        "tblSCTurGrid_2019_03.csv": "wtc_ActPower_mean",
+        "tblSCTurTemp_2019_03.csv": "wtc_AmbieTmp_mean",
+    }
+    with zipfile.ZipFile(raw / "2019.zip", "w") as handle:
+        for name, column in tables.items():
+            body = "\n".join(f"{row},{i + 1.5}" for i, row in enumerate(rows))
+            handle.writestr(name, f"TimeStamp,StationId,{column}\n{body}\n")
+
+    v1 = repo_root / "configs" / "data" / "telemetry_v1.yaml"
+    config = load_telemetry_config(v1)
+    stages = build_stages(config, repo_paths, "ingest", source="hill_of_towie")
+    with start_run(v1, config, "ingest", "telemetry", repo_paths) as ctx:
+        result = run_pipeline(stages, ctx)[0]
+        report = (ctx.run_dir / "ingest_stats_report.md").read_text(encoding="utf-8")
+
+    assert sum(row[6] for row in result.details["files"]) == 12  # 3 tables x 4 rows
+    assert [(unit[2], unit[3]) for unit in result.details["units"]] == [(3, 4)]
+    assert result.rows_out == 4
+    assert "| rows_out, over units (after each unit's join) | 4 |" in report
+    assert "| rows_out over units less the copies equals rows loaded | yes |" in report
+
+
 def test_clean_filter_final_on_a_synthetic_turbine_year(
     config_path: Path, repo_paths: ProjectPaths
 ) -> None:

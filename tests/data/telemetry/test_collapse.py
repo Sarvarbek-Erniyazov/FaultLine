@@ -68,13 +68,29 @@ def test_two_values_for_one_label_and_column_stop_the_ingest() -> None:
         collapse_repeated_labels(frame, ["label"], ["power", "wind"])
 
 
-def test_identical_repeated_values_are_still_a_conflict() -> None:
-    # The rule counts non-null cells, not distinct values: two rows that both carry a
-    # value for one instant are two observations, and choosing between them is the
-    # duplicate-timestamp rule's job even when they happen to agree.
-    frame = pd.DataFrame({"label": [LABELS[0], LABELS[0]], "power": [1850.0, 1850.0]})
-    with pytest.raises(RepeatedLabelConflictError):
-        collapse_repeated_labels(frame, ["label"], ["power"])
+def test_identical_repeated_values_collapse_to_the_one_value() -> None:
+    # The rule counts distinct values, not non-null cells (M1a step 6c): the repeated
+    # Kelmarsh rows carry the same availability figure on several rows of a label, and
+    # keeping that one value loses nothing.
+    frame = pd.DataFrame(
+        {
+            "label": [LABELS[0], LABELS[0], LABELS[1]],
+            "power": [1850.0, np.nan, 1600.0],
+            "avail": [100.0, 100.0, 98.0],
+        }
+    )
+    collapsed, stats = collapse_repeated_labels(frame, ["label"], ["power", "avail"])
+    assert list(collapsed["power"]) == [1850.0, 1600.0]
+    assert list(collapsed["avail"]) == [100.0, 98.0]
+    assert stats.labels_repeated == 1
+
+
+def test_a_label_with_one_value_and_a_different_one_is_a_conflict() -> None:
+    frame = pd.DataFrame(
+        {"label": [LABELS[0], LABELS[0], LABELS[0]], "avail": [100.0, 100.0, 97.0]}
+    )
+    with pytest.raises(RepeatedLabelConflictError, match="two different values"):
+        collapse_repeated_labels(frame, ["label"], ["avail"])
 
 
 def test_the_conflict_is_not_a_value_error() -> None:

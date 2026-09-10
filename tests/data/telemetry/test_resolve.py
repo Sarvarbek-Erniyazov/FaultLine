@@ -315,6 +315,17 @@ def test_the_repeat_check_finds_the_columns_the_repeats_carry(tmp_path: Path) ->
     assert check.conflicting == ()
 
 
+def test_a_text_cell_is_counted_and_never_read_as_empty(tmp_path: Path) -> None:
+    # The by-value comparison coerces to numbers; a column holding text would vanish from
+    # it without a word, so it is reported instead.
+    rows = ["2023-01-01 00:00:00,1850,ok", "2023-01-01 00:00:00,NaN,fault"]
+    check = check_repeated_columns(
+        _zipped(tmp_path, _greenbyte(rows, "Date and time,Power (kW),State")), "Date and time"
+    )
+    assert check.non_numeric == ("State",)
+    assert check.conflicting == ()
+
+
 def test_the_repeat_check_flags_a_repeat_that_disagrees(tmp_path: Path) -> None:
     rows = ["2023-01-01 00:00:00,1850,100", "2023-01-01 00:00:00,NaN,97"]
     check = check_repeated_columns(
@@ -352,7 +363,9 @@ def test_a_repeated_export_now_gets_a_two_sided_verdict(repo_paths: ProjectPaths
     assert "both halves applied to every turbine-year" in report
     assert "| 53,560 | 52,560 | 52,560 | 0 |" in report  # rows, distinct, with a value, dups
     assert "`Production-based System Avail.`" in report
-    assert "not one of those values differs" in report
+    # the tightened assertion: one distinct value per (label, column), everywhere
+    assert "it holds everywhere: no label carries two different values in any column" in report
+    assert "Every value column is numeric" in report
 
 
 @pytest.mark.parametrize("year", [2016, 2019, 2023])

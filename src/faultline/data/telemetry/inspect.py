@@ -8,16 +8,22 @@ either confirmed or overturned with evidence rather than belief.
 Nothing is extracted to disk. Archives are listed and sampled in place, headers are
 sniffed from the first lines of one member per class, and every status, alarm or
 event table found is profiled: row count, unique codes, unique messages, the share
-of rows carrying non-empty free text, and the twenty most frequent messages. Where
-the provider documents its event codes in a separate file, that file is read too,
-and the report measures how much of the event log it actually describes.
+of rows carrying non-empty free text, and the twenty most frequent messages. The
+text is then pooled across every parsed table, because providers cut their tables
+differently -- a turbine-year, a site-month, a farm -- and a per-table figure is not
+comparable across those cuts. Where the provider documents its event codes in a
+separate file, that file is read too, and the report measures how much of the event
+log it actually describes.
 
 The output is one Markdown report per source under ``reports/data/``, which is
-tracked, so the verdict is auditable without re-downloading the archives.
+tracked, so the verdict is auditable without re-downloading the archives. For a
+share-alike record the report quotes no more of the record than the measurement
+needs: header samples are cut to column names and per-table listings are omitted.
 """
 
 from __future__ import annotations
 
+import re
 from collections import Counter
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -58,8 +64,10 @@ MESSAGE_HINTS: tuple[str, ...] = (
     "status",
 )
 
-#: Column-name substrings that plausibly hold an event code.
-CODE_HINTS: tuple[str, ...] = ("code", "id", "number", "alarm", "status")
+#: Column-name substrings that plausibly hold an event code. ``id`` is deliberately
+#: not one of them: an ``event_id`` or ``asset_id`` names a row or a turbine, not an
+#: event type, and reading one as a code reports nonsense code counts.
+CODE_HINTS: tuple[str, ...] = ("code", "number", "alarm", "status")
 
 #: Members larger than this (uncompressed) are not parsed during inspection.
 MAX_PARSE_BYTES = 200 * 1024 * 1024
@@ -72,8 +80,8 @@ MAX_PARSE_ROWS = 500_000
 #: cap bounds the work without hiding what it skipped.
 MAX_EVENT_MEMBERS = 200
 
-#: Per-table "top messages" sections rendered in a report. The per-table summary row
-#: covers every parsed table; this only keeps a 98-table report readable.
+#: Per-table "top messages" sections rendered in a report. The pooled measurements
+#: cover every parsed table; this only keeps a 98-table report readable.
 MAX_TOP_SECTIONS = 12
 
 #: Suffixes whose leading bytes are worth printing as a header sample. A workbook or
@@ -105,6 +113,50 @@ class EventEvidence:
     cap: int
     code_file: str | None = None
     code_table: pd.DataFrame | None = None
+
+
+@dataclass(frozen=True)
+class TextMeasurements:
+    """Message text pooled over every parsed event table of a source.
+
+    The per-table maxima are kept alongside the pooled figures for continuity with
+    the first inventories, which reported only those.
+
+    Attributes:
+        tables: Event tables parsed.
+        rows: Rows across those tables.
+        text_rows: Rows carrying a non-empty message.
+        distinct: Distinct non-empty messages.
+        mean_chars: Mean message length in characters, over rows with text.
+        mean_words: Mean message length in whitespace-separated words, over rows with text.
+        once_share: Share of the distinct messages that occur exactly once.
+        max_table_distinct: Most distinct messages found in any single table.
+        max_table_mean_chars: Longest mean message length of any single table.
+        counts: Row count of every distinct message.
+    """
+
+    tables: int
+    rows: int
+    text_rows: int
+    distinct: int
+    mean_chars: float
+    mean_words: float
+    once_share: float
+    max_table_distinct: int
+    max_table_mean_chars: float
+    counts: Counter[str]
+
+
+def is_share_alike(licence: str) -> bool:
+    """Tell whether a licence identifier carries a share-alike condition.
+
+    Args:
+        licence: SPDX-style identifier, such as ``CC-BY-SA-4.0``.
+
+    Returns:
+        ``True`` when ``SA`` is one of the identifier's components.
+    """
+    return "SA" in re.split(r"[-_ ]", licence.upper())
 
 
 def sniff_lines(member: RawMember, n_lines: int = 30, max_bytes: int = 64_000) -> list[str]:
@@ -220,7 +272,7 @@ def profile_event_table(member: RawMember, frame: pd.DataFrame) -> dict[str, Any
     Returns:
         A mapping of profile statistics, including the columns chosen as the
         message and code columns, the twenty most frequent messages, and the full
-        count of every code so that codes can be pooled across tables.
+        count of every message and code so that both can be pooled across tables.
     """
     columns = [str(name) for name in frame.columns]
     message_column = pick_column(columns, MESSAGE_HINTS)
@@ -238,6 +290,7 @@ def profile_event_table(member: RawMember, frame: pd.DataFrame) -> dict[str, Any
         "free_text_fraction": 0.0,
         "mean_message_chars": 0.0,
         "top_messages": {},
+        "message_counts": Counter(),
         "code_counts": Counter(),
     }
     if code_column is not None:
@@ -248,12 +301,18 @@ def profile_event_table(member: RawMember, frame: pd.DataFrame) -> dict[str, Any
     if message_column is None:
         return profile
 
-    messages = frame[message_column].astype(str).str.strip()
+    # Drop missing values before converting to text. Under pandas 3 a missing value
+    # survives ``astype(str)`` as a missing value rather than the string "nan", so the
+    # string filter below never saw it: every empty CARE description was counted as a
+    # row with text and listed as the message "nan".
+    messages = frame[message_column].dropna().astype(str).str.strip()
     non_empty = messages[(messages != "") & (messages.str.lower() != "nan")]
-    profile["unique_messages"] = int(non_empty.nunique())
+    counts: Counter[str] = Counter(non_empty.tolist())
+    profile["unique_messages"] = len(counts)
     profile["free_text_fraction"] = float(len(non_empty) / len(frame)) if len(frame) else 0.0
     profile["mean_message_chars"] = float(non_empty.str.len().mean()) if len(non_empty) else 0.0
-    profile["top_messages"] = dict(Counter(non_empty.tolist()).most_common(20))
+    profile["top_messages"] = dict(counts.most_common(20))
+    profile["message_counts"] = counts
     return profile
 
 
@@ -270,6 +329,38 @@ def pooled_codes(profiles: list[dict[str, Any]]) -> Counter[str]:
     for profile in profiles:
         codes.update(profile.get("code_counts", {}))
     return codes
+
+
+def measure_text(profiles: list[dict[str, Any]]) -> TextMeasurements:
+    """Pool the message text of every parsed table into one set of measurements.
+
+    Args:
+        profiles: Profiles produced by :func:`profile_event_table`.
+
+    Returns:
+        The pooled measurements.
+    """
+    counts: Counter[str] = Counter()
+    for profile in profiles:
+        counts.update(profile.get("message_counts", {}))
+    text_rows = sum(counts.values())
+    chars = sum(len(message) * count for message, count in counts.items())
+    words = sum(len(message.split()) * count for message, count in counts.items())
+    with_text = [profile for profile in profiles if profile.get("unique_messages", 0) > 0]
+    return TextMeasurements(
+        tables=len(profiles),
+        rows=sum(int(profile.get("rows", 0)) for profile in profiles),
+        text_rows=text_rows,
+        distinct=len(counts),
+        mean_chars=chars / text_rows if text_rows else 0.0,
+        mean_words=words / text_rows if text_rows else 0.0,
+        once_share=(
+            sum(1 for count in counts.values() if count == 1) / len(counts) if counts else 0.0
+        ),
+        max_table_distinct=max((int(p["unique_messages"]) for p in with_text), default=0),
+        max_table_mean_chars=max((float(p["mean_message_chars"]) for p in with_text), default=0.0),
+        counts=counts,
+    )
 
 
 def read_code_table(adapter: BaseAdapter, members: list[RawMember]) -> pd.DataFrame | None:
@@ -435,6 +526,40 @@ def inventory_members(adapter: BaseAdapter, raw_dir: Path) -> list[RawMember]:
     return members
 
 
+def text_section(measurements: TextMeasurements, licence_note: str | None = None) -> str:
+    """Render the message text pooled over every parsed table.
+
+    Args:
+        measurements: Pooled measurements.
+        licence_note: Statement to print above quoted text from a share-alike record.
+
+    Returns:
+        A Markdown section.
+    """
+    m = measurements
+    text_share = f"{m.text_rows / m.rows * 100:.1f}%" if m.rows else "n/a"
+    body = kv_table(
+        {
+            "event tables parsed": m.tables,
+            "rows": m.rows,
+            "rows with a non-empty message": f"{m.text_rows:,} ({text_share})",
+            "distinct messages": m.distinct,
+            "mean length (characters)": round(m.mean_chars, 1),
+            "mean length (words)": round(m.mean_words, 1),
+            "distinct messages occurring exactly once": f"{m.once_share * 100:.1f}%",
+            "most distinct messages in one table": m.max_table_distinct,
+            "longest mean length in one table (characters)": round(m.max_table_mean_chars, 1),
+        }
+    )
+    if m.counts:
+        if licence_note:
+            body += f"\n_{licence_note}_\n"
+        body += "\n**Top 20 messages** (share of rows with a message)\n\n" + top_values_table(
+            m.counts, n=20, label="message"
+        )
+    return section("Text measurements (all parsed tables pooled)", body)
+
+
 def codes_section(evidence: EventEvidence, codes: Counter[str]) -> str:
     """Render the event codes pooled over every parsed table.
 
@@ -563,6 +688,15 @@ def build_report(
     archives = sorted({member.archive for member in members})
     by_kind: Counter[str] = Counter(member.kind for member in members)
     codes = pooled_codes(profiles)
+    share_alike = is_share_alike(spec.license)
+    licence_note = (
+        f"Quoted messages are the provider's text under {spec.license} ({spec.attribution}). "
+        "They are quoted because the measurement needs them; this report otherwise "
+        "reproduces none of the record: header samples are cut to their first line and "
+        "per-table message listings are omitted."
+        if share_alike
+        else None
+    )
 
     parts = [
         f"# Raw inventory: {source}\n\n",
@@ -596,6 +730,8 @@ def build_report(
         )
     )
 
+    if profiles:
+        parts.append(text_section(measure_text(profiles), licence_note))
     parts.append(codes_section(evidence, codes))
     parts.append(code_descriptions_section(evidence, codes))
 
@@ -669,20 +805,28 @@ def build_report(
                 ),
             )
         )
-        with_top = [profile for profile in profiles if profile["top_messages"]]
-        for profile in with_top[:MAX_TOP_SECTIONS]:
-            parts.append(
-                section(
-                    f"Top messages: {truncate(str(profile['member']), 60)}",
-                    top_values_table(profile["top_messages"], n=20, label="message"),
-                    level=3,
+        with_top = [profile for profile in profiles if profile["message_counts"]]
+        if share_alike:
+            if with_top:
+                parts.append(
+                    "\n_Per-table message listings are omitted for this share-alike record; "
+                    "the pooled top 20 above is the only text quoted._\n"
                 )
-            )
-        if len(with_top) > MAX_TOP_SECTIONS:
-            parts.append(
-                f"\n_Per-table top messages are shown for the first {MAX_TOP_SECTIONS} of "
-                f"{len(with_top)} tables with messages; the table above covers all of them._\n"
-            )
+        else:
+            for profile in with_top[:MAX_TOP_SECTIONS]:
+                parts.append(
+                    section(
+                        f"Top messages: {truncate(str(profile['member']), 60)}",
+                        top_values_table(profile["message_counts"], n=20, label="message"),
+                        level=3,
+                    )
+                )
+            if len(with_top) > MAX_TOP_SECTIONS:
+                parts.append(
+                    f"\n_Per-table top messages are shown for the first {MAX_TOP_SECTIONS} of "
+                    f"{len(with_top)} tables with messages; the pooled measurements above "
+                    "cover all of them._\n"
+                )
     else:
         parts.append(
             section(
@@ -709,6 +853,8 @@ def build_report(
 
     if sniffs:
         body = []
+        if share_alike:
+            body.append("_Share-alike record: each sample is cut to its first line._\n")
         for label, lines in sniffs.items():
             body.append(f"**{label}**\n")
             body.append("```text")
@@ -761,6 +907,7 @@ def inspect_source(
     raw_dir = paths.source_dir("raw", "telemetry", source)
     members = inventory_members(adapter, raw_dir)
     evidence = collect_event_evidence(adapter, members, max_event_members)
+    sample_lines = 1 if is_share_alike(spec.license) else 30
 
     report = build_report(
         source=source,
@@ -768,7 +915,7 @@ def inspect_source(
         raw_dir=raw_dir,
         members=members,
         evidence=evidence,
-        sniffs=sample_headers(members),
+        sniffs=sample_headers(members, n_lines=sample_lines),
         max_members=max_members,
         repo_root=paths.repo_root,
         classification=adapter.CLASSIFICATION_SOURCE,

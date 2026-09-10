@@ -19,9 +19,12 @@ from faultline.data.telemetry.adapters.base import RawMember, sniff_csv_layout
 from faultline.data.telemetry.adapters.hill_of_towie import HillOfTowieAdapter
 from faultline.data.telemetry.adapters.kelmarsh import KelmarshAdapter
 from faultline.data.telemetry.inspect import (
+    CODE_HINTS,
     code_description_map,
     collect_event_evidence,
     free_text_verdict,
+    is_share_alike,
+    measure_text,
     normalise_code,
     pick_column,
     pooled_codes,
@@ -213,6 +216,15 @@ ALARM_DESCRIPTIONS = (
     b'8210,"Stopped, due to icing",1\n'
 )
 
+# The CARE event_info layout: semicolon-separated, one row per dataset, and a
+# description only on anomaly rows -- normal rows leave it empty.
+CARE_EVENT_INFO = (
+    b"asset;event_id;event_label;event_start;event_end;event_description\n"
+    b"0;73;anomaly;2023-06-10 11:40:00;2023-06-17 11:40:00;Hydraulic group\n"
+    b"11;25;normal;2023-05-23 06:50:00;2023-06-05 02:30:00;\n"
+    b"10;10;anomaly;2023-10-11 08:40:00;2023-10-18 08:40:00;Gearbox failure\n"
+)
+
 
 def test_normalise_code_treats_float_and_integer_renderings_as_one_code() -> None:
     assert normalise_code(127) == "127"
@@ -285,3 +297,69 @@ def test_header_samples_skip_binary_members(tmp_path: Path) -> None:
     assert list(samples) == ["Penmanshiel_WT_static.csv"]
     # trailing whitespace is stripped so a generated report passes the repository hooks
     assert samples["Penmanshiel_WT_static.csv"][0] == "Title,Rated power"
+
+
+def test_missing_messages_are_not_counted_as_text(tmp_path: Path) -> None:
+    # Regression: under pandas 3 a missing value survives astype(str) as missing, not
+    # as the string "nan", so every empty CARE description was once counted as a row
+    # with text and listed as the message "nan".
+    member = member_for(tmp_path, "Wind Farm A/event_info.csv", CARE_EVENT_INFO)
+    frame = read_member_table(member)
+    assert frame is not None
+    profile = profile_event_table(member, frame)
+    assert profile["message_column"] == "event_description"
+    assert profile["unique_messages"] == 2
+    assert profile["free_text_fraction"] == 2 / 3
+    assert profile["message_counts"] == {"Hydraulic group": 1, "Gearbox failure": 1}
+    assert "nan" not in profile["top_messages"]
+
+
+def test_an_identifier_is_not_an_event_code(tmp_path: Path) -> None:
+    assert pick_column(["asset", "event_id", "event_description"], CODE_HINTS) is None
+    assert pick_column(["TimeOn", "StationNr", "Alarmcode"], CODE_HINTS) == "Alarmcode"
+    member = member_for(tmp_path, "Wind Farm A/event_info.csv", CARE_EVENT_INFO)
+    frame = read_member_table(member)
+    assert frame is not None
+    assert profile_event_table(member, frame)["code_column"] is None
+
+
+def _text_profile(rows: int, counts: dict[str, int]) -> dict[str, object]:
+    total = sum(counts.values())
+    return {
+        "rows": rows,
+        "message_counts": counts,
+        "unique_messages": len(counts),
+        "mean_message_chars": sum(len(m) * n for m, n in counts.items()) / total if total else 0.0,
+    }
+
+
+def test_text_is_pooled_across_tables() -> None:
+    measured = measure_text(
+        [_text_profile(5, {"a": 3, "bb": 1}), _text_profile(4, {"a": 1, "ccc two": 1})]
+    )
+    assert measured.tables == 2
+    assert measured.rows == 9
+    assert measured.text_rows == 6
+    assert measured.distinct == 3
+    # row-weighted: four rows of "a", one of "bb", one of "ccc two"
+    assert measured.mean_chars == (4 * 1 + 2 + 7) / 6
+    assert measured.mean_words == (4 * 1 + 1 + 2) / 6
+    # "bb" and "ccc two" occur once; "a" recurs
+    assert measured.once_share == 2 / 3
+    assert measured.max_table_distinct == 2
+    assert measured.counts["a"] == 4
+
+
+def test_measuring_tables_without_text() -> None:
+    measured = measure_text([_text_profile(10, {})])
+    assert measured.rows == 10
+    assert measured.text_rows == 0
+    assert measured.distinct == 0
+    assert measured.mean_chars == 0.0
+    assert measured.once_share == 0.0
+
+
+def test_share_alike_licences_are_recognised() -> None:
+    assert is_share_alike("CC-BY-SA-4.0")
+    assert not is_share_alike("CC-BY-4.0")
+    assert not is_share_alike("CC0-1.0")

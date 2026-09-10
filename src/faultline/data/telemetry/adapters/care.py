@@ -11,6 +11,14 @@ redistributed here (see docs/DATA_LICENSES.md). And its channels are anonymised
 needs the record README and, most likely, distributional matching against the
 named sources.
 
+Read on 2026-09-10, without extracting the archive: the README documents the
+layout ``Wind Farm <x>/{event_info.csv, feature_description.csv,
+datasets/<event_id>.csv}``. ``event_info.csv`` is one file per farm, not per
+dataset, with one row per dataset (95 in all) and an ``event_description`` column
+the README calls "additional information of the root cause for some anomaly
+events". ``feature_description.csv`` gives each anonymised sensor a short
+description and a unit, which is evidence the M1 channel map can use.
+
 Its role is evaluation and label cross-check, not training.
 """
 
@@ -40,6 +48,11 @@ class CareAdapter(BaseAdapter):
         ("alarm", "alarm_log"),
         ("event", "status_events"),
         ("dataset", "scada_10min"),
+    )
+
+    CLASSIFICATION_SOURCE: ClassVar[str] = (
+        "the file structure documented in the record README: Wind Farm <x>/event_info.csv, "
+        "feature_description.csv and datasets/<event_id>.csv"
     )
 
     def load_scada(self, member: RawMember) -> pd.DataFrame:

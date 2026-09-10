@@ -575,6 +575,20 @@ if the declaration, the frozen config and the maps ever disagree.
 **What would change this decision.** The step-8 coverage table, or a new training or
 held-out site whose map lacks a core channel.
 
+**Evidence note, 2026-09-11 -- the step-8 coverage table exists.**
+`reports/data/missingness_20260910.md` (`faultline inspect missingness`, telemetry_v2)
+measures every core channel per site on the cleaned grid. Point 1 above is now a number:
+Hill of Towie's wind direction is non-null on 49.8% of the held-out grid -- 0% in 2019
+and 99.5% in 2023, and each year is half the grid -- while every other core channel there
+is at 99.6%. Penmanshiel's pitch angle (70.0%) and gear-oil temperature (70.2%) are the
+only training-site core channels below 94%, and almost all of their missing steps sit in
+gaps of a week or more, whole turbine-years among them. At CARE, which is evaluation-only
+and mapped per farm, nacelle temperature and generator bearing are at 22.7% and nacelle
+position and wind direction at 39.0%. This record said a core channel "mostly missing at a
+site is demoted in telemetry_v2.yaml"; telemetry_v2 was written before this table, by the
+order of the work, and demotes nothing. Whether any of these is demoted is gate 2's
+decision and would be a telemetry_v3.yaml; this note supersedes nothing.
+
 ---
 
 ## ADR-0009 Label harmonisation: one event rule for every site

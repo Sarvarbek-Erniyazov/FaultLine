@@ -1,0 +1,296 @@
+# Event labelling, version 2: one event rule for every site (ADR-0009).
+# Read by `faultline telemetry label` through events.labels_config. Never edited after a
+# run has read it; a change is events_v3.yaml. events_v1.yaml is left untouched.
+#
+# What v1 got wrong, measured (reports/data/20260910-141855_label_telemetry_c13b5fe8):
+# the held-out site counted 212.6 events per turbine-year against 19.5 and 24.8 at the
+# training sites, because the two sides counted different things. Kelmarsh and
+# Penmanshiel counted equipment-fault STATUS ROWS; Hill of Towie counted DOWNTIME RUNS
+# OF ANY CAUSE, low wind included. Gate 1 decided: narrow the held-out site's events to
+# the training definition; do not widen the training sites.
+#
+# v2 does that in two parts, and keeps them apart:
+#
+#   1. TRANSLATION, per source (below). Each source's evidence is reduced to one table:
+#      seconds of downtime per 10-minute step, split into the causes
+#      technical / environmental / grid / planned / unknown (IEC 61400-26 style).
+#      Senvion: the configured category of each provider Stop row. Hill of Towie: the
+#      provider's four stop-class timers in tblSCTurFlag, with described alarm codes
+#      overriding the timer where the code's own description names the cause.
+#   2. THE RULE, one for every site (harmonised.narrow_causes, min_duration_s). An event
+#      is a run of consecutive steps holding downtime of the chosen causes, lasting at
+#      least min_duration_s. Narrow = technical. Broad = any cause. The function that
+#      applies it (harmonise.select_events) takes no source argument.
+#
+# Part 2 changes the training sites too, and that is deliberate: a fault episode that
+# the Senvion log writes as three status rows is one event, exactly as a Siemens
+# downtime run is one event. Row counts are reported beside episode counts so the
+# change is visible, not hidden.
+
+version: 2
+
+# ---------------------------------------------------------------------------------------
+# Kelmarsh and Penmanshiel: Senvion status strings -- carried over from events_v1.yaml
+# unchanged, string for string. The categories are still the evidence; v2 adds only
+# which cause each category is (harmonised.category_causes).
+# ---------------------------------------------------------------------------------------
+status_strings:
+  sources: [kelmarsh, penmanshiel]
+  fault_categories: [equipment_fault]
+  categories:
+    normal_operation:
+      - "System OK"
+      - "Automatic start-up"
+      - "Run-up"
+      - "Mains connection"
+      - "Mains run-up"
+      - "Mains operation"
+      - "Semi-automatic operation"
+    environmental:
+      - "Wind < start wind"
+      - "Brake program 50"
+      - "Absence of wind during run-up"
+      - "Max. wind speed"
+      - "Deviation winddirection > 60°"
+      - "Deviation of wind direction>45°"
+      - "Icing (anemometer)"
+      - "Icing (stop)"
+      - "Icing (dev. electr. power)"
+      - "Reset of icing st. cd. possible"
+    routine_procedure:
+      - "Brake program 52"
+      - "Brake program 60"
+      - "Brake program 75"
+      - "Brake program 170"
+      - "Brake program 180"
+      - "Brake program 190"
+      - "Brake program 200"
+      - "Bypass limit switches"
+      - "System test 1"
+      - "System test 2"
+      - "System test 3"
+      - "Battery test"
+      - "Stop battery test"
+      - "Open disc brake"
+      - "Cable autounwind"
+      - "Hydraulic oil flushing operation"
+      - "Gear heating enabled"
+      - "Gearbox warm-up stage"
+      - "Pitch batteries charging cycle"
+      - "Parameter update active"
+      - "Update active"
+      - "Reboot necessary after update"
+      - "Manual snapshot"
+      - "Alarm call test"
+      - "Supply circuit breaker earthed"
+      - "Cable panel breaker open"
+    manual_operation:
+      - "Manual yaw"
+      - "Easy yaw"
+      - "Manual stop - on site"
+      - "Manual stop - remote"
+      - "Manual stop without login"
+      - "Manual brake"
+      - "Manual operation gear heating"
+      - "Manual operation generator fan 1"
+      - "Manual operation generator fan 2"
+      - "Manual operation fan gear"
+      - "Manual operation gear oil pump"
+      - "Manual operation generator heating"
+      - "Service generator brushes"
+      - "Emergency stop base box"
+    grid_and_curtailment:
+      - "P output externally reduced"
+      - "Technical curtailment"
+      - "Grid constraint curtailment"
+      - "Park master stop"
+      - "Externally stopped"
+      - "Fallback setpoints active"
+      - "Grid loss"
+      - "Grid error"
+      - "Overfrequency"
+      - "Overvoltage"
+      - "Maximum grid frequency"
+      - "Min. voltage cut in"
+      - "Timeout ready for connection"
+      - "Transient voltage peak"
+      - "High frequency - P reduction"
+    communication:
+      - "Data communication unavailable"
+      - "Comm. failure FPM"
+      - "Check time synchronization"
+      - "Time sync. failed (SNTP error)"
+      - "Comm.err. IEC client -> CMS drive tr."
+    equipment_warning:
+      - "4-20mA anemometer 1"
+      - "4-20mA anemometer 2"
+      - "4-20 mA vane 2"
+      - "Vane 2 defect"
+      - "High yaw motor current"
+      - "Timeout brake closed"
+      - "Brake accumulator defect"
+      - "Brake pads worn"
+      - "Battery charge cycle axis 1 error"
+      - "Battery charge cycle axis 2 error"
+      - "Battery charge cycle axis 3 error"
+      - "Breakdown obstacle light"
+      - "Overload generator fan 1"
+      - "Overload generator fan 2"
+      - "Overload generator fan 3"
+      - "Overload generator heating"
+      - "Overload gear heating"
+      - "Overload transformer fan outlet air"
+      - "Pitch measuring system 1><2"
+      - "Error brake resistor CHP"
+      - "Repeating error BP 0"
+      - "Max. acceleration"
+      - "Limit switch error 95° axis 1"
+      - "Limit switch error 95° axis 2"
+      - "Limit switch error 95° axis 3"
+      - "Particle Gear Alarm 10min"
+      - "Particle sensor defect"
+      - "Timeout B sensor active"
+      - "Error lubrication pump pitch"
+      - "Heating/fan base box faulty"
+      - "Heating/fan top box faulty"
+      - "Check nacelle position!"
+      - "PT100 converter inlet temperature defect"
+      - "Drivetrain oscillations"
+      - "Reduced power converter"
+    equipment_fault:
+      - "Anemometer defect"
+      - "Vane defect"
+      - "Frequency converter not ready"
+      - "Frequency converter error"
+      - "Tower oscillation X level 1"
+      - "Tower oscillation X level 2"
+      - "Tower oscillation Y level 1"
+      - "Tower oscillation Y level 2"
+      - "Missing gear oil (high rpm)"
+      - "Low gearbox oil pressure"
+      - "Implausible gear speed"
+      - "Repeating error BP52"
+      - "Pitch controller communication error"
+      - "Pitch run-away (hub box v.>=4)"
+      - "Charging circuit pitch"
+      - "Safety chain open"
+      - "Uncontrolled yaw movement"
+      - "Drive train monitor level 2"
+
+# ---------------------------------------------------------------------------------------
+# Hill of Towie: the downtime series. In v2 it supplies each step's TOTAL downtime; the
+# cause comes from harmonised.stop_classes. threshold_s and sensitivity_thresholds_s now
+# drive only the Stopping-flag cross-check, and threshold_s must equal
+# harmonised.min_duration_s so the two can never drift apart.
+# ---------------------------------------------------------------------------------------
+downtime:
+  sources: [hill_of_towie]
+  threshold_s: 60
+  sensitivity_thresholds_s: [60, 300, 600]
+  cross_check_window_steps: 1
+
+# ---------------------------------------------------------------------------------------
+# CARE: event_info, evaluation only. One labelled anomaly per dataset: narrow and broad
+# are the same events here, because the provider labels one anomaly and nothing else.
+# ---------------------------------------------------------------------------------------
+event_info:
+  sources: [care]
+  fault_labels: [anomaly]
+
+# ---------------------------------------------------------------------------------------
+# The harmonised rule (ADR-0009)
+# ---------------------------------------------------------------------------------------
+harmonised:
+  # THE RULE. Narrow (primary) keeps technical stops only; broad (secondary) keeps a
+  # stop of any cause. Both drop events shorter than min_duration_s.
+  narrow_causes: [technical]
+  # 60 s, lowered from v1's 300 s. The described stopping codes at the held-out site
+  # agree with its downtime series 99.97% at a 1 s threshold but 63.18% at 300 s
+  # (v1 label report): documented stops are short, and 300 s discarded them. What a
+  # short stop must NOT be let through for is pitch lubrication (~3 min, filed under
+  # turbine error), and that is excluded by cause (code_causes), not by duration.
+  min_duration_s: 60
+  sensitivity_min_duration_s: [60, 300, 600]
+
+  # The provider status that marks a Senvion row as a stop. Warning rows are not stops,
+  # whatever their category; they flow into the status stream as inputs instead.
+  stop_status: "Stop"
+
+  # Senvion configured category -> cause. Evidence: the category comments above and in
+  # events_v1.yaml. `unmapped` is a string the table does not name: its cause is unknown,
+  # so it can enter the broad label and never the narrow one (ADR-0006).
+  category_causes:
+    equipment_fault: technical
+    environmental: environmental
+    grid_and_curtailment: grid
+    manual_operation: planned
+    routine_procedure: planned
+    communication: unknown
+    equipment_warning: unknown
+    normal_operation: unknown
+    unmapped: unknown
+
+  # Hill of Towie: the provider's stop-class timers, seconds per 10-minute step, in
+  # tblSCTurFlag ("Turbine status information [10min]",
+  # Hill_of_Towie_tables_description.csv). Neither ShutdownDuration.csv
+  # (TimeStamp_StartFormat, TurbineName, ShutdownDuration) nor tblAlarmLog (TimeOn,
+  # TimeOff, StationNr, Alarmcode) carries a cause; this table does.
+  #   wtc_ScTurSto_timeon  "Time turbine error active in period" -- the provider's own
+  #                        description (Hill_of_Towie_turbine_fields_description.csv).
+  #   wtc_ScEnvSto_timeon, wtc_ScComSto_timeon, wtc_ScGrdSto_timeon -- not described by
+  #                        the provider. Read as environmental, commanded and grid stops
+  #                        from the naming, and from tblDailySummary, which counts the
+  #                        same four classes as StopsEnvironmental, StopsCommanded,
+  #                        StopsTurbineFault and StopsGridFault. Checked against the
+  #                        described codes (label report): high wind (8000) and icing
+  #                        (8230) run under Env on 99.1% and 100% of occurrences.
+  # Commanded stops are planned: a stop somebody asked for is not a fault.
+  stop_classes:
+    table: "tblSCTurFlag"
+    fields:
+      wtc_ScTurSto_timeon: technical
+      wtc_ScEnvSto_timeon: environmental
+      wtc_ScComSto_timeon: planned
+      wtc_ScGrdSto_timeon: grid
+
+  # Hill of Towie described stopping codes (Hill_of_Towie_alarms_description.csv) whose
+  # description names a non-technical cause. In a step where one of these alarms is
+  # active, the step's turbine-error seconds move to the code's cause. The case that
+  # matters: pitch lubrication (3130) runs under ScTurSto on 99.9% of its 2,977
+  # occurrences, so the timer alone would call routine lubrication a fault. Order
+  # decides a step two codes claim.
+  code_causes:
+    "3130": planned # Pitch lubrication
+    "10105": planned # Stopped, untwisting cables (Senvion: "Cable autounwind", routine)
+    "1005": environmental # Availability - low wind
+    "8000": environmental # Windspeed too high to operate
+    "8210": environmental # Stopped, due to icing
+    "8230": environmental # Ice detection: Low torque
+    "8234": environmental # Ice detection: No cut in
+    "8235": environmental # Ice Detect: Stopped
+    "8236": environmental # Ice Detect: Stopped, De-Ice
+
+  # Sensitivity only: these Senvion strings counted as technical instead of their
+  # configured category (manual_operation, or unmapped). Normalized as ingest stores
+  # them. Hill of Towie describes no emergency-stop code.
+  emergency_stop_strings:
+    - "emergency stop base box"
+    - "emergency stop top box"
+    - "emergency stop nacelle"
+
+  # Diagnostic and sensitivity only (apply: false). Under rung (a) of ADR-0009 the cause
+  # does the excluding; the wind state of each narrow event is still measured, so the
+  # report can say whether wind-lull stops leaked through, and what a wind rule would
+  # remove. One envelope for every site, from the data (measured 2026-09-11 on the
+  # cleaned grid, wind in the step a stop starts in).
+  wind_envelope:
+    cut_in_ms: 3.0
+    cut_out_ms: 20.0
+    apply: false
+    provenance: >-
+      cut_in_ms: the median wind at the start of each provider's own low-wind stop is
+      2.71 m/s (Kelmarsh, 'Wind < start wind', n=57,575), 3.39 (Penmanshiel, n=111,136)
+      and 3.86 (Hill of Towie, code 1005, n=2,665); 1% of producing steps (power > 10 kW)
+      are below 2.83, 3.67 and 3.21. cut_out_ms: the median at the start of a high-wind
+      stop is 22.52 (Kelmarsh 'Max. wind speed', n=4), 22.68 (Penmanshiel, n=3,339) and
+      20.70 (Hill of Towie code 8000, n=232); the lowest, rounded down.

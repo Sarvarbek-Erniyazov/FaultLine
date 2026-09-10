@@ -13,7 +13,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import numpy as np
 import pandas as pd
+from pydantic import Field
 
 from faultline.config import StrictModel
 from faultline.data.telemetry.schemas import INDEX_COLUMNS
@@ -41,11 +43,14 @@ class TelemetryCleanConfig(StrictModel):
         duplicate_timestamps: How to resolve repeated timestamps, ``mean`` or ``first``.
         apply_bounds: Replace out-of-range values with ``NaN``.
         drop_all_nan_rows: Drop timesteps where every channel is missing.
+        sentinels: Per source and channel, values the provider writes where it has no
+            reading. They become ``NaN`` before anything else touches them.
     """
 
     duplicate_timestamps: str = "mean"
     apply_bounds: bool = True
     drop_all_nan_rows: bool = False
+    sentinels: dict[str, dict[str, list[float]]] = Field(default_factory=dict)
 
 
 @dataclass
@@ -59,6 +64,8 @@ class CleanCounts:
         unparseable_timestamps: Rows dropped because the timestamp did not parse.
         grid_rows_inserted: Empty rows inserted to complete the regular grid.
         bounds_flags: Values set to NaN per channel by the plausibility bounds.
+        sentinel_flags: Values set to NaN per channel because they are a provider's
+            missing-value code.
     """
 
     rows_in: int = 0
@@ -67,6 +74,7 @@ class CleanCounts:
     unparseable_timestamps: int = 0
     grid_rows_inserted: int = 0
     bounds_flags: dict[str, int] | None = None
+    sentinel_flags: dict[str, int] | None = None
 
     def as_counters(self) -> dict[str, int]:
         """Flatten the counters for a stage result.
@@ -81,7 +89,51 @@ class CleanCounts:
         }
         for channel, count in (self.bounds_flags or {}).items():
             counters[f"bounds:{channel}"] = count
+        for channel, count in (self.sentinel_flags or {}).items():
+            counters[f"sentinel:{channel}"] = count
         return counters
+
+
+#: How close a value must be to a listed code to be that code. Below any sensor's
+#: resolution, and wide enough to absorb a code exported at single precision: Kelmarsh's
+#: stuck gear-oil reading is 323.70001220703114, not 323.7.
+SENTINEL_TOLERANCE = 1e-4
+
+
+def apply_sentinels(
+    frame: pd.DataFrame, codes: dict[str, list[float]]
+) -> tuple[pd.DataFrame, dict[str, int]]:
+    """Replace a source's missing-value codes with ``NaN``, counted per channel.
+
+    A code is not a reading. CARE writes -273.2 degC ambient where it has no value; a
+    bound would catch that one, but not a code that happens to sit inside the plausible
+    range (CARE farm C writes exactly 0.0 into three temperature channels at once), and
+    a mean over duplicate timestamps would average a code with a real value. So codes go
+    first, by value (within :data:`SENTINEL_TOLERANCE`), before duplicates are resolved or
+    bounds applied.
+
+    Args:
+        frame: Wide telemetry table of one source.
+        codes: Channel to the values that mean "no reading" there.
+
+    Returns:
+        The table with codes replaced, and the number of values replaced per channel.
+    """
+    result = frame.copy()
+    flags: dict[str, int] = {}
+    for channel, values in codes.items():
+        if channel not in result.columns or not values:
+            continue
+        numeric = pd.to_numeric(result[channel], errors="coerce")
+        hit = np.isclose(
+            numeric.to_numpy(dtype=float)[:, None],
+            np.asarray(values, dtype=float)[None, :],
+            rtol=0.0,
+            atol=SENTINEL_TOLERANCE,
+        ).any(axis=1)
+        flags[channel] = int(hit.sum())
+        result[channel] = numeric.mask(hit)
+    return result, flags
 
 
 def parse_timestamps(
@@ -237,6 +289,8 @@ def clean_turbine_frame(
     """
     counts = CleanCounts(rows_in=len(frame))
     parsed, counts.unparseable_timestamps = parse_timestamps(frame, timezone=timezone)
+    source = str(parsed["source"].iloc[0]) if "source" in parsed.columns and len(parsed) else ""
+    parsed, counts.sentinel_flags = apply_sentinels(parsed, config.sentinels.get(source, {}))
     collapsed, counts.duplicate_timestamps = resolve_duplicate_timestamps(
         parsed, channels, config.duplicate_timestamps
     )

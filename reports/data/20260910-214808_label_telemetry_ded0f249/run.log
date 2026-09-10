@@ -1,0 +1,3 @@
+2026-09-11 06:48:08,493 INFO     faultline.runs | run 20260910-214808_label_telemetry_ded0f249 started (config hash ded0f249)
+2026-09-11 06:50:14,912 INFO     faultline.runs | wrote label_stats_report.md
+2026-09-11 06:50:15,059 INFO     faultline.runs | run 20260910-214808_label_telemetry_ded0f249 ok in 126.42s -> C:\Users\sharg\Desktop\github\FaultLine\reports\data\20260910-214808_label_telemetry_ded0f249

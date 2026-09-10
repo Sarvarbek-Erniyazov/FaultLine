@@ -305,6 +305,57 @@ def inspect_downtime_command(
 
 
 @inspect_app.command(
+    "ranges",
+    help="Percentiles, repeated tail values and what sentinels and bounds remove, pre-bounds.",
+)
+def inspect_ranges_command(
+    config: ConfigOption = Path("configs/data/telemetry_v2.yaml"),
+    source: Annotated[
+        str | None, typer.Option("--source", help="Source id; every source when omitted.")
+    ] = None,
+) -> None:
+    """Measure every ingested value, before any bound, and write the ranges report.
+
+    Args:
+        config: The configuration whose sentinels and bounds are applied.
+        source: Restrict to one source.
+    """
+    from faultline.data.telemetry.adapters import ADAPTERS
+    from faultline.data.telemetry.coverage import inspect_ranges
+    from faultline.data.telemetry.pipeline import load_telemetry_config
+
+    report = inspect_ranges(
+        ProjectPaths.resolve(),
+        load_telemetry_config(config),
+        config,
+        [source] if source else list(ADAPTERS),
+    )
+    typer.echo(f"wrote {report}")
+
+
+@inspect_app.command(
+    "missingness",
+    help="Coverage before and after imputation, gaps and channels present per step.",
+)
+def inspect_missingness_command(
+    config: ConfigOption = Path("configs/data/telemetry_v2.yaml"),
+) -> None:
+    """Measure missingness on the cleaned and final tables and write its report.
+
+    Args:
+        config: The configuration the tables were produced under.
+    """
+    from faultline.data.telemetry.adapters import ADAPTERS
+    from faultline.data.telemetry.coverage import inspect_missingness
+    from faultline.data.telemetry.pipeline import load_telemetry_config
+
+    report = inspect_missingness(
+        ProjectPaths.resolve(), load_telemetry_config(config), config, list(ADAPTERS)
+    )
+    typer.echo(f"wrote {report}")
+
+
+@inspect_app.command(
     "channels",
     help="Report each canonical channel's status per source, checked against staged headers.",
 )

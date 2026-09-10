@@ -124,6 +124,13 @@ trained from scratch, evaluated as a risk model rather than a forecaster.
   (Kelmarsh / Penmanshiel), Hill of Towie 693. The late period runs at about twice the
   training rate: the temporal test is a drift test. Short all-channel gaps now reach
   imputation instead of being dropped with the long ones.*
+- *M1a step 8, 2026-09-11: `telemetry_v2.yaml` lists each source's missing-value codes
+  and revises every bound from the observed percentiles (`faultline inspect ranges`);
+  v0 and v1 untouched. Coverage measured (`faultline inspect missingness`): core
+  channels 95-100% at Kelmarsh and Hill of Towie, except Hill of Towie wind direction
+  at 49.8% (absent in 2019, half the held-out grid); Penmanshiel pitch and gear oil at
+  70% (whole turbine-years missing). Imputation fills under 0.03% of steps. No channel
+  is demoted: that is gate 2's decision, recorded under ADR-0008.*
 - Fit `QuantileBinTokenizer` on the training split only.
 - Model, training loop, checkpointing; multi-seed runs.
 - Risk evaluation: AUPRC, event-level F1, false alarms per hour, detection delay.

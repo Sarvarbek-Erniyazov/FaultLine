@@ -206,6 +206,21 @@ def clean_report(meta: RunMeta, result: StageResult) -> str:
         for key, value in result.counters.items()
         if key.startswith("bounds:")
     }
+    sentinels = {
+        key.removeprefix("sentinel:"): value
+        for key, value in result.counters.items()
+        if key.startswith("sentinel:")
+    }
+    if sentinels:
+        parts.append(
+            section(
+                "Missing-value codes per channel (sentinels, values set to NaN)",
+                "Values the provider writes where it has no reading, listed per source in "
+                "the configuration's `clean.sentinels` and removed before duplicates are "
+                "resolved or bounds applied. A code is not a reading, so it is not counted "
+                "as out of bounds below.\n\n" + drop_reasons_table(sentinels, result.rows_in),
+            )
+        )
     parts.append(
         section(
             "Plausibility flags per channel (values set to NaN)",

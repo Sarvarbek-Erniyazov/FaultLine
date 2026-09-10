@@ -10,7 +10,7 @@ is only interesting once both halves independently work.
 
 ---
 
-## M0 — skeleton, pipelines, data staging · **current**
+## M0 — skeleton, pipelines, data staging · **done** (tagged `m0`, 2026-09-10)
 
 Repository, tooling and hygiene; the course text pipeline ported into a tested
 package; the telemetry pipeline designed and implemented against synthetic fixtures;
@@ -27,7 +27,7 @@ reports under `reports/data/`; where the two disagree, the generated record is r
 
 - [x] `uv pip install -e ".[dev]"` succeeds and `faultline --help` lists every command.
 - [x] `ruff check`, `mypy --strict src/` and `pytest -q` all pass; tests run in under
-      60 seconds and touch no real data and no network. *(322 tests, 2.6 s.)*
+      60 seconds and touch no real data and no network. *(358 tests, 3.7 s, 2026-09-10.)*
 - [x] `docs/COURSE_PORT.md` maps every notebook cell to a module, function, config key
       and test, and lists every semantic change with its justification.
 - [x] `faultline text run` on the committed fixture corpus produces
@@ -48,12 +48,12 @@ reports under `reports/data/`; where the two disagree, the generated record is r
       `VERIFIED short written descriptions` (35 strings over 45 described events).
       ADR-0001 records what that does to its conclusion.*
 - [x] `tests/test_naming.py` passes; the banned strings appear only in ADR-0002.
-- [ ] **Remote exists, the `m0` tag is pushed, and no data, secret or file over 5 MB is
-      in the history.** *Remote and history are done and verified. The tag is
-      deliberately withheld until the staging criterion above is met — tagging a
-      milestone that fails one of its own stated criteria is exactly the kind of
-      quiet overstatement this project is built to avoid. Tag with:*
-      `git tag -a m0 -m "M0: skeleton, pipelines, data staging" && git push --tags`.
+- [x] **Remote exists, the `m0` tag is pushed, and no data, secret or file over 5 MB is
+      in the history.** *Verified 2026-09-10 across every commit: no path under
+      `data/{raw,cleaned,filtered,final}/` and no `.env` has ever been tracked, and the
+      largest blob in the history is 70.9 KB. The tag was withheld until every line
+      above passed, and is applied to the commit that closes this list; the tag itself
+      is the evidence for this line.*
 
 **Beyond the original M0 scope, because the evidence allowed it.** All of the
 following was scheduled for M1 and was brought forward once the staged Kelmarsh

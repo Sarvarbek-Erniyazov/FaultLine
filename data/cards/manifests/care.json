@@ -1,0 +1,22 @@
+{
+  "source": "care",
+  "provider": "Fraunhofer IEE",
+  "license": "CC-BY-SA-4.0",
+  "record_id": 15846963,
+  "concept_doi": "10.5281/zenodo.10958774",
+  "version_doi": "10.5281/zenodo.15846963",
+  "generated_at": "2026-09-09T16:37:49.845165Z",
+  "files": [
+    {
+      "filename": "CARE_To_Compare.zip",
+      "relative_path": "raw/telemetry/care/CARE_To_Compare.zip",
+      "size_bytes": 5503439673,
+      "md5": "2547b58c21ac8c242d13232860cf500c",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/15846963/files/CARE_To_Compare.zip/content",
+      "license": "CC-BY-SA-4.0",
+      "retrieved_at": "2026-09-09T16:37:49.841448Z",
+      "verified": true
+    }
+  ]
+}

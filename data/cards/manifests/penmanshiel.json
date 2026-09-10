@@ -5,7 +5,7 @@
   "record_id": 16807304,
   "concept_doi": "10.5281/zenodo.5946807",
   "version_doi": "10.5281/zenodo.16807304",
-  "generated_at": "2026-09-08T22:42:48.039109Z",
+  "generated_at": "2026-09-09T14:07:13.135367Z",
   "files": [
     {
       "filename": "Penmanshiel_SCADA_2016_WT01-10_3107.zip",
@@ -93,6 +93,94 @@
       "url": "https://zenodo.org/api/records/16807304/files/Penmanshiel_SCADA_2019_WT11-15_3117.zip/content",
       "license": "CC-BY-4.0",
       "retrieved_at": "2026-09-08T22:42:48.039109Z",
+      "verified": true
+    },
+    {
+      "filename": "Penmanshiel_SCADA_2020_WT01-10_3109.zip",
+      "relative_path": "raw/telemetry/penmanshiel/Penmanshiel_SCADA_2020_WT01-10_3109.zip",
+      "size_bytes": 694483651,
+      "md5": "46f679f2e4ab3d69c04b31c8dc625106",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807304/files/Penmanshiel_SCADA_2020_WT01-10_3109.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-09T12:45:33.421445Z",
+      "verified": true
+    },
+    {
+      "filename": "Penmanshiel_SCADA_2020_WT11-15_3118.zip",
+      "relative_path": "raw/telemetry/penmanshiel/Penmanshiel_SCADA_2020_WT11-15_3118.zip",
+      "size_bytes": 389300869,
+      "md5": "c73323f21451c08247dbdb5d1a1434a9",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807304/files/Penmanshiel_SCADA_2020_WT11-15_3118.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-09T12:58:00.861710Z",
+      "verified": true
+    },
+    {
+      "filename": "Penmanshiel_SCADA_2021_WT01-10_4460.zip",
+      "relative_path": "raw/telemetry/penmanshiel/Penmanshiel_SCADA_2021_WT01-10_4460.zip",
+      "size_bytes": 749666360,
+      "md5": "7a0839cf3cd5e7044d6ab814fef3c43f",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807304/files/Penmanshiel_SCADA_2021_WT01-10_4460.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-09T13:24:16.400691Z",
+      "verified": true
+    },
+    {
+      "filename": "Penmanshiel_SCADA_2021_WT11-15_4461.zip",
+      "relative_path": "raw/telemetry/penmanshiel/Penmanshiel_SCADA_2021_WT11-15_4461.zip",
+      "size_bytes": 418617876,
+      "md5": "f5804b90089ce4d50dc5117fda6f675c",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807304/files/Penmanshiel_SCADA_2021_WT11-15_4461.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-09T13:40:23.599950Z",
+      "verified": true
+    },
+    {
+      "filename": "Penmanshiel_SCADA_2022_WT01-10_4462.zip",
+      "relative_path": "raw/telemetry/penmanshiel/Penmanshiel_SCADA_2022_WT01-10_4462.zip",
+      "size_bytes": 710776645,
+      "md5": "91351469cdeb3ca95be1a0414dcfec8f",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807304/files/Penmanshiel_SCADA_2022_WT01-10_4462.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-09T13:53:13.202879Z",
+      "verified": true
+    },
+    {
+      "filename": "Penmanshiel_SCADA_2022_WT11-15_4463.zip",
+      "relative_path": "raw/telemetry/penmanshiel/Penmanshiel_SCADA_2022_WT11-15_4463.zip",
+      "size_bytes": 396724464,
+      "md5": "5f4743133a9cf65ad33de139b43f96b4",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807304/files/Penmanshiel_SCADA_2022_WT11-15_4463.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-09T14:07:01.472392Z",
+      "verified": true
+    },
+    {
+      "filename": "Penmanshiel_WT_dataSignalMapping.xlsx",
+      "relative_path": "raw/telemetry/penmanshiel/Penmanshiel_WT_dataSignalMapping.xlsx",
+      "size_bytes": 19359,
+      "md5": "2eae1b84a014619268a6e4f53e6b1c91",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807304/files/Penmanshiel_WT_dataSignalMapping.xlsx/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-09T14:07:06.826058Z",
+      "verified": true
+    },
+    {
+      "filename": "Penmanshiel_WT_static.csv",
+      "relative_path": "raw/telemetry/penmanshiel/Penmanshiel_WT_static.csv",
+      "size_bytes": 2029,
+      "md5": "c4cd4191234c1a67a391fe5d2978256b",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/16807304/files/Penmanshiel_WT_static.csv/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-09T14:07:13.135367Z",
       "verified": true
     }
   ]

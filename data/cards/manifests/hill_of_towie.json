@@ -1,0 +1,110 @@
+{
+  "source": "hill_of_towie",
+  "provider": "RES on behalf of TRIG",
+  "license": "CC-BY-4.0",
+  "record_id": 14870023,
+  "concept_doi": "10.5281/zenodo.14870023",
+  "version_doi": "10.5281/zenodo.14870023",
+  "generated_at": "2026-09-09T14:39:27.827720Z",
+  "files": [
+    {
+      "filename": "2019.zip",
+      "relative_path": "raw/telemetry/hill_of_towie/2019.zip",
+      "size_bytes": 1430010222,
+      "md5": "ca240b179200f5db25a273a1291eb597",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/14870023/files/2019.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-09T14:11:29.475440Z",
+      "verified": true
+    },
+    {
+      "filename": "2023.zip",
+      "relative_path": "raw/telemetry/hill_of_towie/2023.zip",
+      "size_bytes": 1512000259,
+      "md5": "45eceb1855af89cf4dc215f2ab97eda1",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/14870023/files/2023.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-09T14:39:27.827720Z",
+      "verified": true
+    },
+    {
+      "filename": "Hill_of_Towie_AeroUp_install_dates.csv",
+      "relative_path": "raw/telemetry/hill_of_towie/Hill_of_Towie_AeroUp_install_dates.csv",
+      "size_bytes": 629,
+      "md5": "6145283b4d93c00b7f614143f6f27972",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/14870023/files/Hill_of_Towie_AeroUp_install_dates.csv/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-09T13:36:57.575870Z",
+      "verified": true
+    },
+    {
+      "filename": "Hill_of_Towie_ShutdownDuration.zip",
+      "relative_path": "raw/telemetry/hill_of_towie/Hill_of_Towie_ShutdownDuration.zip",
+      "size_bytes": 19834579,
+      "md5": "089be3c24d6fa80f2d652f244b51e470",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/14870023/files/Hill_of_Towie_ShutdownDuration.zip/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-09T13:37:55.327744Z",
+      "verified": true
+    },
+    {
+      "filename": "Hill_of_Towie_alarms_description.csv",
+      "relative_path": "raw/telemetry/hill_of_towie/Hill_of_Towie_alarms_description.csv",
+      "size_bytes": 428,
+      "md5": "65117a1d5740da6af2653147be471692",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/14870023/files/Hill_of_Towie_alarms_description.csv/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-09T13:36:55.962670Z",
+      "verified": true
+    },
+    {
+      "filename": "Hill_of_Towie_grid_fields_description.csv",
+      "relative_path": "raw/telemetry/hill_of_towie/Hill_of_Towie_grid_fields_description.csv",
+      "size_bytes": 670,
+      "md5": "beb450d696fa4aca3572ccf35cf74d7b",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/14870023/files/Hill_of_Towie_grid_fields_description.csv/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-09T13:36:55.646578Z",
+      "verified": true
+    },
+    {
+      "filename": "Hill_of_Towie_tables_description.csv",
+      "relative_path": "raw/telemetry/hill_of_towie/Hill_of_Towie_tables_description.csv",
+      "size_bytes": 846,
+      "md5": "e138e6caaec5aed652bc8eda727f322b",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/14870023/files/Hill_of_Towie_tables_description.csv/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-09T13:36:54.949831Z",
+      "verified": true
+    },
+    {
+      "filename": "Hill_of_Towie_turbine_fields_description.csv",
+      "relative_path": "raw/telemetry/hill_of_towie/Hill_of_Towie_turbine_fields_description.csv",
+      "size_bytes": 3532,
+      "md5": "d77de82c0b094f0788d4ed9b54ddfdfa",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/14870023/files/Hill_of_Towie_turbine_fields_description.csv/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-09T13:36:55.284746Z",
+      "verified": true
+    },
+    {
+      "filename": "Hill_of_Towie_turbine_metadata.csv",
+      "relative_path": "raw/telemetry/hill_of_towie/Hill_of_Towie_turbine_metadata.csv",
+      "size_bytes": 2239,
+      "md5": "bb9673e7adb522b7e15a62f3e7ada6c8",
+      "sha256": null,
+      "url": "https://zenodo.org/api/records/14870023/files/Hill_of_Towie_turbine_metadata.csv/content",
+      "license": "CC-BY-4.0",
+      "retrieved_at": "2026-09-09T13:36:56.307228Z",
+      "verified": true
+    }
+  ]
+}

@@ -4,9 +4,10 @@ An adapter is the only place that knows a provider's file names, column vocabula
 and quirks. Everything downstream sees the canonical schema, so supporting a fifth
 site is a new adapter plus a channel map -- not a change to the pipeline.
 
-Adapters read **inside** archives. A staged tier-1 corpus is around 20 GB
-compressed; extracting it would double that for no benefit, since ``zipfile`` gives
-pandas a perfectly good file object.
+Adapters read **inside** archives. A staged tier-1 corpus is about 17 GB compressed
+and many times that extracted -- the Kelmarsh SCADA members alone inflate from 3.7 GB
+to 41.5 GB -- and extracting buys nothing, since ``zipfile`` gives pandas a perfectly
+good file object.
 
 At M0 ``discover`` is implemented for every source and the loaders are implemented
 only where the member format has been confirmed by inspection. An unconfirmed

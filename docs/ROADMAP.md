@@ -19,7 +19,11 @@ public SCADA sources staged, checksum-verified and documented.
 
 No model code beyond typed stubs. No training. No tokenizer fitted on real data.
 
-**Done when** (status as of 2026-09-09)
+**Done when** (status as of 2026-09-10)
+
+Figures in this list are hand-written snapshots. The generated record is the checksum
+manifests (`data/cards/manifests/*.json`), the dataset cards built from them, and the
+reports under `reports/data/`; where the two disagree, the generated record is right.
 
 - [x] `uv pip install -e ".[dev]"` succeeds and `faultline --help` lists every command.
 - [x] `ruff check`, `mypy --strict src/` and `pytest -q` all pass; tests run in under
@@ -31,17 +35,18 @@ No model code beyond typed stubs. No training. No tokenizer fitted on real data.
 - [x] Telemetry stages, adapter discovery, event horizon labelling, split assignment,
       `VocabLayout`, `QuantileBinTokenizer` and `JointVocab` are implemented and unit
       tested on synthetic data.
-- [ ] **Tier-1 files for all four sources downloaded and md5-verified.** *Partial:
-      Kelmarsh (11/11, 3.69 GB) and Penmanshiel (8/16, 1.92 GB) are staged and
-      verified; Hill of Towie and CARE have not started. Zenodo was unavailable for
-      long stretches of the staging window — two separate outages returning HTTP 504
-      and then connection timeouts, including on its own front page. The downloader is
-      resumable and skips verified files, so finishing is one command:*
-      `faultline download telemetry --tier 1 --attempts 60`.
+- [x] **Tier-1 files for all four sources downloaded and md5-verified.** *37 files,
+      17.44 GB: Kelmarsh 11 (3.69 GB), Penmanshiel 16 (5.28 GB), Hill of Towie 9
+      (2.96 GB), CARE 1 (5.50 GB). Every file was re-hashed against its manifest on
+      2026-09-10 and all 37 match. Staging took two Zenodo outages (HTTP 504, then
+      connection timeouts); the resumable downloader is what got through them.*
 - [x] One raw inventory report per source in `reports/data/`, and one dataset card per
-      source in `data/cards/`. *Kelmarsh and Penmanshiel answer the free-text question
-      with evidence (`VERIFIED no`, a controlled vocabulary); Hill of Towie and CARE
-      are explicitly `UNVERIFIED` because nothing is staged to inspect.*
+      source in `data/cards/`. *All four answer the free-text question with
+      measurements pooled over every parsed event table: Kelmarsh and Penmanshiel
+      `VERIFIED no`, a code book (217 and 231 recurring labels); Hill of Towie
+      `VERIFIED no`, codes only (1,004,341 alarm rows, no message column); CARE
+      `VERIFIED short written descriptions` (35 strings over 45 described events).
+      ADR-0001 records what that does to its conclusion.*
 - [x] `tests/test_naming.py` passes; the banned strings appear only in ADR-0002.
 - [ ] **Remote exists, the `m0` tag is pushed, and no data, secret or file over 5 MB is
       in the history.** *Remote and history are done and verified. The tag is

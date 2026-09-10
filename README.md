@@ -21,13 +21,11 @@ synthetic fixtures, the joint vocabulary layout and the quantile-bin tokenizer, 
 checksum-verifying downloader, and dataset cards plus checksum manifests for four public
 SCADA sources. What does not exist: any model, any training loop, any evaluation number.
 
-**Staging is partial.** Kelmarsh is complete (11 files, 3.69 GB, all md5-verified) and
-Penmanshiel is part-way (8 of 16, 1.65 GB); Hill of Towie and CARE have not started,
-because Zenodo was unavailable for long stretches of the staging window. Their dataset
-cards say `UNVERIFIED` rather than implying otherwise. The downloader resumes and skips
-verified files, so finishing is one command:
-`faultline download telemetry --tier 1 --attempts 60`, after which
-`faultline inspect telemetry && faultline cards build` regenerates the evidence.
+**Tier 1 is staged for all four sources**: 37 files, 17.44 GB, every one md5-verified
+against its record and re-hashed on 2026-09-10 — Kelmarsh 11 files (3.69 GB), Penmanshiel
+16 (5.28 GB), Hill of Towie 9 (2.96 GB), CARE 1 (5.50 GB). Those figures are a hand-written
+snapshot; the generated record is `data/cards/manifests/*.json` and the dataset cards built
+from it, and `faultline inspect telemetry && faultline cards build` regenerates the evidence.
 
 ## Scientific framing
 
@@ -115,7 +113,7 @@ faultline --help
 # tests: no network, no real data, under a minute
 pytest -q
 
-# stage the tier-1 telemetry archives (~19.5 GB; --dry-run prints the plan first)
+# stage the tier-1 telemetry archives (17.44 GB; --dry-run prints the plan first)
 faultline download telemetry --config configs/data/sources_telemetry.yaml --tier 1 --dry-run
 faultline download telemetry --config configs/data/sources_telemetry.yaml --tier 1
 

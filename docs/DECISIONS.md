@@ -76,6 +76,15 @@ description written for one event mostly occurs once — and that is what the ve
 now follows. The thresholds live in `src/faultline/data/telemetry/inspect.py` and every
 report prints them beside its verdict.
 
+**The thresholds were chosen after all four sources had been inspected**, so they
+describe the data rather than predict it. What makes them defensible anyway is the
+margin. The measured singleton shares are 14.7% (Kelmarsh), 11.3% (Penmanshiel) and 85.7%
+(CARE), and Hill of Towie has no text to classify, so any singleton-share threshold
+between 20% and 80% yields the same classification for all four; the full band runs
+from just above 14.7% to 85.7%. `tests/data/telemetry/test_inspect.py` checks that claim
+against the tracked reports, so a re-inspection that moves a share out of the band fails
+a test rather than quietly changing a verdict.
+
 Three things the table compresses:
 
 - **Kelmarsh.** The "at most 75 distinct strings per turbine-year" quoted in ADR-0007
@@ -274,7 +283,7 @@ the choice cannot be made by accident.
 
 ## ADR-0004 Data licence policy
 
-**Status:** Accepted · **Date:** 2026-09-09
+**Status:** Accepted, amended on 2026-09-10 (republished sources, below) · **Date:** 2026-09-09
 
 **Decision.** Admit only sources that are public domain, CC0, CC BY, CC BY-SA, MIT
 or Apache-2.0. Record the licence per file in the download manifest, not merely per
@@ -295,6 +304,47 @@ thing unpublishable.
 this repository would carry CC BY-SA 4.0. This repository therefore redistributes no
 derived data at all: only cards, manifests and aggregate statistics. Code stays MIT
 because code is not a derivative of the data.
+
+### Amendment, 2026-09-10 — a republished source is judged by its republication
+
+**What was wrong with the record as written.** The decision named EDP Open Data as
+excluded, and CARE as admitted, without noticing that the two overlap. The CARE README
+states that "the data for Wind farm A is based on data from the EDP-open data platform".
+Read literally, the record excluded a source and then admitted a republication of it.
+
+**The rule, made explicit.** Two cases are different, and the record now says so:
+
+| case | example | decision |
+| --- | --- | --- |
+| **Direct use** of a source whose terms are unspecified or unverified | EDP Open Data downloaded from EDP's own platform | **Excluded**, unchanged. A widely used dataset is not a licensed one. |
+| **Republished use**: a third party republishes the data under a clear licence, and the chain from the original source to that licence is documented | CARE farm A: EDP Open Data → Fraunhofer IEE, CARE to Compare → CC BY-SA 4.0 | **Permitted**, under the conditions below. |
+
+A republished source is admitted only when all four of these hold:
+
+1. The republisher states a licence explicitly, on a version-pinned record.
+2. The republisher states where the data came from. The chain is documented, not
+   inferred from similar-looking data.
+3. The data is used as republished. It is never joined back to the upstream original,
+   because that would be direct use again by another route.
+4. The republished part is separable, so a result can be recomputed without it.
+
+**Applied to CARE.** All four hold. (1) CC BY-SA 4.0 on Zenodo record 15846963. (2) The
+record README names the EDP Open Data platform as the basis of farm A. (3) Only the CARE
+archive is staged, and nothing from EDP's platform is. (4) Farm A is its own directory,
+22 of 95 datasets and 5 of 36 turbines. The chain is recorded in
+`docs/DATA_LICENSES.md`, in `configs/data/sources_telemetry.yaml`, and on the CARE
+dataset card.
+
+**The residual risk, stated.** A republisher can grant only the rights it holds. If the
+upstream terms did not allow republication under CC BY-SA, the defect sits upstream of
+this project, and a documented chain does not cure it. Condition 4 is what bounds that
+risk. Every CARE result is reported with farm A and without it, so a later finding about
+the EDP terms costs one column of a table, not the result. CARE also stays
+evaluation-only (`eval_only_sources`), so no trained weight depends on farm A.
+
+**What would change this amendment.** Either publisher stating that the republication was
+not permitted. That removes farm A, and the sensitivity check means nothing else has to
+be rerun.
 
 ---
 

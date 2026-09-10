@@ -82,6 +82,13 @@ class SourceSpec(StrictModel):
         cite: Optional accompanying publication.
         site: Site metadata.
         timezone: Timezone of the timestamps, or a TODO when unconfirmed.
+        absolute_time: Whether the timestamps are real calendar instants. ``False`` for
+            a record that anonymises its timestamps. Such a record keeps its 10-minute
+            spacing and nothing else, so it is excluded from every absolute-time and
+            seasonal feature (hour of day, day of year, month).
+        provenance: Where the record's data came from before this publisher released
+            it, when the publisher says so. ADR-0004 admits a republished source only
+            when this chain is written down.
         intended_use: Role this source plays in the study design.
         tiers: File names grouped by download tier.
     """
@@ -94,6 +101,8 @@ class SourceSpec(StrictModel):
     cite: str | None = None
     site: SiteSpec
     timezone: str | None = None
+    absolute_time: bool = True
+    provenance: str | None = None
     intended_use: str | None = None
     tiers: dict[int, list[str]] = Field(default_factory=dict)
 

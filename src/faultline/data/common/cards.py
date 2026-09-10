@@ -24,6 +24,7 @@ import yaml
 from faultline.data.common.manifest import SourceManifest, manifest_path, read_manifest
 from faultline.data.common.report import kv_table, section, table
 from faultline.data.telemetry.adapters.base import load_channel_map
+from faultline.data.telemetry.inspect import THRESHOLD_PROVENANCE
 from faultline.download.zenodo import SourceSpec
 from faultline.logging_utils import get_logger
 from faultline.paths import ProjectPaths
@@ -211,6 +212,7 @@ def build_card(source: str, spec: SourceSpec, paths: ProjectPaths) -> Path:
                     "licence": spec.license,
                     "attribution": spec.attribution,
                     "accompanying publication": spec.cite or "none",
+                    "provenance chain": spec.provenance or "none stated by the publisher",
                 }
             ),
         )
@@ -230,6 +232,10 @@ def build_card(source: str, spec: SourceSpec, paths: ProjectPaths) -> Path:
                     "period": spec.site.period or f"{UNVERIFIED}",
                     "resolution": "10 min (as published)",
                     "timezone": spec.timezone or f"{UNVERIFIED}",
+                    "real calendar timestamps": "yes"
+                    if spec.absolute_time
+                    else "no - anonymised by the provider, so this source is excluded from "
+                    "every absolute-time and seasonal feature",
                     "provider note": spec.site.note or "none",
                 }
             )
@@ -273,7 +279,8 @@ def build_card(source: str, spec: SourceSpec, paths: ProjectPaths) -> Path:
             "labels), `VERIFIED short written descriptions` (a closed set of strings written "
             "per event; `VERIFIED written descriptions` when they run longer than a line), "
             "`VERIFIED yes` (open-ended text) or `UNVERIFIED`. It follows the measurements in "
-            "the raw inventory report named above; do not edit this field by hand.",
+            "the raw inventory report named above; do not edit this field by hand.\n\n"
+            + THRESHOLD_PROVENANCE,
         )
     )
 
@@ -351,8 +358,9 @@ def build_card(source: str, spec: SourceSpec, paths: ProjectPaths) -> Path:
                     "generated from": "the manifest (staging), the raw inventory report "
                     "(free-text verdict), the resolution report (measured questions) and the "
                     "channel map file (channels)",
-                    "hand-written": "'Contents as published', the intended use and the "
-                    "provider caveat, copied from configs/data/sources_telemetry.yaml",
+                    "hand-written": "'Contents as published', the provenance chain, the "
+                    "intended use and the provider caveat, copied from "
+                    "configs/data/sources_telemetry.yaml",
                 }
             ),
         )

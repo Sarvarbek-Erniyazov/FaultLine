@@ -21,6 +21,25 @@ CARE has an accompanying publication that should be cited alongside the data:
 Gück, Bruns, Dupont (2024), *CARE to Compare*, Data 9(12):138,
 [doi:10.3390/data9120138](https://doi.org/10.3390/data9120138).
 
+## Provenance chains of republished data
+
+ADR-0004, as amended on 2026-09-10, treats two cases differently. Data used directly from
+a source with unverified terms is excluded. Data that a third party republishes under a
+clear licence is permitted, provided the chain back to its origin is written down, the
+data is used only as republished, and the republished part can be separated out. The
+chain is written down here.
+
+| record | part | chain | governing licence | separable for a sensitivity check |
+| --- | --- | --- | --- | --- |
+| CARE to Compare | farm A (onshore, Portugal) | EDP Open Data → Fraunhofer IEE, CARE to Compare, Zenodo record 15846963 → CC BY-SA 4.0 | CC BY-SA 4.0 (the republisher's) | yes: `Wind Farm A/`, 22 of 95 datasets, 5 of 36 turbines |
+| CARE to Compare | farms B and C (offshore, Germany) | the record README names no upstream source | CC BY-SA 4.0 | not applicable |
+
+The evidence for the first row is the record README inside `CARE_To_Compare.zip`: "The
+data for Wind farm A is based on data from the EDP-open data platform". Every CARE result
+is reported with farm A and without it. A publisher can grant only the rights it holds,
+and the sensitivity check is what makes that risk cheap to act on. If farm A is ever
+withdrawn, one column of a results table changes and nothing has to be rerun.
+
 Records are pinned to a **version** id, not a concept DOI, so that a later upload by
 the provider cannot silently change what a run consumed. The CARE pin is v6
 (2025-07-09), which carries label corrections relative to v1 — training against v1
@@ -70,7 +89,7 @@ rather than after it.
 
 | source | status | reason |
 | --- | --- | --- |
-| EDP Open Data (Wind Farm 1/2) | **Excluded** | Terms of use are not clearly specified as an open licence. ADR-0004 excludes unspecified terms; the dataset is widely used in the literature, which is not a substitute for a licence. Revisit only if the publisher states terms in writing. |
+| EDP Open Data (Wind Farm 1/2), **direct use** | **Excluded** | Terms of use are not clearly specified as an open licence. ADR-0004 excludes unspecified terms; the dataset is widely used in the literature, which is not a substitute for a licence. Revisit only if the publisher states terms in writing. EDP-derived data reaches this project by one route only: CARE farm A, as republished by Fraunhofer IEE under CC BY-SA 4.0 (see "Provenance chains" above). It is never fetched from EDP's platform or joined back to it. |
 | Any scraped web corpus | **Excluded** | No verifiable licence, and scraping against a site's terms is out of scope regardless of what it would add. |
 | Operational data from any partner, employer or funded project | **Excluded permanently** | `docs/PROVENANCE.md`. Not a licensing question — an independence one. |
 

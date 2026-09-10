@@ -12,8 +12,8 @@
 | members discovered | 110 |
 | member classification | file-name substring patterns in the adapter |
 | event members parsed | 54 of 54 (caps: 200 members, 209.7 MB and 500,000 rows per member) |
-| generated (UTC) | 2026-09-10T09:22:22+00:00 |
-| git_sha | aac5d7110773da2a7337e045b61237a5001db107 |
+| generated (UTC) | 2026-09-10T09:55:48+00:00 |
+| git_sha | 3e78a10e0b622b766ef384205c8084cb667ea49a |
 
 ## Free-text verdict
 
@@ -22,6 +22,8 @@
 This is the evidence behind ADR-0001: whether the paired text in this record is open-ended language or a controlled vocabulary.
 
 Thresholds applied: more than 500 distinct strings is open-ended text; within that, a set in which at least 50% of the distinct strings occur exactly once was written per event, otherwise it is a code book; written descriptions averaging at most 200 characters are short. The measurements are pooled over every parsed event table and listed in the next section.
+
+These thresholds were chosen after all four sources had been inspected, so they describe what was measured rather than predicting it. The classification does not hinge on them. The singleton shares measured are 14.7% (Kelmarsh), 11.3% (Penmanshiel) and 85.7% (CARE), and Hill of Towie carries no text at all, so any singleton-share threshold between 20% and 80% yields the same classification for all four sources; the full band runs from just above 14.7% to 85.7%. Likewise the 500-string ceiling sits above the largest closed set measured (231 strings, Penmanshiel).
 
 ## Text measurements (all parsed tables pooled)
 

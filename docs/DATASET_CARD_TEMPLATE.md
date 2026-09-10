@@ -22,6 +22,9 @@ here"; `UNVERIFIED` reads as "nobody has checked", which is the truth.
 - Version DOI actually retrieved
 - Licence (SPDX-style) and the required attribution string
 - Accompanying publication, if the provider names one
+- **Provenance chain**, when the record republishes data from an upstream source:
+  where the data came from, which licence governs, and whether the republished part
+  can be separated for a sensitivity check (ADR-0004, amended 2026-09-10)
 
 ### Contents as published
 - Site name, country
@@ -30,6 +33,8 @@ here"; `UNVERIFIED` reads as "nobody has checked", which is the truth.
 - Period covered, publication date
 - Sampling resolution
 - Timezone of the timestamps
+- Whether the timestamps are real calendar instants. A record with anonymised
+  timestamps is excluded from absolute-time and seasonal features.
 - Any note the provider attaches to the record
 
 ### Staging

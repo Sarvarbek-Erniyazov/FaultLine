@@ -177,7 +177,27 @@ sources:
         farm A is 5 onshore turbines in Portugal, farms B and C are offshore in
         Germany; 86/257/957 features per farm; 95 datasets, 45 with labelled
         anomaly events; event_info files carry event descriptions
-    timezone: "TODO(m1): confirm from the record README"
+    # CLOSED 2026-09-10 as unanswerable by design. The record README states that "the
+    # sensor data and time stamps are anonymized". An anonymised timestamp keeps the
+    # 10-minute spacing and nothing else, so no timezone can be measured from it and no
+    # timezone is claimed. `faultline inspect resolve` tests for a daylight-saving
+    # fingerprint, and that test is meaningless here: a shifted calendar has no
+    # transition to look for.
+    timezone: "not applicable - timestamps anonymised by the provider (record README)"
+    # For the same reason CARE is excluded from every absolute-time and seasonal feature
+    # (hour of day, day of year, month): those features would read the anonymised
+    # calendar as if it were real. Relative time -- spacing, order, steps to an event --
+    # is unaffected.
+    absolute_time: false
+    # Recorded under ADR-0004's rule for republished data, amended 2026-09-10.
+    provenance: >-
+      Farm A is EDP Open Data republished by Fraunhofer IEE: the record README states
+      that "the data for Wind farm A is based on data from the EDP-open data platform".
+      The chain is EDP Open Data -> Fraunhofer IEE, CARE to Compare (Zenodo record
+      15846963) -> CC BY-SA 4.0, and the CC BY-SA 4.0 licence on the Fraunhofer record
+      is the one that governs. Farms B and C are offshore farms in Germany that the
+      README gives no upstream for. Farm A can be separated out for a sensitivity check:
+      it is its own directory, 22 of 95 datasets and 5 of 36 turbines.
     intended_use: "labelled anomaly events for evaluation and label cross-check"
     tiers:
       1:

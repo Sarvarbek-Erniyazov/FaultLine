@@ -102,6 +102,25 @@ WRITTEN_MIN_ONCE_SHARE = 0.5
 #: two, not a paragraph.
 SHORT_MAX_MEAN_CHARS = 200
 
+#: How the thresholds above were chosen. Printed beside every verdict, because a
+#: threshold set after looking at the data is a description of that data, and a reader
+#: is owed the margin that makes it defensible anyway.
+THRESHOLD_PROVENANCE = (
+    "These thresholds were chosen after all four sources had been inspected, so they "
+    "describe what was measured rather than predicting it. The classification does not "
+    "hinge on them. The singleton shares measured are 14.7% (Kelmarsh), 11.3% "
+    "(Penmanshiel) and 85.7% (CARE), and Hill of Towie carries no text at all, so any "
+    "singleton-share threshold between 20% and 80% yields the same classification for "
+    "all four sources; the full band runs from just above 14.7% to 85.7%. Likewise the "
+    f"{TEMPLATE_MAX_UNIQUE}-string ceiling sits above the largest closed set measured "
+    "(231 strings, Penmanshiel)."
+)
+
+#: A share-alike record is quoted no further than the measurement needs. Every statistic
+#: still covers every string; the quotations only illustrate, and five illustrate as well
+#: as twenty.
+MAX_SHARE_ALIKE_QUOTES = 5
+
 
 @dataclass
 class EventEvidence:
@@ -466,7 +485,9 @@ def collect_event_evidence(
 
 
 def free_text_verdict(
-    measurements: TextMeasurements | None, members_staged: int | None = None
+    measurements: TextMeasurements | None,
+    members_staged: int | None = None,
+    once_share_threshold: float = WRITTEN_MIN_ONCE_SHARE,
 ) -> tuple[str, str]:
     """Decide what the parsed event tables say about free text.
 
@@ -480,6 +501,10 @@ def free_text_verdict(
         members_staged: How many members were discovered for the source. Pass it so
             that "nothing is staged" is not reported as "searched and found nothing":
             the two read almost identically and mean entirely different things.
+        once_share_threshold: Share of distinct strings occurring once at or above
+            which a closed set counts as written rather than looked up. A parameter
+            so the claim in :data:`THRESHOLD_PROVENANCE` can be tested, not so that
+            it can be tuned per source.
 
     Returns:
         A ``(verdict, rationale)`` pair. The verdict is ``UNVERIFIED``; ``VERIFIED no``
@@ -517,7 +542,7 @@ def free_text_verdict(
             "VERIFIED yes",
             f"open-ended text: {shape}; revisit ADR-0001, the paired text may be usable",
         )
-    if m.once_share >= WRITTEN_MIN_ONCE_SHARE:
+    if m.once_share >= once_share_threshold:
         label = (
             "VERIFIED short written descriptions"
             if m.mean_chars <= SHORT_MAX_MEAN_CHARS
@@ -556,8 +581,34 @@ def inventory_members(adapter: BaseAdapter, raw_dir: Path) -> list[RawMember]:
     return members
 
 
+def recurrence_table(counts: Counter[str]) -> str:
+    """Render how often the distinct strings recur, without quoting any of them.
+
+    This carries the recurrence evidence the free-text verdict rests on for a record
+    whose strings are quoted only sparingly.
+
+    Args:
+        counts: Row count of every distinct string.
+
+    Returns:
+        A Markdown table: occurrences per string, and how many strings occur that often.
+    """
+    by_occurrence = Counter(counts.values())
+    return table(
+        ["occurrences of the string", "distinct strings", "rows"],
+        [
+            (occurrences, strings, occurrences * strings)
+            for occurrences, strings in sorted(by_occurrence.items(), reverse=True)
+        ],
+    )
+
+
 def text_section(measurements: TextMeasurements, licence_note: str | None = None) -> str:
     """Render the message text pooled over every parsed table.
+
+    A share-alike record, marked by ``licence_note``, is quoted no further than
+    :data:`MAX_SHARE_ALIKE_QUOTES` strings. Its recurrence is reported as a table of
+    counts instead, so every statistic still covers every string.
 
     Args:
         measurements: Pooled measurements.
@@ -581,9 +632,18 @@ def text_section(measurements: TextMeasurements, licence_note: str | None = None
             "longest mean length in one table (characters)": round(m.max_table_mean_chars, 1),
         }
     )
-    if m.counts:
-        if licence_note:
-            body += f"\n_{licence_note}_\n"
+    if m.counts and licence_note:
+        body += (
+            "\n**Recurrence of the distinct strings** (all of them, none quoted)\n\n"
+            + recurrence_table(m.counts)
+        )
+        body += f"\n_{licence_note}_\n"
+        body += (
+            f"\n**{MAX_SHARE_ALIKE_QUOTES} illustrative messages** (the most frequent; share "
+            "of rows with a message)\n\n"
+            + top_values_table(m.counts, n=MAX_SHARE_ALIKE_QUOTES, label="message")
+        )
+    elif m.counts:
         body += "\n**Top 20 messages** (share of rows with a message)\n\n" + top_values_table(
             m.counts, n=20, label="message"
         )
@@ -721,10 +781,11 @@ def build_report(
     codes = pooled_codes(profiles)
     share_alike = is_share_alike(spec.license)
     licence_note = (
-        f"Quoted messages are the provider's text under {spec.license} ({spec.attribution}). "
-        "They are quoted because the measurement needs them; this report otherwise "
-        "reproduces none of the record: header samples are cut to their first line and "
-        "per-table message listings are omitted."
+        f"Quoted messages are the provider's text under {spec.license}, reproduced "
+        f"unmodified. At most {MAX_SHARE_ALIKE_QUOTES} are quoted, as illustration; every "
+        "statistic above covers all of them. This report otherwise reproduces none of the "
+        "record: header samples are cut to their first line and per-table message "
+        "listings are omitted."
         if share_alike
         else None
     )
@@ -751,6 +812,12 @@ def build_report(
             }
         ),
     ]
+    if share_alike:
+        parts.append(
+            f"\n**Attribution.** {spec.attribution}. Licensed under {spec.license}; the "
+            "strings quoted below are the provider's, unmodified, and everything else in "
+            "this report is aggregate measurement.\n"
+        )
 
     parts.append(
         section(
@@ -763,7 +830,8 @@ def build_report(
             f"{WRITTEN_MIN_ONCE_SHARE * 100:.0f}% of the distinct strings occur exactly once "
             "was written per event, otherwise it is a code book; written descriptions "
             f"averaging at most {SHORT_MAX_MEAN_CHARS} characters are short. The measurements "
-            "are pooled over every parsed event table and listed in the next section.",
+            "are pooled over every parsed event table and listed in the next section.\n\n"
+            + THRESHOLD_PROVENANCE,
         )
     )
 

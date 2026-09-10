@@ -10,16 +10,22 @@ pinned here with synthetic fixtures.
 
 from __future__ import annotations
 
+import re
 import zipfile
+from collections import Counter
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 from faultline.data.telemetry.adapters.base import RawMember, sniff_csv_layout
 from faultline.data.telemetry.adapters.hill_of_towie import HillOfTowieAdapter
 from faultline.data.telemetry.adapters.kelmarsh import KelmarshAdapter
 from faultline.data.telemetry.inspect import (
     CODE_HINTS,
+    MAX_SHARE_ALIKE_QUOTES,
+    THRESHOLD_PROVENANCE,
+    TextMeasurements,
     code_description_map,
     collect_event_evidence,
     free_text_verdict,
@@ -32,6 +38,7 @@ from faultline.data.telemetry.inspect import (
     read_code_table,
     read_member_table,
     sample_headers,
+    text_section,
 )
 
 # The turbine-data layout: a commented preamble whose LAST line is the header.
@@ -397,3 +404,61 @@ def test_share_alike_licences_are_recognised() -> None:
     assert is_share_alike("CC-BY-SA-4.0")
     assert not is_share_alike("CC-BY-4.0")
     assert not is_share_alike("CC0-1.0")
+
+
+def test_a_share_alike_record_is_quoted_sparingly_and_measured_fully() -> None:
+    counts = {f"root cause note {i}": 1 for i in range(30)} | {"Hydraulic group": 6}
+    measured = measure_text([_text_profile(95, counts)])
+    body = text_section(measured, licence_note="provider text under CC-BY-SA-4.0")
+
+    quoted = [s for s in counts if s in body]
+    assert len(quoted) <= MAX_SHARE_ALIKE_QUOTES
+    # every statistic still covers every string: 31 distinct, 36 rows with text
+    assert "| distinct messages | 31 |" in body
+    assert "| 1 | 30 | 30 |" in body  # thirty strings occur once
+    assert "| 6 | 1 | 6 |" in body  # one string occurs six times
+
+
+def test_a_record_that_is_not_share_alike_keeps_its_top_twenty() -> None:
+    counts = {f"status {i}": 100 - i for i in range(30)}
+    body = text_section(measure_text([_text_profile(5_000, counts)]))
+    assert sum(1 for s in counts if f"| {s} |" in body) == 20
+
+
+def _measured_from_report(path: Path) -> TextMeasurements:
+    """Rebuild the pooled text measurements a tracked inventory report printed."""
+    text = path.read_text(encoding="utf-8")
+
+    def field(name: str) -> str:
+        match = re.search(rf"^\| {re.escape(name)} \| ([^|]+) \|$", text, re.M)
+        assert match is not None, f"{path.name} has no {name!r} row"
+        return match.group(1).strip()
+
+    return TextMeasurements(
+        tables=int(field("event tables parsed").replace(",", "")),
+        rows=int(field("rows").replace(",", "")),
+        text_rows=int(field("rows with a non-empty message").split()[0].replace(",", "")),
+        distinct=int(field("distinct messages").replace(",", "")),
+        mean_chars=float(field("mean length (characters)")),
+        mean_words=float(field("mean length (words)")),
+        once_share=float(field("distinct messages occurring exactly once").rstrip("%")) / 100,
+        max_table_distinct=int(field("most distinct messages in one table").replace(",", "")),
+        max_table_mean_chars=float(field("longest mean length in one table (characters)")),
+        counts=Counter(),
+    )
+
+
+@pytest.mark.parametrize("source", ["kelmarsh", "penmanshiel", "hill_of_towie", "care"])
+def test_no_singleton_share_threshold_from_20_to_80_percent_changes_a_verdict(
+    repo_root: Path, source: str
+) -> None:
+    # The claim THRESHOLD_PROVENANCE makes, checked against the tracked evidence rather
+    # than against numbers copied into the test. A re-inspection that moves a share into
+    # the band fails here instead of quietly flipping a verdict.
+    reports = sorted((repo_root / "reports" / "data").glob(f"raw_inventory_{source}_*.md"))
+    measured = _measured_from_report(reports[-1])
+    shipped, _ = free_text_verdict(measured)
+    for percent in range(20, 81):
+        verdict, _ = free_text_verdict(measured, once_share_threshold=percent / 100)
+        assert verdict == shipped, f"{source}: threshold {percent}% gives {verdict}"
+    assert "chosen after all four sources had been inspected" in THRESHOLD_PROVENANCE

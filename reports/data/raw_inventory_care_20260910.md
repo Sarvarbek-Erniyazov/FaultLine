@@ -12,8 +12,10 @@
 | members discovered | 103 |
 | member classification | the file structure documented in the record README: Wind Farm <x>/event_info.csv, feature_description.csv and datasets/<event_id>.csv |
 | event members parsed | 3 of 3 (caps: 200 members, 209.7 MB and 500,000 rows per member) |
-| generated (UTC) | 2026-09-10T09:22:27+00:00 |
-| git_sha | aac5d7110773da2a7337e045b61237a5001db107 |
+| generated (UTC) | 2026-09-10T09:55:56+00:00 |
+| git_sha | 3e78a10e0b622b766ef384205c8084cb667ea49a |
+
+**Attribution.** Gueck, Bruns, Dupont, CARE to Compare, Fraunhofer IEE, Zenodo, doi:10.5281/zenodo.10958774 (CC BY-SA 4.0). Licensed under CC-BY-SA-4.0; the strings quoted below are the provider's, unmodified, and everything else in this report is aggregate measurement.
 
 ## Free-text verdict
 
@@ -22,6 +24,8 @@
 This is the evidence behind ADR-0001: whether the paired text in this record is open-ended language or a controlled vocabulary.
 
 Thresholds applied: more than 500 distinct strings is open-ended text; within that, a set in which at least 50% of the distinct strings occur exactly once was written per event, otherwise it is a code book; written descriptions averaging at most 200 characters are short. The measurements are pooled over every parsed event table and listed in the next section.
+
+These thresholds were chosen after all four sources had been inspected, so they describe what was measured rather than predicting it. The classification does not hinge on them. The singleton shares measured are 14.7% (Kelmarsh), 11.3% (Penmanshiel) and 85.7% (CARE), and Hill of Towie carries no text at all, so any singleton-share threshold between 20% and 80% yields the same classification for all four sources; the full band runs from just above 14.7% to 85.7%. Likewise the 500-string ceiling sits above the largest closed set measured (231 strings, Penmanshiel).
 
 ## Text measurements (all parsed tables pooled)
 
@@ -37,9 +41,18 @@ Thresholds applied: more than 500 distinct strings is open-ended text; within th
 | most distinct messages in one table | 26 |
 | longest mean length in one table (characters) | 76.3 |
 
-_Quoted messages are the provider's text under CC-BY-SA-4.0 (Gueck, Bruns, Dupont, CARE to Compare, Fraunhofer IEE, Zenodo, doi:10.5281/zenodo.10958774 (CC BY-SA 4.0)). They are quoted because the measurement needs them; this report otherwise reproduces none of the record: header samples are cut to their first line and per-table message listings are omitted._
+**Recurrence of the distinct strings** (all of them, none quoted)
 
-**Top 20 messages** (share of rows with a message)
+| occurrences of the string | distinct strings | rows |
+| --- | --- | --- |
+| 6 | 1 | 6 |
+| 3 | 1 | 3 |
+| 2 | 3 | 6 |
+| 1 | 30 | 30 |
+
+_Quoted messages are the provider's text under CC-BY-SA-4.0, reproduced unmodified. At most 5 are quoted, as illustration; every statistic above covers all of them. This report otherwise reproduces none of the record: header samples are cut to their first line and per-table message listings are omitted._
+
+**5 illustrative messages** (the most frequent; share of rows with a message)
 
 | message | count | share |
 | --- | --- | --- |
@@ -48,21 +61,6 @@ _Quoted messages are the provider's text under CC-BY-SA-4.0 (Gueck, Bruns, Dupon
 | 23020 : Axis 3 not ready-to-operate | 2 | 4.44% |
 | Gearbox failure | 2 | 4.44% |
 | Generator bearing failure | 2 | 4.44% |
-| 10115 : Oil level error, two-pump mode + Oil Leakage Gear Oil Supply + 12019: Rotor brake B cannot be closed + P20_yaw … | 1 | 2.22% |
-| 15004 : Safety chain relay open + 93005 : Gear oil cooler bypass valve | 1 | 2.22% |
-| 21002 : Axis 1 DC-link voltage low, batt | 1 | 2.22% |
-| COMMUNICATION FAULT BK1120 IN NC300 A2 | 1 | 2.22% |
-| Communication and Pitchfailure - slip ring and Beckhoff card | 1 | 2.22% |
-| Communication fault BK1120 in NC300 | 1 | 2.22% |
-| Converter Failure from 17.11 12:30 - 18.11. 13:57, Fuse Filter Supply | 1 | 2.22% |
-| Failure 2023-04-05 03:30 - defective coupling between gear oil pump and motor | 1 | 2.22% |
-| Failure due to Rotorbrake and Hydraulic problemes - Hydraulic pump A disabeld, 2h later turbine back in production - An… | 1 | 2.22% |
-| Gearbox bearings damaged | 1 | 2.22% |
-| Harting plug Nacelle/HUB damaged + NCR20_HUB: Wiring blade control system | 1 | 2.22% |
-| P20_Blade3_Grease Collector missing | 1 | 2.22% |
-| P20_DGUV-v3 RCD 28F1 NC310 defective + 0 : P20_Blades_Cabinet Caps missing | 1 | 2.22% |
-| P20_Grounding role brake disc + P20_cover-lightning-main-cabinet-hub | 1 | 2.22% |
-| P20_spinner_carbonbrush defekt + P20_Accumulators_hydraulic system | 1 | 2.22% |
 
 ## Staged files
 

@@ -11,7 +11,7 @@ either -- it carries the turbine name and the timezone, which is where the UTC
 confirmation for this record comes from.
 
 The loaders were written against the staged archives after inspection confirmed all
-of this (``reports/data/raw_inventory_kelmarsh_20260908.md``), not from the file names.
+of this (``reports/data/raw_inventory_kelmarsh_20260910.md``), not from the file names.
 """
 
 from __future__ import annotations

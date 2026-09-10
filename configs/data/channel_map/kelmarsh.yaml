@@ -13,7 +13,7 @@
 #      each Greenbyte signal -- this is what establishes what a column *measures*, as
 #      opposed to merely that it exists.
 #
-# See reports/data/raw_inventory_kelmarsh_20260908.md.
+# See reports/data/raw_inventory_kelmarsh_20260910.md.
 
 source: kelmarsh
 site: "Kelmarsh"

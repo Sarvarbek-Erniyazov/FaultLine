@@ -10,8 +10,8 @@
 | staged directory | C:\Users\sharg\Desktop\github\FaultLine\data\raw\telemetry\kelmarsh |
 | files staged | 11 |
 | members discovered | 110 |
-| generated (UTC) | 2026-09-08T22:56:35+00:00 |
-| git_sha | f306e73f6f0231e626d317f26b0a316cffd33d42 |
+| generated (UTC) | 2026-09-10T08:56:56+00:00 |
+| git_sha | c6b5de4cc72ac9735301ce1f1dcdbfa84ae4ccff |
 
 ## Free-text verdict
 

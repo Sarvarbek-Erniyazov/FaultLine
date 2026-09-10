@@ -285,6 +285,26 @@ def inspect_resolve(
 
 
 @inspect_app.command(
+    "downtime",
+    help="Stream a staged downtime series (Hill of Towie ShutdownDuration) and profile it.",
+)
+def inspect_downtime_command(
+    source: Annotated[
+        str, typer.Option("--source", help="Source whose downtime series is profiled.")
+    ] = "hill_of_towie",
+) -> None:
+    """Stream a staged downtime series and write its profile report.
+
+    Args:
+        source: Source whose downtime series is profiled.
+    """
+    from faultline.data.telemetry.downtime import inspect_downtime
+
+    report = inspect_downtime(ProjectPaths.resolve(), source)
+    typer.echo(f"wrote {report}")
+
+
+@inspect_app.command(
     "channels",
     help="Report each canonical channel's status per source, checked against staged headers.",
 )

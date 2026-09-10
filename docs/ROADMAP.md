@@ -99,7 +99,14 @@ trained from scratch, evaluated as a risk model rather than a forecaster.
   and freeze the result as `telemetry_v1.yaml`. Kelmarsh's timezone and its power
   bound are already measured; the rest are not.
 - Decide how ingest collapses the repeated timestamps in the Kelmarsh 2023 and 2024
-  exports, and prove the choice loses no values.
+  exports, and prove the choice loses no values. *Done 2026-09-10 (M1a step 4): drop
+  rows null in every mapped channel, assert at most one value per (label, channel),
+  collapse. The assertion held in all 12 repeated files; read across all 311 columns,
+  the repeats carry values in 9 derived availability columns only, with 0 conflicts.*
+- *M1a, 2026-09-10: all four loaders implemented; Hill of Towie and CARE mapped from
+  their own lookups; the core channel set derived from the maps and frozen in
+  `telemetry_v1.yaml` (13 core, 1 extended, ADR-0008); timezones measured UTC at
+  Kelmarsh, Penmanshiel and Hill of Towie, CARE's anonymised by design.*
 - Fit `QuantileBinTokenizer` on the training split only.
 - Model, training loop, checkpointing; multi-seed runs.
 - Risk evaluation: AUPRC, event-level F1, false alarms per hour, detection delay.

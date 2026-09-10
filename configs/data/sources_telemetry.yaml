@@ -39,6 +39,9 @@ sources:
     # UK civil time leaves and cannot hide. Across all 54 staged turbine-years, every
     # spring-forward hour is fully populated and no autumn fall-back hour repeats a
     # label. Evidence: reports/data/resolved_kelmarsh_20260909.md.
+    # Re-measured 2026-09-10 after the repeated-label rule (M1a step 4): the 2023 and 2024
+    # exports, which the autumn half abstained on at M0, now get both halves, and the
+    # verdict is UTC on all 54 turbine-years. reports/data/resolved_kelmarsh_20260910.md.
     timezone: "UTC"
     # The power column is in kW, MEASURED 2026-09-09. The provider's own signal
     # mapping records signal 5 ("Power" / "Actual value of active power") in kWh,
@@ -82,12 +85,18 @@ sources:
       rated_kw: 2050
       period: "2016-2024"
       note: "turbine WT03 is absent from the record"
-    # CONFIRMED 2026-09-09 from the file preamble ("# Time zone: UTC"), which is the
-    # same claim Kelmarsh makes and which measurement upheld there. Not yet measured
-    # here. TODO(m1): run `faultline inspect resolve --source penmanshiel` once tier 1
-    # is complete -- a shared publisher is a reason to expect the same answer, not
-    # evidence of it.
+    # MEASURED 2026-09-10, not only declared: UTC across 98 turbine-years, and the power
+    # column is kW (median p99.5 2,056 against a rated 2,050). The spring half does not
+    # apply to the 14 turbine-years of 2016, because every turbine starts reporting in
+    # June or July 2016 and there is no series running through the March hour.
+    # Evidence: reports/data/resolved_penmanshiel_20260910.md.
     timezone: "UTC"
+    # PREDICTION, recorded 2026-09-10 to be checked when tier 2 lands: the 2023-2024
+    # exports (tier 2, not staged) repeat every 10-minute label about 41 times in
+    # cumulative blocks, as Kelmarsh's 2023-2024 exports from the same publisher do. The
+    # ingest collapses that layout only after proving it lossless, and its report states
+    # rows_raw, rows_after_null_drop and labels_distinct per file, so the prediction is
+    # confirmed or refuted by the first ingest that reads them.
     intended_use: "training / validation site"
     tiers:
       1:
@@ -135,7 +144,13 @@ sources:
       note: >-
         AeroUp retrofits 2021-2023 and TuneUp 2024 are a built-in regime change;
         install dates are in Hill_of_Towie_AeroUp_install_dates.csv
-    timezone: "TODO(m1): confirm from Hill_of_Towie_tables_description.csv"
+    # MEASURED 2026-09-10 per station, on labels moved to interval start: UTC across 42
+    # station-years (21 turbines, 2019 and 2023), both halves of the daylight-saving test
+    # applied, and the power column is kW (median p99.5 2,299 against a rated 2,300).
+    # The SCADA TimeStamp labels the END of each 10-minute interval (the turbine clock
+    # at the interval's end sits a median 2 s before it); the adapter moves it to the
+    # start. Evidence: reports/data/resolved_hill_of_towie_20260910.md.
+    timezone: "UTC"
     intended_use: "held-out site; also the temporal-drift axis"
     tiers:
       # One pre-retrofit year and one post-retrofit year is the minimum that lets the

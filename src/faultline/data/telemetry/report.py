@@ -57,7 +57,15 @@ def ingest_report(meta: RunMeta, result: StageResult) -> str:
         section(
             "Sources",
             table(
-                ["source", "members discovered", "members loaded", "turbines", "events"],
+                [
+                    "source",
+                    "members discovered",
+                    "rows loaded",
+                    "turbines",
+                    "events",
+                    "identical cross-file copies dropped",
+                    "differing cross-file repeats left for the clean stage",
+                ],
                 [
                     (
                         source,
@@ -65,6 +73,8 @@ def ingest_report(meta: RunMeta, result: StageResult) -> str:
                         info.get("loaded", 0),
                         info.get("turbines", 0),
                         info.get("events", 0),
+                        info.get("identical_copies_dropped", 0),
+                        info.get("differing_copies_kept", 0),
                     )
                     for source, info in sorted(details.get("sources", {}).items())
                 ],
@@ -80,6 +90,47 @@ def ingest_report(meta: RunMeta, result: StageResult) -> str:
             ),
         )
     )
+    files = details.get("files", [])
+    if files:
+        repeated = [row for row in files if row[3] > row[5]]
+        unequal = [row for row in files if not row[3] == row[4] == row[5]]
+        parts.append(
+            section(
+                "Row accounting per file",
+                "Every SCADA file goes through the repeated-label rule: drop the rows null in "
+                "every ingested channel, assert that no (label, column) then holds two "
+                "values, and collapse to one row per label. `rows_raw` is rows read, "
+                "`rows_after_null_drop` is rows carrying any ingested value, "
+                "`labels_distinct` is distinct labels read (label and station, where one "
+                "file holds every turbine), `rows_out` is rows kept. A file that does not "
+                "repeat shows `rows_raw == labels_distinct`; a file whose three counts "
+                "agree also had no row without an ingested value. The assertion held for "
+                "every file below, or the run would have stopped.\n\n"
+                + kv_table(
+                    {
+                        "files": len(files),
+                        "files that repeat labels (rows_raw > labels_distinct)": len(repeated),
+                        "files where the three counts agree": len(files) - len(unequal),
+                        "rows_raw": sum(row[3] for row in files),
+                        "rows_after_null_drop": sum(row[4] for row in files),
+                        "rows_out": sum(row[6] for row in files),
+                    }
+                )
+                + "\n"
+                + table(
+                    [
+                        "source",
+                        "file",
+                        "turbine",
+                        "rows_raw",
+                        "rows_after_null_drop",
+                        "labels_distinct",
+                        "rows_out",
+                    ],
+                    files,
+                ),
+            )
+        )
     if details.get("not_implemented"):
         parts.append(
             section(

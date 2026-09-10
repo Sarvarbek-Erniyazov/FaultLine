@@ -8,7 +8,12 @@ from pathlib import Path
 import pytest
 
 from faultline.data.telemetry.adapters import ADAPTERS, get_adapter
-from faultline.data.telemetry.adapters.base import RawMember, load_channel_map, open_member
+from faultline.data.telemetry.adapters.base import (
+    BaseAdapter,
+    RawMember,
+    load_channel_map,
+    open_member,
+)
 from faultline.data.telemetry.adapters.hill_of_towie import HillOfTowieAdapter
 from faultline.data.telemetry.adapters.kelmarsh import KelmarshAdapter
 
@@ -104,7 +109,8 @@ def test_classification(name: str, kind: str) -> None:
         ("tblGrid_2019_01.csv", "other"),
         ("tblGridScientific_2019_01.csv", "other"),
         ("tblDailySummary_2019_01.csv", "other"),
-        ("ShutdownDuration.csv", "status_events"),
+        # A per-turbine downtime series: a label source, not an event log.
+        ("ShutdownDuration.csv", "downtime_series"),
         ("Hill_of_Towie_alarms_description.csv", "metadata"),
         ("Hill_of_Towie_tables_description.csv", "metadata"),
         ("Hill_of_Towie_turbine_fields_description.csv", "metadata"),
@@ -174,27 +180,19 @@ def test_open_member_reads_a_loose_file(tmp_path: Path) -> None:
         assert handle.read() == b"x\n"
 
 
-def test_unimplemented_loaders_raise_with_an_actionable_todo(tmp_path: Path) -> None:
-    # Kelmarsh has real loaders (see test_kelmarsh_adapter.py). The other three wait on
-    # their own inspection evidence, and must say what is needed rather than guess at a
-    # column layout -- a wrong guess there is silent and produces a plausible table
-    # built from the wrong columns.
-    member = RawMember(
-        archive=tmp_path / "x.zip",
-        name="a.csv",
-        kind="scada_10min",
-        size=1,
-        compressed_size=1,
-        in_archive=True,
-    )
-    pending = {name: cls for name, cls in ADAPTERS.items() if name != "kelmarsh"}
-    assert set(pending) == {"penmanshiel", "hill_of_towie", "care"}
-    for adapter_class in pending.values():
-        adapter = adapter_class()
-        with pytest.raises(NotImplementedError, match="TODO"):
-            adapter.load_scada(member)
-        with pytest.raises(NotImplementedError, match="TODO"):
-            adapter.load_events(member)
+def test_every_source_has_its_own_scada_loader() -> None:
+    # Each was written against its own inspection evidence (M1a step 4); none falls
+    # through to the base adapter, which refuses rather than guess at a layout.
+    for name, adapter_class in ADAPTERS.items():
+        assert adapter_class.load_scada_with_stats is not BaseAdapter.load_scada_with_stats, name
+
+
+def test_the_base_adapter_refuses_to_guess_a_layout(tmp_path: Path) -> None:
+    member = RawMember(tmp_path / "x.zip", "a.csv", "scada_10min", 1, 1, True)
+    with pytest.raises(NotImplementedError):
+        BaseAdapter().load_scada(member)
+    with pytest.raises(NotImplementedError):
+        BaseAdapter().load_events(member)
 
 
 def test_channel_map_skips_unresolved_entries(tmp_path: Path) -> None:

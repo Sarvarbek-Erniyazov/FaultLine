@@ -36,6 +36,7 @@ from faultline.data.common.splits import (
 from faultline.data.common.stage import Stage, StageResult
 from faultline.data.telemetry import report as telemetry_report
 from faultline.data.telemetry.adapters import ADAPTERS, get_adapter
+from faultline.data.telemetry.adapters.base import FileAccount
 from faultline.data.telemetry.clean import BoundSpec, TelemetryCleanConfig, clean_turbine_frame
 from faultline.data.telemetry.events import EventConfig, normalize_events
 from faultline.data.telemetry.filter import (
@@ -251,6 +252,38 @@ def parquet_files(directory: Path) -> list[Path]:
     return sorted(path for path in directory.glob("*.parquet") if path.name != "events.parquet")
 
 
+def drop_identical_copies(
+    frame: pd.DataFrame, channels: list[str]
+) -> tuple[pd.DataFrame, int, int]:
+    """Drop rows that repeat a (turbine, timestamp) across files with identical values.
+
+    Hill of Towie's consecutive monthly files both carry the label on their shared
+    boundary, with identical values: one observation read twice. Such a copy is dropped
+    here. A repeat whose values differ is not a copy; it is left for the cleaning
+    stage's duplicate-timestamp rule, and counted so the report says it happened.
+
+    Args:
+        frame: Canonical rows from every file of one source.
+        channels: Canonical channels whose values decide identity.
+
+    Returns:
+        The table without identical copies, the number of copies dropped, and the
+        number of (turbine, timestamp) keys whose repeated rows differ.
+    """
+    keys = ["turbine_id", "timestamp_utc"]
+    present = [name for name in channels if name in frame.columns]
+    before = len(frame)
+    deduped = frame.drop_duplicates(subset=[*keys, *present])
+    differing = int(deduped.duplicated(subset=keys).sum())
+    if differing:
+        logger.warning(
+            "%d (turbine, timestamp) keys repeat across files with different values; "
+            "left for the duplicate-timestamp rule",
+            differing,
+        )
+    return deduped.reset_index(drop=True), before - len(deduped), differing
+
+
 def turbine_year_name(turbine_id: str, year: int) -> str:
     """Build the file stem for one turbine-year.
 
@@ -311,18 +344,25 @@ class IngestStage(TelemetryStage):
     def run(self, ctx: RunContext) -> StageResult:
         """Discover and load every staged member for the selected sources.
 
+        Every SCADA file is read through the repeated-label rule
+        (:mod:`faultline.data.telemetry.collapse`) and accounted for: rows read, rows
+        left after dropping those with no ingested value, distinct labels, rows kept.
+        A file whose repeats carry conflicting values raises and stops the run, because
+        that is genuine duplication and not something ingest may resolve.
+
         Args:
             ctx: Active run context.
 
         Returns:
-            Discovery counts, load counts and the adapters that are not yet
-            implemented.
+            Discovery counts, load counts, the per-file row accounting and the adapters
+            that are not yet implemented.
         """
         self._meta = ctx.meta
         summary: dict[str, dict[str, int]] = {}
         member_kinds: dict[str, int] = {}
         not_implemented: dict[str, str] = {}
         outputs: list[Path] = []
+        accounts: list[tuple[str, FileAccount]] = []
         rows_out = 0
 
         for source in self.sources:
@@ -335,14 +375,19 @@ class IngestStage(TelemetryStage):
 
             destination = ingest_dir(self.paths, source)
             frames: list[pd.DataFrame] = []
-            for member in [m for m in members if m.kind == "scada_10min"]:
+            for unit in adapter.scada_units(members):
                 try:
-                    frames.append(adapter.load_scada(member))
+                    frame, unit_accounts = adapter.load_scada_unit(unit)
                 except NotImplementedError as exc:
                     not_implemented[source] = str(exc)
                     break
                 except (OSError, ValueError) as exc:
-                    logger.error("%s: cannot load %s: %s", source, member.label, exc)
+                    labels = ", ".join(member.label for member in unit)
+                    logger.error("%s: cannot load %s: %s", source, labels, exc)
+                    continue
+                accounts.extend((source, account) for account in unit_accounts)
+                if not frame.empty:
+                    frames.append(frame)
 
             events: list[pd.DataFrame] = []
             for member in [m for m in members if m.kind in ("status_events", "alarm_log")]:
@@ -358,7 +403,11 @@ class IngestStage(TelemetryStage):
                     events.append(loaded)
 
             if frames:
-                combined = pd.concat(frames, ignore_index=True)
+                combined, copies, conflicts = drop_identical_copies(
+                    pd.concat(frames, ignore_index=True), self.config.channels
+                )
+                info["identical_copies_dropped"] = copies
+                info["differing_copies_kept"] = conflicts
                 rows_out += len(combined)
                 info["loaded"] = len(combined)
                 info["turbines"] = int(combined["turbine_id"].nunique())
@@ -371,15 +420,35 @@ class IngestStage(TelemetryStage):
                 outputs.append(path)
             summary[source] = info
 
+        files = [
+            (
+                source,
+                account.member,
+                account.turbine,
+                account.stats.rows_raw,
+                account.stats.rows_after_null_drop,
+                account.stats.labels_distinct,
+                account.stats.rows_out,
+            )
+            for source, account in accounts
+        ]
         return StageResult(
             name=self.name,
-            rows_in=0,
+            rows_in=sum(account.stats.rows_raw for _, account in accounts),
             rows_out=rows_out,
-            counters={"sources": len(self.sources), "not_implemented": len(not_implemented)},
+            counters={
+                "sources": len(self.sources),
+                "not_implemented": len(not_implemented),
+                "files": len(accounts),
+                "files_with_repeated_labels": sum(
+                    account.stats.repeated_export for _, account in accounts
+                ),
+            },
             details={
                 "sources": summary,
                 "member_kinds": member_kinds,
                 "not_implemented": not_implemented,
+                "files": files,
             },
             outputs=outputs,
         )

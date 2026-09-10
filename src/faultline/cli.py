@@ -218,6 +218,20 @@ def inspect_resolve(
     max_members: Annotated[
         int | None, typer.Option("--max-members", help="Cap on SCADA members read.")
     ] = None,
+    station_column: Annotated[
+        str | None,
+        typer.Option("--station-column", help="Turbine column, when one file holds every turbine."),
+    ] = None,
+    member_prefix: Annotated[
+        str | None,
+        typer.Option("--member-prefix", help="Read only members named with this prefix."),
+    ] = None,
+    label_offset_minutes: Annotated[
+        int,
+        typer.Option(
+            "--label-offset-minutes", help="Added to labels; -10 for interval-end labels."
+        ),
+    ] = 0,
 ) -> None:
     """Measure the power scale and the DST fingerprint of a staged record.
 
@@ -225,6 +239,11 @@ def inspect_resolve(
     the power column is a mean power or an energy total, and whether the timestamps
     are UTC or local civil time. Both are measured from the staged archives; neither
     is taken from a header.
+
+    Hill of Towie, for example:
+    ``--source hill_of_towie --timestamp-column TimeStamp --power-column
+    wtc_ActPower_mean --energy-column "" --station-column StationId --member-prefix
+    tblSCTurGrid_ --label-offset-minutes -10``.
 
     Args:
         source: Source whose staged archives are measured.
@@ -234,6 +253,9 @@ def inspect_resolve(
         energy_column: Separate energy column, when the export publishes one.
         zone: Local zone the timestamps are tested against.
         max_members: Cap on the number of SCADA members read.
+        station_column: Turbine column, when one member holds every turbine.
+        member_prefix: Read only members whose name starts with this.
+        label_offset_minutes: Minutes added to every label before testing.
 
     Raises:
         typer.Exit: With code 1 if the source id is unknown.
@@ -252,9 +274,12 @@ def inspect_resolve(
         paths=paths,
         timestamp_column=timestamp_column,
         power_column=power_column,
-        energy_column=energy_column,
+        energy_column=energy_column or None,
         candidate_zone=zone,
         max_members=max_members,
+        station_column=station_column,
+        member_prefix=member_prefix,
+        label_offset_minutes=label_offset_minutes,
     )
     typer.echo(f"{source}: wrote {report}")
 

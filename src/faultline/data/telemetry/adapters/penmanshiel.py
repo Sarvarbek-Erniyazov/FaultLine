@@ -4,11 +4,18 @@ Fourteen Senvion MM82 turbines, 2016-2024, published as zips split by turbine
 range as well as by year, so a single year spans two archives. Turbine WT03 is
 absent from the record.
 
-Same publisher as Kelmarsh and, on the published file names, the same layout. The
-signal mapping ships as .xlsx here rather than .csv; it was read on 2026-09-10 and
-the channel map resolved from it and from the headers of all 98 turbine-year members
-(configs/data/channel_map/penmanshiel.yaml). Discovery is implemented; the loaders
-still wait on inspection.
+Same publisher and the same Greenbyte export as Kelmarsh, and the M0 inspection
+confirmed it rather than assuming it: the preambles, the commented turbine-data header
+in all 98 turbine-year members, and the status table columns match Kelmarsh's
+(``reports/data/raw_inventory_penmanshiel_20260910.md``). The channel map was resolved
+from Penmanshiel's own signal-mapping workbook and headers. So the loaders are the
+shared :class:`GreenbyteAdapter`, not a copy of Kelmarsh's.
+
+Tier 1 stages 2016-2022. The 2023-2024 exports are tier 2 and not staged; Kelmarsh's
+2023-2024 exports from the same publisher repeat every label about 41 times, and the
+same is predicted here. The shared reader collapses that layout after proving it
+lossless, and the prediction is checked when those files land (see
+``configs/data/sources_telemetry.yaml``).
 """
 
 from __future__ import annotations
@@ -16,61 +23,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import ClassVar
 
-import pandas as pd
-
-from faultline.data.telemetry.adapters.base import BaseAdapter, MemberKind, RawMember
+from faultline.data.telemetry.adapters.greenbyte import GreenbyteAdapter
 
 
 @dataclass
-class PenmanshielAdapter(BaseAdapter):
+class PenmanshielAdapter(GreenbyteAdapter):
     """Reads the Penmanshiel record into the canonical schema."""
 
     source_id: ClassVar[str] = "penmanshiel"
     site_name: ClassVar[str] = "Penmanshiel"
-
-    PATTERNS: ClassVar[tuple[tuple[str, MemberKind], ...]] = (
-        ("datasignalmapping", "metadata"),
-        ("wt_static", "metadata"),
-        ("alarm", "alarm_log"),
-        ("status", "status_events"),
-        ("event", "status_events"),
-        ("turbine_data", "scada_10min"),
-        ("scada", "scada_10min"),
-        ("grid", "other"),
-        ("pmu", "other"),
-        (".kmz", "other"),
-    )
-
-    def load_scada(self, member: RawMember) -> pd.DataFrame:
-        """Read one Penmanshiel SCADA member.
-
-        Args:
-            member: Member classified as SCADA.
-
-        Returns:
-            A canonical wide table.
-
-        Raises:
-            NotImplementedError: Until the member layout is confirmed by inspection.
-        """
-        raise NotImplementedError(
-            "TODO(m1): confirm the Penmanshiel SCADA member layout and whether it matches "
-            "Kelmarsh exactly; see data/cards/penmanshiel.md"
-        )
-
-    def load_events(self, member: RawMember) -> pd.DataFrame | None:
-        """Read one Penmanshiel event member.
-
-        Args:
-            member: Member classified as an event table.
-
-        Returns:
-            A canonical events table, or ``None``.
-
-        Raises:
-            NotImplementedError: Until the member layout is confirmed by inspection.
-        """
-        raise NotImplementedError(
-            "TODO(m1): confirm whether the Penmanshiel archives carry a status/event table and "
-            "whether its messages are free text; see data/cards/penmanshiel.md"
-        )

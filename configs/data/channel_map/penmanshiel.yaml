@@ -24,10 +24,9 @@ source: penmanshiel
 site: "Penmanshiel"
 mapping_status: "resolved: 13 of 14 mapped and confirmed; 1 verified absent from the record"
 
-# Stated in the preamble of all 98 Turbine_Data members ("# Time zone: UTC"). That is
-# a claim by the exporter, not a measurement: Kelmarsh's identical claim was upheld by
-# measurement, and this one has not been measured yet.
-# TODO(m1): run `faultline inspect resolve --source penmanshiel`.
+# Stated in the preamble of all 98 Turbine_Data members ("# Time zone: UTC"), and
+# MEASURED 2026-09-10: no daylight-saving fingerprint in 98 turbine-years
+# (reports/data/resolved_penmanshiel_20260910.md).
 timezone: "UTC"
 
 channels:
@@ -35,9 +34,8 @@ channels:
   wind_speed_ms: "Wind speed (m/s)"
 
   # Signal 5, "Actual value of active power". This mapping file records it in kW,
-  # agreeing with the header; Kelmarsh's file recorded the same signal in kWh and was
-  # wrong. Agreement between two files is still not a measurement.
-  # TODO(m1): confirm the power scale with `faultline inspect resolve`.
+  # agreeing with the header, and MEASURED kW on 2026-09-10: median p99.5 2,056 against
+  # a rated 2,050 (reports/data/resolved_penmanshiel_20260910.md).
   power_kw: "Power (kW)"
 
   # Signal 54, "Value of rotor speed".

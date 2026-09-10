@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import zipfile
 from pathlib import Path
 
 import numpy as np
@@ -96,6 +97,34 @@ def test_ingest_reports_unimplemented_adapters(config_path: Path, repo_paths: Pr
     result = results[0]
     assert result.rows_out == 0
     assert "Adapters not yet implemented" in report or result.counters["not_implemented"] == 0
+
+
+def test_ingest_accounts_for_every_row_of_every_file(
+    repo_root: Path, repo_paths: ProjectPaths, fixtures_dir: Path
+) -> None:
+    # The committed Kelmarsh excerpt, zipped the way the record ships it.
+    excerpt = fixtures_dir / "telemetry" / "kelmarsh"
+    raw = repo_paths.source_dir("raw", "telemetry", SOURCE)
+    with zipfile.ZipFile(raw / "Kelmarsh_SCADA_2016_test.zip", "w") as handle:
+        handle.write(
+            excerpt / "Turbine_Data_Kelmarsh_1_excerpt.csv", "Turbine_Data_Kelmarsh_1_2016.csv"
+        )
+        handle.write(excerpt / "Status_Kelmarsh_1_excerpt.csv", "Status_Kelmarsh_1_2016.csv")
+
+    v1 = repo_root / "configs" / "data" / "telemetry_v1.yaml"
+    config = load_telemetry_config(v1)
+    stages = build_stages(config, repo_paths, "ingest", source=SOURCE)
+    with start_run(v1, config, "ingest", "telemetry", repo_paths) as ctx:
+        result = run_pipeline(stages, ctx)[0]
+        report = (ctx.run_dir / "ingest_stats_report.md").read_text(encoding="utf-8")
+
+    assert result.counters["files"] == 1
+    assert result.counters["files_with_repeated_labels"] == 0
+    source, member, turbine, rows_raw, after_drop, labels, rows_out = result.details["files"][0]
+    assert (source, turbine, rows_raw, labels) == (SOURCE, "Kelmarsh 1", 40, 40)
+    assert rows_out == after_drop == result.rows_out
+    assert "Row accounting per file" in report
+    assert (ingest_dir(repo_paths, SOURCE) / "events.parquet").is_file()
 
 
 def test_clean_filter_final_on_a_synthetic_turbine_year(

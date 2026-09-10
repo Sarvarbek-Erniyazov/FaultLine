@@ -141,11 +141,11 @@ observed_but_unmapped:
 # 3. Rated power is 2050 kW and the model is a Senvion MM92, confirmed per turbine in
 #    Kelmarsh_WT_static.csv. This matches the bound configured in telemetry_v0.yaml.
 #
-# 4. FOUND 2026-09-09 while measuring the above, and unrelated to the channel map.
-#    The 2023 and 2024 exports repeat every timestamp roughly 41 times: 2,174,760
-#    rows over the 52,560 distinct 10-minute labels of the year, with the surplus
-#    rows carrying the same labels again. The 2016-2022 exports do not. This is a
-#    real property of the archives, not a parsing artefact.
-#    TODO(m1): decide how ingest collapses those rows and prove the choice loses no
-#    values. clean.duplicate_timestamps: "mean" would happen to survive it, but the
-#    memory cost of reading 2.2M rows per turbine-year would not.
+# 4. FOUND 2026-09-09, RESOLVED 2026-09-10 (M1a step 4). The 2023 and 2024 exports
+#    repeat every timestamp roughly 41 times: 2,174,760 rows over the 52,560 distinct
+#    labels. The file is 80 cumulative blocks, each restarting at 1 January, and then
+#    the full year. Every mapped channel carries a value on one of a label's rows
+#    only; the repeats carry nine derived availability columns, with identical values.
+#    Ingest drops the rows null in every mapped channel, asserts that no (label,
+#    channel) holds two values, and collapses (src/faultline/data/telemetry/collapse.py).
+#    Evidence: reports/data/resolved_kelmarsh_20260910.md and the ingest report.

@@ -6,6 +6,7 @@ touches the staged archives, so the suite still runs without any data present.
 
 from __future__ import annotations
 
+import zipfile
 from datetime import datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -18,11 +19,15 @@ from faultline.data.telemetry.resolve import (
     PowerScaleRow,
     TimezoneRow,
     affected_local_window,
+    check_repeated_columns,
     dst_transitions,
     judge_power_scale,
     judge_timezone,
+    resolve_source,
     timezone_row,
 )
+from faultline.download.zenodo import SourceSpec
+from faultline.paths import ProjectPaths
 
 LONDON = "Europe/London"
 STEP = timedelta(minutes=10)
@@ -110,6 +115,24 @@ def test_the_autumn_half_is_withheld_when_a_member_repeats_timestamps() -> None:
     assert row.distinct_timestamps * 2 == row.rows
 
 
+def test_an_empty_spring_hour_with_no_data_around_it_is_not_the_fingerprint() -> None:
+    # Penmanshiel 2016: every turbine starts reporting in June, so the March hour is
+    # empty because nothing exists yet -- not because the clock skipped it.
+    year = utc_year(2016)
+    commissioned = year[year >= pd.Timestamp("2016-06-02 18:00")]
+    row = timezone_row("m", "T1", commissioned, LONDON)
+    assert row is not None
+    assert row.steps_in_spring_hour is None
+    verdict = judge_timezone("t", LONDON, "UTC", [row, zone_row(6, 0)])
+    assert verdict.verdict == "UTC"
+    assert "spring half was not applicable on 1 of 2" in verdict.rationale
+
+
+def test_a_local_series_still_shows_the_flanked_gap() -> None:
+    row = timezone_row("m", "T1", local_year(2016), LONDON)
+    assert row is not None and row.steps_in_spring_hour == 0
+
+
 def test_no_transition_in_the_year_yields_no_row() -> None:
     assert timezone_row("m", "T1", utc_year(2016), "UTC") is None
 
@@ -128,6 +151,7 @@ def zone_row(spring_steps: int, autumn_repeats: int | None, duplicates: int = 0)
         year=2016,
         rows=52_560,
         distinct_timestamps=52_560 - duplicates,
+        rows_after_null_drop=52_560,
         duplicate_timestamps=duplicates,
         spring_hour="2016-03-27 01",
         steps_in_spring_hour=spring_steps,
@@ -156,7 +180,12 @@ def test_untestable_autumn_rows_are_counted_in_the_rationale() -> None:
     verdict = judge_timezone("t", LONDON, "UTC", [zone_row(6, 0), zone_row(6, None, duplicates=10)])
     assert verdict.verdict == "UTC"
     assert "not applicable on 1 of 2" in verdict.rationale
-    assert len(verdict.duplicating_members) == 1
+    assert len(verdict.repeating_members) == 1
+
+
+def test_a_verdict_where_both_halves_applied_says_so() -> None:
+    verdict = judge_timezone("t", LONDON, "UTC", [zone_row(6, 0), zone_row(6, 0)])
+    assert "both halves applied to every turbine-year" in verdict.rationale
 
 
 def test_verdict_unresolved_without_any_transition() -> None:
@@ -254,6 +283,76 @@ def test_columns_the_member_does_not_have_are_skipped_not_raised(fixtures_dir: P
     frame = read_csv_member_columns(member, ["Power (kW)", "Not A Column"])
     assert list(frame.columns) == ["Power (kW)"]
     assert read_csv_member_columns(member, ["Not A Column"]).empty
+
+
+def _greenbyte(rows: list[str], header: str) -> bytes:
+    preamble = "# Exported by a vendor tool.\n#\n# Turbine: Kelmarsh 1\n# Time zone: UTC\n#\n"
+    return (preamble + f"# {header}\n" + "\n".join(rows) + "\n").encode()
+
+
+def _zipped(
+    tmp_path: Path, payload: bytes, name: str = "Turbine_Data_Kelmarsh_1_2023.csv"
+) -> RawMember:
+    archive = tmp_path / "Kelmarsh_SCADA_2023_test.zip"
+    with zipfile.ZipFile(archive, "w") as handle:
+        handle.writestr(name, payload)
+    return RawMember(archive, name, "scada_10min", len(payload), len(payload), True)
+
+
+def test_the_repeat_check_finds_the_columns_the_repeats_carry(tmp_path: Path) -> None:
+    # Cumulative blocks, as in the Kelmarsh 2023 export: the first label is re-emitted
+    # empty in the measured channel but with its availability figure again.
+    rows = [
+        "2023-01-01 00:00:00,1850,100",
+        "2023-01-01 00:00:00,NaN,100",
+        "2023-01-01 00:10:00,1600,98",
+    ]
+    check = check_repeated_columns(
+        _zipped(tmp_path, _greenbyte(rows, "Date and time,Power (kW),Avail (%)")), "Date and time"
+    )
+    assert (check.rows, check.labels, check.columns) == (3, 2, 2)
+    assert check.repeating == ("Avail (%)",)
+    assert check.conflicting == ()
+
+
+def test_the_repeat_check_flags_a_repeat_that_disagrees(tmp_path: Path) -> None:
+    rows = ["2023-01-01 00:00:00,1850,100", "2023-01-01 00:00:00,NaN,97"]
+    check = check_repeated_columns(
+        _zipped(tmp_path, _greenbyte(rows, "Date and time,Power (kW),Avail (%)")), "Date and time"
+    )
+    assert check.conflicting == ("Avail (%)",)
+
+
+def test_a_repeated_export_now_gets_a_two_sided_verdict(repo_paths: ProjectPaths) -> None:
+    # A full UTC year, preceded by an empty re-emission of its first 1,000 labels: the
+    # layout that made the autumn half abstain at M0. The rows with no ingested value
+    # are dropped first, so each label occurs once and both halves apply.
+    year = utc_year(2023).dt.strftime("%Y-%m-%d %H:%M:%S").tolist()
+    padding = [f"{label},NaN,100" for label in year[:1000]]
+    body = [f"{label},{1500 + i % 500},100" for i, label in enumerate(year)]
+    payload = _greenbyte(padding + body, "Date and time,Power (kW),Production-based System Avail.")
+    raw = repo_paths.source_dir("raw", "telemetry", "kelmarsh")
+    with zipfile.ZipFile(raw / "Kelmarsh_SCADA_2023_test.zip", "w") as handle:
+        handle.writestr("Turbine_Data_Kelmarsh_1_2023.csv", payload)
+    spec = SourceSpec.model_validate(
+        {
+            "provider": "test",
+            "zenodo_record": 1,
+            "license": "CC-BY-4.0",
+            "attribution": "test",
+            "site": {"name": "Kelmarsh", "rated_kw": 2050},
+            "timezone": "UTC",
+        }
+    )
+    report = resolve_source(
+        "kelmarsh", spec, repo_paths, "Date and time", "Power (kW)", energy_column=None
+    ).read_text(encoding="utf-8")
+
+    assert "**VERDICT UTC**" in report
+    assert "both halves applied to every turbine-year" in report
+    assert "| 53,560 | 52,560 | 52,560 | 0 |" in report  # rows, distinct, with a value, dups
+    assert "`Production-based System Avail.`" in report
+    assert "not one of those values differs" in report
 
 
 @pytest.mark.parametrize("year", [2016, 2019, 2023])

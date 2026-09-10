@@ -26,13 +26,25 @@ labels each occur twice. A series stamped in UTC has neither, in any year. The t
 runs per turbine-year at the real transition instants for the zone, taken from the
 tz database rather than assumed to be the last Sunday of the month.
 
-The two halves of that fingerprint are not equally robust, and the difference is not
-academic: some exports repeat timestamps for reasons that have nothing to do with
-daylight saving. The spring half survives that, because it counts *distinct* labels
-in an hour and asks whether the hour is empty. The autumn half does not, because
-repetition is exactly what it looks for. It is therefore reported as not applicable
-on any member that repeats timestamps elsewhere, rather than being allowed to
-manufacture a verdict out of an unrelated defect.
+The two halves of that fingerprint are not equally robust. The spring half counts
+*distinct* labels in an hour and asks whether the hour is empty, so it survives an
+export that repeats labels. The autumn half looks for repetition, so an export that
+repeats labels for another reason would fool it. At M0 it therefore abstained on the
+Kelmarsh 2023 and 2024 exports, which repeat every label about 41 times.
+
+**Since M1a the test reads what the ingest reads.** Rows carrying no value in any
+ingested channel are dropped first -- the same null drop the ingest applies before
+collapsing (:mod:`faultline.data.telemetry.collapse`). An export whose repeats are
+empty then has one row per label, and the autumn half gives a verdict on it. A member
+that still repeats a label after the drop is one the ingest would refuse, and the
+autumn half still abstains there. For every member that repeats labels, the report
+also reads every column of the file and records which columns the repeated rows carry
+values in, and whether any of those values disagree.
+
+**Two provider layouts.** A Greenbyte export is one turbine-year per file. Hill of
+Towie publishes one file per table per month holding all 21 turbines and labels the end
+of each interval; ``station_column``, ``member_prefix`` and ``label_offset_minutes``
+measure it per station-year, on labels shifted to interval start.
 
 The output is one tracked Markdown report per source under ``reports/data/``, so the
 verdict is auditable without restaging 20 GB.
@@ -40,10 +52,12 @@ verdict is auditable without restaging 20 GB.
 
 from __future__ import annotations
 
-from collections.abc import Iterator
-from dataclasses import dataclass
+import re
+from collections.abc import Iterator, Sequence
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 from zoneinfo import ZoneInfo
 
 import pandas as pd
@@ -53,7 +67,9 @@ from faultline.data.telemetry.adapters import get_adapter
 from faultline.data.telemetry.adapters.base import (
     BaseAdapter,
     RawMember,
+    open_member,
     read_csv_member_columns,
+    sniff_csv_layout,
 )
 from faultline.download.zenodo import SourceSpec
 from faultline.logging_utils import get_logger
@@ -73,6 +89,11 @@ SCALE_TOLERANCE = 2.0
 
 #: Fewer non-null values than this in a turbine-year and its tail is not evidence.
 MIN_ROWS_FOR_TAIL = 1000
+
+#: Rows per chunk when reading every column of a large export.
+CHUNK_ROWS = 200_000
+
+_YEAR = re.compile(r"(?<!\d)(20\d{2})(?!\d)")
 
 
 @dataclass(frozen=True)
@@ -155,14 +176,18 @@ class TimezoneRow:
         year: Calendar year of the transition tested.
         rows: Timestamps read.
         distinct_timestamps: Distinct labels among them.
-        duplicate_timestamps: Repeated labels anywhere in the member.
+        rows_after_null_drop: Rows left once those with no ingested value are dropped;
+            the test below runs on these.
+        duplicate_timestamps: Repeated labels among those rows.
         spring_hour: The civil hour that does not exist locally, as a label.
         steps_in_spring_hour: Distinct labels stamped inside that hour, out of the
-            six a 10-minute grid holds. A local-time series has none.
+            six a 10-minute grid holds. A local-time series has none. ``None`` when
+            the hour is empty and the series does not run through it (no data in the
+            hour before or the hour after), so the emptiness is a gap, not a clock.
         autumn_hour: The civil hour that occurs twice locally, as a label.
         repeated_steps_in_autumn_hour: Labels occurring more than once in that hour,
-            or ``None`` when the member repeats timestamps elsewhere and the test
-            therefore cannot distinguish a fall-back from that defect.
+            or ``None`` when labels repeat elsewhere too and the test therefore cannot
+            distinguish a fall-back from that.
     """
 
     member: str
@@ -170,9 +195,10 @@ class TimezoneRow:
     year: int
     rows: int
     distinct_timestamps: int
+    rows_after_null_drop: int
     duplicate_timestamps: int
     spring_hour: str
-    steps_in_spring_hour: int
+    steps_in_spring_hour: int | None
     autumn_hour: str
     repeated_steps_in_autumn_hour: int | None
 
@@ -198,13 +224,30 @@ class TimezoneVerdict:
     rationale: str
 
     @property
-    def duplicating_members(self) -> tuple[TimezoneRow, ...]:
-        """Members repeating timestamps for a reason other than a fall-back.
+    def repeating_members(self) -> tuple[TimezoneRow, ...]:
+        """Members whose published labels repeat, before any row is dropped."""
+        return tuple(row for row in self.rows if row.rows > row.distinct_timestamps)
 
-        Identified by the autumn test having been withheld: that is withheld
-        precisely when duplicates occur outside the fall-back window.
-        """
-        return tuple(row for row in self.rows if row.repeated_steps_in_autumn_hour is None)
+
+@dataclass(frozen=True)
+class RepeatCheck:
+    """Every column of an export that repeats labels, read for values in the repeats.
+
+    Attributes:
+        member: Archive member read.
+        rows: Rows read.
+        labels: Distinct labels.
+        columns: Value columns read.
+        repeating: Columns holding a value on more than one of a label's rows.
+        conflicting: Columns among those whose repeated values differ.
+    """
+
+    member: str
+    rows: int
+    labels: int
+    columns: int
+    repeating: tuple[str, ...]
+    conflicting: tuple[str, ...]
 
 
 def dst_transitions(year: int, zone: str) -> tuple[datetime, datetime] | None:
@@ -285,12 +328,13 @@ def timezone_row(member: str, turbine_id: str, stamps: pd.Series, zone: str) -> 
     Args:
         member: Member label, for the report.
         turbine_id: Turbine the member belongs to.
-        stamps: Parsed, timezone-naive timestamps as published.
+        stamps: Parsed, timezone-naive timestamps -- the rows that carry a value.
         zone: Candidate local zone.
 
     Returns:
         The fingerprint, or ``None`` when the member spans no year with a
-        transition in it.
+        transition in it. ``rows`` and ``distinct_timestamps`` describe ``stamps``;
+        the caller replaces them with the counts before any row was dropped.
     """
     stamps = stamps.dropna()
     if stamps.empty:
@@ -305,6 +349,17 @@ def timezone_row(member: str, turbine_id: str, stamps: pd.Series, zone: str) -> 
 
     in_spring = stamps[(stamps >= spring_start) & (stamps < spring_start + spring_width)]
     in_autumn = stamps[(stamps >= autumn_start) & (stamps < autumn_start + autumn_width)]
+    # An empty spring hour is local time's fingerprint only when the series runs
+    # through it: data in the hour before and the hour after. A turbine that was not yet
+    # reporting -- all 14 Penmanshiel turbines start in June or July 2016 -- or an outage
+    # spanning the hour leaves it empty for reasons that say nothing about the clock.
+    hour = timedelta(hours=1)
+    flanked = bool(
+        ((stamps >= spring_start - hour) & (stamps < spring_start)).any()
+        and (
+            (stamps >= spring_start + spring_width) & (stamps < spring_start + spring_width + hour)
+        ).any()
+    )
     duplicates = int(stamps.duplicated().sum())
     # A fall-back produces duplicates *only* inside the autumn window. Duplicates
     # anywhere else mean the member repeats labels for some other reason, and the
@@ -318,11 +373,13 @@ def timezone_row(member: str, turbine_id: str, stamps: pd.Series, zone: str) -> 
         year=year,
         rows=int(len(stamps)),
         distinct_timestamps=int(stamps.nunique()),
+        rows_after_null_drop=int(len(stamps)),
         duplicate_timestamps=duplicates,
         spring_hour=spring_start.strftime("%Y-%m-%d %H"),
         # Distinct labels, so that a member which repeats every timestamp is still
-        # measured on whether the hour exists at all.
-        steps_in_spring_hour=int(in_spring.nunique()),
+        # measured on whether the hour exists at all. Withheld when the hour is empty
+        # but not flanked by data: the test cannot tell a clock from a gap there.
+        steps_in_spring_hour=(int(in_spring.nunique()) if (len(in_spring) or flanked) else None),
         autumn_hour=autumn_start.strftime("%Y-%m-%d %H"),
         # Withheld where repetition is already happening for another reason: this
         # test cannot tell a fall-back apart from that.
@@ -433,19 +490,28 @@ def judge_timezone(
     if not rows:
         return base
 
-    gaps = sum(1 for row in rows if row.steps_in_spring_hour == 0)
+    spring_testable = [row for row in rows if row.steps_in_spring_hour is not None]
+    gaps = sum(1 for row in spring_testable if row.steps_in_spring_hour == 0)
     testable = [row for row in rows if row.repeated_steps_in_autumn_hour is not None]
     repeats = sum(1 for row in testable if (row.repeated_steps_in_autumn_hour or 0) > 0)
     skipped = len(rows) - len(testable)
-    caveat = (
-        ""
-        if not skipped
-        else (
-            f"; the autumn half was not applicable on {skipped} of {len(rows)} turbine-years, "
-            "which repeat timestamps for an unrelated reason"
+    spring_skipped = len(rows) - len(spring_testable)
+    notes = []
+    if spring_skipped:
+        notes.append(
+            f"the spring half was not applicable on {spring_skipped} of {len(rows)} "
+            "turbine-years, whose series does not run through the hour (no data in the "
+            "hour before or after it)"
         )
-    )
+    if skipped:
+        notes.append(
+            f"the autumn half was not applicable on {skipped} of {len(rows)} turbine-years, "
+            "which still repeat labels after the rows without an ingested value are dropped"
+        )
+    caveat = "; " + "; ".join(notes) if notes else "; both halves applied to every turbine-year"
 
+    if not spring_testable and not testable:
+        return base
     if gaps == 0 and repeats == 0:
         decided, why = (
             "UTC",
@@ -455,7 +521,7 @@ def judge_timezone(
                 f"{zone} would leave is present{caveat}"
             ),
         )
-    elif gaps == len(rows) and testable and repeats == len(testable):
+    elif spring_testable and gaps == len(spring_testable) and testable and repeats == len(testable):
         decided, why = (
             zone,
             (
@@ -467,7 +533,8 @@ def judge_timezone(
         decided, why = (
             "unresolved",
             (
-                f"the fingerprint is inconsistent: {gaps} of {len(rows)} turbine-years are "
+                f"the fingerprint is inconsistent: {gaps} of {len(spring_testable)} testable "
+                "turbine-years are "
                 f"missing the spring-forward hour and {repeats} of {len(testable)} testable ones "
                 f"repeat the autumn fall-back hour, so the record is neither uniformly UTC nor "
                 f"uniformly local{caveat}"
@@ -480,6 +547,66 @@ def judge_timezone(
         rows=tuple(rows),
         verdict=decided,
         rationale=why,
+    )
+
+
+def check_repeated_columns(
+    member: RawMember, label_column: str, chunk_rows: int = CHUNK_ROWS
+) -> RepeatCheck:
+    """Read every column of an export and find the values its repeated labels carry.
+
+    Streams the member in chunks and keeps, per label and column, the count of non-null
+    cells and their minimum and maximum. A column holding a value on more than one of a
+    label's rows is *repeating*; one whose repeated values differ is *conflicting*.
+
+    Args:
+        member: Member to read.
+        label_column: The timestamp label column.
+        chunk_rows: Rows per chunk.
+
+    Returns:
+        The columns that repeat, and those that conflict.
+    """
+    with open_member(member) as handle:
+        head = handle.read(65_536)
+    skiprows, names = sniff_csv_layout(head)
+    counts: pd.DataFrame | None = None
+    low: pd.DataFrame | None = None
+    high: pd.DataFrame | None = None
+    rows = 0
+    with open_member(member) as handle:
+        reader = pd.read_csv(
+            handle,
+            skiprows=skiprows,
+            names=names,
+            header=None if names else "infer",
+            chunksize=chunk_rows,
+            low_memory=False,
+        )
+        for chunk in reader:
+            rows += len(chunk)
+            labels = chunk.pop(label_column).to_numpy()
+            values = chunk.apply(pd.to_numeric, errors="coerce")
+            grouped = values.groupby(labels)
+            c, lo, hi = grouped.count(), grouped.min(), grouped.max()
+            if counts is None or low is None or high is None:
+                counts, low, high = c, lo, hi
+            else:
+                counts = counts.add(c, fill_value=0)
+                low = pd.concat([low, lo]).groupby(level=0).min()
+                high = pd.concat([high, hi]).groupby(level=0).max()
+    if counts is None or low is None or high is None:
+        return RepeatCheck(member.label, 0, 0, 0, (), ())
+    repeating = [str(column) for column in counts.columns if bool((counts[column] > 1).any())]
+    spread = (high - low).abs()
+    conflicting = [str(column) for column in repeating if bool((spread[column] > 1e-9).any())]
+    return RepeatCheck(
+        member=member.name or member.archive.name,
+        rows=rows,
+        labels=len(counts),
+        columns=len(counts.columns),
+        repeating=tuple(repeating),
+        conflicting=tuple(conflicting),
     )
 
 
@@ -498,6 +625,250 @@ def _scada_members(adapter: BaseAdapter, raw_dir: Path) -> Iterator[RawMember]:
             yield member
 
 
+def _basename(member: RawMember) -> str:
+    """The member's file name without its archive path."""
+    return member.name.rsplit("/", 1)[-1] or member.archive.name
+
+
+def ingested_columns(adapter: BaseAdapter, member_prefix: str | None) -> list[str]:
+    """The columns the ingest reads from this source's members.
+
+    Args:
+        adapter: Source adapter, with its channel map loaded.
+        member_prefix: For a provider that splits signals over tables, the table the
+            measured members belong to; only that table's fields are returned.
+
+    Returns:
+        Source column names, as they appear in the members' headers.
+    """
+    columns = []
+    for column in adapter.channel_map.values():
+        table_name, field_name = adapter.split_channel_column(column)
+        if table_name is None or (member_prefix and member_prefix.startswith(table_name)):
+            columns.append(field_name)
+    return columns
+
+
+@dataclass
+class _Measurement:
+    """What one pass over a source's members collected."""
+
+    scale_rows: list[PowerScaleRow]
+    zone_rows: list[TimezoneRow]
+    repeating: list[RawMember]
+    energy_seen: str | None = None
+    boundary_copies: int = 0
+
+
+def _power_row(
+    label: str,
+    turbine: str,
+    frame: pd.DataFrame,
+    power_column: str,
+    energy_column: str | None,
+    measured: _Measurement,
+) -> None:
+    """Append one turbine-year's power tail, when it has enough values."""
+    values = pd.to_numeric(frame[power_column], errors="coerce")
+    non_null = int(values.notna().sum())
+    if non_null < MIN_ROWS_FOR_TAIL:
+        logger.info("%s: only %d values; too few for a tail", label, non_null)
+        return
+    energy_tail: float | None = None
+    if energy_column and energy_column in frame.columns:
+        measured.energy_seen = energy_column
+        energy = pd.to_numeric(frame[energy_column], errors="coerce")
+        if energy.notna().any():
+            energy_tail = float(energy.quantile(TAIL_QUANTILE))
+    measured.scale_rows.append(
+        PowerScaleRow(
+            member=label,
+            turbine_id=turbine,
+            rows=int(len(frame)),
+            non_null=non_null,
+            tail=float(values.quantile(TAIL_QUANTILE)),
+            maximum=float(values.max()),
+            minimum=float(values.min()),
+            energy_tail=energy_tail,
+        )
+    )
+
+
+def _zone_row(
+    label: str,
+    turbine: str,
+    stamps: pd.Series,
+    kept: pd.Series,
+    offset: pd.Timedelta,
+    zone: str,
+    measured: _Measurement,
+) -> None:
+    """Append one turbine-year's DST fingerprint, measured on the rows with a value."""
+    row = timezone_row(label, turbine, stamps[kept] + offset, zone)
+    if row is None:
+        return
+    published = stamps.dropna()
+    measured.zone_rows.append(
+        replace(row, rows=int(len(published)), distinct_timestamps=int(published.nunique()))
+    )
+
+
+def resolve_source(
+    source: str,
+    spec: SourceSpec,
+    paths: ProjectPaths,
+    timestamp_column: str,
+    power_column: str,
+    energy_column: str | None = None,
+    candidate_zone: str = "Europe/London",
+    step_hours: float = 1 / 6,
+    max_members: int | None = None,
+    value_columns: Sequence[str] | None = None,
+    station_column: str | None = None,
+    member_prefix: str | None = None,
+    label_offset_minutes: int = 0,
+    check_repeats: bool = True,
+) -> Path:
+    """Measure a source's power scale and DST fingerprint, and write the report.
+
+    Args:
+        source: Source identifier.
+        spec: Source specification from the download config.
+        paths: Resolved project paths.
+        timestamp_column: Timestamp column as published.
+        power_column: Power column as published.
+        energy_column: Separate energy column, when the export publishes one.
+        candidate_zone: Local zone to test the timestamps against.
+        step_hours: Length of one sampling step in hours.
+        max_members: Cap on the number of members read; all of them when omitted.
+        value_columns: Columns whose all-null rows are dropped before the timezone
+            test; the ingested channels when omitted.
+        station_column: When one member holds every turbine, the column naming the
+            turbine; rows are then measured per station and year across members.
+        member_prefix: Read only members whose file name starts with this.
+        label_offset_minutes: Added to every label before testing; ``-10`` turns
+            interval-end labels into interval-start ones.
+        check_repeats: Read every column of members that repeat labels.
+
+    Returns:
+        The path of the written report.
+    """
+    adapter = get_adapter(source, paths.configs_dir)
+    raw_dir = paths.source_dir("raw", "telemetry", source)
+    energy = energy_column or None
+    values = (
+        list(value_columns)
+        if value_columns is not None
+        else ingested_columns(adapter, member_prefix)
+    )
+    if power_column not in values:
+        values.append(power_column)
+    offset = pd.Timedelta(minutes=label_offset_minutes)
+
+    members = [
+        member
+        for member in _scada_members(adapter, raw_dir)
+        if member_prefix is None or _basename(member).startswith(member_prefix)
+    ]
+    members = members[: max_members or len(members)]
+    measured = _Measurement(scale_rows=[], zone_rows=[], repeating=[])
+
+    if station_column is None:
+        for member in members:
+            wanted = list(dict.fromkeys([timestamp_column, power_column, *values]))
+            if energy:
+                wanted.append(energy)
+            frame = read_csv_member_columns(member, wanted)
+            if frame.empty or power_column not in frame.columns:
+                logger.warning("%s: no %r column; skipped", member.label, power_column)
+                continue
+            label = member.name or member.archive.name
+            turbine = adapter.turbine_id(member)
+            _power_row(label, turbine, frame, power_column, energy, measured)
+            if timestamp_column not in frame.columns:
+                continue
+            stamps = pd.to_datetime(frame[timestamp_column], errors="coerce")
+            present = [column for column in values if column in frame.columns]
+            kept = frame[present].apply(pd.to_numeric, errors="coerce").notna().any(axis=1)
+            _zone_row(label, turbine, stamps, kept, offset, candidate_zone, measured)
+            if stamps.dropna().duplicated().any():
+                measured.repeating.append(member)
+    else:
+        names: dict[int, str] = {}
+        station_names: Any = getattr(adapter, "station_names", None)
+        if callable(station_names) and members:
+            names = dict(station_names(members[0]))
+        by_year: dict[str, list[pd.DataFrame]] = {}
+        for member in members:
+            frame = read_csv_member_columns(
+                member, list(dict.fromkeys([timestamp_column, station_column, *values]))
+            )
+            if frame.empty or station_column not in frame.columns:
+                continue
+            match = _YEAR.search(_basename(member))
+            by_year.setdefault(match.group(1) if match else "", []).append(frame)
+        for year, parts in sorted(by_year.items()):
+            frame = pd.concat(parts, ignore_index=True)
+            # Consecutive monthly files both carry the label on their shared boundary
+            # (a January file ends at 1 February 00:00 and the February file starts
+            # there). A copy whose values are identical is one observation read twice,
+            # and it is dropped here so it cannot pass for a fall-back repeat; a copy
+            # whose values differ stays, and the autumn half abstains on it.
+            before = len(frame)
+            frame = frame.drop_duplicates(
+                subset=list(dict.fromkeys([timestamp_column, station_column, *values]))
+            )
+            measured.boundary_copies += before - len(frame)
+            for station, group in frame.groupby(station_column):
+                label = f"{member_prefix or ''}{year}_* station {station}"
+                station_id = int(float(str(station)))
+                turbine = names.get(station_id, str(station_id))
+                _power_row(label, turbine, group, power_column, None, measured)
+                stamps = pd.to_datetime(group[timestamp_column], errors="coerce")
+                kept = group[values].apply(pd.to_numeric, errors="coerce").notna().any(axis=1)
+                _zone_row(label, turbine, stamps, kept, offset, candidate_zone, measured)
+
+    repeats = (
+        [check_repeated_columns(member, timestamp_column) for member in measured.repeating]
+        if check_repeats
+        else []
+    )
+    power = judge_power_scale(
+        power_column, measured.energy_seen, spec.site.rated_kw or 0, step_hours, measured.scale_rows
+    )
+    timezone = judge_timezone(timestamp_column, candidate_zone, spec.timezone, measured.zone_rows)
+
+    report = build_report(
+        source,
+        spec,
+        raw_dir,
+        power,
+        timezone,
+        paths.repo_root,
+        repeats=repeats,
+        method={
+            "timestamp column": timestamp_column,
+            "rows tested": "rows carrying a value in at least one of "
+            f"{len(values)} ingested columns",
+            "station column": station_column or "none: one turbine per member",
+            "value-identical copies of a label dropped across files": (
+                f"{measured.boundary_copies:,} (the shared boundary label of consecutive "
+                "monthly files)"
+                if station_column
+                else "not applicable"
+            ),
+            "members read": f"{len(members)}" + (f" ({member_prefix}*)" if member_prefix else ""),
+            "label offset applied": f"{label_offset_minutes} min"
+            + (" (interval-end labels moved to interval start)" if label_offset_minutes else ""),
+        },
+    )
+    stamp = datetime.now(tz=UTC).strftime("%Y%m%d")
+    destination = paths.data_reports_dir / f"resolved_{source}_{stamp}.md"
+    destination.write_text(report, encoding="utf-8")
+    logger.info("%s: wrote %s", source, destination)
+    return destination
+
+
 def build_report(
     source: str,
     spec: SourceSpec,
@@ -505,6 +876,8 @@ def build_report(
     power: PowerScaleVerdict,
     timezone: TimezoneVerdict,
     repo_root: Path,
+    repeats: Sequence[RepeatCheck] = (),
+    method: dict[str, str] | None = None,
 ) -> str:
     """Render the resolution report.
 
@@ -515,6 +888,8 @@ def build_report(
         power: Power-unit verdict.
         timezone: Timezone verdict.
         repo_root: Repository root, for the git SHA.
+        repeats: All-column checks of the members that repeat labels.
+        method: How the measurement was taken, for the header table.
 
     Returns:
         The Markdown report.
@@ -527,6 +902,7 @@ def build_report(
                 "provider": spec.provider,
                 "staged directory": str(raw_dir),
                 "turbine-years measured": len(power.rows),
+                **(method or {}),
                 "generated (UTC)": datetime.now(tz=UTC).isoformat(timespec="seconds"),
                 "git_sha": git_sha(repo_root),
             }
@@ -589,10 +965,12 @@ def build_report(
             )
             + "\n"
             + "A local-time series is missing every observation in the spring-forward hour and "
-            "repeats every label in the autumn fall-back hour. A UTC series does neither. "
-            "`steps in spring hour` counts distinct labels out of the six a 10-minute grid "
-            "holds. `repeated steps` reads `n/a` where the member repeats timestamps "
-            "elsewhere, because the test cannot then tell a fall-back from that defect.\n\n"
+            "repeats every label in the autumn fall-back hour. A UTC series does neither. The "
+            "test runs on the rows that carry a value in at least one ingested column, which "
+            "is what the ingest keeps. `steps in spring hour` counts distinct labels out of the "
+            "six a 10-minute grid holds. `repeated steps` reads `n/a` where labels still repeat "
+            "outside the fall-back hour after that drop, because the test cannot then tell a "
+            "fall-back from that.\n\n"
             + table(
                 [
                     "member",
@@ -600,7 +978,8 @@ def build_report(
                     "year",
                     "rows",
                     "distinct",
-                    "duplicate labels",
+                    "rows with a value",
+                    "duplicate labels among them",
                     "spring hour (local)",
                     "steps in spring hour",
                     "autumn hour (local)",
@@ -613,9 +992,10 @@ def build_report(
                         row.year,
                         row.rows,
                         row.distinct_timestamps,
+                        row.rows_after_null_drop,
                         row.duplicate_timestamps,
                         row.spring_hour,
-                        row.steps_in_spring_hour,
+                        "n/a" if row.steps_in_spring_hour is None else row.steps_in_spring_hour,
                         row.autumn_hour,
                         "n/a"
                         if row.repeated_steps_in_autumn_hour is None
@@ -627,120 +1007,79 @@ def build_report(
         )
     )
 
-    duplicating = timezone.duplicating_members
-    if duplicating:
-        worst = max(duplicating, key=lambda row: row.rows / max(row.distinct_timestamps, 1))
+    repeating = timezone.repeating_members
+    if repeating:
+        worst = max(repeating, key=lambda row: row.rows / max(row.distinct_timestamps, 1))
+        columns = sorted({name for check in repeats for name in check.repeating})
+        conflicts = sorted({name for check in repeats for name in check.conflicting})
+        read_all = (
+            f"Read across every column of the file, the repeated rows carry values in "
+            f"{len(columns)} column(s) -- {', '.join(f'`{c}`' for c in columns) or 'none'} -- "
+            + (
+                "and not one of those values differs from the value on the label's other rows."
+                if not conflicts
+                else f"and {len(conflicts)} of them disagree between rows: "
+                f"{', '.join(f'`{c}`' for c in conflicts)}."
+            )
+            + " None of them is an ingested channel.\n\n"
+            if repeats
+            else ""
+        )
         parts.append(
             section(
-                "Timestamp duplication found while measuring",
-                f"{len(duplicating)} of {len(timezone.rows)} members repeat timestamps. The worst "
-                f"is `{worst.member}`: {worst.rows:,} rows over {worst.distinct_timestamps:,} "
-                f"distinct labels, a factor of "
+                "Repeated timestamp labels",
+                f"{len(repeating)} of {len(timezone.rows)} members repeat their timestamp "
+                f"labels. The worst is `{worst.member}`: {worst.rows:,} rows over "
+                f"{worst.distinct_timestamps:,} distinct labels, a factor of "
                 f"{worst.rows / max(worst.distinct_timestamps, 1):.1f}.\n\n"
-                "This is not a daylight-saving artefact and it is not a parsing error: the "
-                "distinct labels are exactly the 10-minute grid of the year, and the surplus "
-                "rows carry the same labels again. It is recorded here because it was found "
-                "here, and because an ingest that does not expect it will read tens of "
-                "millions of rows where it planned for hundreds of thousands.\n\n"
-                "**TODO(m1): decide how ingest collapses these rows and prove the choice does "
-                "not lose values, rather than assuming the surplus rows are empty.**\n\n"
+                "This is an export-format change and not duplicated data. Once the rows that "
+                "carry no ingested value are dropped, "
+                + (
+                    "every label occurs once (`rows with a value` equals `distinct`, and there "
+                    "are no duplicate labels among them), so the autumn half of the test above "
+                    "applies to these members as well. "
+                    if all(row.duplicate_timestamps == 0 for row in repeating)
+                    else "some labels still repeat, and the autumn half abstains on those. "
+                )
+                + read_all
+                + "The ingest collapses these files only after asserting the same thing for "
+                "the channels it reads (`src/faultline/data/telemetry/collapse.py`), and stops "
+                "if a label carries two values.\n\n"
                 + table(
-                    ["member", "rows", "distinct labels", "factor"],
+                    ["member", "rows", "distinct labels", "factor", "rows with a value"],
                     [
                         (
                             row.member,
                             row.rows,
                             row.distinct_timestamps,
                             round(row.rows / max(row.distinct_timestamps, 1), 1),
+                            row.rows_after_null_drop,
                         )
-                        for row in duplicating
+                        for row in repeating
                     ],
+                )
+                + (
+                    "\n"
+                    + table(
+                        [
+                            "member",
+                            "columns read",
+                            "columns with values on repeated rows",
+                            "columns whose repeated values differ",
+                        ],
+                        [
+                            (
+                                check.member,
+                                check.columns,
+                                len(check.repeating),
+                                len(check.conflicting),
+                            )
+                            for check in repeats
+                        ],
+                    )
+                    if repeats
+                    else ""
                 ),
             )
         )
     return "".join(parts)
-
-
-def resolve_source(
-    source: str,
-    spec: SourceSpec,
-    paths: ProjectPaths,
-    timestamp_column: str,
-    power_column: str,
-    energy_column: str | None = None,
-    candidate_zone: str = "Europe/London",
-    step_hours: float = 1 / 6,
-    max_members: int | None = None,
-) -> Path:
-    """Measure a source's power scale and DST fingerprint, and write the report.
-
-    Args:
-        source: Source identifier.
-        spec: Source specification from the download config.
-        paths: Resolved project paths.
-        timestamp_column: Timestamp column as published.
-        power_column: Power column as published.
-        energy_column: Separate energy column, when the export publishes one.
-        candidate_zone: Local zone to test the timestamps against.
-        step_hours: Length of one sampling step in hours.
-        max_members: Cap on the number of members read; all of them when omitted.
-
-    Returns:
-        The path of the written report.
-    """
-    adapter = get_adapter(source, paths.configs_dir)
-    raw_dir = paths.source_dir("raw", "telemetry", source)
-    wanted = [timestamp_column, power_column] + ([energy_column] if energy_column else [])
-
-    scale_rows: list[PowerScaleRow] = []
-    zone_rows: list[TimezoneRow] = []
-    energy_seen: str | None = None
-
-    members = list(_scada_members(adapter, raw_dir))
-    for member in members[: max_members or len(members)]:
-        frame = read_csv_member_columns(member, wanted)
-        if frame.empty or power_column not in frame.columns:
-            logger.warning("%s: no %r column; skipped", member.label, power_column)
-            continue
-        turbine = adapter.turbine_id(member)
-        values = pd.to_numeric(frame[power_column], errors="coerce")
-        non_null = int(values.notna().sum())
-        if non_null >= MIN_ROWS_FOR_TAIL:
-            energy_tail: float | None = None
-            if energy_column and energy_column in frame.columns:
-                energy_seen = energy_column
-                energy = pd.to_numeric(frame[energy_column], errors="coerce")
-                if energy.notna().any():
-                    energy_tail = float(energy.quantile(TAIL_QUANTILE))
-            scale_rows.append(
-                PowerScaleRow(
-                    member=member.name or member.archive.name,
-                    turbine_id=turbine,
-                    rows=int(len(frame)),
-                    non_null=non_null,
-                    tail=float(values.quantile(TAIL_QUANTILE)),
-                    maximum=float(values.max()),
-                    minimum=float(values.min()),
-                    energy_tail=energy_tail,
-                )
-            )
-        else:
-            logger.info("%s: only %d values; too few for a tail", member.label, non_null)
-
-        if timestamp_column in frame.columns:
-            stamps = pd.to_datetime(frame[timestamp_column], errors="coerce")
-            row = timezone_row(member.name or member.archive.name, turbine, stamps, candidate_zone)
-            if row is not None:
-                zone_rows.append(row)
-
-    power = judge_power_scale(
-        power_column, energy_seen, spec.site.rated_kw or 0, step_hours, scale_rows
-    )
-    timezone = judge_timezone(timestamp_column, candidate_zone, spec.timezone, zone_rows)
-
-    report = build_report(source, spec, raw_dir, power, timezone, paths.repo_root)
-    stamp = datetime.now(tz=UTC).strftime("%Y%m%d")
-    destination = paths.data_reports_dir / f"resolved_{source}_{stamp}.md"
-    destination.write_text(report, encoding="utf-8")
-    logger.info("%s: wrote %s", source, destination)
-    return destination

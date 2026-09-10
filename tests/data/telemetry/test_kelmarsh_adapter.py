@@ -14,8 +14,10 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from faultline.data.telemetry.adapters.base import RawMember, read_preamble
+from faultline.data.telemetry.adapters.base import RawMember, read_csv_member, read_preamble
 from faultline.data.telemetry.adapters.kelmarsh import KelmarshAdapter
+from faultline.data.telemetry.adapters.penmanshiel import PenmanshielAdapter
+from faultline.data.telemetry.collapse import RepeatedLabelConflictError
 from faultline.data.telemetry.schemas import EVENT_COLUMNS, INDEX_COLUMNS, validate_events
 
 CHANNEL_MAP = {
@@ -111,14 +113,82 @@ def test_load_scada_timestamps_are_utc_and_on_a_ten_minute_grid(
     assert list(deltas) == [pd.Timedelta(minutes=10)]
 
 
-def test_load_scada_preserves_real_missingness(
+def test_rows_with_no_mapped_value_are_dropped_and_accounted_for(
     adapter: KelmarshAdapter, scada_member: RawMember
 ) -> None:
-    # The provider writes NaN for missing or erroneous values, and the leading rows of
-    # this file are genuinely empty. They must survive as NaN, not become zeros.
-    frame = adapter.load_scada(scada_member)
-    assert frame["wind_speed_ms"].isna().any()
-    assert frame["wind_speed_ms"].notna().any()
+    # The leading rows of this file are the turbine before it started reporting. A row
+    # null in every mapped channel carries nothing, so ingest drops it -- and says so,
+    # and the clean stage puts the timestep back on the grid as missing. What must never
+    # happen is a value appearing that the provider did not write.
+    frame, account = adapter.load_scada_with_stats(scada_member)
+    raw = read_csv_member(scada_member)
+    mapped = [column for column in CHANNEL_MAP.values() if column in raw.columns]
+    carrying = raw[mapped].apply(pd.to_numeric, errors="coerce").notna().any(axis=1)
+
+    assert account.stats.rows_raw == len(raw) == 40
+    assert account.stats.labels_distinct == 40  # 2016: one row per label
+    assert account.stats.rows_after_null_drop == int(carrying.sum()) < 40
+    assert len(frame) == int(carrying.sum())
+    kept = raw[carrying].reset_index(drop=True)
+    for canonical, column in CHANNEL_MAP.items():
+        expected = pd.to_numeric(kept[column], errors="coerce")
+        assert frame[canonical].equals(expected.rename(canonical)) or (
+            frame[canonical].isna().equals(expected.isna())
+            and (frame[canonical].dropna() == expected.dropna()).all()
+        )
+
+
+GREENBYTE_HEADER = "# Date and time,Wind speed (m/s),Power (kW),Production-based System Avail."
+GREENBYTE_PREAMBLE = "# Exported by a vendor tool.\n#\n# Turbine: Kelmarsh 1\n# Time zone: UTC\n#\n"
+
+
+def greenbyte_member(tmp_path: Path, rows: list[str]) -> RawMember:
+    path = tmp_path / "Turbine_Data_Kelmarsh_1_2023.csv"
+    path.write_bytes(
+        (GREENBYTE_PREAMBLE + GREENBYTE_HEADER + "\n" + "\n".join(rows) + "\n").encode()
+    )
+    return loose_member(path, "scada_10min")
+
+
+def test_a_repeated_greenbyte_export_collapses_without_losing_a_value(
+    tmp_path: Path, adapter: KelmarshAdapter
+) -> None:
+    # The 2023 layout in miniature: cumulative blocks that re-emit earlier labels with
+    # the measured channels empty and the availability figure repeated.
+    member = greenbyte_member(
+        tmp_path,
+        [
+            "2023-01-01 00:00:00,9.1,1850,100",
+            "2023-01-01 00:00:00,NaN,NaN,100",
+            "2023-01-01 00:10:00,8.2,1600,100",
+            "2023-01-01 00:00:00,NaN,NaN,100",
+            "2023-01-01 00:10:00,NaN,NaN,100",
+            "2023-01-01 00:20:00,7.5,1400,100",
+        ],
+    )
+    frame, account = adapter.load_scada_with_stats(member)
+    assert list(frame["power_kw"]) == [1850.0, 1600.0, 1400.0]
+    assert list(frame["wind_speed_ms"]) == [9.1, 8.2, 7.5]
+    assert frame["timestamp_utc"].is_monotonic_increasing
+    stats = account.stats
+    assert (stats.rows_raw, stats.rows_after_null_drop, stats.labels_distinct) == (6, 3, 3)
+    assert stats.rows_out == 3 and stats.repeated_export
+
+
+def test_repeats_that_disagree_stop_the_ingest(tmp_path: Path, adapter: KelmarshAdapter) -> None:
+    member = greenbyte_member(
+        tmp_path, ["2023-01-01 00:00:00,9.1,1850,100", "2023-01-01 00:00:00,9.1,1790,100"]
+    )
+    with pytest.raises(RepeatedLabelConflictError, match="Power"):
+        adapter.load_scada_with_stats(member)
+
+
+def test_penmanshiel_reads_the_same_greenbyte_export(scada_member: RawMember) -> None:
+    # Same publisher, same export, confirmed against all 98 Penmanshiel headers: the
+    # loader is shared, not copied.
+    frame = PenmanshielAdapter(channel_map=dict(CHANNEL_MAP)).load_scada(scada_member)
+    assert frame["source"].unique().tolist() == ["penmanshiel"]
+    assert frame["power_kw"].notna().any()
 
 
 def test_load_scada_needs_a_channel_map(scada_member: RawMember) -> None:

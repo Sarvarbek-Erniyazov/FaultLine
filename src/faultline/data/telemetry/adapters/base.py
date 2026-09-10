@@ -18,20 +18,42 @@ from __future__ import annotations
 
 import io
 import zipfile
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import IO, ClassVar, Literal, Protocol, runtime_checkable
+from typing import IO, Any, ClassVar, Literal, Protocol, runtime_checkable
 
 import pandas as pd
 import yaml
 
+from faultline.data.telemetry.collapse import CollapseStats
 from faultline.logging_utils import get_logger
 
 logger = get_logger(__name__)
 
-MemberKind = Literal["scada_10min", "status_events", "alarm_log", "metadata", "other"]
+#: ``downtime_series`` is a regular per-turbine series of downtime per step -- a label
+#: source, not an event log and not telemetry (Hill of Towie's ShutdownDuration).
+MemberKind = Literal[
+    "scada_10min", "status_events", "alarm_log", "downtime_series", "metadata", "other"
+]
+
+
+@dataclass(frozen=True)
+class FileAccount:
+    """Row accounting for one source file, as the ingest report prints it.
+
+    Attributes:
+        member: Member label.
+        turbine: Turbine the file belongs to, or a station count where one file holds
+            every turbine.
+        stats: The repeated-label arithmetic for the file.
+    """
+
+    member: str
+    turbine: str
+    stats: CollapseStats
+
 
 #: Archive extensions treated as containers.
 ARCHIVE_SUFFIXES: frozenset[str] = frozenset({".zip"})
@@ -144,6 +166,39 @@ def load_channel_map(path: Path) -> dict[str, str]:
             continue
         resolved[str(canonical)] = text
     return resolved
+
+
+def load_farm_blocks(path: Path) -> dict[str, dict[str, Any]]:
+    """Load the per-farm blocks of a channel map that maps each farm separately.
+
+    Args:
+        path: Path to ``configs/data/channel_map/<source>.yaml``.
+
+    Returns:
+        Each farm's block, keyed by farm id; empty for a flat map or a missing file.
+    """
+    if not path.is_file():
+        return {}
+    payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    farms = payload.get("farms") or {}
+    return {str(farm): dict(block or {}) for farm, block in farms.items()}
+
+
+def resolved_columns(block: dict[str, Any]) -> dict[str, str]:
+    """Return the mapped columns of one map block, skipping null and TODO entries.
+
+    Args:
+        block: A channel map, or one farm of it.
+
+    Returns:
+        Canonical channel name to source column.
+    """
+    channels = block.get("channels") or {}
+    return {
+        str(canonical): str(column)
+        for canonical, column in channels.items()
+        if isinstance(column, str) and not column.startswith("TODO")
+    }
 
 
 @contextmanager
@@ -330,6 +385,52 @@ class BaseAdapter:
         stem = (member.name or member.archive.name).rsplit("/", 1)[-1]
         return stem.removesuffix(".csv")
 
+    def scada_units(self, members: Sequence[RawMember]) -> list[list[RawMember]]:
+        """Group the SCADA members into the units a loader reads together.
+
+        Most providers publish one turbine-year per file, so by default each member is
+        its own unit. A provider that splits one turbine's signals over several files
+        overrides this.
+
+        Args:
+            members: Members discovered for the source.
+
+        Returns:
+            One list of members per unit, in a stable order.
+        """
+        return [[member] for member in members if member.kind == "scada_10min" and member.size > 0]
+
+    def load_scada_unit(self, unit: Sequence[RawMember]) -> tuple[pd.DataFrame, list[FileAccount]]:
+        """Read one unit of SCADA members into the canonical wide schema.
+
+        Args:
+            unit: Members that are read together.
+
+        Returns:
+            The canonical wide table and one account per file read.
+        """
+        frames: list[pd.DataFrame] = []
+        accounts: list[FileAccount] = []
+        for member in unit:
+            frame, account = self.load_scada_with_stats(member)
+            frames.append(frame)
+            accounts.append(account)
+        return (pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()), accounts
+
+    def load_scada_with_stats(self, member: RawMember) -> tuple[pd.DataFrame, FileAccount]:
+        """Read one SCADA member, and account for every row it had.
+
+        Args:
+            member: Member classified as SCADA.
+
+        Returns:
+            A canonical wide table and the file's row accounting.
+
+        Raises:
+            NotImplementedError: In the base adapter.
+        """
+        raise NotImplementedError(f"{self.source_id}: load_scada is not implemented")
+
     def load_scada(self, member: RawMember) -> pd.DataFrame:
         """Read one SCADA member into the canonical wide schema.
 
@@ -338,11 +439,8 @@ class BaseAdapter:
 
         Returns:
             A canonical wide table.
-
-        Raises:
-            NotImplementedError: In the base adapter.
         """
-        raise NotImplementedError(f"{self.source_id}: load_scada is not implemented")
+        return self.load_scada_with_stats(member)[0]
 
     def load_events(self, member: RawMember) -> pd.DataFrame | None:
         """Read one event member into the canonical events schema.
@@ -511,10 +609,14 @@ def read_csv_member_columns(
     with open_member(member) as handle:
         head = handle.read(probe_bytes)
     skiprows, names = sniff_csv_layout(head)
-    header_line = head.decode("utf-8", errors="replace").splitlines()[max(skiprows - 1, 0)]
+    lines = head.decode("utf-8", errors="replace").splitlines()
+    # The header is the last comment line when names were recovered from it, and the
+    # first line after the preamble otherwise. Reading the separator off the wrong line
+    # would take it from a comment.
+    header_line = lines[max(skiprows - 1, 0)] if names is not None else lines[skiprows]
     separator = max(",;\t", key=header_line.count)
 
-    available = names if names is not None else _split_csv_header(header_line)
+    available = header_columns(member, probe_bytes)
     wanted = [name for name in columns if name in available]
     if not wanted:
         return pd.DataFrame()

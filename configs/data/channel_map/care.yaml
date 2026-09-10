@@ -132,4 +132,8 @@ farms:
       generator_bearing_temp_c: "sensor_168/169: Temperature of axial bearing 1/2, component not stated"
     units:
       power_kw: "normalised to an unpublished rated power (read -0.01 to 1.04), not kW"
-      generator_speed_rpm: "rad/s; multiply by 60/(2 pi) for rpm"
+      generator_speed_rpm: "rad/s, converted to rpm at ingest (scale below)"
+    # Factors the adapter applies to reach the canonical unit. Only a conversion between
+    # two known units belongs here; normalised power has no known factor and stays out.
+    scale:
+      generator_speed_rpm: 9.549296585513721 # 60 / (2 pi): rad/s -> rpm

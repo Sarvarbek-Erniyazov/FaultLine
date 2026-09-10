@@ -10,10 +10,10 @@
 | staged directory | C:\Users\sharg\Desktop\github\FaultLine\data\raw\telemetry\hill_of_towie |
 | files staged | 9 |
 | members discovered | 319 |
-| member classification | provider table names, as defined in Hill_of_Towie_tables_description.csv (tblAlarmLog: 'Log of stopping and non-stopping events/alarms'); ShutdownDuration.csv is not in that file and is classified from its header |
-| event members parsed | 24 of 25 (caps: 200 members, 209.7 MB and 500,000 rows per member) |
-| generated (UTC) | 2026-09-10T09:55:56+00:00 |
-| git_sha | 3e78a10e0b622b766ef384205c8084cb667ea49a |
+| member classification | provider table names, as defined in Hill_of_Towie_tables_description.csv (tblAlarmLog: 'Log of stopping and non-stopping events/alarms'); ShutdownDuration.csv is not in that file and is classified from its header as a per-turbine downtime series |
+| event members parsed | 24 of 24 (caps: 200 members, 209.7 MB and 500,000 rows per member) |
+| generated (UTC) | 2026-09-10T14:02:52+00:00 |
+| git_sha | dded9436d9495c754c83ef750a1e20a95372ea46 |
 
 ## Free-text verdict
 
@@ -120,10 +120,10 @@ These thresholds were chosen after all four sources had been inspected, so they 
 | kind | members | uncompressed (MB) |
 | --- | --- | --- |
 | alarm_log | 24 | 34.2 |
+| downtime_series | 1 | 316.8 |
 | metadata | 6 | 0 |
 | other | 72 | 65.5 |
 | scada_10min | 216 | 1.272e+04 |
-| status_events | 1 | 316.8 |
 
 ## Event tables found
 
@@ -153,12 +153,6 @@ These thresholds were chosen after all four sources had been inspected, so they 
 | 2023.zip::tblAlarmLog_2023_10.csv | 18,210 | 4 | Alarmcode | - | 114 | 0 | 0.0% | 0 |
 | 2023.zip::tblAlarmLog_2023_11.csv | 21,274 | 4 | Alarmcode | - | 151 | 0 | 0.0% | 0 |
 | 2023.zip::tblAlarmLog_2023_12.csv | 18,191 | 4 | Alarmcode | - | 115 | 0 | 0.0% | 0 |
-
-## Event members not parsed
-
-| member | uncompressed (MB) | reason |
-| --- | --- | --- |
-| Hill_of_Towie_ShutdownDuration.zip::ShutdownDuration.csv | 316.8 | 316.8 MB exceeds the parse cap of 209.7 MB |
 
 ## Header samples (first lines, one member per kind)
 
@@ -648,7 +642,7 @@ TimeStamp_StartFormat,TurbineName,ShutdownDuration
 | Hill_of_Towie_AeroUp_install_dates.csv | (loose file) | metadata | 0.001 | 0.001 |
 | Hill_of_Towie_alarms_description.csv | (loose file) | metadata | 0 | 0 |
 | Hill_of_Towie_grid_fields_description.csv | (loose file) | metadata | 0.001 | 0.001 |
-| Hill_of_Towie_ShutdownDuration.zip | ShutdownDuration.csv | status_events | 316.8 | 19.83 |
+| Hill_of_Towie_ShutdownDuration.zip | ShutdownDuration.csv | downtime_series | 316.8 | 19.83 |
 | Hill_of_Towie_tables_description.csv | (loose file) | metadata | 0.001 | 0.001 |
 | Hill_of_Towie_turbine_fields_description.csv | (loose file) | metadata | 0.004 | 0.004 |
 | Hill_of_Towie_turbine_metadata.csv | (loose file) | metadata | 0.002 | 0.002 |

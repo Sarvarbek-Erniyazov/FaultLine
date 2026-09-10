@@ -1,0 +1,6 @@
+2026-09-10 22:57:40,623 INFO     faultline.runs | run 20260910-135740_ingest_telemetry_c13b5fe8 started (config hash c13b5fe8)
+2026-09-10 23:05:15,641 WARNING  faultline.data.telemetry.adapters.hill_of_towie | 2019.zip::tblAlarmLog_2019_08.csv: stations [91] are not turbines in Hill_of_Towie_turbine_metadata.csv; their rows are dropped
+2026-09-10 23:05:15,905 WARNING  faultline.data.telemetry.adapters.hill_of_towie | 2019.zip::tblAlarmLog_2019_09.csv: stations [91] are not turbines in Hill_of_Towie_turbine_metadata.csv; their rows are dropped
+2026-09-10 23:05:16,972 WARNING  faultline.data.telemetry.adapters.hill_of_towie | 2023.zip::tblAlarmLog_2023_05.csv: stations [91] are not turbines in Hill_of_Towie_turbine_metadata.csv; their rows are dropped
+2026-09-10 23:08:20,318 INFO     faultline.runs | wrote ingest_stats_report.md
+2026-09-10 23:08:20,463 INFO     faultline.runs | run 20260910-135740_ingest_telemetry_c13b5fe8 ok in 639.70s -> C:\Users\sharg\Desktop\github\FaultLine\reports\data\20260910-135740_ingest_telemetry_c13b5fe8

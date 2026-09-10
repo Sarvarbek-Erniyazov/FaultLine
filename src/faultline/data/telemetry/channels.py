@@ -459,6 +459,30 @@ def render_channel_report(
         )
     )
 
+    if training and holdout and all(source in maps for source in [*training, *holdout]):
+        core, _ = derive_core(maps, training, holdout)
+        core_rows: list[tuple[str, str, str]] = []
+        for channel in CHANNEL_NAMES:
+            if channel in core:
+                why = f"resolved at {', '.join([*training, *holdout])}"
+            else:
+                why = "; ".join(
+                    f"{maps[source].status(channel)} at {source}"
+                    for source in [*training, *holdout]
+                    if maps[source].status(channel) != "resolved"
+                )
+            core_rows.append((channel, "**core**" if channel in core else "extended", why))
+        parts.append(
+            section(
+                "Core set, derived",
+                f"Core means present at every training site ({', '.join(training)}) and "
+                f"mappable at the held-out site ({', '.join(holdout)}); everything else is "
+                "extended. Derived by `channels.derive_core` from the maps above, and frozen "
+                "in `configs/data/telemetry_v1.yaml`.\n\n"
+                + table(["channel", "tier", "why"], core_rows),
+            )
+        )
+
     findings = []
     for channel in CHANNEL_NAMES:
         at_holdout = all(maps[s].status(channel) == "resolved" for s in holdout if s in maps)

@@ -38,11 +38,11 @@ def test_main_bearing_temperature_is_present_and_appended_last() -> None:
 
 
 def test_a_channel_verified_absent_from_a_training_site_is_extended() -> None:
-    # Kelmarsh publishes no gearbox bearing temperature at all -- the one tier
-    # assignment M0 evidence actually settles.
+    # Neither Senvion site publishes a gearbox bearing temperature.
     assert channel_tier("gearbox_bearing_temp_c") == "extended"
-    # A channel confirmed at one site only cannot be core either.
-    assert channel_tier("main_bearing_temp_c") == "extended"
+    # Present at both training sites and mappable at the held-out site: core since the
+    # 2026-09-10 freeze (test_core_channels.py checks the whole set against the maps).
+    assert channel_tier("main_bearing_temp_c") == "core"
 
 
 def test_channel_tier_rejects_an_unknown_name() -> None:

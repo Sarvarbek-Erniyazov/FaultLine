@@ -2,14 +2,22 @@
 
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
 
 import pandas as pd
 import pytest
+import yaml
 from pydantic import ValidationError
 
 from faultline.config import load_config
-from faultline.data.common.splits import SplitsConfig, assign_splits, split_counts
+from faultline.data.common.splits import (
+    SplitsConfig,
+    assign_splits,
+    check_eval_channels_against_maps,
+    split_counts,
+)
+from faultline.data.telemetry.adapters import ADAPTERS
 from faultline.data.telemetry.schemas import CORE_CHANNELS, EXTENDED_CHANNELS
 
 
@@ -104,6 +112,49 @@ def test_unknown_eval_channel_is_rejected_either_way() -> None:
 
 def test_eval_channels_defaults_to_empty() -> None:
     assert config().eval_channels == []
+
+
+# -- the leave-site-out rule, on the real channel maps ---------------------------------
+
+
+def test_the_v1_split_passes_the_leave_site_out_rule_on_the_real_maps(repo_root: Path) -> None:
+    spec = load_config(repo_root / "configs" / "data" / "splits_v1.yaml", SplitsConfig)
+    core = check_eval_channels_against_maps(spec, repo_root / "configs", list(ADAPTERS))
+    # every channel the maps show on both sides of the split is evaluated, and no other
+    assert spec.eval_channels == core
+    assert spec.site_column == "source"
+
+
+def test_the_v0_split_still_passes_on_the_real_maps(repo_root: Path) -> None:
+    spec = load_config(repo_root / "configs" / "data" / "splits_v0.yaml", SplitsConfig)
+    core = check_eval_channels_against_maps(spec, repo_root / "configs", list(ADAPTERS))
+    assert set(spec.eval_channels) < set(core)
+
+
+def test_a_channel_the_held_out_site_cannot_map_fails_on_the_maps(
+    tmp_path: Path, repo_root: Path
+) -> None:
+    # schemas.py still declares main_bearing_temp_c core; the maps now say the held-out
+    # site does not publish it. The map check must win over the declaration.
+    maps_dir = tmp_path / "configs" / "data" / "channel_map"
+    shutil.copytree(repo_root / "configs" / "data" / "channel_map", maps_dir)
+    path = maps_dir / "hill_of_towie.yaml"
+    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    payload["channels"]["main_bearing_temp_c"] = None
+    payload["evidence"].pop("main_bearing_temp_c")
+    payload["verified_absent"] = {"main_bearing_temp_c": "not in the lookup"}
+    path.write_text(yaml.safe_dump(payload), encoding="utf-8")
+
+    spec = config(eval_channels=["wind_speed_ms", "main_bearing_temp_c"])
+    with pytest.raises(ValueError, match=r"\['main_bearing_temp_c'\]"):
+        check_eval_channels_against_maps(spec, tmp_path / "configs", list(ADAPTERS))
+
+
+def test_a_held_out_site_that_names_no_source_is_rejected(repo_root: Path) -> None:
+    # The v0 site-column mismatch in miniature: "Hill of Towie" matches no source id.
+    spec = config(holdout_sites=["Hill of Towie"])
+    with pytest.raises(KeyError, match="name no source"):
+        check_eval_channels_against_maps(spec, repo_root / "configs", list(ADAPTERS))
 
 
 # -- evaluation-only sources (ADR-0004, docs/DATA_LICENSES.md) ------------------------

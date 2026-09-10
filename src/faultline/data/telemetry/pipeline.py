@@ -24,10 +24,15 @@ from pathlib import Path
 from typing import Any, ClassVar
 
 import pandas as pd
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from faultline.config import RunMeta, StrictModel, load_config
-from faultline.data.common.splits import SplitsConfig, assign_splits, split_counts
+from faultline.data.common.splits import (
+    SplitsConfig,
+    assign_splits,
+    check_eval_channels_against_maps,
+    split_counts,
+)
 from faultline.data.common.stage import Stage, StageResult
 from faultline.data.telemetry import report as telemetry_report
 from faultline.data.telemetry.adapters import ADAPTERS, get_adapter
@@ -102,6 +107,9 @@ class TelemetryPipelineConfig(StrictModel):
         freq: Grid resolution as a pandas offset alias.
         timezone_default: Timezone assumed for naive source timestamps.
         channels: Canonical channels, in the order that fixes channel token ids.
+        core_channels: The frozen core set, each channel with a one-line evidence
+            note. Empty in a configuration that predates the freeze (v0).
+        extended_channels: Every other channel, each with its evidence note.
         bounds: Plausibility bounds per channel.
         bounds_overrides: Per-source bound overrides.
         clean: Cleaning switches.
@@ -116,6 +124,8 @@ class TelemetryPipelineConfig(StrictModel):
     freq: str = "10min"
     timezone_default: str = "UTC"
     channels: list[str]
+    core_channels: dict[str, str] = Field(default_factory=dict)
+    extended_channels: dict[str, str] = Field(default_factory=dict)
     bounds: dict[str, BoundSpec] = Field(default_factory=dict)
     bounds_overrides: dict[str, dict[str, BoundSpec]] = Field(default_factory=dict)
     clean: TelemetryCleanConfig = Field(default_factory=TelemetryCleanConfig)
@@ -125,6 +135,31 @@ class TelemetryPipelineConfig(StrictModel):
     tokenizer: TokenizerConfig = Field(default_factory=TokenizerConfig)
     final: TelemetryFinalConfig = Field(default_factory=TelemetryFinalConfig)
     report: TelemetryReportConfig = Field(default_factory=TelemetryReportConfig)
+
+    @model_validator(mode="after")
+    def _tiers_partition_the_channels(self) -> TelemetryPipelineConfig:
+        """Reject a tier list that leaves a channel out, lists one twice, or omits evidence.
+
+        Raises:
+            ValueError: If the core and extended lists overlap, do not together cover
+                ``channels``, or carry a blank evidence note.
+        """
+        if not self.core_channels and not self.extended_channels:
+            return self
+        core, extended = set(self.core_channels), set(self.extended_channels)
+        if core & extended:
+            raise ValueError(f"listed as both core and extended: {sorted(core & extended)}")
+        if core | extended != set(self.channels):
+            raise ValueError(
+                "core_channels and extended_channels must partition channels; missing "
+                f"{sorted(set(self.channels) - core - extended)}, unknown "
+                f"{sorted((core | extended) - set(self.channels))}"
+            )
+        notes = {**self.core_channels, **self.extended_channels}
+        blank = [name for name, note in notes.items() if not str(note).strip()]
+        if blank:
+            raise ValueError(f"every tiered channel needs a one-line evidence note: {blank}")
+        return self
 
     def bounds_for(self, source: str) -> dict[str, BoundSpec]:
         """Return the plausibility bounds in force for one source.
@@ -526,6 +561,10 @@ class FinalStage(TelemetryStage):
         splits_config = load_config(splits_path, SplitsConfig) if splits_path.is_file() else None
         if splits_config is None:
             logger.warning("split spec %s not found; rows are written unsplit", splits_path)
+        else:
+            # The leave-site-out rule, checked on the resolved channel maps rather than
+            # only on the tiers schemas.py declares.
+            check_eval_channels_against_maps(splits_config, self.paths.configs_dir, list(ADAPTERS))
 
         imputed_totals: dict[str, int] = {}
         split_totals: dict[str, int] = {}

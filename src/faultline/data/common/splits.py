@@ -26,7 +26,9 @@ after the site and time axes, and it overrides both.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Literal
 
 import numpy as np
@@ -34,6 +36,7 @@ import pandas as pd
 from pydantic import Field, model_validator
 
 from faultline.config import StrictModel
+from faultline.data.telemetry.channels import derive_core, load_channel_maps
 from faultline.data.telemetry.schemas import CHANNELS_BY_NAME, CORE_CHANNELS
 
 Split = Literal["train", "val", "test"]
@@ -119,6 +122,56 @@ class SplitsConfig(StrictModel):
                 f"rather than transfer. Core channels: {', '.join(CORE_CHANNELS)}."
             )
         return self
+
+
+def check_eval_channels_against_maps(
+    config: SplitsConfig, configs_dir: Path, sources: Sequence[str]
+) -> list[str]:
+    """Check a leave-site-out evaluation's channels against the resolved channel maps.
+
+    The validator on :class:`SplitsConfig` checks ``eval_channels`` against the tiers
+    ``schemas.py`` declares. A declaration is only as good as the evidence behind it,
+    so this derives the core set from the channel maps themselves -- resolved at every
+    training source and at every held-out source -- and checks against that. The two
+    agree today; this is what notices the day they do not.
+
+    Args:
+        config: Split specification.
+        configs_dir: The repository ``configs`` directory.
+        sources: Every source with a channel map; training sources are those neither
+            held out nor evaluation-only.
+
+    Returns:
+        The derived core set, empty when no site is held out.
+
+    Raises:
+        KeyError: If a held-out site names no source with a channel map.
+        ValueError: If an evaluation channel is not core on the maps.
+    """
+    if not config.holdout_sites:
+        return []
+    unknown = [site for site in config.holdout_sites if site not in sources]
+    if unknown:
+        raise KeyError(
+            f"holdout_sites {unknown} name no source with a channel map ({', '.join(sources)}); "
+            "the leave-site-out rule cannot be checked, and a held-out site that matches "
+            "nothing leaves that site in the training data"
+        )
+    training = [
+        source
+        for source in sources
+        if source not in config.holdout_sites and source not in config.eval_only_sources
+    ]
+    maps = load_channel_maps(configs_dir, [*training, *config.holdout_sites])
+    core, _ = derive_core(maps, training, config.holdout_sites)
+    outside = [channel for channel in config.eval_channels if channel not in core]
+    if outside:
+        raise ValueError(
+            f"eval_channels names {outside}, which the resolved channel maps do not show at "
+            f"every training site ({', '.join(training)}) and at the held-out site "
+            f"({', '.join(config.holdout_sites)}). Core on the maps: {', '.join(core)}."
+        )
+    return core
 
 
 def _as_utc(value: datetime) -> pd.Timestamp:

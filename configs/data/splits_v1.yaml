@@ -1,0 +1,58 @@
+# Site and time split specification, version 1.
+#
+# Created 2026-09-10 with the frozen core set. NOT YET READ BY ANY RUN: its time cut is
+# still v0's worked example and is settled at M1a step 7 from the measured per-site
+# coverage, before any run reads this file. From the first run that reads it, it is
+# frozen like every other config.
+#
+# What changed from v0:
+#
+#   * site_column is "source". holdout_sites names source ids, and v0 matched them
+#     against the site column -- but the adapters write the human-readable site name
+#     there ("Hill of Towie"), which "hill_of_towie" never matches. Run as written, v0
+#     would have left the held-out site in the training data without a word. The site
+#     axis now keys on the source id, which the adapters write verbatim.
+#   * eval_channels is the frozen core set from telemetry_v1.yaml, thirteen channels,
+#     and it is checked against the resolved channel maps as well as the declared tiers
+#     (splits.check_eval_channels_against_maps). A channel the held-out site cannot map
+#     fails there, whatever schemas.py declares.
+
+version: 1
+seed: 20260909
+
+site_column: "source"
+time_column: "timestamp_utc"
+source_column: "source"
+
+# CARE is CC BY-SA 4.0 and evaluation-only: every row is test, overriding both axes.
+# A licence constraint, not a modelling preference (ADR-0004, docs/DATA_LICENSES.md).
+eval_only_sources:
+  - "care"
+
+# Hill of Towie: a different manufacturer, control system and a mid-record retrofit.
+holdout_sites:
+  - "hill_of_towie"
+holdout_site_split: "test"
+
+# TODO(m1): M1a step 7 -- set from the ingest and clean coverage tables. Until then this
+# is v0's worked example, carried over so that the file validates.
+time:
+  train_until: "2021-12-31T23:59:59Z"
+  val_until: "2022-12-31T23:59:59Z"
+late_period_split: "test"
+
+# The frozen core set (configs/data/telemetry_v1.yaml, core_channels).
+eval_channels:
+  - wind_speed_ms
+  - power_kw
+  - rotor_speed_rpm
+  - generator_speed_rpm
+  - pitch_angle_deg
+  - nacelle_position_deg
+  - wind_direction_deg
+  - ambient_temp_c
+  - nacelle_temp_c
+  - gearbox_oil_temp_c
+  - generator_bearing_temp_c
+  - generator_winding_temp_c
+  - main_bearing_temp_c

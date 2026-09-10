@@ -526,3 +526,51 @@ all 54 Kelmarsh turbine-years, the most distinct strings in one turbine-year is 
 at all, so point 1's "every status message at the held-out site becomes `<unk>`" has no
 messages to apply to until its codes are given text. The decision is not changed by
 this note; its TODO(m1) is recorded in ADR-0001.
+
+---
+
+## ADR-0008 The core channel set is derived from the channel maps and frozen
+
+**Status:** Accepted · **Date:** 2026-09-10
+
+**Decision.** A canonical channel is **core** when it is present at both training
+sites (Kelmarsh, Penmanshiel) *and* mappable at the held-out site (Hill of Towie).
+Everything else is **extended**. The set is derived from the resolved channel maps by
+`channels.derive_core`, and not declared. It is frozen, with a one-line evidence note
+per channel, in `configs/data/telemetry_v1.yaml`:
+
+- **core, 13:** wind speed, power, rotor speed, generator speed, pitch, nacelle
+  position, wind direction, ambient temperature, nacelle temperature, gearbox oil
+  temperature, generator bearing temperature, generator winding temperature, main
+  bearing temperature;
+- **extended, 1:** gearbox bearing temperature. Both Senvion signal mappings verify it
+  absent, while the held-out site publishes four.
+
+**What changed from M0.** M0 declared eight core channels on Kelmarsh evidence alone.
+The five drivetrain and enclosure temperatures joined core once Penmanshiel's and Hill of
+Towie's maps showed them on both sides of the split. The canonical *order* does not
+change, so no channel token identifier moves (ADR-0003).
+
+**The leave-site-out rule now runs on the maps, not on declarations.**
+`splits.check_eval_channels_against_maps` derives the core set from the maps and rejects
+any evaluation channel outside it. The final stage calls it, and a test calls it on the
+shipped split specs. The tiers in `schemas.py` repeat the frozen set, because config
+validation must not read files, and `tests/data/telemetry/test_core_channels.py` fails
+if the declaration, the frozen config and the maps ever disagree.
+
+**Three things this does not settle, recorded so they are not rediscovered.**
+
+1. *Mappable is not present.* Hill of Towie's wind direction is described in the
+   provider's lookup and present in the 2023 export, but absent from every month of
+   2019. It is core by the rule, and half the staged held-out period reads it as
+   missing.
+2. *The generator bearing is matched by inference.* The Senvion maps take the "front"
+   bearing and Hill of Towie's is taken at the drive end, on the reasoning that a
+   generator's front faces the gearbox that drives it. Neither provider states this.
+3. *Coverage is measured later.* M1a step 8 measures per-site missingness on the core
+   channels. A core channel that turns out mostly missing at a site is demoted in
+   `telemetry_v2.yaml`, and this record gains a "superseded by" line; nothing is edited
+   in place.
+
+**What would change this decision.** The step-8 coverage table, or a new training or
+held-out site whose map lacks a core channel.

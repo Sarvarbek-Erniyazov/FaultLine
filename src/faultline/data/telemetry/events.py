@@ -22,7 +22,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from faultline.config import StrictModel
 from faultline.data.telemetry.schemas import EVENT_COLUMNS, empty_events_frame
@@ -37,7 +37,12 @@ class EventConfig(StrictModel):
     """Event normalization and labelling settings.
 
     Attributes:
-        horizon_steps: Risk horizon, in grid steps.
+        horizon_steps: The one risk horizon, in grid steps, for a configuration that
+            has chosen one. ``None`` when none is chosen: v1 labels several horizons
+            side by side and leaves the choice to the base-rate evidence.
+        horizons_steps: Horizons labelled side by side, in grid steps.
+        labels_config: Path of the per-source event labelling file, relative to the
+            repository root.
         lowercase_messages: Lowercase messages before comparison and counting.
         collapse_whitespace: Collapse whitespace runs in messages.
         fault_categories: Provider categories treated as faults.
@@ -46,12 +51,28 @@ class EventConfig(StrictModel):
             unknown, which is the honest default.
     """
 
-    horizon_steps: int = 144
+    horizon_steps: int | None = None
+    horizons_steps: list[int] = Field(default_factory=list)
+    labels_config: str | None = None
     lowercase_messages: bool = True
     collapse_whitespace: bool = True
     fault_categories: list[str] = Field(default_factory=list)
     fault_codes: list[str] = Field(default_factory=list)
     default_is_fault: bool | None = None
+
+    @model_validator(mode="after")
+    def _horizons_are_positive_and_distinct(self) -> EventConfig:
+        """Reject a horizon of zero steps, or the same horizon listed twice.
+
+        Raises:
+            ValueError: If a horizon is not a positive number of steps or repeats.
+        """
+        steps = [*self.horizons_steps, *([self.horizon_steps] if self.horizon_steps else [])]
+        if any(step <= 0 for step in steps):
+            raise ValueError(f"horizons must be a positive number of grid steps, got {steps}")
+        if len(set(self.horizons_steps)) != len(self.horizons_steps):
+            raise ValueError(f"horizons_steps lists a horizon twice: {self.horizons_steps}")
+        return self
 
 
 def normalize_message(message: Any, config: EventConfig) -> str:
@@ -147,6 +168,7 @@ def label_horizon(
     freq: str = "10min",
     turbine_id: str | None = None,
     fault_only: bool = True,
+    horizon_steps: int | None = None,
 ) -> pd.Series[Any]:
     """Label each grid step with whether an event starts within the horizon.
 
@@ -157,10 +179,21 @@ def label_horizon(
         freq: Grid resolution, used to convert the horizon into a duration.
         turbine_id: Restrict to one turbine when the events table covers several.
         fault_only: Consider only events whose ``is_fault`` is ``True``.
+        horizon_steps: Horizon to label, overriding ``config.horizon_steps``. A
+            configuration that labels several horizons passes each one here.
 
     Returns:
         A boolean Series, ``True`` where an event starts in ``(t, t + horizon]``.
+
+    Raises:
+        ValueError: If neither this argument nor the configuration names a horizon.
     """
+    steps = horizon_steps if horizon_steps is not None else config.horizon_steps
+    if steps is None:
+        raise ValueError(
+            "no horizon: pass horizon_steps, or set events.horizon_steps in a configuration "
+            "that has chosen one"
+        )
     index = pd.DatetimeIndex(pd.to_datetime(pd.Series(timestamps), utc=True))
     labels = pd.Series(False, index=range(len(index)), name="event_within_horizon")
     if events.empty or len(index) == 0:
@@ -174,7 +207,7 @@ def label_horizon(
     if selected.empty:
         return labels
 
-    horizon = pd.Timedelta(freq) * config.horizon_steps
+    horizon = pd.Timedelta(freq) * steps
     starts = pd.DatetimeIndex(pd.to_datetime(selected["start_utc"], utc=True)).sort_values()
 
     # For each grid step, the first event starting strictly after it must also fall

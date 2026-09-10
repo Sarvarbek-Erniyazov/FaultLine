@@ -63,6 +63,15 @@ def test_shipped_config_loads(config_path: Path) -> None:
     assert config.events.default_is_fault is None
 
 
+def test_the_v1_config_loads_and_chooses_no_primary_horizon(repo_root: Path) -> None:
+    config = load_telemetry_config(repo_root / "configs" / "data" / "telemetry_v1.yaml")
+    assert config.events.horizons_steps == [6, 36, 144]  # 1 h, 6 h, 24 h
+    assert config.events.horizon_steps is None
+    assert config.final.splits_config == "configs/data/splits_v1.yaml"
+    # CARE power is normalised, so its bound is per-unit, not kW
+    assert config.bounds_for("care")["power_kw"].max == 1.1
+
+
 def test_per_source_bound_overrides(config_path: Path) -> None:
     config = load_telemetry_config(config_path)
     default = config.bounds_for("kelmarsh")["power_kw"].max

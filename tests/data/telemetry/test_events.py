@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from faultline.data.telemetry.events import (
     EventConfig,
@@ -86,6 +87,9 @@ def test_label_horizon() -> None:
     assert list(labels) == [False, False, True, True, True, False, False, False, False, False]
 
 
+DAY = EventConfig(horizon_steps=144)
+
+
 def test_label_horizon_ignores_other_turbines() -> None:
     grid = pd.date_range("2020-01-01 00:00", periods=5, freq="10min", tz="UTC")
     events = pd.DataFrame(
@@ -97,7 +101,7 @@ def test_label_horizon_ignores_other_turbines() -> None:
             "is_fault": [True],
         }
     )
-    assert not label_horizon(grid, events, EventConfig(), turbine_id="T1").any()
+    assert not label_horizon(grid, events, DAY, turbine_id="T1").any()
 
 
 def test_label_horizon_ignores_non_fault_events_by_default() -> None:
@@ -111,13 +115,40 @@ def test_label_horizon_ignores_non_fault_events_by_default() -> None:
             "is_fault": [None],
         }
     )
-    assert not label_horizon(grid, events, EventConfig(), turbine_id="T1").any()
-    assert label_horizon(grid, events, EventConfig(), turbine_id="T1", fault_only=False).any()
+    assert not label_horizon(grid, events, DAY, turbine_id="T1").any()
+    assert label_horizon(grid, events, DAY, turbine_id="T1", fault_only=False).any()
 
 
 def test_label_horizon_with_no_events() -> None:
     grid = pd.date_range("2020-01-01", periods=3, freq="10min", tz="UTC")
-    assert not label_horizon(grid, pd.DataFrame(), EventConfig()).any()
+    assert not label_horizon(grid, pd.DataFrame(), DAY).any()
+
+
+def test_no_horizon_is_chosen_by_default() -> None:
+    # v1 labels three horizons and chooses none; a default would choose one silently.
+    grid = pd.date_range("2020-01-01", periods=3, freq="10min", tz="UTC")
+    with pytest.raises(ValueError, match="no horizon"):
+        label_horizon(grid, pd.DataFrame(), EventConfig())
+
+
+def test_an_explicit_horizon_overrides_the_configured_one() -> None:
+    grid = pd.date_range("2020-01-01 00:00", periods=6, freq="10min", tz="UTC")
+    events = pd.DataFrame(
+        {
+            "turbine_id": ["T1"],
+            "start_utc": [pd.Timestamp("2020-01-01 00:50", tz="UTC")],
+            "is_fault": [True],
+        }
+    )
+    one_hour = label_horizon(grid, events, EventConfig(horizons_steps=[6, 36]), horizon_steps=1)
+    assert list(one_hour) == [False, False, False, False, True, False]
+
+
+def test_horizons_must_be_positive_and_distinct() -> None:
+    with pytest.raises(ValueError, match="positive"):
+        EventConfig(horizons_steps=[0, 6])
+    with pytest.raises(ValueError, match="twice"):
+        EventConfig(horizons_steps=[6, 6])
 
 
 def test_event_summary_counts_free_text() -> None:

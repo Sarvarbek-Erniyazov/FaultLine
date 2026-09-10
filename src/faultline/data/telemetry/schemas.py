@@ -50,10 +50,10 @@ class ChannelSpec:
         unit: Physical unit of the values.
         description: What the channel measures.
         group: Coarse grouping, used for reports and for modality-drop experiments.
-        tier: ``core`` if the channel is published by every training site, so a
-            leave-site-out evaluation can depend on it; ``extended`` otherwise. A
-            channel is ``extended`` until its presence at every training site is
-            verified, which is why a newly added channel starts there.
+        tier: ``core`` if the channel is present at both training sites and mappable
+            at the held-out site, so a leave-site-out evaluation can depend on it;
+            ``extended`` otherwise. A newly appended channel starts ``extended`` until
+            the channel maps show otherwise.
     """
 
     name: str
@@ -68,14 +68,15 @@ class ChannelSpec:
 #: **Order is identity.** Position in this tuple fixes the channel token identifier
 #: (ADR-0003), so a channel is only ever appended -- never inserted, never reordered.
 #:
-#: The core/extended split is a *declaration*, checked at M1 rather than assumed:
-#: core is the set a leave-site-out evaluation is allowed to depend on, and the M1
-#: ingest fails if a core channel turns out to be absent at a training site. Only
-#: Kelmarsh's channel map is resolved at M0, so the one evidence-backed assignment
-#: today is a negative: Kelmarsh publishes no gearbox bearing temperature at all,
-#: which puts that channel in extended whatever the other sites carry.
-#: TODO(m1): re-derive the tiers from the resolved Penmanshiel and Hill of Towie
-#: maps, and demote any core channel not actually present at every training site.
+#: The core/extended split is DERIVED, not declared. Core is the set a leave-site-out
+#: evaluation may depend on: present at both training sites (Kelmarsh, Penmanshiel)
+#: and mappable at the held-out site (Hill of Towie). It was derived from the three
+#: resolved channel maps on 2026-09-10 (``channels.derive_core``) and frozen, with an
+#: evidence note per channel, in ``configs/data/telemetry_v1.yaml``. The tiers below
+#: repeat that result because config validation needs them without reading files;
+#: ``tests/data/telemetry/test_core_channels.py`` fails if they drift from the maps.
+#: One channel is extended: neither Senvion site publishes a gearbox bearing
+#: temperature, although the held-out site publishes four.
 CANONICAL_CHANNELS: tuple[ChannelSpec, ...] = (
     ChannelSpec("wind_speed_ms", "m/s", "Nacelle anemometer wind speed", "environment", "core"),
     ChannelSpec("power_kw", "kW", "Active power output", "production", "core"),
@@ -88,33 +89,31 @@ CANONICAL_CHANNELS: tuple[ChannelSpec, ...] = (
     # Below here is drivetrain and enclosure instrumentation, which is where SCADA
     # records stop agreeing with each other: what a machine measures depends on its
     # gearbox, its generator and its vintage.
-    ChannelSpec(
-        "nacelle_temp_c", "degC", "Nacelle internal temperature", "environment", "extended"
-    ),
+    ChannelSpec("nacelle_temp_c", "degC", "Nacelle internal temperature", "environment", "core"),
     ChannelSpec(
         "gearbox_bearing_temp_c", "degC", "Gearbox bearing temperature", "temperature", "extended"
     ),
-    ChannelSpec("gearbox_oil_temp_c", "degC", "Gearbox oil temperature", "temperature", "extended"),
+    ChannelSpec("gearbox_oil_temp_c", "degC", "Gearbox oil temperature", "temperature", "core"),
     ChannelSpec(
         "generator_bearing_temp_c",
         "degC",
         "Generator bearing temperature",
         "temperature",
-        "extended",
+        "core",
     ),
     ChannelSpec(
         "generator_winding_temp_c",
         "degC",
         "Generator winding temperature",
         "temperature",
-        "extended",
+        "core",
     ),
     # Appended 2026-09-09, after the Kelmarsh signal-mapping cross-check found a
     # published main-shaft bearing temperature the canonical list was discarding
     # (signal 447, "Temperature of rotor bearing"). Appended rather than filed with
     # the other bearing channels, because position is identity.
     ChannelSpec(
-        "main_bearing_temp_c", "degC", "Main shaft bearing temperature", "drivetrain", "extended"
+        "main_bearing_temp_c", "degC", "Main shaft bearing temperature", "drivetrain", "core"
     ),
 )
 

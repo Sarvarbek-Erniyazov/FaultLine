@@ -1,0 +1,231 @@
+# Event labelling, version 1: what counts as an event at each source, and which events
+# are faults. Read by `faultline telemetry label` through configs/data/telemetry_v1.yaml
+# (events.labels_config). Never edited after a run has read it; a change is events_v2.yaml.
+#
+# is_fault is derived from a CATEGORY, never from matching strings in code. The code
+# maps a status string to a category through the table below, and a category to
+# is_fault through fault_categories. A string that is not in the table is `unmapped`,
+# and its is_fault is unknown (None), never False (ADR-0006).
+
+version: 1
+
+# ---------------------------------------------------------------------------------------
+# Kelmarsh and Penmanshiel: Senvion status strings (one vocabulary, one publisher)
+# ---------------------------------------------------------------------------------------
+# Hand-mapped on 2026-09-10 from all 1,343,483 status rows of both sites (264 distinct
+# strings). The rule asked for the strings covering at least 95% of rows. That point is
+# reached after 15 strings (95.10%), and every one of the 15 is a routine state --
+# System OK, the start-up sequence, low wind, brake programmes, system tests. Not one
+# fault-type string is among them: every "Stop" string that names a defect sits in the
+# last 5% of rows. Mapping only the 95% would leave every training-site fault unmapped,
+# is_fault unknown and the positive rate at zero. So the table runs to the 130 most
+# frequent strings: 99.93% of all rows, and the stop and forced-outage rows the report
+# measures separately. The remaining strings stay `unmapped`, and the label report says
+# what fraction of all rows, of stop rows and of forced-outage rows that is.
+#
+# Evidence per string: the provider's own Status (Informational / Warning / Stop /
+# Communication / Curtailment) and IEC availability category, on every row. The IEC
+# category is NOT used as the fault flag, because it describes how a period is
+# accounted, not what happened: "Manual stop - remote" and the generator-fan overload
+# warnings are both filed as "Forced outage".
+status_strings:
+  sources: [kelmarsh, penmanshiel]
+
+  # A fault is a stop the turbine made because a component failed or tripped a
+  # protection. A warning is not a stop; a manual, grid, weather or routine stop is
+  # not a fault. Those are the choices a reviewer should check first.
+  fault_categories: [equipment_fault]
+
+  categories:
+    # Producing or on the way to producing. Status Informational, IEC Full Performance.
+    normal_operation:
+      - "System OK"
+      - "Automatic start-up"
+      - "Run-up"
+      - "Mains connection"
+      - "Mains run-up"
+      - "Mains operation"
+      - "Semi-automatic operation"
+
+    # Weather outside the operating envelope. IEC Out of Environmental Specification.
+    # Brake programme 50 is the low-wind stop, filed under that IEC category on every row.
+    environmental:
+      - "Wind < start wind"
+      - "Brake program 50"
+      - "Absence of wind during run-up"
+      - "Max. wind speed"
+      - "Deviation winddirection > 60°"
+      - "Deviation of wind direction>45°"
+      - "Icing (anemometer)"
+      - "Icing (stop)"
+      - "Icing (dev. electr. power)"
+      - "Reset of icing st. cd. possible"
+
+    # Scheduled self-tests, braking procedures, unwinding, heating, updates.
+    routine_procedure:
+      - "Brake program 52"
+      - "Brake program 60"
+      - "Brake program 75"
+      - "Brake program 170"
+      - "Brake program 180"
+      - "Brake program 190"
+      - "Brake program 200"
+      - "Bypass limit switches"
+      - "System test 1"
+      - "System test 2"
+      - "System test 3"
+      - "Battery test"
+      - "Stop battery test"
+      - "Open disc brake"
+      - "Cable autounwind"
+      - "Hydraulic oil flushing operation"
+      - "Gear heating enabled"
+      - "Gearbox warm-up stage"
+      - "Pitch batteries charging cycle"
+      - "Parameter update active"
+      - "Update active"
+      - "Reboot necessary after update"
+      - "Manual snapshot"
+      - "Alarm call test"
+      - "Supply circuit breaker earthed"
+      - "Cable panel breaker open"
+
+    # A person at or connected to the turbine. The emergency-stop switch is a push button,
+    # and "Service generator brushes" is a service stop, so both are here although the
+    # provider files them as forced outages.
+    manual_operation:
+      - "Manual yaw"
+      - "Easy yaw"
+      - "Manual stop - on site"
+      - "Manual stop - remote"
+      - "Manual stop without login"
+      - "Manual brake"
+      - "Manual operation gear heating"
+      - "Manual operation generator fan 1"
+      - "Manual operation generator fan 2"
+      - "Manual operation fan gear"
+      - "Manual operation gear oil pump"
+      - "Manual operation generator heating"
+      - "Service generator brushes"
+      - "Emergency stop base box"
+
+    # Grid conditions and external setpoints. "Externally stopped" is a stop command from
+    # outside the turbine (median 1 minute), and "Maximum grid frequency" a grid
+    # condition, whatever IEC category they carry.
+    grid_and_curtailment:
+      - "P output externally reduced"
+      - "Technical curtailment"
+      - "Grid constraint curtailment"
+      - "Park master stop"
+      - "Externally stopped"
+      - "Fallback setpoints active"
+      - "Grid loss"
+      - "Grid error"
+      - "Overfrequency"
+      - "Overvoltage"
+      - "Maximum grid frequency"
+      - "Min. voltage cut in"
+      - "Timeout ready for connection"
+      - "Transient voltage peak"
+      - "High frequency - P reduction"
+
+    communication:
+      - "Data communication unavailable"
+      - "Comm. failure FPM"
+      - "Check time synchronization"
+      - "Time sync. failed (SNTP error)"
+      - "Comm.err. IEC client -> CMS drive tr."
+
+    # A component reporting a problem without stopping the turbine. Status Warning.
+    equipment_warning:
+      - "4-20mA anemometer 1"
+      - "4-20mA anemometer 2"
+      - "4-20 mA vane 2"
+      - "Vane 2 defect"
+      - "High yaw motor current"
+      - "Timeout brake closed"
+      - "Brake accumulator defect"
+      - "Brake pads worn"
+      - "Battery charge cycle axis 1 error"
+      - "Battery charge cycle axis 2 error"
+      - "Battery charge cycle axis 3 error"
+      - "Breakdown obstacle light"
+      - "Overload generator fan 1"
+      - "Overload generator fan 2"
+      - "Overload generator fan 3"
+      - "Overload generator heating"
+      - "Overload gear heating"
+      - "Overload transformer fan outlet air"
+      - "Pitch measuring system 1><2"
+      - "Error brake resistor CHP"
+      - "Repeating error BP 0"
+      - "Max. acceleration"
+      - "Limit switch error 95° axis 1"
+      - "Limit switch error 95° axis 2"
+      - "Limit switch error 95° axis 3"
+      - "Particle Gear Alarm 10min"
+      - "Particle sensor defect"
+      - "Timeout B sensor active"
+      - "Error lubrication pump pitch"
+      - "Heating/fan base box faulty"
+      - "Heating/fan top box faulty"
+      - "Check nacelle position!"
+      - "PT100 converter inlet temperature defect"
+      - "Drivetrain oscillations"
+      - "Reduced power converter"
+
+    # A stop caused by a component failure or a protection trip. Status Stop on every row
+    # of every string here, and IEC Forced outage on all but one (Drive train monitor
+    # level 2, filed as Technical Standby).
+    equipment_fault:
+      - "Anemometer defect"
+      - "Vane defect"
+      - "Frequency converter not ready"
+      - "Frequency converter error"
+      - "Tower oscillation X level 1"
+      - "Tower oscillation X level 2"
+      - "Tower oscillation Y level 1"
+      - "Tower oscillation Y level 2"
+      - "Missing gear oil (high rpm)"
+      - "Low gearbox oil pressure"
+      - "Implausible gear speed"
+      - "Repeating error BP52"
+      - "Pitch controller communication error"
+      - "Pitch run-away (hub box v.>=4)"
+      - "Charging circuit pitch"
+      - "Safety chain open"
+      - "Uncontrolled yaw movement"
+      - "Drive train monitor level 2"
+
+# ---------------------------------------------------------------------------------------
+# Hill of Towie: events from ShutdownDuration (seconds of downtime per 10-minute step)
+# ---------------------------------------------------------------------------------------
+# An event is a run of consecutive steps with downtime of at least threshold_s,
+# starting at the run's first step. The series says nothing about cause, so every
+# event is category `shutdown` and is_fault True: at the held-out site the endpoint is
+# a shutdown of any cause. That is NOT the training-site definition, and the label
+# report puts the two side by side (see equipment_fault above).
+#
+# threshold_s: 300 s, half a step, is a judgement. 90.4% of the non-zero steps are a
+# whole step down (reports/data/downtime_hill_of_towie_20260910.md), so the event count
+# moves little between 300 and 600; the report gives counts at every threshold in
+# sensitivity_thresholds_s so the choice can be checked rather than trusted.
+#
+# The cross-check against the provider's Stopping flag reads the alarm log's 12
+# described codes: an occurrence agrees when downtime of at least threshold_s appears
+# in the step its TimeOn falls in or in the window_steps steps after it (through
+# TimeOff, for a stopping code), exactly when the code is described as stopping.
+downtime:
+  sources: [hill_of_towie]
+  threshold_s: 300
+  sensitivity_thresholds_s: [1, 300, 600]
+  cross_check_window_steps: 1
+
+# ---------------------------------------------------------------------------------------
+# CARE: event_info, evaluation only
+# ---------------------------------------------------------------------------------------
+# One row per dataset. An `anomaly` row is an event starting at event_start; a `normal`
+# row is a window with no event. is_fault follows the provider's label.
+event_info:
+  sources: [care]
+  fault_labels: [anomaly]

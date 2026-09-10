@@ -710,6 +710,12 @@ def build_stages(
         raise KeyError(f"unknown source {source!r}; known: {sorted(ADAPTERS)}")
     sources = [source] if source else list(ADAPTERS)
 
+    if selection == "label":
+        # Imported here: the label stage builds on this module, so a top-level import
+        # would be circular. It runs after clean and is not part of "all".
+        from faultline.data.telemetry.labels import LabelStage
+
+        return [LabelStage(config=config, paths=paths, sources=sources)]
     if selection == "all":
         names = list(STAGE_ORDER)
     elif selection in STAGE_CLASSES:

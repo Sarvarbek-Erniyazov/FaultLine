@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import io
 import zipfile
-from collections.abc import Iterator, Sequence
+from collections.abc import Collection, Iterator, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -455,6 +455,29 @@ class BaseAdapter:
             NotImplementedError: In the base adapter.
         """
         raise NotImplementedError(f"{self.source_id}: load_events is not implemented")
+
+    def read_stop_classes(
+        self,
+        members: Sequence[RawMember],
+        years: Collection[int],
+        table: str,
+        fields: Sequence[str],
+    ) -> pd.DataFrame:
+        """Read a provider's per-step stop-class timers, for a source that publishes them.
+
+        Args:
+            members: Members discovered for the source.
+            years: Calendar years to read.
+            table: The table holding the timers.
+            fields: Timer fields to keep.
+
+        Returns:
+            ``turbine_id``, ``timestamp_utc`` and one column per field.
+
+        Raises:
+            NotImplementedError: In the base adapter: the source publishes no such table.
+        """
+        raise NotImplementedError(f"{self.source_id}: publishes no stop-class timers")
 
 
 def sniff_csv_layout(blob: bytes, probe_lines: int = 40) -> tuple[int, list[str] | None]:

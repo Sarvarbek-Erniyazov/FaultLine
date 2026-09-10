@@ -418,6 +418,14 @@ def telemetry_run(
     source: Annotated[
         str | None, typer.Option("--source", help="Restrict the run to one source id.")
     ] = None,
+    labels: Annotated[
+        Path | None,
+        typer.Option(
+            "--labels",
+            help="Override events.labels_config, relative to the repo root. The override is "
+            "part of the hashed configuration, so the run id says it happened.",
+        ),
+    ] = None,
 ) -> None:
     """Run the telemetry pipeline and write per-stage reports.
 
@@ -425,6 +433,7 @@ def telemetry_run(
         config: Telemetry pipeline configuration.
         stage: Stage to execute, or ``all``.
         source: Restrict the run to a single source.
+        labels: Event labelling file to use instead of the one the configuration names.
     """
     from faultline.data.common.stage import run_pipeline
     from faultline.data.telemetry.pipeline import build_stages, load_telemetry_config
@@ -432,6 +441,10 @@ def telemetry_run(
 
     paths = ProjectPaths.resolve()
     cfg = load_telemetry_config(config)
+    if labels is not None:
+        cfg = cfg.model_copy(
+            update={"events": cfg.events.model_copy(update={"labels_config": labels.as_posix()})}
+        )
     stages = build_stages(cfg, paths, stage, source=source)
     with start_run(config, cfg, stage, "telemetry", paths) as ctx:
         results = run_pipeline(stages, ctx)

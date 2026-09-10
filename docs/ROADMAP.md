@@ -107,6 +107,11 @@ trained from scratch, evaluated as a risk model rather than a forecaster.
   their own lookups; the core channel set derived from the maps and frozen in
   `telemetry_v1.yaml` (13 core, 1 extended, ADR-0008); timezones measured UTC at
   Kelmarsh, Penmanshiel and Hill of Towie, CARE's anonymised by design.*
+- *M1a step 6b, 2026-09-11: labels harmonised under one rule at every site (ADR-0009,
+  `events_v2.yaml`): seconds down per step by cause, then runs of at least 60 s. The
+  held-out site publishes a cause (`tblSCTurFlag`), and pitch lubrication is excluded by
+  it. Narrow (technical) per turbine-year: Kelmarsh 13.4, Penmanshiel 16.5, Hill of
+  Towie 16.5; broad (any stop): 104.6, 127.7, 137.1.*
 - Fit `QuantileBinTokenizer` on the training split only.
 - Model, training loop, checkpointing; multi-seed runs.
 - Risk evaluation: AUPRC, event-level F1, false alarms per hour, detection delay.

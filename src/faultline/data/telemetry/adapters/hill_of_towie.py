@@ -36,7 +36,7 @@ The loaders, written 2026-09-10 against the staged 2019 and 2023 archives:
 from __future__ import annotations
 
 import re
-from collections.abc import Sequence
+from collections.abc import Collection, Sequence
 from dataclasses import dataclass, field
 from typing import ClassVar
 
@@ -289,6 +289,75 @@ class HillOfTowieAdapter(BaseAdapter):
         """
         frame, accounts = self.load_scada_unit([member])
         return frame, accounts[0]
+
+    def read_stop_classes(
+        self,
+        members: Sequence[RawMember],
+        years: Collection[int],
+        table: str,
+        fields: Sequence[str],
+    ) -> pd.DataFrame:
+        """Read the provider's per-step stop-class timers for the years asked for.
+
+        ``tblSCTurFlag`` ("Turbine status information [10min]") publishes, per turbine and
+        step, the seconds spent in each of four stop classes. It is keyed and labelled
+        like every other 10-minute table -- ``(TimeStamp, StationId)``, interval end -- so
+        it is read the same way: labels move to interval start and stations become
+        turbine names. Consecutive monthly files both carry their shared boundary label;
+        an identical copy is dropped, and a copy whose values differ stops the read.
+
+        Args:
+            members: Members discovered for the source.
+            years: Calendar years to read (by the year in the member's name).
+            table: The status table, ``tblSCTurFlag``.
+            fields: Timer fields to keep.
+
+        Returns:
+            ``turbine_id``, ``timestamp_utc`` and one column per field found.
+
+        Raises:
+            RuntimeError: If a (turbine, step) carries two different sets of values.
+        """
+        wanted = set(years)
+        frames: list[pd.DataFrame] = []
+        for member in members:
+            match = _MONTHLY.match(_basename(member))
+            if not match or match.group(1) != table or member.size == 0:
+                continue
+            if int(match.group(2)) not in wanted:
+                continue
+            available = set(header_columns(member))
+            present = [name for name in fields if name in available]
+            frame = read_csv_member_columns(member, [TIMESTAMP, STATION, *present])
+            if frame.empty:
+                continue
+            for name in present:
+                frame[name] = pd.to_numeric(frame[name], errors="coerce")
+            stamps = pd.to_datetime(frame[TIMESTAMP], errors="coerce", utc=True) - INTERVAL
+            turbines = self._turbines(frame[STATION], member)
+            keep = (stamps.notna() & turbines.notna()).to_numpy()
+            frames.append(
+                pd.DataFrame(
+                    {
+                        "turbine_id": turbines[keep].astype(str).to_numpy(),
+                        "timestamp_utc": stamps[keep].to_numpy(),
+                        **{name: frame.loc[keep, name].to_numpy() for name in present},
+                    }
+                )
+            )
+        columns = ["turbine_id", "timestamp_utc", *fields]
+        if not frames:
+            return pd.DataFrame(columns=columns)
+        result = pd.concat(frames, ignore_index=True)
+        result["timestamp_utc"] = pd.to_datetime(result["timestamp_utc"], utc=True)
+        result = result.drop_duplicates()
+        clashes = result.duplicated(subset=["turbine_id", "timestamp_utc"])
+        if clashes.any():
+            raise RuntimeError(
+                f"{table}: {int(clashes.sum())} (turbine, step) keys carry two different sets "
+                "of stop-class values; a label source is not resolved by picking one"
+            )
+        return result.sort_values(["turbine_id", "timestamp_utc"]).reset_index(drop=True)
 
     def load_events(self, member: RawMember) -> pd.DataFrame | None:
         """Read one monthly alarm log into the canonical events schema.

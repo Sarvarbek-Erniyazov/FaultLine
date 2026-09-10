@@ -574,3 +574,118 @@ if the declaration, the frozen config and the maps ever disagree.
 
 **What would change this decision.** The step-8 coverage table, or a new training or
 held-out site whose map lacks a core channel.
+
+---
+
+## ADR-0009 Label harmonisation: one event rule for every site
+
+**Status:** Accepted · **Date:** 2026-09-11
+
+**Decision.** Every source is reduced to one table -- seconds of downtime per turbine and
+10-minute step, split into five causes: `technical`, `environmental`, `grid`, `planned`,
+`unknown` (IEC 61400-26 style) -- and one function turns that table into events. An
+event is a run of consecutive steps holding downtime of the chosen causes, lasting at
+least 60 s (`harmonise.select_events`, which takes no source argument). The **narrow**
+label, primary, keeps technical downtime only; the **broad** label, secondary, keeps any
+cause. Both are labelled at 1 h, 6 h and 24 h, and a label whose horizon runs past the
+record the events were read from is unknown (NA), never False (ADR-0006). The
+translation of each provider's vocabulary into the five causes lives in
+`configs/data/events_v2.yaml` beside its evidence; `events_v1.yaml` is untouched.
+
+**Context: gate 1.** Under events_v1 the sites counted 19.5 (Kelmarsh), 24.8
+(Penmanshiel) and 212.6 (Hill of Towie) events per turbine-year, because they counted
+different things: equipment-fault status rows at the Senvion sites, downtime runs of any
+cause -- low wind included -- at the Siemens site. Gate 1 decided to narrow the held-out
+site's events and not to widen the training sites. Widening would admit wind-lull stops,
+which the wind-speed channel predicts trivially and which mean nothing operationally: it
+would inflate AUPRC and empty the false-alarm rate and the detection delay of meaning.
+
+**Rung (a) of the ladder held: the held-out site publishes a cause.**
+`ShutdownDuration.csv` is `TimeStamp_StartFormat, TurbineName, ShutdownDuration` and
+`tblAlarmLog` is `TimeOn, TimeOff, StationNr, Alarmcode`; neither carries a cause or
+availability category. `tblSCTurFlag` ("Turbine status information [10min]") does: per
+turbine and step, the seconds spent in four stop classes. `wtc_ScTurSto_timeon` is the
+provider's "Time turbine error active in period". `wtc_ScEnvSto_timeon`,
+`wtc_ScComSto_timeon` and `wtc_ScGrdSto_timeon` are not described; they are read as
+environmental, commanded (planned) and grid stops from their names and from
+`tblDailySummary`, which counts the same four classes as `StopsEnvironmental`,
+`StopsCommanded`, `StopsTurbineFault` and `StopsGridFault`. The described codes agree
+with that reading: high wind (8000) runs under Env on 99.1% of occurrences, icing (8230)
+on 100%, cable untwisting (10105) on 99.7%. Low wind (1005) runs under none of the four;
+low wind is not a stop class, so that downtime is `unknown` and enters the broad label
+only. Rung (b), exclusion by wind state, was therefore not needed as the rule; the wind
+state of every narrow event is measured as a diagnostic instead.
+
+**Pitch lubrication is excluded by cause, not by duration.** It runs under turbine error
+on 99.9% of its 2,977 occurrences, and it is short: the 300 s threshold of v1 silently
+dropped it (stopping codes agreed with the downtime series 99.97% at 1 s but 63.18% at
+300 s), and the 60 s threshold here would let it back in as a fault. In a step where a
+described code's alarm is active and the code's own description names a non-technical
+cause, the step's turbine-error seconds move to that cause; for 3130 that is 3,750 steps
+and 556,654 s. The threshold is lowered to 60 s because documented stops are short, not
+to reach a rate.
+
+**The same rule changes the training sites, and that is the point of one rule.** One
+Senvion fault episode is often several status rows -- a converter writes "not ready" and
+then "error" within a minute -- while a Siemens downtime run is one event whatever it
+holds. Counted as episodes, technical stops of at least 60 s go from 19.3 to 13.4 per
+turbine-year at Kelmarsh and from 26.3 to 16.5 at Penmanshiel (grid-time denominators;
+gate 1 divided by turbine-year files). The row counts are printed beside the episodes in
+the label report so the change is visible.
+
+**Result.** Per turbine-year of grid time, and base rate of known labels
+(`reports/data/20260910-212256_label_telemetry_20fa4ac5/label_stats_report.md`):
+
+| site | narrow /ty | broad /ty | narrow 1 h / 6 h / 24 h | broad 1 h / 6 h / 24 h |
+| --- | --- | --- | --- | --- |
+| Kelmarsh | 13.4 | 104.6 | 0.151 / 0.724 / 2.481% | 1.186 / 6.724 / 24.619% |
+| Penmanshiel | 16.5 | 127.7 | 0.182 / 0.879 / 3.040% | 1.432 / 7.712 / 27.492% |
+| Hill of Towie | 16.5 | 137.1 | 0.187 / 1.013 / 3.542% | 1.552 / 8.881 / 32.176% |
+
+The 20-40 target was set while the training sites still read 19.5 and 24.8. Under an
+identical rule they read 13.4 and 16.5, and the held-out site sits with them at 16.5.
+The rule was not tuned toward the band, and the band is not a criterion any more: the
+criterion is that the three sites are counted by the same function. The rate moves more
+between years than between sites: 6.5 to 34.0 per turbine-year at Kelmarsh (2023 the
+highest), 8.2 to 29.1 at Penmanshiel, and 18.3 (2019) against 14.7 (2023) at the held-out
+site. The temporal split (M1a step 7) has to be read with that in mind.
+
+Sensitivity, from the label report: at 60 / 300 / 600 s the narrow rate is 13.4 / 9.7 /
+8.6 (Kelmarsh), 16.5 / 11.8 / 10.9 (Penmanshiel) and 16.5 / 14.4 / 13.0 (Hill of
+Towie). Counting emergency stops as faults moves it by +0.06 and +0.22 per turbine-year
+at the training sites, which is not material, and the held-out site describes no
+emergency-stop code. Of the narrow events, 22% (Kelmarsh), 37% (Penmanshiel) and 15%
+(Hill of Towie) start outside a 3-20 m/s envelope measured from each provider's own
+low- and high-wind stops; a wind rule would leave 10.5, 10.4 and 14.1. That cut depends
+on the site -- Penmanshiel's technical stops at high wind -- which is one more reason the
+cause does the excluding and the wind does not.
+
+**Warnings are inputs, never targets.** Every status row and alarm, warnings and
+non-stopping codes included, is written to `labels/status_stream.parquet` for the text
+pathway. Targets are built only from stops: a Senvion row whose provider status is Stop,
+the downtime series at Hill of Towie.
+
+**Rejected.**
+
+| alternative | why rejected |
+| --- | --- |
+| Widen the training sites to any stop | Gate 1: admits wind-lull stops (above). Kept as the broad, secondary label. |
+| A threshold or rule per site | A site-specific rule is a leak: it can be tuned to the held-out site's answer. |
+| Exclude by wind state (rung b) as the rule | Not needed where a cause is published, and it removes real faults: 13-14% of training-site equipment-fault stops start below 3 m/s. |
+| The Senvion IEC availability category as the fault flag | As in events_v1: it describes accounting, not events ("Manual stop - remote" is filed Forced outage). |
+| Count status rows, as gate 1 did | Counts one episode several times at one OEM and once at the other. |
+
+**Unsettled, recorded so it is not rediscovered.**
+
+1. Three of the four stop-class timers are undescribed by the provider, and reading
+   commanded stops as planned is a judgement.
+2. Downtime no stop class covers (low wind) is `unknown`, so it can never be narrow.
+3. Stop classes are staged for 2019 and 2023 only, so the held-out site's narrow labels
+   are unknown where a horizon crosses into 2020 or 2024: 1.6% of steps at 24 h.
+4. CARE is one dataset per labelled anomaly; its anomalies are both label sets, and its
+   rate per turbine-year does not compare with the other three sites.
+
+**What would change this decision.** A provider description of the three undescribed
+timers that contradicts the reading above; a training site whose status export stops
+publishing start and end times; or a new held-out site with no published cause, where
+rung (b) would apply and be recorded here as an amendment.

@@ -75,6 +75,30 @@ channels:
   # channel the signal mapping names unambiguously.
   main_bearing_temp_c: "Rotor bearing temp (°C)"
 
+# The manufacturer definition of each mapped signal, from Kelmarsh_WT_dataSignalMapping.csv.
+# This is the evidence the channel report prints next to each column.
+evidence:
+  wind_speed_ms: "signal mapping: Wind speed (m/s)"
+  power_kw: "signal mapping: Actual value of active power; unit measured as kW, not the kWh the file states"
+  rotor_speed_rpm: "signal mapping: Value of rotor speed"
+  generator_speed_rpm: "signal mapping: Generator speed"
+  pitch_angle_deg: "signal mapping: Pitch angle for blade 1 (blade A of three)"
+  nacelle_position_deg: "signal mapping: Nacelle orientation"
+  wind_direction_deg: "signal mapping: Wind direction"
+  ambient_temp_c: "signal mapping: Outdoor temp. nacelle"
+  nacelle_temp_c: "signal mapping: Inside temperature nacelle"
+  gearbox_bearing_temp_c: "no signal in the mapping is a gearbox bearing temperature; every bearing column resolves to the main shaft, the rotor or the generator"
+  gearbox_oil_temp_c: "signal mapping: Gear oil temperature"
+  generator_bearing_temp_c: "signal mapping: Temperature of bearing 1 (front)"
+  generator_winding_temp_c: "signal mapping: Temperature for generator stator"
+  main_bearing_temp_c: "signal mapping: signal 447, Temperature of rotor bearing"
+
+# Canonical channels confirmed not to be published by this record, as opposed to not
+# yet mapped. The core-set derivation (configs/data/telemetry_v1.yaml) reads this.
+verified_absent:
+  gearbox_bearing_temp_c: "the signal mapping resolves every bearing column and none is a gearbox bearing"
+ambiguous: {}
+
 # Columns identified but deliberately left outside the canonical channel set, recorded
 # so that the exclusion is a visible decision rather than an oversight.
 observed_but_unmapped:

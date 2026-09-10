@@ -259,6 +259,40 @@ def inspect_resolve(
     typer.echo(f"{source}: wrote {report}")
 
 
+@inspect_app.command(
+    "channels",
+    help="Report each canonical channel's status per source, checked against staged headers.",
+)
+def inspect_channels_command(
+    splits: Annotated[
+        Path, typer.Option("--splits", help="Split spec naming the held-out and eval-only sources.")
+    ] = Path("configs/data/splits_v0.yaml"),
+) -> None:
+    """Report each canonical channel's status per source, checked against staged headers.
+
+    Training and held-out sources are read from the split specification, so the
+    report's cross-site findings follow the design rather than a list typed here.
+
+    Args:
+        splits: Split specification.
+    """
+    from faultline.config import load_config
+    from faultline.data.common.splits import SplitsConfig
+    from faultline.data.telemetry.adapters import ADAPTERS
+    from faultline.data.telemetry.channels import inspect_channels
+
+    paths = ProjectPaths.resolve()
+    spec = load_config(splits, SplitsConfig)
+    holdout = [source for source in ADAPTERS if source in spec.holdout_sites]
+    training = [
+        source
+        for source in ADAPTERS
+        if source not in spec.holdout_sites and source not in spec.eval_only_sources
+    ]
+    report = inspect_channels(paths, list(ADAPTERS), training, holdout)
+    typer.echo(f"wrote {report}")
+
+
 @cards_app.command(
     "build",
     help="Render dataset cards from record metadata, manifests and inventory reports.",

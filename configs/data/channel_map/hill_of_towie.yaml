@@ -1,35 +1,94 @@
 # Channel map: Hill of Towie
 #
 # Maps each canonical FaultLine channel onto the column name published by the source.
-# A value of null or a TODO string means the mapping is unresolved and the channel is
-# skipped by the adapter rather than guessed at.
+# A value of null means the channel is not mapped; `verified_absent` and `ambiguous`
+# below say why. The adapter skips an unmapped channel rather than guessing at it.
 #
-# Source of truth: Hill_of_Towie_turbine_fields_description.csv, staged with tier 1,
-# read together with Hill_of_Towie_tables_description.csv which names the tables.
-# Not parsed at M0 (Zenodo outage during the staging window). This is the held-out
-# site, so a mis-mapped channel here would silently corrupt the headline result --
-# fill it from the description CSVs and record the evidence on the dataset card.
+# Resolved on 2026-09-10 from Hill_of_Towie_turbine_fields_description.csv, which is a
+# lookup: one row per published field, giving a plain-English description, the
+# manufacturer's field name, the table the field lives in and its unit. The provider
+# splits one turbine's 10-minute signals across several tables, so every column is
+# written as <table>.<field>, and the adapter joins the tables on (TimeStamp, StationId).
+#
+# Presence in the staged 2019 and 2023 exports is checked month by month by
+# `faultline inspect channels` (reports/data/channel_maps_20260910.md). This is the
+# held-out site: a mis-mapped channel here would corrupt the headline number silently,
+# so every entry quotes the provider's own description as its evidence.
 
 source: hill_of_towie
 site: "Hill of Towie"
-mapping_status: "unresolved - TODO(m1)"
+mapping_status: "resolved: 14 of 14 mapped from the provider's field lookup; wind direction is published in the 2023 export only"
 
 channels:
-  wind_speed_ms: null # TODO(m1)
-  power_kw: null # TODO(m1)
-  rotor_speed_rpm: null # TODO(m1)
-  generator_speed_rpm: null # TODO(m1)
-  pitch_angle_deg: null # TODO(m1)
-  nacelle_position_deg: null # TODO(m1)
-  wind_direction_deg: null # TODO(m1)
-  ambient_temp_c: null # TODO(m1)
-  nacelle_temp_c: null # TODO(m1)
-  gearbox_bearing_temp_c: null # TODO(m1)
-  gearbox_oil_temp_c: null # TODO(m1)
-  generator_bearing_temp_c: null # TODO(m1)
-  generator_winding_temp_c: null # TODO(m1)
-  # Appended to the canonical list on 2026-09-09 after the Kelmarsh signal-mapping
-  # cross-check found a published main-shaft bearing temperature. Declared here so
-  # that this map states 14 open questions rather than 13, and so the card counts
-  # against the canonical list rather than against a stale copy of it.
-  main_bearing_temp_c: null # TODO(m1)
+  wind_speed_ms: "tblSCTurbine.wtc_AcWindSp_mean"
+  power_kw: "tblSCTurGrid.wtc_ActPower_mean"
+  rotor_speed_rpm: "tblSCTurbine.wtc_MainSRpm_mean"
+  generator_speed_rpm: "tblSCTurbine.wtc_GenRpm_mean"
+  # Blade A, as at both Senvion sites.
+  pitch_angle_deg: "tblSCTurbine.wtc_PitcPosA_mean"
+  nacelle_position_deg: "tblSCTurbine.wtc_NacelPos_mean"
+  # Listed in the lookup and present in every 2023 month, but absent from every 2019
+  # month: the 2019 export publishes only the two wind vanes' digital inputs
+  # (tblSCTurDigiIn wtc_Windvane_*, wtc_Windvan2_*), which are not a direction. The
+  # mapping is right, and the 2019 values are missing data, not unmapped ones.
+  wind_direction_deg: "tblSCTurbine.wtc_ActualWindDirection_mean"
+  ambient_temp_c: "tblSCTurTemp.wtc_AmbieTmp_mean"
+  nacelle_temp_c: "tblSCTurTemp.wtc_NacelTmp_mean"
+  # Four gearbox bearing temperatures are published: high-speed and intermediate
+  # shaft, each on the generator and the rotor side. The high-speed-shaft bearing on
+  # the generator side is taken as canonical, because it is the gearbox bearing CARE
+  # farm A publishes too ("Temperature in gearbox bearing on high speed shaft"). The
+  # other three are listed under observed_but_unmapped. Neither Senvion site publishes
+  # any gearbox bearing temperature, so this channel exists at the held-out site only.
+  gearbox_bearing_temp_c: "tblSCTurTemp.wtc_HSGenTmp_mean"
+  gearbox_oil_temp_c: "tblSCTurTemp.wtc_GeOilTmp_mean"
+  # The drive-end bearing, matching the Senvion maps' "front" bearing: the front of a
+  # generator faces the gearbox, and the gearbox drives it. This is a convention, and
+  # an inference from position rather than something either provider states.
+  generator_bearing_temp_c: "tblSCTurTemp.wtc_GenBeRTm_mean"
+  # Winding 1U1 of six (1U1, 1V1, 1W1, 2U1, 2V1, 2W1), as the Senvion maps take
+  # "Stator temperature 1".
+  generator_winding_temp_c: "tblSCTurTemp.wtc_Gen1U1Tm_mean"
+  main_bearing_temp_c: "tblSCTurTemp.wtc_MainBTmp_mean"
+
+# The provider's description of each mapped field, verbatim from the lookup, with its
+# unit. This is the evidence the channel report prints next to each column.
+evidence:
+  wind_speed_ms: "Wind speed from active wind sensor (m/s)"
+  power_kw: "Active power (kW)"
+  rotor_speed_rpm: "Main shaft RPM (rpm)"
+  generator_speed_rpm: "Generator RPM (rpm)"
+  pitch_angle_deg: "Pitch angle, blade A (deg)"
+  nacelle_position_deg: "Nacelle yaw angle relative to North (deg)"
+  wind_direction_deg: "Actual wind direction (deg)"
+  ambient_temp_c: "Ambient temperature (degC)"
+  nacelle_temp_c: "Nacelle temperature (degC)"
+  gearbox_bearing_temp_c: "Gearbox bearing temperature, HS generator side (degC)"
+  gearbox_oil_temp_c: "Gear oil temperature (degC)"
+  generator_bearing_temp_c: "Generator DE bearing temperature (degC)"
+  generator_winding_temp_c: "Generator winding temperature 1U1 (degC)"
+  main_bearing_temp_c: "Main bearing temperature (degC)"
+
+verified_absent: {}
+ambiguous: {}
+
+# Fields identified in the lookup and deliberately left outside the canonical set, so
+# the exclusion is a visible decision rather than an oversight.
+observed_but_unmapped:
+  - "tblSCTurbine.wtc_PrWindSp_mean"
+  - "tblSCTurbine.wtc_SeWindSp_mean"
+  - "tblSCTurbine.wtc_PitcPosB_mean"
+  - "tblSCTurbine.wtc_PitcPosC_mean"
+  - "tblSCTurTemp.wtc_HSRotTmp_mean"
+  - "tblSCTurTemp.wtc_IMSGenTm_mean"
+  - "tblSCTurTemp.wtc_IMSRotTm_mean"
+  - "tblSCTurTemp.wtc_GenBeGTm_mean"
+  - "tblSCTurTemp.wtc_GenBeITm_mean"
+  - "tblSCTurTemp.wtc_GenBeOTm_mean"
+  - "tblSCTurTemp.wtc_Gen1V1Tm_mean"
+  - "tblSCTurTemp.wtc_Gen1W1Tm_mean"
+  - "tblSCTurTemp.wtc_Gen2U1Tm_mean"
+  - "tblSCTurTemp.wtc_Gen2V1Tm_mean"
+  - "tblSCTurTemp.wtc_Gen2W1Tm_mean"
+  - "tblSCTurTemp.wtc_HubTemp_mean"
+  - "tblSCTurFlag.wtc_ScTurSto_timeon"

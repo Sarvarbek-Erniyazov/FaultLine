@@ -135,7 +135,9 @@ def load_channel_map(path: Path) -> dict[str, str]:
     channels = payload.get("channels", {}) or {}
     resolved: dict[str, str] = {}
     for canonical, source_column in channels.items():
-        if source_column is None:
+        # A per-farm map (CARE) keeps its columns under `farms:`, not here; a nested
+        # value is never a column name, and stringifying one would invent a column.
+        if source_column is None or isinstance(source_column, dict):
             continue
         text = str(source_column)
         if text.startswith("TODO"):
@@ -296,6 +298,21 @@ class BaseAdapter:
             logger.error("cannot read archive %s: %s", path.name, exc)
             return []
 
+    def split_channel_column(self, column: str) -> tuple[str | None, str]:
+        """Split a channel-map column into the table it lives in and its field name.
+
+        Most providers publish one table per turbine, so by default a column names a
+        field and no table. A provider that spreads a turbine's signals over several
+        tables overrides this.
+
+        Args:
+            column: Column as written in the channel map.
+
+        Returns:
+            The table name, or ``None``, and the field name.
+        """
+        return None, column
+
     def turbine_id(self, member: RawMember) -> str:
         """Identify the turbine a member belongs to.
 
@@ -408,6 +425,34 @@ def _split_csv_header(line: str) -> list[str]:
         current.append(char)
     fields.append("".join(current))
     return fields
+
+
+def header_columns(member: RawMember, probe_bytes: int = 65_536) -> list[str]:
+    """Read the column names of a CSV member without parsing a single row.
+
+    Handles the same layouts as :func:`read_csv_member`: a plain header, a commented
+    preamble followed by a header, and a preamble whose last comment line is the header.
+    The separator is whichever of comma, semicolon or tab the header line uses most.
+
+    Args:
+        member: Member to read.
+        probe_bytes: Leading bytes to examine; a header longer than this is truncated.
+
+    Returns:
+        The column names, stripped of surrounding whitespace and quotes.
+    """
+    with open_member(member) as handle:
+        head = handle.read(probe_bytes)
+    skiprows, names = sniff_csv_layout(head)
+    if names is not None:
+        return names
+    lines = head.decode("utf-8", errors="replace").splitlines()
+    if len(lines) <= skiprows:
+        return []
+    line = lines[skiprows]
+    separator = max(",;\t", key=line.count)
+    fields = _split_csv_header(line) if separator == "," else line.split(separator)
+    return [name.strip().strip('"') for name in fields]
 
 
 def read_csv_member(

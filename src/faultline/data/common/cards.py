@@ -23,7 +23,7 @@ import yaml
 
 from faultline.data.common.manifest import SourceManifest, manifest_path, read_manifest
 from faultline.data.common.report import kv_table, section, table
-from faultline.data.telemetry.adapters.base import load_channel_map
+from faultline.data.telemetry.channels import parse_channel_map
 from faultline.data.telemetry.inspect import THRESHOLD_PROVENANCE
 from faultline.download.zenodo import SourceSpec
 from faultline.logging_utils import get_logger
@@ -155,16 +155,23 @@ def channel_map_status(path: Path) -> dict[str, object]:
     """
     if not path.is_file():
         return {"mapping status": f"{UNVERIFIED} - no channel map file exists"}
-    resolved = load_channel_map(path)
+    doc = parse_channel_map(path)
     payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    declared = payload.get("channels", {}) or {}
-    stated = str(payload.get("mapping_status", "")).strip()
+    counts = []
+    for group in doc.groups:
+        statuses = [entry.status for entry in group.entries.values()]
+        prefix = f"{group.name}: " if group.name else ""
+        counts.append(
+            f"{prefix}{statuses.count('resolved')} of {len(statuses)} resolved, "
+            f"{statuses.count('verified absent')} verified absent, "
+            f"{statuses.count('ambiguous')} ambiguous"
+        )
     rows: dict[str, object] = {
-        "channels mapped": f"{len(resolved)} of {len(declared)}",
-        "mapping status": stated
+        "channels mapped": "; ".join(counts),
+        "mapping status": doc.mapping_status
         or (f"{UNVERIFIED} - TODO(m1): fill the channel map from the provider signal-mapping file"),
     }
-    if not resolved:
+    if not any(entry.column for group in doc.groups for entry in group.entries.values()):
         rows["mapping status"] = (
             f"{UNVERIFIED} - every entry is still TODO(m1); the adapter skips this "
             "source rather than guessing at column names"

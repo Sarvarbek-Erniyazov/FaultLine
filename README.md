@@ -156,7 +156,10 @@ evaluation, ONNX/CPU streaming demonstration. Criteria for each are in
   central risk of the design.
 - Site coverage is small (four sources, three of them UK onshore), so "under site shift"
   means a handful of held-out farms, not a population.
-- CARE is anonymised: channel names are opaque, so its channel map is unresolved at M0.
+- CARE is anonymised: its channel names are opaque, and its map is resolved per farm from
+  the provider's feature descriptions rather than from names. Its active power is
+  normalised against a rated power the record does not publish, so CARE power cannot be
+  put on the kW scale the other three sources share.
 - Nothing here is validated against operational practice; it is a research prototype and is
   explicitly not an operations product.
 

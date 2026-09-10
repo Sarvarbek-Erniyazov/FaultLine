@@ -63,12 +63,16 @@ def test_every_channel_map_declares_the_whole_canonical_list(repo_root: Path) ->
     # A map that declares fewer channels than the canonical list does not read as
     # incomplete -- it reads as complete, because the card counts resolved entries
     # against declared ones. Adding a canonical channel has to reach every map.
+    # A per-farm map (CARE) declares the list once per farm, because each farm publishes
+    # its own sensor set.
     maps = sorted((repo_root / "configs" / "data" / "channel_map").glob("*.yaml"))
     assert maps, "no channel maps found"
     for path in maps:
         payload = yaml.safe_load(path.read_text(encoding="utf-8"))
-        declared = tuple(payload.get("channels") or {})
-        assert declared == CHANNEL_NAMES, f"{path.name} declares {declared}"
+        blocks = payload.get("farms") or {"": payload}
+        for farm, block in blocks.items():
+            declared = tuple(block.get("channels") or {})
+            assert declared == CHANNEL_NAMES, f"{path.name} {farm} declares {declared}"
 
 
 def test_every_channel_has_a_plausibility_bound(repo_root: Path) -> None:

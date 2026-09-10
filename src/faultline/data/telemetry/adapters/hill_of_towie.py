@@ -69,6 +69,22 @@ class HillOfTowieAdapter(BaseAdapter):
 
     CODE_DESCRIPTIONS: ClassVar[str | None] = "Hill_of_Towie_alarms_description.csv"
 
+    def split_channel_column(self, column: str) -> tuple[str | None, str]:
+        """Split ``<table>.<field>``, the form this record's channel map is written in.
+
+        The provider spreads one turbine's 10-minute signals over several tables --
+        active power is in tblSCTurGrid, wind speed in tblSCTurbine, temperatures in
+        tblSCTurTemp -- so a field name alone does not say where to read it.
+
+        Args:
+            column: Column as written in the channel map.
+
+        Returns:
+            The table name and the field name.
+        """
+        table_name, _, field = column.partition(".")
+        return (table_name, field) if field else (None, column)
+
     def load_scada(self, member: RawMember) -> pd.DataFrame:
         """Read one Hill of Towie SCADA member.
 

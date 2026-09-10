@@ -52,11 +52,23 @@ def test_penmanshiel_channel_map_agrees_with_kelmarsh_column_for_column(repo_roo
     assert penmanshiel == kelmarsh
 
 
-def test_unresolved_channel_maps_stay_empty(repo_root: Path) -> None:
-    # Hill of Towie and CARE are still TODO(m1), so their maps resolve to nothing
-    # rather than to something plausible and wrong.
-    for source in ("hill_of_towie", "care"):
-        assert get_adapter(source, repo_root / "configs").channel_map == {}
+def test_hill_of_towie_map_names_the_table_as_well_as_the_field(repo_root: Path) -> None:
+    # Resolved on 2026-09-10 from the provider's field lookup. The record spreads one
+    # turbine's signals over several tables, so a column is <table>.<field>.
+    towie = get_adapter("hill_of_towie", repo_root / "configs")
+    assert len(towie.channel_map) == 14
+    assert towie.channel_map["power_kw"] == "tblSCTurGrid.wtc_ActPower_mean"
+    assert towie.split_channel_column(towie.channel_map["power_kw"]) == (
+        "tblSCTurGrid",
+        "wtc_ActPower_mean",
+    )
+
+
+def test_care_keeps_its_columns_per_farm_and_out_of_the_flat_map(repo_root: Path) -> None:
+    # CARE's farms publish different sensor sets, so its map is per farm (see
+    # test_channels.py). The flat map must stay empty rather than stringify a nested
+    # block into a column name that does not exist.
+    assert get_adapter("care", repo_root / "configs").channel_map == {}
 
 
 def test_unknown_source_is_rejected(repo_root: Path) -> None:

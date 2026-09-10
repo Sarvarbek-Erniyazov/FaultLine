@@ -1,37 +1,135 @@
 # Channel map: CARE farms A/B/C
 #
-# Maps each canonical FaultLine channel onto the column name published by the source.
-# A value of null or a TODO string means the mapping is unresolved and the channel is
-# skipped by the adapter rather than guessed at.
+# CARE anonymises its channel names (sensor_NN), and each farm publishes its own sensor
+# set -- 86, 257 and 957 features -- so this map is written per farm. Resolved on
+# 2026-09-10 from the three `Wind Farm <x>/feature_description.csv` files inside
+# CARE_To_Compare.zip. Each is a lookup: sensor name, the statistics published, a short
+# description and a unit. A dataset column is `<sensor_name>_avg`; the 10-minute mean is
+# the canonical value, as at every other source.
 #
-# CARE channels are anonymised (sensor_NN), so there is no name to match on. The
-# mapping needs the record README and, where that is not enough, distributional
-# matching against the named sources -- for example identifying the power channel by
-# its relationship to the wind-speed channel. Until that is done and written up, CARE
-# contributes labelled events and evaluation only, never training telemetry.
-# Guessing a sensor identity here would corrupt the label cross-check that is CARE's
-# entire purpose.
+# Checked against the data as well as the lookup, 2026-09-10. Every column below is in
+# the header of every dataset of its farm, and one dataset per farm was read to confirm
+# that the values sit in the stated physical units. One kind of column does not: every
+# active-power column is normalised, reading about -0.02 to 1.04, and the rated power
+# it is normalised by is not published. That is recorded under `units`, and it means
+# CARE power cannot be put on the kW scale the other three sources share.
+#
+# CARE is evaluation-only (eval_only_sources in configs/data/splits_*.yaml). Nothing
+# here feeds training; it decides only what the label cross-check can read.
 
 source: care
 site: "CARE farms A/B/C"
-mapping_status: "anonymised - TODO(m1)"
+mapping_status: "resolved per farm from feature_description.csv: farm A 13, farm B 10, farm C 9 of 14 mapped; the rest verified absent or ambiguous; power is normalised, not kW"
 
-channels:
-  wind_speed_ms: null # TODO(m1)
-  power_kw: null # TODO(m1)
-  rotor_speed_rpm: null # TODO(m1)
-  generator_speed_rpm: null # TODO(m1)
-  pitch_angle_deg: null # TODO(m1)
-  nacelle_position_deg: null # TODO(m1)
-  wind_direction_deg: null # TODO(m1)
-  ambient_temp_c: null # TODO(m1)
-  nacelle_temp_c: null # TODO(m1)
-  gearbox_bearing_temp_c: null # TODO(m1)
-  gearbox_oil_temp_c: null # TODO(m1)
-  generator_bearing_temp_c: null # TODO(m1)
-  generator_winding_temp_c: null # TODO(m1)
-  # Appended to the canonical list on 2026-09-09 after the Kelmarsh signal-mapping
-  # cross-check found a published main-shaft bearing temperature. Declared here so
-  # that this map states 14 open questions rather than 13, and so the card counts
-  # against the canonical list rather than against a stale copy of it.
-  main_bearing_temp_c: null # TODO(m1)
+farms:
+  farm_a:
+    directory: "Wind Farm A"
+    channels:
+      wind_speed_ms: "wind_speed_3_avg"
+      power_kw: "power_30_avg"
+      rotor_speed_rpm: "sensor_52_avg"
+      generator_speed_rpm: "sensor_18_avg"
+      pitch_angle_deg: "sensor_5_avg"
+      nacelle_position_deg: "sensor_42_avg"
+      wind_direction_deg: "sensor_1_avg"
+      ambient_temp_c: "sensor_0_avg"
+      nacelle_temp_c: "sensor_43_avg"
+      gearbox_bearing_temp_c: "sensor_11_avg"
+      gearbox_oil_temp_c: "sensor_12_avg"
+      generator_bearing_temp_c: "sensor_13_avg"
+      generator_winding_temp_c: "sensor_15_avg"
+      main_bearing_temp_c: null
+    evidence:
+      wind_speed_ms: "wind_speed_3: Windspeed (m/s); wind_speed_4 is an estimate"
+      power_kw: "power_30: Grid power (kW); power_29 is the possible power"
+      rotor_speed_rpm: "sensor_52: Rotor rpm"
+      generator_speed_rpm: "sensor_18: Generator rpm in latest period"
+      pitch_angle_deg: "sensor_5: Pitch angle"
+      nacelle_position_deg: "sensor_42: Nacelle direction"
+      wind_direction_deg: "sensor_1: Wind absolute direction; sensor_2 is relative"
+      ambient_temp_c: "sensor_0: Ambient temperature"
+      nacelle_temp_c: "sensor_43: Nacelle temperature"
+      gearbox_bearing_temp_c: "sensor_11: Temperature in gearbox bearing on high speed shaft"
+      gearbox_oil_temp_c: "sensor_12: Temperature oil in gearbox"
+      generator_bearing_temp_c: "sensor_13: Temperature in generator bearing 2 (Drive End)"
+      generator_winding_temp_c: "sensor_15: Temperature inside generator in stator windings phase 1"
+    verified_absent:
+      main_bearing_temp_c: "none of the 54 sensors is a main, rotor or axle bearing temperature"
+    ambiguous: {}
+    units:
+      power_kw: "normalised to an unpublished rated power (read -0.02 to 0.98), not kW"
+
+  farm_b:
+    directory: "Wind Farm B"
+    channels:
+      wind_speed_ms: "wind_speed_61_avg"
+      power_kw: "power_62_avg"
+      rotor_speed_rpm: "sensor_25_avg"
+      generator_speed_rpm: "sensor_19_avg"
+      pitch_angle_deg: "sensor_10_avg"
+      nacelle_position_deg: "sensor_21_avg"
+      wind_direction_deg: "sensor_4_avg"
+      ambient_temp_c: "sensor_8_avg"
+      nacelle_temp_c: null
+      gearbox_bearing_temp_c: null
+      gearbox_oil_temp_c: "sensor_39_avg"
+      generator_bearing_temp_c: null
+      generator_winding_temp_c: null
+      main_bearing_temp_c: "sensor_51_avg"
+    evidence:
+      wind_speed_ms: "wind_speed_61: Wind speed (m/s); 59 and 60 are the two anemometers"
+      power_kw: "power_62: Active power (kW); power_58 is available power"
+      rotor_speed_rpm: "sensor_25: Rotor speed (rpm)"
+      generator_speed_rpm: "sensor_19: Generator converter rotational peed [sic] (rpm); sensor_20, gearbox rotational speed, reads within 0.5% of it"
+      pitch_angle_deg: "sensor_10: Pitch angle"
+      nacelle_position_deg: "sensor_21: Nacelle direction"
+      wind_direction_deg: "sensor_4: Absolute wind direction"
+      ambient_temp_c: "sensor_8: Outside temperature"
+      gearbox_oil_temp_c: "sensor_39: Gearbox oil tank temperature; sensor_38 is the inlet, excluded as at the Senvion sites"
+      main_bearing_temp_c: "sensor_51: Rotor bearing temperature 1 of 2"
+    verified_absent:
+      nacelle_temp_c: "no sensor is described as a nacelle temperature; sensor_22 is the hub"
+      generator_winding_temp_c: "no stator or winding temperature among the 63 sensors"
+    ambiguous:
+      gearbox_bearing_temp_c: "sensor_34..37: Gearbox bearing temperature 1..4, positions not stated"
+      generator_bearing_temp_c: "sensor_32/33: Generator bearing temperature 1/2, end not stated; farm A numbers bearing 2 as the drive end and the Senvion maps call bearing 1 the front, so a number does not identify an end"
+    units:
+      power_kw: "normalised to an unpublished rated power (read -0.01 to 1.03), not kW"
+
+  farm_c:
+    directory: "Wind Farm C"
+    channels:
+      wind_speed_ms: "wind_speed_236_avg"
+      power_kw: "power_6_avg"
+      rotor_speed_rpm: "sensor_144_avg"
+      generator_speed_rpm: "sensor_8_avg"
+      pitch_angle_deg: "sensor_103_avg"
+      nacelle_position_deg: null
+      wind_direction_deg: null
+      ambient_temp_c: "sensor_41_avg"
+      nacelle_temp_c: null
+      gearbox_bearing_temp_c: null
+      gearbox_oil_temp_c: "sensor_186_avg"
+      generator_bearing_temp_c: null
+      generator_winding_temp_c: "sensor_199_avg"
+      main_bearing_temp_c: "sensor_196_avg"
+    evidence:
+      wind_speed_ms: "wind_speed_236: Wind speed 1+2 (m/s), the combined anemometers"
+      power_kw: "power_6: Active power HV grid (kW); 2, 5 and 17 are converter-side"
+      rotor_speed_rpm: "sensor_144: Rotor speed 1 (1/min)"
+      generator_speed_rpm: "sensor_8: Generator angle speed (rad/s)"
+      pitch_angle_deg: "sensor_103: Position rotor blade axis 1 (deg)"
+      ambient_temp_c: "sensor_41: Nacelle outside temperature; sensor_7 'Ambient temperature' reads a median 28 degC offshore in Germany, so it is cabinet air, not outdoor air"
+      gearbox_oil_temp_c: "sensor_186: Gearbox oil temperature 1"
+      generator_winding_temp_c: "sensor_199: Temperature of stator winding U1"
+      main_bearing_temp_c: "sensor_196: Rotor bearing temperature 1 of 3"
+    verified_absent:
+      nacelle_position_deg: "no absolute nacelle direction; sensor_124 is wind direction relative to yaw"
+      wind_direction_deg: "only relative wind directions (sensor_123..126), measured against the nacelle rather than North"
+      nacelle_temp_c: "no sensor is described as a nacelle temperature"
+    ambiguous:
+      gearbox_bearing_temp_c: "sensor_151..166: sixteen planetary bearing temperatures, none singled out"
+      generator_bearing_temp_c: "sensor_168/169: Temperature of axial bearing 1/2, component not stated"
+    units:
+      power_kw: "normalised to an unpublished rated power (read -0.01 to 1.04), not kW"
+      generator_speed_rpm: "rad/s; multiply by 60/(2 pi) for rpm"

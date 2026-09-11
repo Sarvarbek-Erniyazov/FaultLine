@@ -75,8 +75,11 @@ class ChannelSpec:
 #: evidence note per channel, in ``configs/data/telemetry_v1.yaml``. The tiers below
 #: repeat that result because config validation needs them without reading files;
 #: ``tests/data/telemetry/test_core_channels.py`` fails if they drift from the maps.
-#: One channel is extended: neither Senvion site publishes a gearbox bearing
-#: temperature, although the held-out site publishes four.
+#: Two channels are extended. Neither Senvion site publishes a gearbox bearing
+#: temperature, although the held-out site publishes four; and since M1b step 10
+#: (``telemetry_v3.yaml``, ADR-0008) the maps are necessary but not sufficient: wind
+#: direction is mappable everywhere and absent from the held-out site's 2019 export, so it
+#: fails the coverage condition (a).
 CANONICAL_CHANNELS: tuple[ChannelSpec, ...] = (
     ChannelSpec("wind_speed_ms", "m/s", "Nacelle anemometer wind speed", "environment", "core"),
     ChannelSpec("power_kw", "kW", "Active power output", "production", "core"),
@@ -84,7 +87,9 @@ CANONICAL_CHANNELS: tuple[ChannelSpec, ...] = (
     ChannelSpec("generator_speed_rpm", "rpm", "Generator rotational speed", "drivetrain", "core"),
     ChannelSpec("pitch_angle_deg", "deg", "Blade pitch angle", "control", "core"),
     ChannelSpec("nacelle_position_deg", "deg", "Nacelle yaw position", "control", "core"),
-    ChannelSpec("wind_direction_deg", "deg", "Wind direction", "environment", "core"),
+    # Extended from M1b step 10 (telemetry_v3.yaml): 0% of the held-out site's 2019 grid.
+    # Its position, and so its token identifier, does not move.
+    ChannelSpec("wind_direction_deg", "deg", "Wind direction", "environment", "extended"),
     ChannelSpec("ambient_temp_c", "degC", "Ambient air temperature", "environment", "core"),
     # Below here is drivetrain and enclosure instrumentation, which is where SCADA
     # records stop agreeing with each other: what a machine measures depends on its

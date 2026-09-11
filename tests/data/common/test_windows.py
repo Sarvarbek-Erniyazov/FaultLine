@@ -93,6 +93,60 @@ def test_a_window_whose_context_leaves_its_segment_is_caught() -> None:
         assert_windows_within_splits(frame, ends, config(context=3), horizon_steps=1)
 
 
+def excluding(context: int = 3) -> SplitsConfig:
+    return SplitsConfig.model_validate(
+        {
+            "site_column": "source",
+            "time": {"train_until": "2020-12-31T23:59:59Z", "val_until": "2021-12-31T23:59:59Z"},
+            "windows": {"context_steps": context},
+            "training_exclusions": [
+                {
+                    "source": "kelmarsh",
+                    "start": "2020-06-01T00:30:00Z",
+                    "end": "2020-06-01T00:40:00Z",
+                    "channels": ["ambient_temp_c", "nacelle_temp_c"],
+                    "reason": "a site-wide outage",
+                }
+            ],
+        }
+    )
+
+
+def rows_around_an_outage(source: str = "kelmarsh") -> pd.DataFrame:
+    stamps = [pd.Timestamp("2020-06-01T00:00Z") + STEP * i for i in range(12)]
+    frame = pd.DataFrame({"source": source, "timestamp_utc": stamps, "segment_id": 0})
+    frame["split"] = assign_splits(frame, excluding()).to_numpy()
+    return frame
+
+
+def test_a_training_window_whose_context_touches_an_exclusion_is_withheld() -> None:
+    frame = rows_around_an_outage()
+    spec = excluding(context=3)
+    kept = window_ends(frame, spec, horizon_steps=1)
+    every = window_ends(frame, spec, horizon_steps=1, apply_exclusions=False)
+    withheld = frame.loc[every & ~kept, "timestamp_utc"].dt.strftime("%H:%M").tolist()
+    # three steps of context end at t: t = 00:30 to 01:00 read 00:30 or 00:40
+    assert withheld == ["00:30", "00:40", "00:50", "01:00"]
+    assert frame.loc[kept, "timestamp_utc"].dt.strftime("%H:%M").iloc[0] == "00:20"
+    assert assert_windows_within_splits(frame, kept, spec, horizon_steps=1) == int(kept.sum())
+
+
+def test_an_admitted_window_that_reads_an_exclusion_is_caught() -> None:
+    frame = rows_around_an_outage()
+    ends = np.zeros(len(frame), dtype=bool)
+    ends[5] = True  # 00:50: its context reaches back to 00:30
+    with pytest.raises(LeakageError, match="read an excluded outage"):
+        assert_windows_within_splits(frame, ends, excluding(context=3), horizon_steps=1)
+
+
+def test_an_exclusion_leaves_another_source_alone() -> None:
+    frame = rows_around_an_outage(source="penmanshiel")
+    spec = excluding(context=3)
+    assert (
+        window_ends(frame, spec, 1) == window_ends(frame, spec, 1, apply_exclusions=False)
+    ).all()
+
+
 def test_the_stride_thins_the_window_ends() -> None:
     frame = rows_across_the_cut(steps=6)
     spec = SplitsConfig.model_validate(

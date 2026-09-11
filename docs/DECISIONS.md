@@ -440,6 +440,30 @@ dropped at inference — becomes impossible to interpret. Short gaps are filled 
 **Related rule.** Unmapped event codes yield `is_fault = None`, never `False`.
 Silence about a code is not evidence that it is benign, and defaulting to `False`
 would silently inflate precision.
+
+### Resolution, 2026-09-11 (M1b step 10) -- a feature where it recurs, an artifact where it cannot
+
+"Missingness is a feature" and condition (c) of ADR-0008 ("a gap must not be a label
+shortcut") read as if they pulled against each other: the first keeps gaps visible to the
+model, the second asks whether the model could learn from them. They answer different
+questions, and the test that separates them is **whether the pattern occurs at
+deployment**, which for this project means at the held-out site.
+
+- **A feature** is missingness whose pattern recurs where the model is used: a link that
+  drops out around a stop, a sensor that fails as a component degrades, a turbine that
+  goes silent in a grid event. The model should see it, through `<nan>` and the
+  `__imputed` companions, and may learn from it.
+- **An artifact** is missingness whose pattern cannot recur there: an instrumentation
+  outage specific to one training site and one period. A model that learns from it learns
+  a fact about the training data's history, and is scored on nothing like it.
+
+Penmanshiel's spring-2018 gap is an artifact by that test. Ambient and nacelle temperature
+are non-null on 99.6% of the held-out grid, in both of its years, so the held-out site
+never presents the pattern the model would have learnt at Penmanshiel. **The remedy for an
+artifact is to remove the artifact, not the channel**: the outage's spans are withheld from
+training windows (`training_exclusions`, `splits_v2.yaml`), and both channels stay core.
+Which gaps may be treated so, and which may not, is bounded in ADR-0008.
+
 ---
 
 ## ADR-0007 Status messages go through the text pathway, not a code book
@@ -531,7 +555,8 @@ this note; its TODO(m1) is recorded in ADR-0001.
 
 ## ADR-0008 The core channel set is derived from the channel maps and frozen
 
-**Status:** Accepted · **Date:** 2026-09-10
+**Status:** Accepted, amended on 2026-09-11 (M1b step 10: core is the maps and three
+measured conditions; below) · **Date:** 2026-09-10
 
 **Decision.** A canonical channel is **core** when it is present at both training
 sites (Kelmarsh, Penmanshiel) *and* mappable at the held-out site (Hill of Towie).
@@ -588,6 +613,185 @@ position and wind direction at 39.0%. This record said a core channel "mostly mi
 site is demoted in telemetry_v2.yaml"; telemetry_v2 was written before this table, by the
 order of the work, and demotes nothing. Whether any of these is demoted is gate 2's
 decision and would be a telemetry_v3.yaml; this note supersedes nothing.
+
+### Amendment, 2026-09-11 (M1b step 10) -- core is the maps and three measured conditions
+
+**Status of the rule above:** the definition "present at both training sites and mappable
+at the held-out site" is superseded by this amendment. It stays necessary; it is no longer
+sufficient. `telemetry_v3.yaml` freezes the result, `faultline inspect core` measures it
+(`reports/data/core_rule_20260911.md`), and v0-v2 are untouched.
+
+**The result: core = 12.** Wind direction is extended. Ambient and nacelle temperature,
+pitch and gear oil stay core, with no exception recorded for any of them.
+
+| channel | K | P (outside exclusions) | H (2019, 2023) | outcome |
+| --- | --- | --- | --- | --- |
+| `wind_direction_deg` | 96.0% | 97.5% (97.4%) | 49.8% (0.0%, 99.5%) | **extended**: fails (a) |
+| `ambient_temp_c`, `nacelle_temp_c` | 95.2% | 94.5% (96.9%) | 99.6% (99.7%, 99.5%) | core: the spring-2018 outage is withheld from training; outside it (c) does not arise |
+| `pitch_angle_deg` | 95.2% | 70.0% (71.9%) | 99.6% (99.7%, 99.5%) | core: (c) clears, matched ratio 0.95 (0.83-1.09) |
+| `gearbox_oil_temp_c` | 95.3% | 70.2% (72.1%) | 99.6% (99.7%, 99.5%) | core: (c) clears, 0.95 (0.83-1.08) |
+| `gearbox_bearing_temp_c` | 0.0% | 0.0% | 99.6% | extended, as before: fails the maps and (b) |
+
+Every other core channel is at 95.9% or more at both training sites and 99.6% at the
+held-out site. The leave-site-out validation now rejects any split specification that
+evaluates wind direction with a site held out, `splits_v0.yaml` and `splits_v1.yaml`
+included: they are left as written and no longer load, and every report that read them
+stays regenerable from the commit it landed in. The channel keeps its position, so no
+token identifier moves (ADR-0003).
+
+#### The rule, and the two corrections that led to it
+
+The record keeps both corrections, not only the rule that survived them.
+
+**First correction: the single threshold.** The rule first proposed at gate 2 was "present
+at >= 95% on the clean grid at every site used for training or held-out evaluation". It
+failed on first contact. It demanded exceptions at once: Penmanshiel's pitch (70.0%) and
+gear oil (70.2%), and ambient and nacelle temperature (94.5%), all of which gate 2 had
+kept core. And it turned on differences that measure nothing: ambient temperature at
+94.5% at Penmanshiel failed, at 95.2% at Kelmarsh passed. A threshold that has to be
+excused the day it is written describes a preference, not a rule. It was replaced, not
+excepted.
+
+**The three conditions that replaced it**, all of which must hold for a mappable channel:
+
+- **(a) Held-out integrity.** >= 95% non-null on the cleaned grid at every held-out site,
+  and availability not confounded with an evaluation axis: >= 95% in every calendar year
+  there as well as pooled.
+- **(b) Training sufficiency.** >= 95% at one training site at least, and genuinely
+  measured (> 0%, not structurally absent) at every one.
+- **(c) No label shortcut.** Where a training site measures the channel below 95%, its
+  missingness is shown not to be label-informative.
+
+**Second correction: condition (c) was under-specified.** As first written, (c) compared
+the event rate of affected against unaffected turbine-years, with no regard to the
+calendar. Block missingness and event rates are both time-structured, and a raw
+missing-against-present comparison cannot separate the two. The evidence that it could not:
+on the same two channels it gave opposite answers depending on which comparison was taken.
+Pitch and gear oil **passed** at train level (rate ratio 0.90, 0.79-1.03, affected against
+unaffected turbine-years) and **failed** within 2018 (0.23, missing against present steps).
+The second comparison sets January-May against June-December; the first sets 2016-2017
+against 2019-2020. Neither holds the season fixed.
+
+**The fix: a seasonally matched control.** (c) now compares the affected calendar window
+with the same window in other years at the same site. In general form: a turbine-day is
+affected when the channel is missing on more than 5% of its reporting steps; within each
+calendar month, affected turbine-days are set against unaffected turbine-days of that month,
+which for a site-wide gap lie in other years; the rate ratio is pooled over months
+(Mantel-Haenszel, Greenland-Robins interval). It **clears** when the 95% interval contains 1
+and lies within [0.5, 2] -- a halving or a doubling is the size of difference this project
+already treats as material -- **does not clear** when the interval excludes 1, and is
+**inconclusive** otherwise. That reading was fixed in code before any number was
+computed. Its intervals are Poisson and take no account of year-to-year variation beyond
+the count's own, which is real (below); they are the narrowest defensible intervals, not
+the widest.
+
+#### The control for Penmanshiel's spring-2018 gap, as asked, and what it says
+
+February to May at Penmanshiel, narrow events per turbine-year with Poisson intervals and
+the 24-hour narrow base rate, every turbine pooled:
+
+| year | turbine-years | narrow events | per turbine-year (95%) | 24 h base rate |
+| --- | --- | --- | --- | --- |
+| 2016 | no grid: the record starts in June 2016 | - | - | - |
+| 2017 | 4.60 | 33 | 7.2 (4.9-10.1) | 1.57% |
+| **2018** | 4.60 | 13 | 2.8 (1.5-4.8) | 0.77% |
+| 2019 | 4.60 | 26 | 5.7 (3.7-8.3) | 1.42% |
+| 2020 | 4.64 | 102 | 22.0 (17.9-26.7) | 4.34% |
+| 2017, 2019, 2020 pooled | 13.84 | 161 | 11.6 (9.9-13.6) | 2.45% |
+
+Rate ratio, 2018 to the other years: **0.24 (0.14-0.43): does not clear.** Spring 2018 is
+below every other year's spring, not merely below the pool that 2020 inflates. On the
+outage's own calendar days (1 March to 16 May) the ratio is 0.49 (0.22-1.09):
+inconclusive. The general month-matched form gives 0.44 (0.22-0.88) on the whole grid,
+against a crude 0.23: matching halves the apparent effect, and does not remove it. The
+control does not clear the correlation. It is reported as it came out.
+
+#### The exclusion, and why it rests on the instrumentation
+
+The spring-2018 block is withheld from **training windows only**. The rows stay in every
+table; no evaluation window is touched, because none lies in 2018; a training window whose
+144-step context touches a span is not admitted, and the leakage re-check fails if one is
+(`windows.window_ends`, `assert_windows_within_splits`).
+
+The ground is the instrumentation, not the event rate. What the cleaned grid shows is a
+bounded, site-wide, simultaneous outage: at every one of Penmanshiel's 14 turbines, ambient
+and nacelle temperature are missing on 100% of the reporting steps of each span, and
+present on 93-100% of the site's reporting steps in the week before and after. That is
+unrepresentative operating data, and it would be excluded on that ground **whatever the
+event rate showed**. The control above decides nothing about the exclusion; it is recorded
+because it was asked for, and because a reader should see that the low spring rate was
+looked at and not explained away.
+
+The block is not what the gate described, in three ways, measured
+(`reports/data/core_rule_20260911.md`):
+
+1. **Four channels, not two.** Pitch and gear oil are missing on the same steps: 100% of
+   the reporting steps in both spans. For them the outage continues an absence that began
+   with the record, so they are not listed as the outage's channels -- the "bounded" test
+   fails for them at the first span's start by construction -- and the report names them
+   beside it.
+2. **Two spans, not one Feb-May block.** 2018-03-01 00:00 to 04-05 13:40 UTC, and 04-21
+   05:40 to 05-16 10:10. All four channels return for the 16 days between, and those days
+   are kept.
+3. **Turbine-specific edges are not excluded.** Penmanshiel 01 misses ambient and nacelle
+   temperature from 8 February to 31 May, and Penmanshiel 02 from 27 February (the turbine
+   itself silent to 5 March). Those extra turbine-days (127) are not site-wide, so by the
+   bound below they stay, and they count against the channel: outside the spans, ambient and
+   nacelle temperature are at 96.9% at Penmanshiel, so (c) does not arise for them.
+
+| excluded span (UTC) | grid steps | turbine-years | share of Penmanshiel's training steps | share of all training steps |
+| --- | --- | --- | --- | --- |
+| 2018-03-01 00:00 to 04-05 13:40 | 71,722 | 1.36 | 2.16% | 1.47% |
+| 2018-04-21 05:40 to 05-16 10:10 | 50,792 | 0.97 | 1.53% | 1.04% |
+| **both** | **122,514** | **2.33** | **3.69%** | **2.51%** |
+
+On the final tables, which windows are drawn from
+(`reports/data/20260911-125811_final_telemetry_54a0a17d`), the spans hold 121,849 training
+rows: 3.79% of Penmanshiel's and 2.57% of every training site's. **125,567 training windows
+are withheld at each horizon**, the spans' rows plus the windows whose day of context
+reaches into them: 4.00% of Penmanshiel's known 24-hour training windows (3,137,111 to
+3,011,544) and 2.72% of all training windows. They carry 1,008 of Penmanshiel's 76,717
+positive 24-hour windows (1.3%), so its training base rate moves from 2.45% to 2.51%: the
+low spring rate, withheld with the outage rather than chosen for. Validation and the late
+test are unchanged, window for window.
+
+#### The bound, so that (c) keeps its teeth
+
+An exclusion is permitted **only** for a bounded, site-wide, simultaneous outage: every
+turbine of the source, two channels or more, one contiguous span. `TrainingExclusion`
+enforces the shape (two distinct channels at least, a span that ends after it starts, a
+stated reason, a training source, nothing past `train_until`), and `faultline inspect core`
+measures the substance on the cleaned grid: every turbine reports in the span, each misses
+every listed channel on >= 95% of its reporting steps there, and the site publishes the
+channels on more than half its reporting steps in the week either side. **Dispersed or
+turbine-specific missingness demotes the channel instead**, or passes (c); it is never
+excluded. Without the bound, "exclude the gap" would be an answer to every failed (c), and
+the condition would test nothing.
+
+**Pitch and gear oil are an era, not an outage.** They are absent from the start of the
+record (June 2016) at every turbine to spring 2018: 42 of 70 training turbine-years, none in
+validation or the late test. That is a documented train/evaluation mismatch, not a defect,
+and it is not excluded: an era is not bounded, and excluding it would remove 2016-2017 from
+training. They pass (c) at train level (0.90, 0.79-1.03, unmatched) and under the matched
+control (0.93, 0.82-1.06 on the whole grid; 0.95, 0.83-1.09 outside the exclusions), and
+stay core with no exclusion.
+
+#### Core-10 costs nothing to revisit
+
+A core-10 evaluation -- ambient and nacelle temperature demoted as well -- is derivable from
+core-12 shards by masking those two channels to `<nan>`, the mechanism modality dropout
+already uses (M3). Core-12 shards therefore yield core-10 for free, while the reverse would
+mean re-tokenising the corpus. The demotion that was not made here can be revisited
+empirically at M1c, by scoring the same checkpoints both ways, at no cost.
+
+**Also from step 10.** Hill of Towie results are always reported per calendar year as well as
+pooled, never pooled only (`per_year_sites`): its two years sit either side of a retrofit,
+and only 2023 publishes wind direction.
+
+**What would change this amendment.** A held-out site where ambient or nacelle temperature
+shows an outage of the same shape, which would make the pattern one that recurs at
+deployment; a training-site gap that is site-wide but unbounded, which the bound would send
+to (c) or demotion; or an M1c result where core-10 beats core-12 at the held-out site.
 
 ---
 

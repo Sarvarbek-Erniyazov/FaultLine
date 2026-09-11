@@ -77,6 +77,64 @@ class WindowSpec(StrictModel):
     stride_steps: int = Field(default=1, gt=0)
 
 
+class TrainingExclusion(StrictModel):
+    """A site-wide instrumentation outage that no training window may read (ADR-0008).
+
+    An exclusion removes an artifact from training, never a channel from the model, and
+    it is permitted for one kind of gap only: a bounded, site-wide, simultaneous outage --
+    every turbine of the source, several channels, one contiguous span. Dispersed or
+    turbine-specific missingness demotes the channel instead, or passes condition (c) of
+    the core rule. The shape is checked here; that the data holds such an outage is
+    measured on the cleaned grid by ``faultline inspect core``.
+
+    Attributes:
+        source: The training source the outage is at.
+        start: The first step of the span, UTC, inclusive.
+        end: The last step of the span, UTC, inclusive.
+        channels: The channels out at every turbine across the span; two at least.
+        reason: The instrumentation fact the exclusion rests on.
+    """
+
+    source: str
+    start: datetime
+    end: datetime
+    channels: list[str]
+    reason: str
+
+    @model_validator(mode="after")
+    def _a_bounded_outage_of_several_channels(self) -> TrainingExclusion:
+        """Reject a span that is empty, a single channel, or an unstated reason.
+
+        Raises:
+            ValueError: If the span does not end after it starts, names fewer than two
+                distinct canonical channels, or carries no reason.
+        """
+        if as_utc(self.end) <= as_utc(self.start):
+            raise ValueError(f"{self.source}: an exclusion must end after it starts")
+        unknown = [name for name in self.channels if name not in CHANNELS_BY_NAME]
+        if unknown:
+            raise ValueError(f"{self.source}: exclusion channels {unknown} are not canonical")
+        if len(set(self.channels)) < 2:
+            raise ValueError(
+                f"{self.source}: an exclusion names at least two channels. One channel's gap "
+                "is not a site-wide outage: it passes condition (c) of the core rule or "
+                "demotes the channel (ADR-0008)"
+            )
+        if not self.reason.strip():
+            raise ValueError(f"{self.source}: an exclusion states the instrumentation fact")
+        return self
+
+    @property
+    def start_utc(self) -> pd.Timestamp:
+        """The first step of the span as a UTC timestamp."""
+        return as_utc(self.start)
+
+    @property
+    def end_utc(self) -> pd.Timestamp:
+        """The last step of the span as a UTC timestamp."""
+        return as_utc(self.end)
+
+
 class SplitsConfig(StrictModel):
     """Specification of one split of the corpus.
 
@@ -96,6 +154,15 @@ class SplitsConfig(StrictModel):
             Every row of such a source is labelled ``test``, whatever the site and
             time axes say. This is a licence constraint (ADR-0004), not a tunable.
         windows: The windows the leakage checks are counted on.
+        per_year_sites: Held-out sites whose results are always reported per calendar
+            year as well as pooled, never pooled only: at Hill of Towie the two staged
+            years sit either side of a retrofit, and one of them has no wind direction.
+        report_without_messages: Status messages whose events every late-test result is
+            also reported without (ADR-0009, evidence note of 2026-09-11): the events stay
+            in the label, and a second number excludes those they open.
+        training_exclusions: Site-wide outages no training window may read. The rows
+            stay, and so does every evaluation window; only a training window whose
+            context touches the span is withheld.
     """
 
     version: int = 0
@@ -110,6 +177,45 @@ class SplitsConfig(StrictModel):
     source_column: str = "source"
     eval_only_sources: list[str] = Field(default_factory=list)
     windows: WindowSpec = Field(default_factory=WindowSpec)
+    per_year_sites: list[str] = Field(default_factory=list)
+    report_without_messages: list[str] = Field(default_factory=list)
+    training_exclusions: list[TrainingExclusion] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _exclusions_remove_training_windows_only(self) -> SplitsConfig:
+        """Reject an exclusion that could remove anything but a training window.
+
+        Raises:
+            ValueError: If an exclusion names a held-out or evaluation-only source, or
+                reaches past the end of the training period.
+        """
+        for exclusion in self.training_exclusions:
+            if exclusion.source in self.holdout_sites or exclusion.source in self.eval_only_sources:
+                raise ValueError(
+                    f"training_exclusions names {exclusion.source}, which never trains. An "
+                    "outage at an evaluation site is read as it is: deployment would see it"
+                )
+            if exclusion.end_utc > as_utc(self.time.train_until):
+                raise ValueError(
+                    f"{exclusion.source}: an exclusion ending {exclusion.end_utc} reaches past "
+                    "train_until; no evaluation window is ever excluded"
+                )
+        return self
+
+    @model_validator(mode="after")
+    def _per_year_sites_are_held_out(self) -> SplitsConfig:
+        """Reject a per-year site that is not held out.
+
+        Raises:
+            ValueError: If ``per_year_sites`` names a site ``holdout_sites`` does not.
+        """
+        stray = [site for site in self.per_year_sites if site not in self.holdout_sites]
+        if stray:
+            raise ValueError(
+                f"per_year_sites names {stray}, which are not held out; the per-year rule is "
+                "for a held-out site whose years differ in what it publishes"
+            )
+        return self
 
     @model_validator(mode="after")
     def _leave_site_out_reads_core_channels_only(self) -> SplitsConfig:
@@ -190,7 +296,7 @@ def check_eval_channels_against_maps(
     return core
 
 
-def _as_utc(value: datetime) -> pd.Timestamp:
+def as_utc(value: datetime) -> pd.Timestamp:
     """Coerce a configured datetime to a UTC-aware pandas timestamp.
 
     A naive value in the YAML is interpreted as UTC rather than local time, so the
@@ -240,8 +346,8 @@ def assign_splits(frame: pd.DataFrame, config: SplitsConfig) -> pd.Series[Any]:
         )
 
     stamps = pd.to_datetime(frame[config.time_column], utc=True)
-    train_until = _as_utc(config.time.train_until)
-    val_until = _as_utc(config.time.val_until)
+    train_until = as_utc(config.time.train_until)
+    val_until = as_utc(config.time.val_until)
 
     labels = np.full(len(frame), config.late_period_split, dtype=object)
     labels[(stamps <= train_until).to_numpy()] = "train"
@@ -276,6 +382,37 @@ def assign_splits(frame: pd.DataFrame, config: SplitsConfig) -> pd.Series[Any]:
         labels[restricted] = "test"
 
     return pd.Series(labels, index=frame.index, name="split", dtype="object")
+
+
+def in_training_exclusion(frame: pd.DataFrame, config: SplitsConfig) -> np.ndarray:
+    """Whether each row lies inside a training exclusion of its own source.
+
+    Args:
+        frame: Rows with the time column and, when exclusions are configured, the source
+            column.
+        config: Split specification.
+
+    Returns:
+        A boolean array aligned with ``frame``.
+
+    Raises:
+        KeyError: If exclusions are configured and the source column is missing; the
+            alternative is an exclusion that quietly does not apply.
+    """
+    inside = np.zeros(len(frame), dtype=bool)
+    if not config.training_exclusions or frame.empty:
+        return inside
+    if config.source_column not in frame.columns:
+        raise KeyError(
+            f"column {config.source_column!r} is missing, so training_exclusions cannot be "
+            "matched to their source"
+        )
+    stamps = pd.to_datetime(frame[config.time_column], utc=True)
+    sources = frame[config.source_column].astype(str).to_numpy()
+    for exclusion in config.training_exclusions:
+        within = (stamps >= exclusion.start_utc) & (stamps <= exclusion.end_utc)
+        inside |= (sources == exclusion.source) & within.to_numpy()
+    return inside
 
 
 def split_counts(labels: pd.Series[Any]) -> dict[str, int]:

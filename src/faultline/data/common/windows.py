@@ -16,6 +16,10 @@ split boundary, and both are checked here rather than trusted:
    :func:`assert_windows_within_splits` re-derives the split at each window's first
    step and last horizon step from the timestamps alone, independently of how the
    windows were chosen, and fails on any disagreement.
+
+A third rule withholds, rather than protects: a training window whose context touches a
+``training_exclusions`` span of its source -- a bounded, site-wide instrumentation outage
+(ADR-0008) -- is not admitted, and the same re-check fails if one is.
 """
 
 from __future__ import annotations
@@ -97,24 +101,63 @@ def _split_end(split: np.ndarray, config: SplitsConfig) -> np.ndarray:
     return ends
 
 
+def reads_training_exclusion(frame: pd.DataFrame, config: SplitsConfig) -> np.ndarray:
+    """Whether a training window ending at each row would read a step of an excluded span.
+
+    The context ``[t - (context_steps - 1) steps, t]`` of a train-split row touches a
+    ``training_exclusions`` span of its own source. The horizon is not tested: labels come
+    from the event logs, not from the channels an outage took out.
+
+    Args:
+        frame: Rows with the split, time and source columns.
+        config: The split specification.
+
+    Returns:
+        A boolean array aligned with ``frame``.
+
+    Raises:
+        KeyError: If exclusions are configured and the source column is missing.
+    """
+    reads = np.zeros(len(frame), dtype=bool)
+    if not config.training_exclusions or frame.empty:
+        return reads
+    if config.source_column not in frame.columns:
+        raise KeyError(
+            f"column {config.source_column!r} is missing, so training_exclusions cannot be "
+            "matched to their source"
+        )
+    t = _seconds(frame[config.time_column])
+    train = frame["split"].to_numpy(dtype=object) == "train"
+    sources = frame[config.source_column].astype(str).to_numpy()
+    reach = (config.windows.context_steps - 1) * STEP_SECONDS
+    for exclusion in config.training_exclusions:
+        start, end = _seconds(pd.Series([exclusion.start_utc, exclusion.end_utc]))
+        reads |= (sources == exclusion.source) & train & (t >= start) & (t - reach <= end)
+    return reads
+
+
 def window_ends(
     frame: pd.DataFrame,
     config: SplitsConfig,
     horizon_steps: int,
     segment_column: str = "segment_id",
+    apply_exclusions: bool = True,
 ) -> np.ndarray:
     """Which rows can end a window whose context and horizon stay in bounds.
 
     A row ends a window when it lies in a segment, the ``context_steps`` steps ending at
-    it lie in that segment, the step lands on the configured stride, and its horizon
-    ``(t, t + H]`` ends before its split does.
+    it lie in that segment, the step lands on the configured stride, its horizon
+    ``(t, t + H]`` ends before its split does, and -- for a training window -- its
+    context touches no training exclusion.
 
     Args:
         frame: One turbine's rows, sorted by time, with the split, time and segment
-            columns.
+            columns, and the source column when exclusions are configured.
         config: The split specification.
         horizon_steps: The horizon, in steps.
         segment_column: Column holding the segment identifiers.
+        apply_exclusions: Withhold the training windows an exclusion touches. Off only to
+            count what the exclusions withhold.
 
     Returns:
         A boolean array aligned with ``frame``.
@@ -129,6 +172,8 @@ def window_ends(
     ok = (segment >= 0) & (t - (context - 1) * STEP_SECONDS >= first)
     ok &= ((t // STEP_SECONDS) % config.windows.stride_steps) == 0
     ok &= t + horizon_steps * STEP_SECONDS <= _split_end(split, config)
+    if apply_exclusions:
+        ok &= ~reads_training_exclusion(frame, config)
     return np.asarray(ok, dtype=bool)
 
 
@@ -152,8 +197,9 @@ def assert_windows_within_splits(
         The number of windows checked.
 
     Raises:
-        LeakageError: If a window's context leaves its segment, or its first step or the
-            end of its horizon lies in another split than its last step.
+        LeakageError: If a window's context leaves its segment, its first step or the end
+            of its horizon lies in another split than its last step, or a training
+            window's context touches a training exclusion of its source.
     """
     chosen = frame.loc[ends]
     if chosen.empty:
@@ -174,9 +220,16 @@ def assert_windows_within_splits(
     segment = frame[segment_column].to_numpy(dtype=np.int64)
     first = pd.Series(all_t).groupby(segment).transform("min").to_numpy()[ends]
     outside = _seconds(stamps - context) < first
-    if crossing.any() or outside.any():
+    touching = np.zeros(len(chosen), dtype=bool)
+    if config.training_exclusions and config.source_column in chosen.columns:
+        sources = chosen[config.source_column].astype(str).to_numpy()
+        for exclusion in config.training_exclusions:
+            overlap = (stamps >= exclusion.start_utc) & (stamps - context <= exclusion.end_utc)
+            touching |= (sources == exclusion.source) & (at_end == "train") & overlap.to_numpy()
+    if crossing.any() or outside.any() or touching.any():
         raise LeakageError(
             f"{int(crossing.sum())} window(s) cross a split boundary and "
-            f"{int(outside.sum())} leave their segment, at horizon {horizon_steps} steps"
+            f"{int(outside.sum())} leave their segment, at horizon {horizon_steps} steps; "
+            f"{int(touching.sum())} training window(s) read an excluded outage"
         )
     return int(len(chosen))

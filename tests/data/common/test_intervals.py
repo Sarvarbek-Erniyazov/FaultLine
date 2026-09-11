@@ -7,6 +7,7 @@ import math
 import pytest
 
 from faultline.data.common.intervals import (
+    mantel_haenszel_rate_ratio,
     poisson_interval,
     rate_ratio_interval,
     wilson_interval,
@@ -51,3 +52,26 @@ def test_equal_rates_give_a_ratio_of_one_inside_its_interval() -> None:
 
 def test_a_rate_ratio_without_events_is_not_a_number() -> None:
     assert all(math.isnan(x) for x in rate_ratio_interval(0, 1.0, 5, 1.0))
+
+
+def test_mantel_haenszel_on_one_stratum_is_the_crude_ratio() -> None:
+    assert mantel_haenszel_rate_ratio([(20, 2.0, 30, 3.0)]) == pytest.approx(
+        rate_ratio_interval(20, 2.0, 30, 3.0)
+    )
+
+
+def test_matching_removes_a_seasonal_confound() -> None:
+    # Winter runs at 10 events a turbine-year on both sides, summer at 2. The first group
+    # sits mostly in summer, so the crude ratio calls it safer; matched by season it is not.
+    strata = [(10, 1.0, 90, 9.0), (18, 9.0, 2, 1.0)]
+    crude, _, _ = rate_ratio_interval(28, 10.0, 92, 10.0)
+    matched, low, high = mantel_haenszel_rate_ratio(strata)
+    assert crude < 0.5
+    assert matched == pytest.approx(1.0)
+    assert low < 1.0 < high
+
+
+def test_a_stratum_with_exposure_on_one_side_adds_nothing() -> None:
+    base = mantel_haenszel_rate_ratio([(20, 2.0, 30, 3.0)])
+    assert mantel_haenszel_rate_ratio([(20, 2.0, 30, 3.0), (5, 1.0, 0, 0.0)]) == pytest.approx(base)
+    assert all(math.isnan(x) for x in mantel_haenszel_rate_ratio([(5, 1.0, 0, 0.0)]))

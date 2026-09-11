@@ -10,11 +10,15 @@ interval the same way and none of them needs a statistics library:
   dividing both ends by the exposure. Byar's approximation to the exact (Garwood)
   interval, within a fraction of a percent of it from a count of one up.
 * :func:`rate_ratio_interval` for the ratio of two such rates, on the log scale.
+* :func:`mantel_haenszel_rate_ratio` for that ratio pooled over strata -- calendar months,
+  in the core-channel rule -- so that two groups are compared only where both have
+  exposure.
 """
 
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 
 #: The two-sided 95% normal quantile.
 Z95 = 1.959963984540054
@@ -86,4 +90,38 @@ def rate_ratio_interval(
         return math.nan, math.nan, math.nan
     ratio = (count_a / exposure_a) / (count_b / exposure_b)
     spread = z * math.sqrt(1 / count_a + 1 / count_b)
+    return ratio, ratio * math.exp(-spread), ratio * math.exp(spread)
+
+
+def mantel_haenszel_rate_ratio(
+    strata: Sequence[tuple[int, float, int, float]], z: float = Z95
+) -> tuple[float, float, float]:
+    """The Mantel-Haenszel ratio of two Poisson rates pooled over strata, with an interval.
+
+    Each stratum weighs the first group's events against the second's by how much exposure
+    the stratum holds on both sides, so a group concentrated in one season is compared
+    with the same season elsewhere, and a stratum with exposure on one side only adds
+    nothing. The interval is log-normal with the Greenland-Robins variance, which reduces
+    to that of :func:`rate_ratio_interval` for a single stratum.
+
+    Args:
+        strata: One ``(count_a, exposure_a, count_b, exposure_b)`` per stratum.
+        z: Normal quantile of the interval.
+
+    Returns:
+        The pooled ratio of the first rate to the second, and its lower and upper bound;
+        all ``nan`` when either group has no events in the strata both sides share.
+    """
+    numerator = denominator = variance = 0.0
+    for count_a, exposure_a, count_b, exposure_b in strata:
+        if exposure_a <= 0 or exposure_b <= 0:
+            continue
+        total = exposure_a + exposure_b
+        numerator += count_a * exposure_b / total
+        denominator += count_b * exposure_a / total
+        variance += exposure_a * exposure_b * (count_a + count_b) / (total * total)
+    if numerator <= 0 or denominator <= 0:
+        return math.nan, math.nan, math.nan
+    ratio = numerator / denominator
+    spread = z * math.sqrt(variance / (numerator * denominator))
     return ratio, ratio * math.exp(-spread), ratio * math.exp(spread)

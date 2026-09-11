@@ -31,6 +31,13 @@ def config_path(repo_root: Path) -> Path:
     return repo_root / "configs" / "data" / "telemetry_v0.yaml"
 
 
+@pytest.fixture
+def current_path(repo_root: Path) -> Path:
+    # Runs through the final stage read the current split spec: v0's no longer loads, since
+    # it evaluates wind direction, extended from M1b step 10 (ADR-0008).
+    return repo_root / "configs" / "data" / "telemetry_v3.yaml"
+
+
 def synthetic_turbine_year(rows: int = 500) -> pd.DataFrame:
     stamps = pd.date_range("2020-01-01", periods=rows, freq="10min", tz="UTC")
     rng = np.random.default_rng(20260909)
@@ -164,15 +171,15 @@ def test_a_month_of_three_joined_tables_is_counted_once(
 
 
 def test_clean_filter_final_on_a_synthetic_turbine_year(
-    config_path: Path, repo_paths: ProjectPaths
+    current_path: Path, repo_paths: ProjectPaths
 ) -> None:
-    config = load_telemetry_config(config_path)
+    config = load_telemetry_config(current_path)
     frame = synthetic_turbine_year()
     destination = ingest_dir(repo_paths, SOURCE)
     frame.to_parquet(destination / "T1__2020.parquet", index=False)
 
     stages = build_stages(config, repo_paths, "all", source=SOURCE)
-    with start_run(config_path, config, "all", "telemetry", repo_paths) as ctx:
+    with start_run(current_path, config, "all", "telemetry", repo_paths) as ctx:
         results = run_pipeline(stages, ctx)
         run_dir = ctx.run_dir
 
@@ -208,18 +215,42 @@ def test_clean_filter_final_on_a_synthetic_turbine_year(
     assert final.details["checked"]["windows"] >= 1
 
 
-def test_long_gaps_are_never_imputed(config_path: Path, repo_paths: ProjectPaths) -> None:
-    config = load_telemetry_config(config_path)
+def test_long_gaps_are_never_imputed(current_path: Path, repo_paths: ProjectPaths) -> None:
+    config = load_telemetry_config(current_path)
     frame = synthetic_turbine_year()
     frame.to_parquet(ingest_dir(repo_paths, SOURCE) / "T1__2020.parquet", index=False)
 
     stages = build_stages(config, repo_paths, "all", source=SOURCE)
-    with start_run(config_path, config, "all", "telemetry", repo_paths) as ctx:
+    with start_run(current_path, config, "all", "telemetry", repo_paths) as ctx:
         results = run_pipeline(stages, ctx)
 
     imputed = results[-1].details["imputed"]
     # only the 2-step gap qualifies under max_impute_steps=3; the 30-step hole does not
     assert imputed["wind_speed_ms"] <= 3
+
+
+def test_the_final_stage_withholds_training_windows_inside_an_exclusion(
+    current_path: Path, repo_paths: ProjectPaths
+) -> None:
+    # splits_v2 excludes Penmanshiel from 2018-03-01 00:00; these twenty days start nine
+    # days before it, so the last 11 days' rows (1,584) lie inside the first span.
+    config = load_telemetry_config(current_path)
+    rows = 20 * 144
+    frame = synthetic_turbine_year(rows).assign(
+        source="penmanshiel", site="Penmanshiel", turbine_id="Penmanshiel 01"
+    )
+    frame["timestamp_utc"] = pd.date_range("2018-02-20", periods=rows, freq="10min", tz="UTC")
+    frame.to_parquet(ingest_dir(repo_paths, "penmanshiel") / "P01__2018.parquet", index=False)
+
+    stages = build_stages(config, repo_paths, "all", source="penmanshiel")
+    with start_run(current_path, config, "all", "telemetry", repo_paths) as ctx:
+        results = run_pipeline(stages, ctx)
+        report = (ctx.run_dir / "final_stats_report.md").read_text(encoding="utf-8")
+
+    counts = results[-1].details["split_windows"][("train", "penmanshiel")]
+    assert counts["rows in a training exclusion"] == 11 * 144
+    assert "**Training exclusions** (ADR-0008)" in report
+    assert "| train | penmanshiel | 1,584 |" in report
 
 
 def test_unknown_stage_and_source_are_rejected(config_path: Path, repo_paths: ProjectPaths) -> None:

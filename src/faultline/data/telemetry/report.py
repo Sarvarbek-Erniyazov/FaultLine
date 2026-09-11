@@ -390,6 +390,46 @@ def _splits_section(details: dict[str, Any]) -> str:
         "horizon must equal the split at t. A violation stops the stage "
         "(`windows.LeakageError`), so the counts above are of windows that passed.\n"
     )
+    exclusions: list[dict[str, Any]] = spec.get("training_exclusions", [])
+    if exclusions:
+        withheld_rows = []
+        for key in keys:
+            counts = windows.get(key, {})
+            if not counts.get("rows in a training exclusion"):
+                continue
+            withheld_rows.append(
+                (
+                    key[0],
+                    key[1],
+                    counts["rows in a training exclusion"],
+                    *(
+                        counts.get(f"withheld narrow_within_{_horizon_label(steps)}", 0)
+                        for steps in horizons
+                    ),
+                )
+            )
+        body += (
+            "\n**Training exclusions** (ADR-0008). A training window whose context touches "
+            "one of these spans is withheld, and the re-check above fails if one is not. The "
+            "rows stay in the tables, and no evaluation window is affected.\n\n"
+            + table(
+                ["source", "first step (UTC)", "last step (UTC)", "channels out"],
+                [
+                    (item["source"], item["start"], item["end"], ", ".join(item["channels"]))
+                    for item in exclusions
+                ],
+            )
+            + "\n"
+            + table(
+                [
+                    "split",
+                    "source",
+                    "rows in a span",
+                    *(f"windows withheld {_horizon_label(steps)}" for steps in horizons),
+                ],
+                withheld_rows,
+            )
+        )
     # A source labelled one event per dataset (CARE) is scored per dataset, so its windows
     # are counted below and given no per-step base rate beside the other sites (ADR-0010).
     dataset_level = set(details.get("dataset_level_sources", []))

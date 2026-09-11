@@ -361,7 +361,7 @@ def inspect_missingness_command(
     "and CARE at dataset level, in one report.",
 )
 def inspect_verification_command(
-    config: ConfigOption = Path("configs/data/telemetry_v2.yaml"),
+    config: ConfigOption = Path("configs/data/telemetry_v3.yaml"),
 ) -> None:
     """Run the four verification checks and write their report.
 
@@ -376,13 +376,33 @@ def inspect_verification_command(
 
 
 @inspect_app.command(
+    "core",
+    help="The core channel rule on the cleaned grid: coverage per site and year, the "
+    "seasonally matched shortcut control, and the training exclusions.",
+)
+def inspect_core_command(
+    config: ConfigOption = Path("configs/data/telemetry_v3.yaml"),
+) -> None:
+    """Measure the core channel rule and write its report.
+
+    Args:
+        config: The configuration whose tiers and split specification are checked.
+    """
+    from faultline.data.telemetry.core_rule import inspect_core
+    from faultline.data.telemetry.pipeline import load_telemetry_config
+
+    report = inspect_core(ProjectPaths.resolve(), load_telemetry_config(config), config)
+    typer.echo(f"wrote {report}")
+
+
+@inspect_app.command(
     "channels",
     help="Report each canonical channel's status per source, checked against staged headers.",
 )
 def inspect_channels_command(
     splits: Annotated[
         Path, typer.Option("--splits", help="Split spec naming the held-out and eval-only sources.")
-    ] = Path("configs/data/splits_v0.yaml"),
+    ] = Path("configs/data/splits_v2.yaml"),
 ) -> None:
     """Report each canonical channel's status per source, checked against staged headers.
 

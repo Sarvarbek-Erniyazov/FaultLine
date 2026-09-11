@@ -151,6 +151,16 @@ trained from scratch, evaluated as a risk model rather than a forecaster.
     (0.79-1.03).*
   - *CARE becomes a secondary, dataset-level probe with Wilson intervals: ±14 points at 50%
     (ADR-0010). The label and final reports stop printing its per-step base rates.*
+- *M1b step 10, 2026-09-11: core = 12 in `telemetry_v3.yaml`, by the maps and three
+  measured conditions (ADR-0008 amendment; `faultline inspect core`,
+  `reports/data/core_rule_20260911.md`). Wind direction is extended: 0% of the held-out
+  2019 grid. Condition (c) now uses a seasonally matched control; Penmanshiel's spring
+  2018 rate did not clear it (0.24, 0.14-0.43), and the site-wide instrumentation outage
+  behind it -- two spans, four channels, 3.69% of Penmanshiel's training steps -- is
+  withheld from training windows only (`splits_v2.yaml`): 125,567 windows at each horizon,
+  2.72% of all training windows. Pitch and gear oil clear the
+  matched control (0.95) and stay core. Hill of Towie is reported per year, and the late
+  test with and without `anemometer defect`.*
 - Fit `QuantileBinTokenizer` on the training split only.
 - Model, training loop, checkpointing; multi-seed runs.
 - Risk evaluation: AUPRC, event-level F1, false alarms per hour, detection delay.

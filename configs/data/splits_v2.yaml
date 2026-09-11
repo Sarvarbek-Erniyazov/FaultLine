@@ -1,0 +1,95 @@
+# Site and time split specification, version 2.
+#
+# Written 2026-09-11 at M1b step 10, before any run read it. splits_v1.yaml is untouched,
+# and it no longer loads: it names wind_direction_deg in eval_channels with a site held
+# out, which the leave-site-out rule now rejects (schemas.py, ADR-0008). Every report that
+# read v1 stays regenerable from the commit it landed in.
+#
+# What changed from v1:
+#
+#   * eval_channels is the core set of telemetry_v3.yaml, twelve channels. Wind direction
+#     is extended: 0% of the held-out site's 2019 grid, so it fails condition (a).
+#   * The late test is a temporal hold-out that carries a change in what is labelled, not
+#     a drift test (ADR-0009, evidence note of 2026-09-11). v1's comment says otherwise and
+#     is not edited; this file supersedes it.
+#   * per_year_sites: Hill of Towie results are reported per calendar year as well as
+#     pooled, never pooled only. Its two staged years sit either side of a retrofit, and
+#     only one of them publishes wind direction.
+#   * report_without_messages: every late-test result is reported with and without the
+#     events "anemometer defect" opens. The events stay in the label.
+#   * training_exclusions: the Penmanshiel spring-2018 instrumentation outage, withheld
+#     from training windows only (ADR-0008). Measured in reports/data/core_rule_*.md.
+
+version: 2
+seed: 20260909
+
+site_column: "source"
+time_column: "timestamp_utc"
+source_column: "source"
+
+# CARE is CC BY-SA 4.0 and evaluation-only: every row is test, overriding both axes.
+# A licence constraint, not a modelling preference (ADR-0004, docs/DATA_LICENSES.md).
+eval_only_sources:
+  - "care"
+
+# Hill of Towie: a different manufacturer, control system and a mid-record retrofit.
+holdout_sites:
+  - "hill_of_towie"
+holdout_site_split: "test"
+per_year_sites:
+  - "hill_of_towie"
+
+# The time cut is v1's, settled at M1a step 7 from the per-site coverage: the one cut that
+# puts both training sites in train (2016-2020), val (2021) and the late test (2022-2024).
+time:
+  train_until: "2020-12-31T23:59:59Z"
+  val_until: "2021-12-31T23:59:59Z"
+late_period_split: "test"
+
+# Every late-test result is also reported without the narrow events these messages open
+# (the message opening an event: verify.opening_messages).
+report_without_messages:
+  - "anemometer defect"
+
+# 144 steps (one day) of context ending at t, the horizon (t, t + H] inside t's split,
+# every step a possible window end. NOT the model's context length.
+windows:
+  context_steps: 144
+  stride_steps: 1
+
+# A bounded, site-wide, simultaneous outage: at every one of Penmanshiel's 14 turbines,
+# ambient and nacelle temperature are missing on every reporting step of each span and are
+# published in the week either side; pitch and gear oil are missing on the same steps.
+# Two spans, because all four channels return for the 16 days between them. A training
+# window whose context touches a span is withheld; the rows stay, and no evaluation window
+# is affected. The exclusion rests on the instrumentation, not on the event rate.
+training_exclusions:
+  - source: "penmanshiel"
+    start: "2018-03-01T00:00:00Z"
+    end: "2018-04-05T13:40:00Z"
+    channels: ["ambient_temp_c", "nacelle_temp_c"]
+    reason: >-
+      site-wide instrumentation outage: ambient and nacelle temperature out at every
+      turbine on the same steps, with pitch and gear oil; unrepresentative operating data
+  - source: "penmanshiel"
+    start: "2018-04-21T05:40:00Z"
+    end: "2018-05-16T10:10:00Z"
+    channels: ["ambient_temp_c", "nacelle_temp_c"]
+    reason: >-
+      the same outage resumed after 16 days: ambient and nacelle temperature out at every
+      turbine on the same steps, with pitch and gear oil; unrepresentative operating data
+
+# The core set of telemetry_v3.yaml, in identifier order.
+eval_channels:
+  - wind_speed_ms
+  - power_kw
+  - rotor_speed_rpm
+  - generator_speed_rpm
+  - pitch_angle_deg
+  - nacelle_position_deg
+  - ambient_temp_c
+  - nacelle_temp_c
+  - gearbox_oil_temp_c
+  - generator_bearing_temp_c
+  - generator_winding_temp_c
+  - main_bearing_temp_c

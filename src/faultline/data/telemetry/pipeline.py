@@ -24,6 +24,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, ClassVar
 
+import numpy as np
 import pandas as pd
 from pydantic import Field, model_validator
 
@@ -32,6 +33,7 @@ from faultline.data.common.splits import (
     SplitsConfig,
     assign_splits,
     check_eval_channels_against_maps,
+    in_training_exclusion,
     split_counts,
 )
 from faultline.data.common.stage import Stage, StageResult
@@ -803,6 +805,7 @@ def _tally_windows(
 
     split = frame["split"].to_numpy(dtype=object)
     segment = frame["segment_id"].to_numpy()
+    excluded = in_training_exclusion(frame, config) & (split == "train")
     for name in pd.unique(split):
         entry = tally.setdefault((str(name), source), {})
         rows = split == name
@@ -810,18 +813,26 @@ def _tally_windows(
         entry["segments"] = entry.get("segments", 0) + len(
             {int(s) for s in segment[rows] if s >= 0}
         )
+        if config.training_exclusions:
+            entry["rows in a training exclusion"] = entry.get(
+                "rows in a training exclusion", 0
+            ) + int((excluded & rows).sum())
     checked = 0
     for steps in horizons:
         ends = window_ends(frame, config, steps)
+        withheld = np.zeros(len(frame), dtype=bool)
+        if config.training_exclusions:
+            withheld = window_ends(frame, config, steps, apply_exclusions=False) & ~ends
         checked += assert_windows_within_splits(frame, ends, config, steps)
         for label_set in LABEL_SETS:
             column = label_column(label_set, steps)
             if column not in frame.columns:
                 continue
             values = frame[column]
-            known = ends & values.notna().to_numpy()
+            labelled = values.notna().to_numpy()
+            known = ends & labelled
             positive = ends & values.fillna(False).to_numpy(dtype=bool)
-            for name in pd.unique(split[ends]):
+            for name in pd.unique(split[ends | withheld]):
                 entry = tally.setdefault((str(name), source), {})
                 here = split == name
                 entry[f"windows {column}"] = entry.get(f"windows {column}", 0) + int(
@@ -830,6 +841,10 @@ def _tally_windows(
                 entry[f"positive {column}"] = entry.get(f"positive {column}", 0) + int(
                     (positive & here).sum()
                 )
+                if config.training_exclusions:
+                    entry[f"withheld {column}"] = entry.get(f"withheld {column}", 0) + int(
+                        (withheld & labelled & here).sum()
+                    )
     return checked
 
 

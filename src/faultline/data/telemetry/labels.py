@@ -34,6 +34,7 @@ import pandas as pd
 from pydantic import Field, model_validator
 
 from faultline.config import StrictModel, file_hash, load_config
+from faultline.data.common.intervals import wilson_interval
 from faultline.data.common.report import header_block, kv_table, section, table, top_values_table
 from faultline.data.common.stage import StageResult
 from faultline.data.telemetry.adapters import get_adapter
@@ -506,8 +507,15 @@ class SiteLabels:
     extra: dict[str, Any] = field(default_factory=dict)
 
 
-def _years(paths: Sequence[Path]) -> set[int]:
-    """The years a set of turbine-year files covers."""
+def grid_years(paths: Sequence[Path]) -> set[int]:
+    """The years a set of turbine-year files covers, read from their names.
+
+    Args:
+        paths: Turbine-year files named ``<turbine>__<year>.parquet``.
+
+    Returns:
+        The calendar years.
+    """
     years = set()
     for path in paths:
         stem = path.stem.rsplit("__", 1)
@@ -675,7 +683,7 @@ class LabelStage(TelemetryStage):
         series = [m for m in members if m.kind == "downtime_series"]
         if not series:
             raise FileNotFoundError(f"{source}: no downtime series staged")
-        years = _years(grid_files)
+        years = grid_years(grid_files)
         # A step late in December looks into January of the next year.
         downtime = read_downtime(series[0], years | {year + 1 for year in years})
         site_name = str(alarms["site"].iloc[0]) if not alarms.empty else source
@@ -763,14 +771,14 @@ class LabelStage(TelemetryStage):
             for stale in destination.glob("*.parquet"):
                 stale.unlink()
             site = HarmonisedSite(source=source)
-            covered = _grid_coverage(grid_files)
+            covered = grid_coverage(grid_files)
             site.turbines = len(covered)
             site.steps = sum(len(stamps) for stamps in covered.values())
             ingested = pd.read_parquet(events_path)
             built = self._source_stops(source, ingested, rules, rule, grid_files, covered, site)
 
-            narrow_in = _in_grid(built.narrow, covered)
-            broad_in = _in_grid(built.broad, covered)
+            narrow_in = in_grid(built.narrow, covered)
+            broad_in = in_grid(built.broad, covered)
             site.events = {"narrow": int(narrow_in.sum()), "broad": int(broad_in.sum())}
             site.causes = {
                 str(k): int(v)
@@ -781,7 +789,7 @@ class LabelStage(TelemetryStage):
             )
             for name, table_ in (("narrow", built.narrow), ("broad", built.broad)):
                 path = destination / f"events_{name}.parquet"
-                table_.assign(in_grid=_in_grid(table_, covered)).to_parquet(path, index=False)
+                table_.assign(in_grid=in_grid(table_, covered)).to_parquet(path, index=False)
                 outputs.append(path)
             if not built.stream.empty:
                 path = destination / "status_stream.parquet"
@@ -881,7 +889,7 @@ class LabelStage(TelemetryStage):
             for name, causes in (("narrow", rule.narrow_causes), ("broad", list(CAUSES))):
                 counted = select_events(built.steps, causes, duration)
                 site.sensitivity.setdefault(name, {})[duration] = int(
-                    _in_grid(counted, covered).sum()
+                    in_grid(counted, covered).sum()
                 )
         built.narrow = select_events(built.steps, rule.narrow_causes, rule.min_duration_s)
         built.broad = select_events(built.steps, list(CAUSES), rule.min_duration_s)
@@ -915,10 +923,10 @@ class LabelStage(TelemetryStage):
 
         duration = (stops["end_utc"] - stops["start_utc"]).dt.total_seconds().to_numpy()
         technical = (causes[is_stop] == "technical").to_numpy()
-        in_grid = _in_grid(stops, covered)
-        site.rows = {"any": int((technical & in_grid).sum())}
+        on_grid = in_grid(stops, covered)
+        site.rows = {"any": int((technical & on_grid).sum())}
         for threshold in rule.durations:
-            site.rows[f"{threshold:g}"] = int((technical & in_grid & (duration >= threshold)).sum())
+            site.rows[f"{threshold:g}"] = int((technical & on_grid & (duration >= threshold)).sum())
 
         emergency = {
             normalize_message(text, self.config.events) for text in rule.emergency_stop_strings
@@ -927,7 +935,7 @@ class LabelStage(TelemetryStage):
         alternative = causes.where(~flagged, "technical")
         steps_e, _ = status_stop_steps(stops, alternative[is_stop])
         narrow_e = select_events(steps_e, rule.narrow_causes, rule.min_duration_s)
-        site.emergency = int(_in_grid(narrow_e, covered).sum())
+        site.emergency = int(in_grid(narrow_e, covered).sum())
         site.extra.update(
             {
                 "stop_rows": int(is_stop.sum()),
@@ -990,7 +998,7 @@ class LabelStage(TelemetryStage):
         series = [m for m in members if m.kind == "downtime_series"]
         if not series:
             raise FileNotFoundError(f"{source}: no downtime series staged")
-        years = _years(grid_files)
+        years = grid_years(grid_files)
         # A step late in December looks into January of the next year.
         downtime = read_downtime(series[0], years | {year + 1 for year in years})
         fields = rule.stop_classes.fields
@@ -1093,6 +1101,9 @@ class HarmonisedSite:
     stream: dict[str, int] = field(default_factory=dict)
     by_year: dict[int, dict[str, int]] = field(default_factory=dict)
     extra: dict[str, Any] = field(default_factory=dict)
+    #: One labelled event per dataset (CARE): reported per dataset, never beside the
+    #: per-step rates of the other sites (ADR-0010).
+    dataset_level: bool = False
 
     @property
     def turbine_years(self) -> float:
@@ -1154,14 +1165,14 @@ def _coverage(frame: pd.DataFrame) -> dict[str, np.ndarray]:
     }
 
 
-def _grid_coverage(grid_files: Sequence[Path]) -> dict[str, np.ndarray]:
+def grid_coverage(grid_files: Sequence[Path]) -> dict[str, np.ndarray]:
     """Grid steps per turbine across every cleaned turbine-year."""
     parts = [pd.read_parquet(path, columns=["turbine_id", "timestamp_utc"]) for path in grid_files]
     frames = [part for part in parts if not part.empty]
     return _coverage(pd.concat(frames, ignore_index=True)) if frames else {}
 
 
-def _in_grid(events: pd.DataFrame, covered: dict[str, np.ndarray]) -> np.ndarray:
+def in_grid(events: pd.DataFrame, covered: dict[str, np.ndarray]) -> np.ndarray:
     """Whether each event starts in a step of its turbine's cleaned grid."""
     mask = np.zeros(len(events), dtype=bool)
     if events.empty:
@@ -1278,10 +1289,11 @@ def _event_info_stops(
         "by farm and label": {
             str(key): int(count) for key, count in farm_label.value_counts().sort_index().items()
         },
-        "anomaly starts inside their dataset's grid": int(_in_grid(events, covered).sum()),
+        "anomaly starts inside their dataset's grid": int(in_grid(events, covered).sum()),
         "schema": _raw_keys(ingested),
     }
     site.extra["schema"] = {"event_info": _raw_keys(ingested)}
+    site.dataset_level = True
     return SourceStops(
         steps=empty_stop_steps(),
         narrow_covered=covered,
@@ -1754,7 +1766,12 @@ def render_harmonised_report(meta: Any, result: StageResult) -> str:
         A Markdown document.
     """
     details = result.details
-    sites: dict[str, HarmonisedSite] = details.get("sites", {})
+    everywhere: dict[str, HarmonisedSite] = details.get("sites", {})
+    # A source labelled one event per dataset (CARE) is reported per dataset in its own
+    # section and left out of every table of per-step or per-turbine-year rates: its steps
+    # are chosen datasets, not a whole record (ADR-0010).
+    sites = {source: site for source, site in everywhere.items() if not site.dataset_level}
+    level = {source: site for source, site in everywhere.items() if site.dataset_level}
     horizons: list[int] = details.get("horizons_steps", [])
     rule: dict[str, Any] = details.get("rule", {})
     durations = sorted(
@@ -1790,8 +1807,8 @@ def render_harmonised_report(meta: Any, result: StageResult) -> str:
         section(
             "Label table: events per turbine-year and base rate, both sets",
             "Events with their rate per turbine-year of grid time in brackets. A base rate is "
-            "positive steps over steps whose label is known. CARE is one dataset per labelled "
-            "event, so its rate per turbine-year does not compare with the other three.\n\n"
+            "positive steps over steps whose label is known. A source labelled one event per "
+            "dataset is reported per dataset, in its own section below (ADR-0010).\n\n"
             + _label_table(sites, horizons),
         )
     )
@@ -1904,7 +1921,7 @@ def render_harmonised_report(meta: Any, result: StageResult) -> str:
                 ["site", "table", "columns", "names"],
                 [
                     (source, name, len(columns), ", ".join(f"`{c}`" for c in columns))
-                    for source, site in sites.items()
+                    for source, site in everywhere.items()
                     for name, columns in site.extra.get("schema", {}).items()
                 ],
             ),
@@ -1946,23 +1963,54 @@ def render_harmonised_report(meta: Any, result: StageResult) -> str:
             ),
         )
     )
-    for source, site in sites.items():
-        care = site.extra.get("care")
-        if care:
-            parts.append(
-                section(
-                    f"{source}: labelled events",
-                    "One `anomaly` row per anomaly dataset is both label sets; there is no "
-                    "stop evidence to apply the rule to.\n\n"
-                    + kv_table(
-                        {
-                            "event_info rows": care["rows"],
-                            **care["by farm and label"],
-                            "anomaly starts inside their dataset's grid": care[
-                                "anomaly starts inside their dataset's grid"
-                            ],
-                        }
-                    ),
+    for source, site in level.items():
+        care = site.extra.get("care", {})
+        by_farm = care.get("by farm and label", {})
+        parts.append(
+            section(
+                f"{source}: labelled events, per dataset",
+                "One labelled window per dataset. An `anomaly` row is both label sets, and there "
+                "is no stop evidence to apply the rule to. CARE is scored per dataset, with its "
+                "own CARE score, so no per-step base rate and no rate per turbine-year is "
+                "printed for it; the table after the counts is the interval a dataset-level rate "
+                "near 50% can carry at these counts, with and without farm A (ADR-0004, "
+                "ADR-0010).\n\n"
+                + kv_table(
+                    {
+                        "event_info rows": care.get("rows", 0),
+                        **by_farm,
+                        "anomaly starts inside their dataset's grid": care.get(
+                            "anomaly starts inside their dataset's grid", 0
+                        ),
+                    }
                 )
+                + "\n"
+                + dataset_interval_table(by_farm),
             )
+        )
     return "".join(parts)
+
+
+def dataset_interval_table(by_farm_label: dict[str, int]) -> str:
+    """Datasets per provider label, with and without farm A, and the interval a rate carries.
+
+    Args:
+        by_farm_label: Datasets per ``"<farm> <label>"``, as the label stage counts them.
+
+    Returns:
+        A Markdown table: label, farms, datasets and the Wilson 95% interval of a rate near
+        one half at that count -- the widest a dataset-level rate can have.
+    """
+    totals: dict[tuple[str, str], int] = {}
+    for key, count in by_farm_label.items():
+        farm, _, label = str(key).rpartition(" ")
+        totals[(label, "all farms")] = totals.get((label, "all farms"), 0) + int(count)
+        if farm != "farm_a":
+            totals[(label, "without farm A")] = totals.get((label, "without farm A"), 0) + int(
+                count
+            )
+    rows = []
+    for (label, farms), count in sorted(totals.items()):
+        low, high = wilson_interval(round(count / 2), count) if count else (float("nan"),) * 2
+        rows.append((label, farms, count, f"{low * 100:.0f}-{high * 100:.0f}%"))
+    return table(["label", "farms", "datasets", "a rate near 50%, 95% interval"], rows)

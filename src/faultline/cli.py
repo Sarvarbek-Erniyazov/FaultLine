@@ -356,6 +356,26 @@ def inspect_missingness_command(
 
 
 @inspect_app.command(
+    "verification",
+    help="Four checks on the harmonised labels: stop classes, late-period rates, channel gaps "
+    "and CARE at dataset level, in one report.",
+)
+def inspect_verification_command(
+    config: ConfigOption = Path("configs/data/telemetry_v2.yaml"),
+) -> None:
+    """Run the four verification checks and write their report.
+
+    Args:
+        config: The configuration the labels and tables were produced under.
+    """
+    from faultline.data.telemetry.pipeline import load_telemetry_config
+    from faultline.data.telemetry.verify import inspect_verification
+
+    report = inspect_verification(ProjectPaths.resolve(), load_telemetry_config(config), config)
+    typer.echo(f"wrote {report}")
+
+
+@inspect_app.command(
     "channels",
     help="Report each canonical channel's status per source, checked against staged headers.",
 )

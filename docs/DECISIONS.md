@@ -703,3 +703,123 @@ the downtime series at Hill of Towie.
 timers that contradicts the reading above; a training site whose status export stops
 publishing start and end times; or a new held-out site with no published cause, where
 rung (b) would apply and be recorded here as an amendment.
+
+### Evidence note, 2026-09-11 (M1b step 9) -- the stop classes by behaviour, the late period
+
+`reports/data/verification_20260911.md` (`faultline inspect verification`, telemetry_v2)
+is the evidence for every figure below.
+
+**Gate 2 accepted these labels and voided the 20-40 target.** The target was set against
+counts of status rows; this rule counts episodes, so the change of rule re-based the unit.
+The target is recorded as void, never as met, and no rate is compared with it.
+
+**The four stop-class timers, read by what they do.** Unsettled point 1 above called the
+commanded-as-planned reading a judgement. It is now measured. Every timer's runs at the
+held-out site (2019 and 2023, 21 turbines) were profiled: when in the week and the day
+they begin, how long they last, whether telemetry is missing while they run, how many
+turbines share them, and how their hours per turbine-day compare with each `Out...Hours`
+column of the provider's `tblDailySummary`. No pairing with those columns was assumed
+from the names; every timer met every column.
+
+| timer | provider description | read as | behaviour | best daily-summary match | confidence |
+| --- | --- | --- | --- | --- | --- |
+| `wtc_ScTurSto_timeon` | "Time turbine error active in period" | technical | starts spread evenly over the week (29.9% of runs Mon-Fri 07-17 UTC, 29.8% for an even spread; 29.1% at weekends, 28.6% even); one turbine at a time (median) | `OutTurHours`, 97.1% of turbine-days | high: described, and behaves like faults |
+| `wtc_ScEnvSto_timeon` | not described | environmental | an afternoon peak (14:00 UTC) and an even week (28.3% at weekends); 7 turbines at once (median), 11 or more on 23.3% of its steps; high wind (8000) and icing (8230) run under it on 99.1% and 100% of occurrences | `OutEnvHours`, 99.5% | high |
+| `wtc_ScComSto_timeon` | not described | planned (commanded) | working hours; see below | `OutCmdHours`, 83.9%; no other column above 37.4% | high |
+| `wtc_ScGrdSto_timeon` | not described | grid | farm-wide: 19 of 21 turbines at once (median), 11 or more on 88.6% of its steps; 299 runs | `OutGrdHours`, 62.0% | moderate: a grid event's signature, but the weakest daily agreement of the four and few runs |
+
+**Com, both readings, with the evidence for each.**
+
+- *Commanded, so planned (as configured).* 86.4% of its 755 runs start Monday to Friday
+  between 07:00 and 17:00 UTC, against 29.8% for starts spread evenly over the week; 6.0%
+  start at a weekend, against 28.6%; 26.8% start in the 07:00 hour, the start of a working
+  day. Telemetry is present on every one of its steps (0.00% missing). The rotor turns on
+  10.9% of them, the fewest of the four timers, and a median of one turbine is in it at a
+  time. Its hours agree with `OutCmdHours` on 83.9% of turbine-days.
+- *Communication, so possibly technical.* For it: the abbreviation, and 11.8% of its steps
+  with 11 or more turbines in it at once, which a park-level outage would produce -- and
+  so would a park-level command such as curtailment. Against it: a communication outage
+  leaves the telemetry missing while it lasts, and this one never does; and an outage has
+  no reason to keep office hours.
+- *The counterfactual.* Read as technical, the held-out site's narrow label goes from 693
+  to 1,206 events (16.5 to 28.7 per turbine-year): 625 unchanged, 68 extended or merged,
+  516 added. **84.3% of the Hill of Towie narrow label moves.** No other reading in this
+  record matters as much, which is why it rests on four behavioural measures that agree
+  rather than on the name. For comparison, reading Env as technical moves 0.7% and Grd
+  16.9%.
+
+**The late split is a temporal hold-out with a change in what is labelled, not a drift
+test.** This supersedes "the temporal test is a drift test" (M1a step 7, `splits_v1.yaml`).
+The narrow rate rises from 2022 at Kelmarsh (18.3 per turbine-year, 95% interval
+15.1-22.1, against 8.96 in training) and from 2021 at Penmanshiel. That is before the 2023
+SCADA export change, which therefore does not explain it. The message whose narrow events
+rose most between training and the late test -- found by the report, not chosen -- is
+`anemometer defect`. It opens more than one narrow event per turbine-year from 2021 at
+**both** training sites at once (two events before then at Kelmarsh, one at Penmanshiel),
+the year the status export gained two columns. Two farms starting to log the same stop in
+the same year points to a reporting or firmware change, not to both farms degrading at
+once. The stops are also concentrated: one turbine holds 162 of Kelmarsh's 204 narrow
+events in 2023. Without the events the message opens, Kelmarsh reads 8.2 per turbine-year
+in both 2022 and 2023, flat against training. The late test then reads 11.05 (Kelmarsh)
+and 12.44 (Penmanshiel) per turbine-year, against 23.05 and 23.80 with them. Kelmarsh 2024
+(16.8, none from that message) stays above training and is not explained here.
+
+**Standing requirement: every late-test result is reported both with and without the
+anemometer-defect events.** The events stay in the label: there is one rule, and the
+configured categories file the message as an equipment fault. But no late-test number
+stands alone. From M1b steps 10 and 12 the split specification names the message, and the
+window index carries what the second number needs.
+
+---
+
+## ADR-0010 CARE is a secondary, dataset-level generalisation probe
+
+**Status:** Accepted · **Date:** 2026-09-11
+
+**Decision.** CARE is evaluated per dataset and reported as a secondary generalisation
+probe, with a Wilson 95% interval on every rate, both with and without farm A (ADR-0004). No
+per-step base rate or rate per turbine-year is reported for CARE beside the other sites.
+The label report and the final-stage report print its datasets in a section of their own,
+driven by `HarmonisedSite.dataset_level` and the final stage's `dataset_level_sources`: the
+sources the labelling file reads through its `event_info` rule.
+
+**Context.** CARE is a benchmark of 95 datasets. Each is one turbine's history built around
+one provider label: 45 anomalous (12, 6 and 27 in farms A, B and C) and 50 normal (10, 9 and
+31). The provider scores a detector per dataset with its own CARE score (Gueck, Bruns and
+Dupont 2024). Until this record the label report printed a per-step base rate for it
+(0.005%, 0.031% and 0.123% at 1 h, 6 h and 24 h). That counts steps of chosen datasets, and
+it does not compare with the three sites whose steps are a whole record.
+
+**Why its steps do not compare** (`reports/data/verification_20260911.md`, section d):
+
+1. **Normalised power.** Active power is per unit of a rated power the record does not
+   publish (bound -0.1 to 1.1), so it is not on the kW scale the other sites share.
+2. **Anonymised timestamps.** Their spacing is real and their dates are not
+   (`absolute_time: false`), so CARE has no calendar feature and no calendar split.
+3. **Missingness by farm.** On the clean grid farm A has no main bearing temperature;
+   farm B has no nacelle temperature, generator bearing or winding temperature; farm C
+   has no nacelle position, wind direction, nacelle temperature or generator bearing. Each
+   farm maps a different subset of the canonical list.
+
+**Its statistical power, stated.** At a 50% detection rate, 45 anomalous datasets give a
+95% interval of 35-63%, about ±14 points. Without farm A (33 datasets) it is ±16 points,
+and a single farm gives ±18 (C), ±25 (A) or ±31 (B). **CARE therefore cannot separate two
+models whose dataset-level rates differ by less than roughly 15 points**, and no smaller
+CARE difference is reported as a difference. A paired comparison on the same datasets
+could resolve less. It would be stated with its own test, and it does not change CARE's
+role here.
+
+**Rejected.**
+
+| alternative | why rejected |
+| --- | --- |
+| CARE per-step base rates beside the other sites | Steps of chosen datasets are not a record; the rate says how the datasets were cut. |
+| CARE as a fourth site in worst-site performance | Its interval is wider than most differences a worst-site figure would show, and its power channel and calendar are not comparable. |
+
+**What this does not change.** CARE stays evaluation-only under its licence (ADR-0004), and
+its `anomaly` rows stay both label sets (ADR-0009). How its normalised power enters the
+token stream is decided with the tokenizer (M1b step 11).
+
+**What would change this decision.** A published rated power per farm, a CARE release with
+real timestamps, or more datasets. Each of these would narrow the interval or make the
+steps comparable.

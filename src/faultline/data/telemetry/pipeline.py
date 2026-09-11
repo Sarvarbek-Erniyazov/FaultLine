@@ -732,9 +732,25 @@ class FinalStage(TelemetryStage):
                 "split_windows": tally,
                 "split_events": events,
                 "checked": checked,
+                "dataset_level_sources": _dataset_level_sources(self.paths, self.config),
             },
             outputs=written,
         )
+
+
+def _dataset_level_sources(paths: ProjectPaths, config: TelemetryPipelineConfig) -> list[str]:
+    """Sources labelled one event per dataset, whose per-step rates do not compare (ADR-0010).
+
+    They are the sources the labelling file reads through its ``event_info`` rule: CARE,
+    one labelled anomaly or normal window per dataset.
+    """
+    path = paths.repo_root / config.events.labels_config if config.events.labels_config else None
+    if path is None or not path.is_file():
+        return []
+    # Imported here: the labels module builds on this one.
+    from faultline.data.telemetry.labels import EventLabelsConfig
+
+    return list(load_config(path, EventLabelsConfig).event_info.sources)
 
 
 def _join_labels(frame: pd.DataFrame, path: Path) -> pd.DataFrame:

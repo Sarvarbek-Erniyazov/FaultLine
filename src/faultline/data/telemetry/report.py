@@ -390,9 +390,14 @@ def _splits_section(details: dict[str, Any]) -> str:
         "horizon must equal the split at t. A violation stops the stage "
         "(`windows.LeakageError`), so the counts above are of windows that passed.\n"
     )
+    # A source labelled one event per dataset (CARE) is scored per dataset, so its windows
+    # are counted below and given no per-step base rate beside the other sites (ADR-0010).
+    dataset_level = set(details.get("dataset_level_sources", []))
     for label_set in ("narrow", "broad"):
         rows = []
         for key in keys:
+            if key[1] in dataset_level:
+                continue
             counts = windows.get(key, {})
             cells: list[Any] = [
                 key[0],
@@ -412,6 +417,38 @@ def _splits_section(details: dict[str, Any]) -> str:
         for steps in horizons:
             headers += [f"windows {_horizon_label(steps)}", f"positive {_horizon_label(steps)}"]
         body += f"\n**{label_set.capitalize()} label**\n\n" + table(headers, rows)
+    level_rows = [
+        (
+            key[0],
+            key[1],
+            windows.get(key, {}).get("rows", 0),
+            windows.get(key, {}).get("segments", 0),
+            events.get(key, {}).get("narrow", 0),
+            *(
+                windows.get(key, {}).get(f"windows narrow_within_{_horizon_label(steps)}", 0)
+                for steps in horizons
+            ),
+        )
+        for key in keys
+        if key[1] in dataset_level
+    ]
+    if level_rows:
+        body += (
+            "\n**Dataset-level sources** (ADR-0010). One labelled anomaly or normal window "
+            "per dataset, scored per dataset: its windows are counted, and no per-step base "
+            "rate is printed beside the sites whose steps are a whole record.\n\n"
+            + table(
+                [
+                    "split",
+                    "source",
+                    "rows",
+                    "segments",
+                    "labelled anomalies",
+                    *(f"windows {_horizon_label(steps)}" for steps in horizons),
+                ],
+                level_rows,
+            )
+        )
     return section("Splits: windows and events per split", body)
 
 

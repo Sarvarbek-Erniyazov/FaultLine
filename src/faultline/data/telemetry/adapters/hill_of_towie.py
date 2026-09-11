@@ -69,6 +69,9 @@ STATIONS_FILE = "Hill_of_Towie_turbine_metadata.csv"
 #: The alarm log's columns, all of them.
 ALARM_COLUMNS: tuple[str, ...] = ("TimeOn", "TimeOff", "StationNr", "Alarmcode")
 
+#: "Daily aggregations of turbine signals" (Hill_of_Towie_tables_description.csv).
+DAILY_TABLE = "tblDailySummary"
+
 _MONTHLY = re.compile(r"^(tbl[A-Za-z]+)_(\d{4})_(\d{2})\.csv$")
 
 
@@ -358,6 +361,63 @@ class HillOfTowieAdapter(BaseAdapter):
                 "of stop-class values; a label source is not resolved by picking one"
             )
         return result.sort_values(["turbine_id", "timestamp_utc"]).reset_index(drop=True)
+
+    def read_daily_summary(
+        self,
+        members: Sequence[RawMember],
+        years: Collection[int],
+        columns: Sequence[str],
+    ) -> pd.DataFrame:
+        """Read the provider's daily summary for the years asked for.
+
+        ``tblDailySummary`` ("Daily aggregations of turbine signals") carries one row per
+        station and day, in monthly files like the 10-minute tables. Its ``TimeStamp``
+        names the day itself: the verification report compares its daily hours with the
+        same day's 10-minute stop-class timers, and they agree with no shift.
+
+        Args:
+            members: Members discovered for the source.
+            years: Calendar years to read (by the year in the member's name).
+            columns: Summary columns to keep.
+
+        Returns:
+            ``turbine_id``, ``day`` (UTC midnight) and one column per requested column
+            found, one row per turbine and day.
+        """
+        wanted = set(years)
+        frames: list[pd.DataFrame] = []
+        for member in members:
+            match = _MONTHLY.match(_basename(member))
+            if not match or match.group(1) != DAILY_TABLE or member.size == 0:
+                continue
+            if int(match.group(2)) not in wanted:
+                continue
+            available = set(header_columns(member))
+            present = [name for name in columns if name in available]
+            frame = read_csv_member_columns(member, [TIMESTAMP, STATION, *present])
+            if frame.empty:
+                continue
+            days = pd.to_datetime(frame[TIMESTAMP], errors="coerce", utc=True).dt.floor("D")
+            turbines = self._turbines(frame[STATION], member)
+            keep = (days.notna() & turbines.notna()).to_numpy()
+            frames.append(
+                pd.DataFrame(
+                    {
+                        "turbine_id": turbines[keep].astype(str).to_numpy(),
+                        "day": days[keep].to_numpy(),
+                        **{
+                            name: pd.to_numeric(frame.loc[keep, name], errors="coerce").to_numpy()
+                            for name in present
+                        },
+                    }
+                )
+            )
+        if not frames:
+            return pd.DataFrame(columns=["turbine_id", "day", *columns])
+        result = pd.concat(frames, ignore_index=True)
+        result["day"] = pd.to_datetime(result["day"], utc=True)
+        result = result.drop_duplicates(subset=["turbine_id", "day"])
+        return result.sort_values(["turbine_id", "day"]).reset_index(drop=True)
 
     def load_events(self, member: RawMember) -> pd.DataFrame | None:
         """Read one monthly alarm log into the canonical events schema.

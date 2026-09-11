@@ -131,6 +131,26 @@ trained from scratch, evaluated as a risk model rather than a forecaster.
   at 49.8% (absent in 2019, half the held-out grid); Penmanshiel pitch and gear oil at
   70% (whole turbine-years missing). Imputation fills under 0.03% of steps. No channel
   is demoted: that is gate 2's decision, recorded under ADR-0008.*
+- *Gate 2, 2026-09-11: wind direction demoted to extended (core 12); Penmanshiel pitch and
+  gear oil stay core; the harmonised labels accepted; the 20-40 events/turbine-year target
+  void -- it was set against row counts, and the rule re-based the unit -- and never met.*
+- *M1b step 9, 2026-09-11: four checks in `reports/data/verification_20260911.md`
+  (`faultline inspect verification`).*
+  - *Hill of Towie's Com timer reads as a commanded stop by behaviour: 86.4% of its runs
+    start Mon-Fri 07-17 UTC, and telemetry never drops out while it runs. Reading it as
+    technical would move 84.3% of the held-out narrow label (693 to 1,206 events;
+    ADR-0009).*
+  - *The late split is a temporal hold-out with a change in what is labelled, not a drift
+    test; this supersedes step 7's wording. The rise starts in 2022 at Kelmarsh and 2021
+    at Penmanshiel, before the 2023 export change, and `anemometer defect` stops lead it,
+    logged from 2021 at both sites at once. Without them Kelmarsh 2022-23 is flat against
+    training. Standing requirement: every late-test result is reported with and without
+    the anemometer-defect events.*
+  - *Penmanshiel's pitch and gear-oil gaps fill 42 of 70 train turbine-years and none in
+    val or late test. Within train they are not label-informative: rate ratio 0.90
+    (0.79-1.03).*
+  - *CARE becomes a secondary, dataset-level probe with Wilson intervals: ±14 points at 50%
+    (ADR-0010). The label and final reports stop printing its per-step base rates.*
 - Fit `QuantileBinTokenizer` on the training split only.
 - Model, training loop, checkpointing; multi-seed runs.
 - Risk evaluation: AUPRC, event-level F1, false alarms per hour, detection delay.

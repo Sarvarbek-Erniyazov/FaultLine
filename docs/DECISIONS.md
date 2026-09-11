@@ -279,6 +279,33 @@ frozen: raising one moves every later block, so it supersedes this record rather
 editing a constant. `VocabLayout.__post_init__` raises on capacity overflow so that
 the choice cannot be made by accident.
 
+### Note, 2026-09-12 (M1b step 12) -- the M1 stream carries no channel tokens
+
+The shards M1 trains on use a **fixed-order stream** (`JointVocab.encode_steps`): each step
+is `<sep>` followed by one bin token for each core channel in identifier order, so twelve
+core channels cost thirteen tokens a step rather than the twenty-five a channel token before
+every bin would. Position identifies the channel because every step carries the same
+channels in the same order; a missing value is `<nan>` in its channel's position, and a
+channel excluded at a source (CARE power, ADR-0011) is `<nan>` throughout. Shards are
+`uint16`: every identifier of the telemetry prefix is below 1,184, and the joint vocabulary
+with a full text block stays below 65,536.
+
+**The channel block is kept, and reserved.** Its 64 identifiers are not emitted at M1. They
+are for the variable-set ablation over extended channels, where a step carries a varying set
+of channels and position can no longer say which is which; `encode_telemetry`, a channel
+token before each bin, is kept for it. The shared bin range this record chose still needs
+conditioning on the channel; in the fixed-order stream that conditioning comes from position
+instead of a preceding channel token, and whether it is strong enough stays the M3 probe
+recorded above.
+
+**A defect this note fixes.** This record says the canonical channel order fixes the channel
+identifiers. The M0 encoder took a channel token's identifier from the channel's position in
+the tokenizer's fitted list, which agrees with the canonical position only while a tokenizer
+fits a prefix of the canonical list. With the twelve core channels it would have renumbered
+every channel after wind direction. The identifier is now the canonical position, checked
+against the layout when a vocabulary is built, and tested with a tokenizer fitted in reverse
+order. No shard or checkpoint carried the old numbering: no channel token has been written.
+
 ---
 
 ## ADR-0004 Data licence policy

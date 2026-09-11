@@ -60,8 +60,11 @@ def test_sizes_sum_correctly(vocab: JointVocab) -> None:
 def test_layout_and_tokenizer_must_agree(bin_tokenizer: QuantileBinTokenizer) -> None:
     with pytest.raises(ValueError, match="bins"):
         JointVocab(VocabLayout.from_sizes(100, 2, 64), bin_tokenizer=bin_tokenizer)
-    with pytest.raises(ValueError, match="channels"):
-        JointVocab(VocabLayout.from_sizes(100, 5, 8), bin_tokenizer=bin_tokenizer)
+    # power_kw is canonical channel 1, so a layout of one channel identifier cannot hold it
+    with pytest.raises(ValueError, match="channel identifiers"):
+        JointVocab(VocabLayout.from_sizes(100, 1, 8), bin_tokenizer=bin_tokenizer)
+    # a layout with room to spare is fine: channel identifiers are canonical positions
+    JointVocab(VocabLayout.from_sizes(100, 14, 8), bin_tokenizer=bin_tokenizer)
 
 
 def test_encode_text_is_wrapped_and_in_range(vocab: JointVocab) -> None:
@@ -92,10 +95,41 @@ def test_encode_telemetry_interleaves_channel_and_bin(
     assert all(kind in ("bin", "special") for kind in kinds[1::2])
 
 
-def test_channel_tokens_follow_the_fitted_order(vocab: JointVocab, frame: pd.DataFrame) -> None:
+def test_channel_tokens_are_canonical_positions_not_the_fitted_order(frame: pd.DataFrame) -> None:
+    # ADR-0003: the canonical channel list fixes channel identifiers. A tokenizer fitted in
+    # another order must not renumber them (the M0 encoder took the tokenizer's position).
+    reordered = QuantileBinTokenizer.fit(frame, ["power_kw", "wind_speed_ms"], n_bins=8)
+    vocab = JointVocab(VocabLayout.from_sizes(0, 2, 8), bin_tokenizer=reordered)
     body = vocab.encode_telemetry(frame.head(1))[1:-1]
     channels = [vocab.decode(value).local_id for value in body[0::2]]
-    assert channels == [0, 1]
+    assert channels == [1, 0]  # power_kw is canonical 1, wind_speed_ms canonical 0
+
+
+def test_the_fixed_order_stream_is_a_delimiter_and_one_bin_token_a_channel(
+    vocab: JointVocab, frame: pd.DataFrame
+) -> None:
+    window = frame.head(5).copy()
+    window.loc[window.index[2], "power_kw"] = np.nan
+    steps = vocab.encode_steps(window)
+    assert steps.dtype == np.uint16
+    assert steps.shape == (5, 1 + len(CHANNELS))
+    assert (steps[:, 0] == vocab.special("<sep>")).all()
+    # no channel token anywhere: position in the step is the channel
+    kinds = {vocab.decode(int(value)).kind for value in steps[:, 1:].ravel()}
+    assert kinds <= {"bin", "special"}
+    assert steps[2, 2] == vocab.special("<nan>")
+    # the same bins the tokenizer assigns
+    assert vocab.bin_tokenizer is not None
+    expected = vocab.bin_tokenizer.transform(window.head(1))[0]
+    assert [vocab.decode(int(v)).local_id for v in steps[0, 1:]] == list(expected)
+
+
+def test_a_masked_channel_is_nan_whatever_its_value(vocab: JointVocab, frame: pd.DataFrame) -> None:
+    steps = vocab.encode_steps(frame.head(3), masked=["power_kw"])
+    assert (steps[:, 2] == vocab.special("<nan>")).all()
+    assert (steps[:, 1] != vocab.special("<nan>")).all()
+    with pytest.raises(KeyError, match="not fitted"):
+        vocab.encode_steps(frame.head(3), masked=["wind_direction_deg"])
 
 
 def test_missing_values_become_the_nan_token(vocab: JointVocab, frame: pd.DataFrame) -> None:

@@ -168,6 +168,17 @@ trained from scratch, evaluated as a risk model rather than a forecaster.
   at 0 degrees holds 31.5% of its values). CARE power is emitted as `<nan>`. 71% (2019) and
   62% (2023) of Hill of Towie pitch values lie below the training range, and 7% and 6% of its
   power above it: reported for gate 3, not corrected.*
+- *M1b step 12, 2026-09-12: the fixed-order token stream and the window index
+  (`faultline telemetry shards`, `reports/data/shards_20260911.md`; ADR-0003 note). Thirteen
+  `uint16` tokens a step -- `<sep>` and the twelve core channels -- in one memory-mappable file
+  per site and split under `data/shards/`, never committed. 61,601,722 training tokens,
+  13,558,350 validation, 118,429,948 test; `<nan>` is 11.61% of all tokens. The window index
+  reproduces the final stage's counts exactly at every split, horizon and label set, and carries
+  the narrow label without `anemometer defect`: the late test's 24-hour base rate reads 3.68% and
+  4.14% with it (Kelmarsh, Penmanshiel), 2.37% and 2.52% without. Channel tokens are reserved
+  for the extended-channel ablation, and a channel token's identifier is now its canonical
+  position.*
+- *Gate 3, reached 2026-09-12: report and stop. The model is not chosen here.*
 - Fit `QuantileBinTokenizer` on the training split only.
 - Model, training loop, checkpointing; multi-seed runs.
 - Risk evaluation: AUPRC, event-level F1, false alarms per hour, detection delay.

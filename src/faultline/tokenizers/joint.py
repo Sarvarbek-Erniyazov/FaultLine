@@ -5,18 +5,29 @@ next to each other. Either side may be absent: at M1 there is a bin tokenizer an
 no text tokenizer, at M2 the reverse, and at M3 both. Encoding a modality that has
 no tokenizer is an error rather than a silent no-op.
 
-Telemetry is emitted as ``<tel> (channel, bin) ... </tel>`` per timestep. The
-channel token before each bin token is what lets a single shared bin range mean
-different physical things in different positions (ADR-0003).
+Telemetry has two encodings:
+
+* :meth:`JointVocab.encode_steps`, the **fixed-order stream** M1 trains on: each step is
+  ``<sep>`` followed by one bin token per channel, in the tokenizer's fitted order -- the
+  core set in identifier order. No channel token is emitted: a bin token's position in its
+  step says which channel it is, so a step of twelve channels costs thirteen tokens.
+* :meth:`JointVocab.encode_telemetry`, ``<tel> (channel, bin) ... </tel>``, which carries
+  the channel token before each bin token. It is kept for the variable-set ablation over
+  extended channels, where a step holds a varying set of channels and position can no
+  longer say which is which; the channel block stays allocated and reserved for it
+  (ADR-0003). A channel token's identifier is the channel's position in the canonical
+  list (``schemas.CHANNEL_NAMES``), never its position in a tokenizer.
 """
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Protocol
 
 import numpy as np
 import pandas as pd
 
+from faultline.data.telemetry.schemas import CHANNEL_NAMES
 from faultline.tokenizers.layout import Token, VocabLayout
 from faultline.tokenizers.quantile_bins import MISSING_BIN, QuantileBinTokenizer
 
@@ -77,10 +88,14 @@ class JointVocab:
                 raise ValueError(
                     f"bin tokenizer has {bin_tokenizer.n_bins} bins, layout expects {layout.n_bins}"
                 )
-            if len(bin_tokenizer.channels) != layout.n_channels:
+            unknown = [name for name in bin_tokenizer.channels if name not in CHANNEL_NAMES]
+            if unknown:
+                raise ValueError(f"bin tokenizer channels {unknown} are not canonical channels")
+            needed = max((CHANNEL_NAMES.index(n) for n in bin_tokenizer.channels), default=-1) + 1
+            if needed > layout.n_channels:
                 raise ValueError(
-                    f"bin tokenizer has {len(bin_tokenizer.channels)} channels, "
-                    f"layout expects {layout.n_channels}"
+                    f"bin tokenizer channels need {needed} channel identifiers (their canonical "
+                    f"positions, ADR-0003); the layout has {layout.n_channels}"
                 )
         self.layout = layout
         self.text_tokenizer = text_tokenizer
@@ -128,7 +143,8 @@ class JointVocab:
         """Encode a window of telemetry into global identifiers.
 
         Each row becomes an interleaved sequence of channel and bin tokens, in the
-        tokenizer's channel order. Missing values become ``<nan>``.
+        tokenizer's channel order. A channel token's identifier is the channel's canonical
+        position, whatever the tokenizer's order. Missing values become ``<nan>``.
 
         Args:
             frame: Wide telemetry table covering one window.
@@ -147,16 +163,51 @@ class JointVocab:
         binned = self.bin_tokenizer.transform(frame)
         nan_id = self.special("<nan>")
         indices = [self.bin_tokenizer.channel_index(name) for name in selected]
+        channel_ids = [self.layout.channel_id(CHANNEL_NAMES.index(name)) for name in selected]
 
         ids: list[int] = [self.special("<tel>")] if wrap else []
         for row in np.asarray(binned):
-            for column in indices:
-                ids.append(self.layout.channel_id(column))
+            for column, channel_id in zip(indices, channel_ids, strict=True):
+                ids.append(channel_id)
                 value = int(row[column])
                 ids.append(nan_id if value == MISSING_BIN else self.layout.bin_id(value))
         if wrap:
             ids.append(self.special("</tel>"))
         return ids
+
+    def encode_steps(self, frame: pd.DataFrame, masked: Sequence[str] = ()) -> np.ndarray:
+        """Encode telemetry as the fixed-order stream: ``<sep>`` and one bin token a channel.
+
+        Args:
+            frame: Wide telemetry rows, in time order.
+            masked: Channels emitted as ``<nan>`` whatever their value -- CARE's
+                normalised power, for one (ADR-0011).
+
+        Returns:
+            A ``uint16`` array of shape ``(len(frame), 1 + channels)``: each row is one
+            step, ``<sep>`` first, then the channels in the tokenizer's fitted order.
+
+        Raises:
+            RuntimeError: If no bin tokenizer is bound.
+            KeyError: If a masked channel is not a fitted channel.
+            ValueError: If an identifier would not fit ``uint16``.
+        """
+        if self.bin_tokenizer is None:
+            raise RuntimeError("no bin tokenizer is bound; fit one before encoding telemetry")
+        stray = [name for name in masked if name not in self.bin_tokenizer.channels]
+        if stray:
+            raise KeyError(f"masked channels {stray} are not fitted channels")
+        if self.layout.total_size > np.iinfo(np.uint16).max + 1:
+            raise ValueError(f"a vocabulary of {self.layout.total_size} does not fit uint16")
+        binned = self.bin_tokenizer.transform(frame)
+        ids = self.layout.bin_offset + binned
+        ids[binned == MISSING_BIN] = self.special("<nan>")
+        for name in masked:
+            ids[:, self.bin_tokenizer.channel_index(name)] = self.special("<nan>")
+        steps = np.empty((len(frame), 1 + ids.shape[1]), dtype=np.uint16)
+        steps[:, 0] = self.special("<sep>")
+        steps[:, 1:] = ids
+        return steps
 
     def decode(self, global_id: int) -> Token:
         """Resolve one global identifier.

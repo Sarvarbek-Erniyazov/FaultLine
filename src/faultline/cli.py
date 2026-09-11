@@ -564,6 +564,26 @@ def telemetry_bins(
     typer.echo(f"wrote {report}")
 
 
+@telemetry_app.command(
+    "shards",
+    help="Write the fixed-order token shards and the window index, one file per site and "
+    "split, and report them.",
+)
+def telemetry_shards(
+    config: ConfigOption = Path("configs/tokenizer/quantile_bins_v0.yaml"),
+) -> None:
+    """Write the token shards and the window index, and their report.
+
+    Args:
+        config: The tokenizer configuration whose fitted tokenizer encodes the stream.
+    """
+    from faultline.data.telemetry.shards import build_shards
+
+    manifest, report = build_shards(ProjectPaths.resolve(), config)
+    typer.echo(f"wrote {manifest}")
+    typer.echo(f"wrote {report}")
+
+
 @check_app.command(
     "naming",
     help="Fail if a forbidden string appears in a tracked file (ADR-0002).",

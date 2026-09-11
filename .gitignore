@@ -16,6 +16,8 @@ data/raw/
 data/cleaned/
 data/filtered/
 data/final/
+# token shards and their window index: derived data, CARE's included (ADR-0004)
+data/shards/
 
 # artifacts
 checkpoints/

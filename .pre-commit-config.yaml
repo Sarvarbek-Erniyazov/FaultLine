@@ -36,4 +36,4 @@ repos:
         entry: >-
           staged path lives under a data stage or checkpoints/ and must never be committed;
           only dataset cards, manifests, configs and reports enter git
-        files: '^(data/(raw|cleaned|filtered|final)/|checkpoints/)'
+        files: '^(data/(raw|cleaned|filtered|final|shards)/|checkpoints/)'

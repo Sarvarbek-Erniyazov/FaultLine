@@ -161,6 +161,13 @@ trained from scratch, evaluated as a risk model rather than a forecaster.
   2.72% of all training windows. Pitch and gear oil clear the
   matched control (0.95) and stay core. Hill of Towie is reported per year, and the late
   test with and without `anemometer defect`.*
+- *M1b step 11, 2026-09-11: the quantile-bin tokenizer, fitted on the train split of the
+  training sites only (`faultline telemetry bins`, `configs/tokenizer/quantile_bins_v0.yaml`,
+  `reports/data/quantile_bins_20260911.md`; ADR-0011). 256 bins: median reconstruction error
+  0.81% of the interquartile range, 1.19% on validation. Ten point masses get exact bins (pitch
+  at 0 degrees holds 31.5% of its values). CARE power is emitted as `<nan>`. 71% (2019) and
+  62% (2023) of Hill of Towie pitch values lie below the training range, and 7% and 6% of its
+  power above it: reported for gate 3, not corrected.*
 - Fit `QuantileBinTokenizer` on the training split only.
 - Model, training loop, checkpointing; multi-seed runs.
 - Risk evaluation: AUPRC, event-level F1, false alarms per hour, detection delay.

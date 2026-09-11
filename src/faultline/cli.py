@@ -544,6 +544,26 @@ def telemetry_run(
         typer.echo(f"reports: {ctx.run_dir}")
 
 
+@telemetry_app.command(
+    "bins",
+    help="Fit the quantile-bin tokenizer on the training split, write it, and report every "
+    "candidate bin count.",
+)
+def telemetry_bins(
+    config: ConfigOption = Path("configs/tokenizer/quantile_bins_v0.yaml"),
+) -> None:
+    """Fit the quantile-bin tokenizer and write it and its report.
+
+    Args:
+        config: The tokenizer configuration.
+    """
+    from faultline.data.telemetry.bins import fit_bins
+
+    tokenizer, report = fit_bins(ProjectPaths.resolve(), config)
+    typer.echo(f"wrote {tokenizer}")
+    typer.echo(f"wrote {report}")
+
+
 @check_app.command(
     "naming",
     help="Fail if a forbidden string appears in a tracked file (ADR-0002).",

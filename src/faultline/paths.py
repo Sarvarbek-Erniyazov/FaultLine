@@ -112,6 +112,16 @@ class ProjectPaths:
         return self._mk(self.cards_dir / "manifests")
 
     @property
+    def tokenizers_dir(self) -> Path:
+        """Directory holding tracked fitted tokenizers.
+
+        Quantile edges of the training split are aggregate statistics, which ADR-0004
+        lets the repository carry beside the dataset cards; shards built from them are
+        derived data and never are.
+        """
+        return self._mk(self.repo_root / "data" / "tokenizers")
+
+    @property
     def reports_dir(self) -> Path:
         """Root directory for tracked Markdown reports."""
         return self._mk(self.repo_root / "reports")

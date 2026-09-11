@@ -9,7 +9,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from faultline.tokenizers.quantile_bins import MISSING_BIN, QuantileBinTokenizer
+from faultline.tokenizers.quantile_bins import (
+    MISSING_BIN,
+    QuantileBinTokenizer,
+    fit_channel,
+    sorted_quantiles,
+)
 
 CHANNELS = ["wind_speed_ms", "power_kw"]
 
@@ -161,3 +166,79 @@ def test_constant_channel_still_bins() -> None:
     tokenizer = QuantileBinTokenizer.fit(frame, ["a"], n_bins=8)
     binned = tokenizer.transform_channel(np.array([4.0]), "a")
     assert 0 <= binned[0] <= 7
+
+
+# -- point masses ---------------------------------------------------------------------------
+
+
+def pitch_like(rng: np.random.Generator, size: int = 10_000) -> np.ndarray:
+    """40% at exactly 0 degrees, the rest spread over 1-90 at 0.01 resolution."""
+    rest = np.round(rng.uniform(1.0, 90.0, size - size * 4 // 10), 2)
+    return np.concatenate([np.zeros(size * 4 // 10), rest])
+
+
+def test_sorted_quantiles_match_numpy() -> None:
+    rng = np.random.default_rng(1)
+    values = np.sort(rng.normal(size=1001))
+    probabilities = np.linspace(0, 1, 17)
+    assert sorted_quantiles(values, probabilities) == pytest.approx(
+        np.quantile(values, probabilities)
+    )
+
+
+def test_plain_quantiles_spend_bins_on_a_point_mass() -> None:
+    values = pitch_like(np.random.default_rng(2))
+    plain = fit_channel(values, 16)
+    # 40% of the values are one value: six of sixteen bins collapse onto it
+    assert len(np.unique(plain.edges)) - 1 < 16
+
+
+def test_a_point_mass_gets_an_exact_bin_that_decodes_to_itself() -> None:
+    values = pitch_like(np.random.default_rng(3))
+    tokenizer = QuantileBinTokenizer.fit_values(
+        {"pitch": values}, ["pitch"], n_bins=16, point_masses=True
+    )
+    assert tokenizer.point_masses == {"pitch": [0.0]}
+    assert tokenizer.bins_in_use("pitch") <= 16
+    ids = tokenizer.transform_channel(values, "pitch")
+    zero = int(tokenizer.transform_channel(np.array([0.0]), "pitch")[0])
+    # the exact bin holds the mass and nothing else, and decodes to it
+    assert set(values[ids == zero]) == {0.0}
+    assert tokenizer.inverse(np.array([zero]), "pitch")[0] == 0.0
+    # the continuous part keeps almost every bin
+    counts = np.bincount(ids[values > 0], minlength=tokenizer.bins_in_use("pitch"))
+    assert (counts > 0).sum() >= 14
+
+
+def test_out_of_range_values_clamp_into_populated_bins() -> None:
+    values = pitch_like(np.random.default_rng(4))
+    tokenizer = QuantileBinTokenizer.fit_values(
+        {"pitch": values}, ["pitch"], n_bins=16, point_masses=True
+    )
+    ids = tokenizer.transform_channel(values, "pitch")
+    low, high = tokenizer.transform_channel(np.array([-5.0, 500.0]), "pitch")
+    assert (ids == low).any()
+    assert (ids == high).any()
+    assert high == tokenizer.bins_in_use("pitch") - 1
+
+
+def test_point_masses_are_capped_at_a_quarter_of_the_bins() -> None:
+    values = np.repeat(np.arange(10.0), 100)  # ten values, each 10% of the data
+    # at 8 bins a mass must hold 12.5%: none of them does
+    assert fit_channel(values, 8, point_masses=True).point_masses == []
+    # at 16 it must hold 6.25%: all ten do, and a quarter of the bins is four
+    assert len(fit_channel(values, 16, point_masses=True).point_masses) == 4
+
+
+def test_saving_keeps_point_masses_and_representatives(tmp_path: Path) -> None:
+    values = pitch_like(np.random.default_rng(5))
+    tokenizer = QuantileBinTokenizer.fit_values(
+        {"pitch": values}, ["pitch"], n_bins=16, point_masses=True
+    )
+    restored = QuantileBinTokenizer.load(tokenizer.save(tmp_path / "bins.json"))
+    assert restored.point_masses == tokenizer.point_masses
+    assert restored.representatives == tokenizer.representatives
+    probe = np.array([0.0, 12.34, 77.0])
+    assert list(restored.transform_channel(probe, "pitch")) == list(
+        tokenizer.transform_channel(probe, "pitch")
+    )

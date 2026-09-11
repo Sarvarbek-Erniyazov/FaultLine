@@ -1,16 +1,17 @@
 # Tokenizer configurations
 
-Empty at M0. The code these will drive already exists and is tested
-(`src/faultline/tokenizers/`); only the fitted artefacts and their configs are
-missing, because fitting on real data is an M1 activity.
+The code these drive lives in `src/faultline/tokenizers/`. The telemetry configuration is
+written and fitted; the text and joint configurations are still to come.
 
-## Planned files
+## Files
 
-`quantile_bins_v0.yaml` (M1)
-: Channels to fit, bin count, row sample cap, seed, and the split the edges are
-  fitted on. **Fitting uses the training split only** -- fitting on the full record
-  leaks the held-out period's distribution into the vocabulary and flatters every
-  drift number the project reports.
+`quantile_bins_v0.yaml` (M1b step 11, ADR-0011)
+: The telemetry configuration it reads, the channels (every core channel, in identifier
+  order), the candidate bin counts and the one chosen with its reason, exact bins for
+  point masses, and the channels emitted as `<nan>` at a source. **Fitting uses the
+  training split only** -- fitting on the full record leaks the held-out period's
+  distribution into the vocabulary and flatters every drift number the project reports.
+  `faultline telemetry bins` fits it into `data/tokenizers/quantile_bins_v0_<hash>.json`.
 
 `text_bpe_v0.yaml` (M2)
 : Byte-level BPE vocabulary size, minimum merge frequency, and the corpus manifest

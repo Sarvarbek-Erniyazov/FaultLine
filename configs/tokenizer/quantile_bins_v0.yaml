@@ -1,0 +1,67 @@
+# Quantile-bin tokenizer for telemetry, version 0 (M1b step 11).
+#
+# Read by `faultline telemetry bins`, which fits the edges on the TRAIN split of the
+# training sites only -- Kelmarsh and Penmanshiel, 2016-2020, as splits_v2.yaml assigns
+# them through telemetry_v3.yaml -- and never on validation, the late test, the held-out
+# site or CARE. It writes the fitted tokenizer to data/tokenizers/ under this file's hash,
+# and reports every candidate in reports/data/quantile_bins_<date>.md.
+#
+# Written after a probe of the training split measured, with plain quantiles, what the
+# candidates do (the report measures the same with the exact point-mass bins below):
+#   * blade pitch sits at exactly 0 degrees for 31.5% of its training values, and at 44.99
+#     and 45 for 9.8%; plain quantiles give it 41, 79 and 154 distinct edges at 64, 128 and
+#     256 bins. Rotor speed has point masses at 0, 10.81 and 17.1 rpm. Hence exact bins.
+#   * reconstruction error falls with every doubling on every other channel, on the
+#     validation split as on the training values.
+#   * 71% (2019) and 62% (2023) of Hill of Towie pitch values lie below the lowest training
+#     value, and 7% and 6% of its power above the highest. Reported, not corrected here.
+#
+# `tokenizer:` in telemetry_v3.yaml is not read by anything; this file is the tokenizer's
+# configuration (configs/tokenizer/README.md).
+
+version: 0
+telemetry_config: "configs/data/telemetry_v3.yaml"
+fit_split: "train"
+
+# Every core channel, in identifier order: in the fixed-order token stream (M1b step 12)
+# position is identity, so the order here is the order of the tokens in every step.
+channels:
+  - wind_speed_ms
+  - power_kw
+  - rotor_speed_rpm
+  - generator_speed_rpm
+  - pitch_angle_deg
+  - nacelle_position_deg
+  - ambient_temp_c
+  - nacelle_temp_c
+  - gearbox_oil_temp_c
+  - generator_bearing_temp_c
+  - generator_winding_temp_c
+  - main_bearing_temp_c
+
+candidates: [64, 128, 256]
+n_bins: 256
+n_bins_reason: >-
+  Reconstruction error falls with every doubling on every channel, on the validation split
+  as on the training values, so the grid has no interior optimum and the finest candidate
+  is chosen. It costs 256 of the bin block's 1,024 fixed identifiers (ADR-0003) and nothing
+  in sequence length, one token per channel per step at any bin count; and it leaves every
+  bin about 13,000 training values or more (3.35 million for pitch and gear oil, 4.5 to 4.7
+  million for the rest). The tails stay coarse at every candidate.
+
+# A value holding at least 1/n_bins of a channel's training values gets an exact bin.
+point_masses: true
+max_point_masses: 16
+
+# Imputed values are interpolations, not measurements (ADR-0006), and are not fitted on.
+include_imputed: false
+
+# CARE is evaluation-only and never fitted on; this says how its power enters the stream.
+excluded:
+  care: ["power_kw"]
+exclusion_reasons:
+  care: >-
+    CARE power is normalised to a rated power the record does not publish
+    (channel_map/care.yaml, ADR-0010), so there is no factor to rescale it to kW by, and a
+    guessed rating would put it on a scale nobody can check. Binned against kW edges, a
+    value between 0 and 1.1 would read as a turbine at rest. It is emitted as <nan>.

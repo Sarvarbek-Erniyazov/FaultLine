@@ -1027,3 +1027,99 @@ token stream is decided with the tokenizer (M1b step 11).
 **What would change this decision.** A published rated power per farm, a CARE release with
 real timestamps, or more datasets. Each of these would narrow the interval or make the
 steps comparable.
+
+**Note, 2026-09-11 (M1b step 11).** How CARE's normalised power enters the token stream is
+decided: as `<nan>`, at every farm (`configs/tokenizer/quantile_bins_v0.yaml`, ADR-0011).
+There is no published rating to rescale it by, and binned against the training edges in kW,
+all 5,240,487 of its values (-0.04 to 1.07) would decode to 10 kW or less: every CARE
+turbine would read as not producing.
+
+---
+
+## ADR-0011 The telemetry tokenizer: 256 quantile bins, exact bins for point masses, fitted on the training split
+
+**Status:** Accepted · **Date:** 2026-09-11
+
+**Decision.** Every core channel is binned by one tokenizer,
+`data/tokenizers/quantile_bins_v0_7b91fd02.json`, fitted by `faultline telemetry bins` from
+`configs/tokenizer/quantile_bins_v0.yaml`. The evidence for every figure below is
+`reports/data/quantile_bins_20260911.md`.
+
+- **Fitted on the training split only**: the `train` rows of Kelmarsh (1,527,681) and
+  Penmanshiel (3,210,913), never validation, the late test, the held-out site or CARE.
+  11,498 imputed values are not fitted on: they are interpolations, not measurements
+  (ADR-0006). The training exclusions' rows are fitted on, because an exclusion withholds
+  training windows, not values (ADR-0008); inside it, the channels the outage took out have
+  no values to fit.
+- **256 bins a channel**, every channel's local identifiers 256 wide, sharing ADR-0003's bin
+  block: 256 of its 1,024 fixed identifiers.
+- **An exact bin for every point mass**: a value holding at least 1/256 of a channel's
+  training values gets a bin of its own, reaching halfway to its nearest observed neighbours,
+  and decodes to itself. Ten qualify, on three channels: pitch at 0, 1.49, 44.99 and 45
+  degrees (0 alone holds 31.46% of pitch values), rotor speed at 0, 10.81, 17.09, 17.1 and
+  17.11 rpm, and generator speed at 0 rpm.
+- **CARE power is emitted as `<nan>`** (ADR-0010, note of this date).
+
+**Why 256.** Reconstruction error -- the mean absolute difference between a value and the
+value its bin decodes to, as a share of the channel's interquartile range -- across the twelve
+channels:
+
+| n_bins | median, train | largest, train | median, validation | largest, validation |
+| --- | --- | --- | --- | --- |
+| 64 | 3.66% | 10.31% | 4.27% | 18.97% |
+| 128 | 1.72% | 4.08% | 2.29% | 7.20% |
+| 256 | 0.81% | 2.10% | 1.19% | 4.19% |
+
+The error falls with every doubling on every channel, on the validation year (2021) the edges
+never saw as on the training values, so the grid has no interior optimum and the finest
+candidate is chosen. It costs 256 identifiers in a block whose size is fixed whatever is
+chosen, and nothing in sequence length: every step is one token per channel at any bin count.
+
+*A correction to the configuration's reason.* `n_bins_reason` says 256 bins leave every bin
+"about 13,000 training values or more". That is a plain division of each channel's values by
+256. With exact bins it is not true of pitch: its four exact bins hold 41.6% of its values,
+and its 251 other bins hold about 7,800 each. The claim is corrected here and not in the file,
+which a run has read; 7,800 values a bin is still ample.
+
+**Why exact bins.** Plain quantiles give pitch 41, 79 and 154 distinct edges at 64, 128 and 256
+bins (the probe recorded in the configuration's header): the duplicate edges on a point mass
+are empty bins, and the rest of the channel is squeezed into what is left. With exact bins
+pitch uses 255 bins at 256, and its reconstruction error is 2.10% of its interquartile range
+on the training values and 2.58% on validation.
+
+**What the tokenizer does not fix, reported for gate 3.** Values outside the training range
+land in the first or the last bin, and that bin's training occupancy says how rare a state
+they are read as. Per held-out year:
+
+| channel | Hill of Towie 2019 | Hill of Towie 2023 | the bin they land in holds |
+| --- | --- | --- | --- |
+| `pitch_angle_deg` | 71.40% below | 61.83% below | 0.07% of training values |
+| `power_kw` | 6.81% above | 5.62% above | 0.39% |
+| `main_bearing_temp_c` | 0.88% above | 2.68% above | 0.39% |
+
+1. **Pitch.** Most of the held-out site's pitch values lie below the lowest training value
+   (-0.087 degrees): its fine pitch sits below the training sites' 0. The held-out site's
+   commonest operating state is read as a state the training split almost never shows.
+2. **Power.** The highest training value is 2,087.6 kW and the held-out turbines are rated
+   2,300 kW, so their top output collapses into one bin.
+
+Both could be addressed -- a per-site pitch reference, power as a share of rated power -- and
+both would change what a token means at every site. They are not done here; they are
+decisions for gate 3, and either would be a new tokenizer configuration and new shards. A
+third limit applies everywhere: the tails are coarse at every candidate. At 256 bins the last
+bin of generator bearing temperature spans 42.7 degrees C and that of nacelle temperature
+31.4, where overheating is.
+
+**Rejected.**
+
+| alternative | why rejected |
+| --- | --- |
+| 64 or 128 bins | Two to four times the reconstruction error, for no saving that matters: the bin block is fixed, and sequence length does not depend on it. |
+| Plain quantiles | Spend bins on duplicate edges wherever a value repeats in bulk: pitch keeps 154 of 256. |
+| Fitting on every split, or on the held-out site | Leaks the evaluation periods' distributions into the vocabulary (the rule since M0). |
+| Rescaling CARE power by an assumed rating | Puts it on a scale nobody can check; `<nan>` says what is known. |
+
+**What would change this decision.** A gate-3 decision on the pitch or power hazards, which
+would be `quantile_bins_v1.yaml`, a new tokenizer and new shards; or an M1c result showing the
+model starved in the tail bins, which would argue for fixed-width tail bins beside the
+quantiles.

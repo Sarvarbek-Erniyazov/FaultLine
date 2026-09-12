@@ -551,6 +551,24 @@ def text_bpe(
     typer.echo(f"wrote {report_path}")
 
 
+@text_app.command(
+    "shards", help="Write the text token shards and the window index, and report them."
+)
+def text_shards(
+    config: ConfigOption = Path("configs/tokenizer/text_shards_v1.yaml"),
+) -> None:
+    """Write the text token shards and their report.
+
+    Args:
+        config: The shards configuration, naming the fitted tokenizer to encode with.
+    """
+    from faultline.data.text.shards import build_text_shards
+
+    manifest, report = build_text_shards(ProjectPaths.resolve(), config)
+    typer.echo(f"wrote {manifest}")
+    typer.echo(f"wrote {report}")
+
+
 @text_app.command("run", help="Run the text corpus pipeline and write per-stage reports.")
 def text_run(
     config: ConfigOption = Path("configs/data/text_v0.yaml"),

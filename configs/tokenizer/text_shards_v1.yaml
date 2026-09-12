@@ -1,0 +1,6 @@
+# Text token shards, version 1 (M2d). Context 2048 text tokens, per the M2 brief --
+# held fixed the way the telemetry ladder held context fixed across every rung.
+
+version: 1
+tokenizer_config: "configs/tokenizer/text_bpe_v1.yaml"
+context_steps: 2048

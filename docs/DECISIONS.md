@@ -1413,3 +1413,81 @@ re-fit reports the number it actually is.
 make its power comparable in kW as well; a provider correcting the rating in its own
 metadata; or a site whose record publishes no rating at all, which would need its own rule
 rather than an inferred divisor.
+
+---
+
+## ADR-0014 Hybrid tail bins: fixed-width in the tails, quantiles in the middle
+
+**Status:** Accepted · **Date:** 2026-09-12
+
+> **The principle, which ADR-0012, ADR-0013 and ADR-0014 all rest on.** Datums are
+> conventions and are harmonised across sites. Physics is not harmonised; differences in
+> physics between sites are what the held-out evaluation measures.
+
+**Decision.** Every channel still gets **256 bins**, and how they are spent changes. One
+rule, the same for every channel, **fixed in `configs/tokenizer/quantile_bins_v1.yaml`
+before the fit was run**:
+
+1. **Point-mass bins are carved out first**, exactly as at v0: a value holding at least
+   1/256 of the channel's training values gets an exact bin reaching halfway to its
+   nearest observed neighbours.
+2. **The tail boundaries are the training p0.5 and p99.5** of the channel.
+3. **Each tail gets `n_tail = 16` bins of equal width** over `[train_min, p0.5)` and
+   `(p99.5, train_max]`.
+4. **The remaining `256 - n_pointmass - 32` bins are quantile bins** over `[p0.5, p99.5]`.
+5. **A tail with zero width gives its 16 bins back to the central quantile pool** -- when
+   its boundary is already the range edge, or falls inside a point mass's exact bin. This
+   is stated in advance because it will fire: pitch sits at exactly 0.0 on more than a
+   fifth of its training values at both training sites, and after the datum floor of
+   ADR-0012 more still, so its p0.5 *is* its minimum. The report names every channel that
+   triggers it.
+6. **A value outside the training range clamps to the extreme bin**, as at v0.
+
+The fit is still on the **train split of Kelmarsh and Penmanshiel only** -- never
+validation, the late test, the held-out site or CARE. Nothing about what the edges are
+fitted on changes.
+
+**Why.** Quantile bins put resolution where the data is dense. Faults are not where the
+data is dense. ADR-0011 recorded the cost and left it: "at 256 bins the last bin of
+generator bearing temperature spans 42.7 degrees C and that of nacelle temperature 31.4,
+where overheating is". A 42.7-degree top bin cannot distinguish a bearing running warm
+from one about to fail, and a model cannot learn a distinction its vocabulary does not
+carry. Fixed-width tails spend identifiers where the events are.
+
+**Pre-registered expectations, written before the fit and reported against afterwards.**
+
+| | expectation | why |
+| --- | --- | --- |
+| median reconstruction error | **rises slightly** | the middle loses 32 quantile bins |
+| worst reconstruction error | **falls** | the worst channel is worst because of its tail |
+| generator-bearing top bin | **42.7 degC to roughly 3 degC** | one sixteenth of a slightly wider span |
+| pitch's lower tail | **collapses (rule 5)** | its p0.5 is its minimum |
+
+**The knob, and the signal to turn it.** The knob is `n_tail`. **The signal is degenerate
+tail-bin training counts -- many bins holding under about 500 training values -- and not
+the median reconstruction error**, which is expected to rise and whose rising is not
+evidence of anything. The report prints the training count of every tail bin and counts
+those under 500, so the signal is visible rather than inferred. A tail bin with almost no
+training values is an identifier the model cannot learn; a slightly coarser middle is a
+known, bounded cost.
+
+**What is compared with what.** The report fits the same bin count on the same values with
+pure quantiles and prints the two side by side, so the before and after differ by the tail
+rule and nothing else. This matters because the underlying tables changed in the same
+revision (ADR-0012, ADR-0013): a comparison against the M1b tables alone would confound
+three decisions.
+
+**Rejected.**
+
+| alternative | why rejected |
+| --- | --- |
+| More bins instead of better-spent bins | The bin block is 1,024 identifiers and 256 is already the chosen size (ADR-0011); doubling to 512 halves every tail bin but also halves every central bin, when the central bins were never the problem. |
+| Fixed-width bins everywhere | Would spend most of the vocabulary on values that occur a few times a year -- the reason quantiles were chosen at M0. |
+| A log transform before binning | Changes what a bin means per channel and cannot be applied to channels that cross zero (power, ambient temperature, pitch). |
+| Tails at p1 / p99 | A wider tail region makes each fixed-width bin wider, which is the thing being fixed. p0.5 keeps 1% of the training values in 32 bins, which is where the starvation check bites. |
+| Turning `n_tail` on the median error | The median error is the cost of the rule, not evidence about it. Stated here so that a later "the error went up, turn the tails down" is recognisable as the mistake it would be. |
+
+**What would change this decision.** Tail bins starved of training values in the report
+below, which turns `n_tail` down; a model result showing the tail tokens are not learned
+at all, which would argue for fewer and wider tail bins; or a new channel whose tail
+behaviour differs enough that one `n_tail` for every channel stops being defensible.

@@ -21,12 +21,20 @@ Three rules matter for the science and are enforced here:
   neighbours, whose representative is the value itself; the other bins are quantiles of
   the remaining values. A channel then uses at most ``n_bins`` bins, and the local
   identifier space stays ``n_bins`` wide for every channel.
+* **The tails get fixed-width bins** (``n_tail > 0``, ADR-0014). Quantile bins put
+  resolution where the data is dense, and faults live where it is not: at 256 pure
+  quantile bins the top bin of generator bearing temperature spanned 42.7 degrees C.
+  So each tail -- below the training ``tail_quantile`` and above its complement --
+  is cut into ``n_tail`` bins of equal width, and only what is left of ``n_bins`` after
+  the point masses and the tails goes to quantiles over the middle. A tail with no
+  width gives its bins back to the middle.
 """
 
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping
+import math
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -77,11 +85,18 @@ class ChannelBins:
         representatives: The value each bin decodes to: a point mass for its exact bin,
             the midpoint otherwise.
         point_masses: The values that were given an exact bin.
+        tail_edges: The two boundaries between the fixed-width tails and the quantile
+            middle; the training range itself when no tail was carved.
+        tail_bins: How many fixed-width bins the lower and the upper tail actually got.
+            ``(0, 0)`` under a pure-quantile fit, and ``0`` on a side whose tail had no
+            width -- its bins went back to the quantile middle (ADR-0014, rule 5).
     """
 
     edges: list[float]
     representatives: list[float]
     point_masses: list[float]
+    tail_edges: tuple[float, float] = (math.nan, math.nan)
+    tail_bins: tuple[int, int] = (0, 0)
 
 
 def fit_channel(
@@ -89,8 +104,18 @@ def fit_channel(
     n_bins: int,
     point_masses: bool = False,
     max_point_masses: int | None = None,
+    n_tail: int = 0,
+    tail_quantile: float = 0.005,
 ) -> ChannelBins:
     """Fit one channel's bins.
+
+    With ``n_tail = 0`` this is the pure-quantile fit with exact bins for point masses
+    that M1b used. With ``n_tail > 0`` it is the hybrid of ADR-0014, in the order that
+    record states: point masses take their exact bins first, each tail takes ``n_tail``
+    fixed-width bins over ``[train_min, p)`` and ``(1 - p, train_max]``, and whatever is
+    left of ``n_bins`` goes to quantile bins over the middle. A tail with no width --
+    its boundary already at the range edge, or swallowed by the exact bin of a point
+    mass -- contributes nothing, and its bins fall back to the middle.
 
     Args:
         values: The channel's values; non-finite values are ignored.
@@ -99,63 +124,156 @@ def fit_channel(
             exact bin of its own.
         max_point_masses: Keep at most this many point masses, the heaviest; never more
             than a quarter of ``n_bins``, so that most bins stay continuous.
+        n_tail: Fixed-width bins in each tail; ``0`` for a pure-quantile fit.
+        tail_quantile: Where a tail ends. ``0.005`` puts the tails below the training
+            p0.5 and above the training p99.5.
 
     Returns:
-        The edges, the representative of each bin and the point masses.
+        The edges, the representative of each bin, the point masses and what the tails
+        got.
 
     Raises:
-        ValueError: If there is no finite value.
+        ValueError: If there is no finite value, or the fixed bins alone cannot fit in
+            ``n_bins``.
     """
     array = np.asarray(values, dtype=float)
     ordered = np.sort(array[np.isfinite(array)])
     if ordered.size == 0:
         raise ValueError("no finite values to fit bins on")
     plain = sorted_quantiles(ordered, np.linspace(0.0, 1.0, n_bins + 1))
-    if not point_masses:
-        return ChannelBins(plain.tolist(), _midpoints(plain).tolist(), [])
-    distinct, counts = np.unique(ordered, return_counts=True)
-    heavy = np.flatnonzero(counts >= ordered.size / n_bins)
-    limit = n_bins // 4 if max_point_masses is None else min(max_point_masses, n_bins // 4)
-    if heavy.size > limit:
-        heavy = np.sort(heavy[np.argsort(counts[heavy], kind="stable")[::-1][:limit]])
-    if heavy.size == 0:
-        return ChannelBins(plain.tolist(), _midpoints(plain).tolist(), [])
+    low, high = float(ordered[0]), float(ordered[-1])
+    if not point_masses and n_tail == 0:
+        return ChannelBins(plain.tolist(), _midpoints(plain).tolist(), [], (low, high), (0, 0))
+
+    distinct = np.unique(ordered)
+    heavy = _heavy_values(ordered, n_bins, point_masses, max_point_masses)
+    if heavy.size == 0 and n_tail == 0:
+        return ChannelBins(plain.tolist(), _midpoints(plain).tolist(), [], (low, high), (0, 0))
 
     masses = distinct[heavy]
     # An exact bin reaches halfway to the nearest observed value either side, so no
     # training value falls in the gap between a point mass and its neighbours.
-    lows = np.array([(distinct[i - 1] + distinct[i]) / 2 if i > 0 else -np.inf for i in heavy])
+    lows = np.array(
+        [(distinct[i - 1] + distinct[i]) / 2 if i > 0 else -np.inf for i in heavy], dtype=float
+    )
     highs = np.array(
-        [(distinct[i] + distinct[i + 1]) / 2 if i < distinct.size - 1 else np.inf for i in heavy]
+        [(distinct[i] + distinct[i + 1]) / 2 if i < distinct.size - 1 else np.inf for i in heavy],
+        dtype=float,
     )
     mass_cuts = np.concatenate([lows[np.isfinite(lows)], highs[np.isfinite(highs)]])
     rest = ordered[~np.isin(ordered, masses)]
-    low, high = float(ordered[0]), float(ordered[-1])
+
+    def inside_a_mass(cuts: np.ndarray) -> np.ndarray:
+        """Which cuts fall in a point mass's exact bin, which owns its whole span."""
+        inside = np.zeros(cuts.size, dtype=bool)
+        for start, stop in zip(lows, highs, strict=True):
+            inside |= (cuts >= start) & (cuts <= stop)
+        return inside
+
+    lo_edge, hi_edge, tail_cuts = _tail_cuts(
+        ordered, low, high, n_tail, tail_quantile, inside_a_mass
+    )
+    fixed = np.unique(np.concatenate([mass_cuts, tail_cuts]))
+    fixed = fixed[(fixed > low) & (fixed < high)]
+    if fixed.size + 1 > n_bins:
+        raise ValueError(
+            f"{fixed.size + 1} fixed bins (point masses and {n_tail}-bin tails) do not fit "
+            f"in n_bins={n_bins}"
+        )
+    middle = rest[(rest >= lo_edge) & (rest <= hi_edge)]
 
     def cuts_for(continuous: int) -> np.ndarray:
-        found = mass_cuts
-        if rest.size and continuous > 1:
-            cuts = sorted_quantiles(rest, np.linspace(0.0, 1.0, continuous + 1))[1:-1]
-            inside = np.zeros(cuts.size, dtype=bool)
-            for start, stop in zip(lows, highs, strict=True):
-                inside |= (cuts >= start) & (cuts <= stop)
-            found = np.concatenate([found, cuts[~inside]])
+        found = np.concatenate([mass_cuts, tail_cuts])
+        if middle.size and continuous > 1:
+            cuts = sorted_quantiles(middle, np.linspace(0.0, 1.0, continuous + 1))[1:-1]
+            found = np.concatenate([found, cuts[~inside_a_mass(cuts)]])
         found = np.unique(found)
         return found[(found > low) & (found < high)]
 
-    # The most continuous bins that keep the channel within n_bins.
+    # The most quantile bins in the middle that keep the channel within n_bins. A tail
+    # that contributed no cuts leaves its share here, which is rule 5 of ADR-0014.
     lower, upper = 1, n_bins
     while lower < upper:
-        middle = (lower + upper + 1) // 2
-        if cuts_for(middle).size + 1 <= n_bins:
-            lower = middle
+        probe = (lower + upper + 1) // 2
+        if cuts_for(probe).size + 1 <= n_bins:
+            lower = probe
         else:
-            upper = middle - 1
+            upper = probe - 1
     cuts = cuts_for(lower)
     edges = np.concatenate([[low], cuts, [high]])
     representatives = _midpoints(edges) if edges.size > 1 else np.array([low])
     representatives[np.searchsorted(cuts, masses, side="right")] = masses
-    return ChannelBins(edges.tolist(), representatives.tolist(), masses.tolist())
+    return ChannelBins(
+        edges.tolist(),
+        representatives.tolist(),
+        masses.tolist(),
+        (lo_edge, hi_edge),
+        (int(np.sum(edges <= lo_edge)) - 1, int(np.sum(edges >= hi_edge)) - 1),
+    )
+
+
+def _heavy_values(
+    ordered: np.ndarray, n_bins: int, point_masses: bool, max_point_masses: int | None
+) -> np.ndarray:
+    """Indices, into the channel's distinct values, of the masses given exact bins.
+
+    Args:
+        ordered: The channel's finite values, sorted.
+        n_bins: The most bins the channel may use.
+        point_masses: Whether point masses get exact bins at all.
+        max_point_masses: The most to keep, the heaviest first.
+
+    Returns:
+        Ascending indices into ``numpy.unique(ordered)``; empty when none qualify.
+    """
+    if not point_masses:
+        return np.zeros(0, dtype=np.int64)
+    _, counts = np.unique(ordered, return_counts=True)
+    heavy = np.flatnonzero(counts >= ordered.size / n_bins)
+    limit = n_bins // 4 if max_point_masses is None else min(max_point_masses, n_bins // 4)
+    if heavy.size > limit:
+        heavy = np.sort(heavy[np.argsort(counts[heavy], kind="stable")[::-1][:limit]])
+    return heavy
+
+
+def _tail_cuts(
+    ordered: np.ndarray,
+    low: float,
+    high: float,
+    n_tail: int,
+    tail_quantile: float,
+    inside_a_mass: Callable[[np.ndarray], np.ndarray],
+) -> tuple[float, float, np.ndarray]:
+    """The fixed-width cuts of the two tails, and where each tail ends.
+
+    Args:
+        ordered: The channel's finite values, sorted.
+        low: The lowest training value.
+        high: The highest.
+        n_tail: Fixed-width bins in each tail; ``0`` carves none.
+        tail_quantile: Where the lower tail ends; the upper ends at its complement.
+        inside_a_mass: Which of a set of cuts fall in a point mass's exact bin.
+
+    Returns:
+        The lower and upper tail boundaries -- collapsed onto the range edge where the
+        tail has no width -- and every surviving tail cut.
+    """
+    if n_tail <= 0:
+        return low, high, np.zeros(0, dtype=float)
+    lo_edge, hi_edge = sorted_quantiles(ordered, np.array([tail_quantile, 1 - tail_quantile]))
+    pieces = []
+    if lo_edge > low:
+        pieces.append(np.linspace(low, lo_edge, n_tail + 1)[1:])
+    else:
+        lo_edge = low
+    if hi_edge < high:
+        pieces.append(np.linspace(hi_edge, high, n_tail + 1)[:-1])
+    else:
+        hi_edge = high
+    if not pieces:
+        return float(lo_edge), float(hi_edge), np.zeros(0, dtype=float)
+    candidate = np.concatenate(pieces)
+    return float(lo_edge), float(hi_edge), candidate[~inside_a_mass(candidate)]
 
 
 class QuantileBinTokenizer:
@@ -251,6 +369,8 @@ class QuantileBinTokenizer:
         seed: int = 20260909,
         point_masses: bool = False,
         max_point_masses: int | None = None,
+        n_tail: int = 0,
+        tail_quantile: float = 0.005,
     ) -> QuantileBinTokenizer:
         """Fit quantile edges per channel.
 
@@ -262,6 +382,8 @@ class QuantileBinTokenizer:
             seed: Seed for the row subsample.
             point_masses: Give heavy repeated values an exact bin (module docstring).
             max_point_masses: The most point masses per channel.
+            n_tail: Fixed-width bins in each tail; ``0`` for a pure-quantile fit.
+            tail_quantile: Where each tail ends (module docstring).
 
         Returns:
             A fitted tokenizer.
@@ -286,6 +408,8 @@ class QuantileBinTokenizer:
             n_bins,
             point_masses=point_masses,
             max_point_masses=max_point_masses,
+            n_tail=n_tail,
+            tail_quantile=tail_quantile,
             meta={
                 "fit_rows": int(len(sampled)),
                 "fit_rows_available": int(len(frame)),
@@ -302,6 +426,8 @@ class QuantileBinTokenizer:
         n_bins: int,
         point_masses: bool = False,
         max_point_masses: int | None = None,
+        n_tail: int = 0,
+        tail_quantile: float = 0.005,
         meta: dict[str, Any] | None = None,
     ) -> QuantileBinTokenizer:
         """Fit every channel from arrays of its values.
@@ -312,6 +438,8 @@ class QuantileBinTokenizer:
             n_bins: Number of bins per channel.
             point_masses: Give heavy repeated values an exact bin (module docstring).
             max_point_masses: The most point masses per channel.
+            n_tail: Fixed-width bins in each tail; ``0`` for a pure-quantile fit.
+            tail_quantile: Where each tail ends (module docstring).
             meta: Provenance to record beside the fit's own.
 
         Returns:
@@ -328,22 +456,34 @@ class QuantileBinTokenizer:
         representatives: dict[str, list[float]] = {}
         masses: dict[str, list[float]] = {}
         coverage: dict[str, int] = {}
+        tails: dict[str, dict[str, Any]] = {}
         for name in channels:
             array = np.asarray(values[name], dtype=float)
             coverage[name] = int(np.isfinite(array).sum())
             try:
-                fitted = fit_channel(array, n_bins, point_masses, max_point_masses)
+                fitted = fit_channel(
+                    array, n_bins, point_masses, max_point_masses, n_tail, tail_quantile
+                )
             except ValueError as exc:
-                raise ValueError(f"channel {name!r} has no finite values to fit bins on") from exc
+                raise ValueError(f"channel {name!r} cannot be binned: {exc}") from exc
             edges[name] = fitted.edges
             representatives[name] = fitted.representatives
             if fitted.point_masses:
                 masses[name] = fitted.point_masses
+            tails[name] = {
+                "low": fitted.tail_edges[0],
+                "high": fitted.tail_edges[1],
+                "lower_bins": fitted.tail_bins[0],
+                "upper_bins": fitted.tail_bins[1],
+            }
 
         provenance = {
             **(meta or {}),
             "n_bins": n_bins,
             "point_masses": point_masses,
+            "n_tail": n_tail,
+            "tail_quantile": tail_quantile,
+            "tails": tails,
             "finite_values_per_channel": coverage,
             "fitted_at": datetime.now(tz=UTC).isoformat(timespec="seconds"),
         }

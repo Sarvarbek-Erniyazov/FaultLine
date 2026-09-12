@@ -11,8 +11,10 @@
 #      as <nan> because the edges were in kW and there was no published rating to convert
 #      by; that reason is gone, and no rating is inferred from CARE's percentiles for any
 #      purpose (ADR-0010, ADR-0013).
-#   3. HYBRID TAIL BINS (`n_tail`), the third gate-3 decision -- written into this file by
-#      the commit that made it, and described at the block below.
+#   3. HYBRID TAIL BINS (`n_tail`, `tail_quantile`). Quantile bins put resolution where
+#      the data is dense; faults live in the tails. At v0's 256 pure quantile bins the top
+#      bin of generator bearing temperature spanned 42.7 degC, where overheating is. The
+#      rule is below, the same for every channel and fixed before the fit (ADR-0014).
 #
 # Read by `faultline telemetry bins`, which fits the edges on the TRAIN split of the
 # training sites only -- Kelmarsh and Penmanshiel, 2016-2020, as splits_v3.yaml assigns
@@ -55,16 +57,40 @@ channels:
 candidates: [64, 128, 256]
 n_bins: 256
 n_bins_reason: >-
-  Reconstruction error falls with every doubling on every channel, on the validation split
-  as on the training values, so the grid has no interior optimum and the finest candidate
-  is chosen. It costs 256 of the bin block's 1,024 fixed identifiers (ADR-0003) and nothing
-  in sequence length, one token per channel per step at any bin count; and it leaves every
-  bin about 13,000 training values or more (3.35 million for pitch and gear oil, 4.5 to 4.7
-  million for the rest). The tails stay coarse at every candidate.
+  Unchanged from v0's finding: reconstruction error falls with every doubling on every
+  channel, on the validation split as on the training values, so the grid has no interior
+  optimum and the finest candidate is chosen. It costs 256 of the bin block's 1,024 fixed
+  identifiers (ADR-0003) and nothing in sequence length, one token per channel per step at
+  any bin count. What changes at v1 is how the 256 are spent, not how many there are: 32 go
+  to the fixed-width tails, so the quantile middle has 32 fewer and a slightly higher median
+  error, and the tails are no longer coarse. v0's claim that 256 bins leave "about 13,000
+  training values" a bin was a plain division and was corrected in ADR-0011; the report
+  measures the occupancy of every tail bin rather than dividing.
 
 # A value holding at least 1/n_bins of a channel's training values gets an exact bin.
 point_masses: true
 max_point_masses: 16
+
+# HYBRID TAILS (ADR-0014). One rule for every channel, in this order:
+#
+#   1. Point-mass bins are carved out first, exactly as at v0.
+#   2. The tail boundaries are the channel's training p0.5 and p99.5.
+#   3. Each tail gets n_tail bins of EQUAL WIDTH over [train_min, p0.5) and
+#      (p99.5, train_max].
+#   4. The remaining 256 - n_pointmass - 2*n_tail bins are quantile bins over
+#      [p0.5, p99.5].
+#   5. If a tail has zero width -- its boundary already at the range edge, or inside the
+#      exact bin of a point mass -- its n_tail bins go back to the central quantile pool.
+#      Stated here in advance; the report says which channels trigger it.
+#   6. A value outside the training range clamps to the extreme bin, as at v0.
+#
+# n_tail is the knob. THE SIGNAL TO TURN IT DOWN IS DEGENERATE TAIL BINS -- many holding
+# under ~500 training values -- and NOT the median reconstruction error, which is expected
+# to rise slightly because the middle loses 32 quantile bins. The expected gain is in the
+# worst error and in the top-bin width; the report measures both against a pure-quantile
+# fit of the same bin count on the same values.
+n_tail: 16
+tail_quantile: 0.005
 
 # Imputed values are interpolations, not measurements (ADR-0006), and are not fitted on.
 include_imputed: false

@@ -74,6 +74,10 @@ class QuantileBinsConfig(StrictModel):
         point_masses: Give values holding at least ``1 / n_bins`` of the training values
             an exact bin.
         max_point_masses: The most point masses per channel.
+        n_tail: Fixed-width bins in each tail (ADR-0014). ``0`` fits pure quantiles, as
+            v0 did. The knob to turn when tail bins run out of training values.
+        tail_quantile: Where the lower tail ends; the upper ends at its complement.
+            ``0.005`` puts them below the training p0.5 and above the p99.5.
         include_imputed: Fit on imputed values too. They are interpolations, not
             measurements, so the default is not to.
         excluded: Per source, channels emitted as ``<nan>`` whatever their value.
@@ -89,6 +93,8 @@ class QuantileBinsConfig(StrictModel):
     n_bins_reason: str
     point_masses: bool = True
     max_point_masses: int = Field(default=16, ge=0)
+    n_tail: int = Field(default=0, ge=0)
+    tail_quantile: float = Field(default=0.005, gt=0.0, lt=0.5)
     include_imputed: bool = False
     excluded: dict[str, list[str]] = Field(default_factory=dict)
     exclusion_reasons: dict[str, str] = Field(default_factory=dict)
@@ -123,6 +129,12 @@ class QuantileBinsConfig(StrictModel):
                 raise ValueError(f"excluded[{source}] needs a reason in exclusion_reasons")
         if not self.n_bins_reason.strip():
             raise ValueError("n_bins_reason must say why the bin count was chosen")
+        fixed = 2 * self.n_tail + self.max_point_masses
+        if fixed >= min(self.candidates):
+            raise ValueError(
+                f"two {self.n_tail}-bin tails and {self.max_point_masses} point masses need "
+                f"{fixed} bins, which leaves no quantile bins at n_bins={min(self.candidates)}"
+            )
         return self
 
 
@@ -295,6 +307,59 @@ def channel_fit(
         last=float(np.mean(ids == bins - 1)),
         bottom_width=float(edges[1] - edges[0]) if len(edges) > 1 else 0.0,
         top_width=float(edges[-1] - edges[-2]) if len(edges) > 1 else 0.0,
+    )
+
+
+#: A tail bin holding fewer training values than this is starved, and is the signal to
+#: turn ``n_tail`` down -- not the median reconstruction error (ADR-0014).
+STARVED_TAIL_BIN = 500
+
+
+@dataclass(frozen=True)
+class TailOccupancy:
+    """How many training values each of a channel's fixed-width tail bins holds.
+
+    Attributes:
+        channel: The channel.
+        lower: Training values in each lower-tail bin, lowest bin first.
+        upper: Training values in each upper-tail bin, lowest bin first.
+        edges: The two tail boundaries, the training p0.5 and p99.5.
+    """
+
+    channel: str
+    lower: list[int]
+    upper: list[int]
+    edges: tuple[float, float]
+
+    @property
+    def starved(self) -> int:
+        """Tail bins holding fewer than :data:`STARVED_TAIL_BIN` training values."""
+        return sum(1 for count in [*self.lower, *self.upper] if count < STARVED_TAIL_BIN)
+
+
+def tail_occupancy(
+    tokenizer: QuantileBinTokenizer, channel: str, train: np.ndarray
+) -> TailOccupancy:
+    """Count the training values in each of a channel's fixed-width tail bins.
+
+    Args:
+        tokenizer: The fitted tokenizer.
+        channel: The channel.
+        train: The training values it was fitted on.
+
+    Returns:
+        The per-bin counts of each tail, and where the tails end. Both lists are empty
+        for a channel fitted without tails, or whose tails had no width.
+    """
+    tails = dict(tokenizer.meta.get("tails", {}).get(channel, {}))
+    lower_bins, upper_bins = int(tails.get("lower_bins", 0)), int(tails.get("upper_bins", 0))
+    bins = tokenizer.bins_in_use(channel)
+    counts = np.bincount(tokenizer.transform_channel(train, channel), minlength=bins)
+    return TailOccupancy(
+        channel=channel,
+        lower=[int(c) for c in counts[:lower_bins]],
+        upper=[int(c) for c in counts[bins - upper_bins :]] if upper_bins else [],
+        edges=(float(tails.get("low", math.nan)), float(tails.get("high", math.nan))),
     )
 
 
@@ -480,6 +545,16 @@ def _choice_section(config: QuantileBinsConfig, fits: Mapping[int, Sequence[Chan
         + "\n"
         + kv_table({"n_bins chosen": config.n_bins, "why": config.n_bins_reason})
     )
+    if config.n_tail:
+        shares = ", ".join(f"{n}: {2 * config.n_tail / n:.0%}" for n in config.candidates)
+        body += (
+            f"\nRead the smaller candidates with care. The tails take {2 * config.n_tail} bins "
+            f"whatever the budget is, which is {shares} of it, so a candidate below the chosen "
+            "one is not the like-for-like comparison M1b made -- it is a different rule as well "
+            "as a smaller budget. The bin count is not reopened here (ADR-0011); the comparison "
+            "that matters for the tail rule is the quantile-only fit at the chosen count, "
+            "below.\n"
+        )
     return section("Choosing n_bins", body)
 
 
@@ -554,6 +629,111 @@ def _excluded_section(config: QuantileBinsConfig, checks: Sequence[ExcludedChann
     return section("Excluded channels", body)
 
 
+def _tails_section(
+    config: QuantileBinsConfig,
+    hybrid: Sequence[ChannelFit],
+    quantile_only: Sequence[ChannelFit],
+    occupancy: Sequence[TailOccupancy],
+) -> str:
+    """Render the hybrid tails against the pure-quantile fit they replace.
+
+    Args:
+        config: The tokenizer configuration.
+        hybrid: Per channel, the chosen fit.
+        quantile_only: Per channel, the same bin count fitted with pure quantiles, on the
+            same values: the controlled before to the hybrid's after.
+        occupancy: Per channel, the training values in each tail bin.
+
+    Returns:
+        A Markdown section.
+    """
+    ends = [
+        (
+            f"`{q.channel}`",
+            f"{q.bins} / {h.bins}",
+            f"{q.bottom_width:.4g} / {h.bottom_width:.4g}",
+            f"{q.top_width:.4g} / {h.top_width:.4g}",
+            f"{len(o.lower)} / {len(o.upper)}",
+        )
+        for q, h, o in zip(quantile_only, hybrid, occupancy, strict=True)
+    ]
+    errors = [
+        (
+            f"`{q.channel}`",
+            f"{_pct(q.train_error)} / {_pct(h.train_error)}",
+            f"{_pct(q.val_error)} / {_pct(h.val_error)}",
+        )
+        for q, h in zip(quantile_only, hybrid, strict=True)
+    ]
+    counts = [
+        (
+            f"`{o.channel}`",
+            f"{o.edges[0]:.4g} / {o.edges[1]:.4g}",
+            f"{min(o.lower):,} / {int(np.median(o.lower)):,} / {max(o.lower):,}"
+            if o.lower
+            else "-",
+            f"{min(o.upper):,} / {int(np.median(o.upper)):,} / {max(o.upper):,}"
+            if o.upper
+            else "-",
+            o.starved,
+        )
+        for o in occupancy
+    ]
+    collapsed = [
+        f"`{o.channel}` "
+        + ", ".join(side for side, taken in (("lower", o.lower), ("upper", o.upper)) if not taken)
+        for o in occupancy
+        if not o.lower or not o.upper
+    ]
+    starved = sum(o.starved for o in occupancy)
+    body = (
+        f"Every channel gets {config.n_tail} fixed-width bins below the training "
+        f"p{config.tail_quantile:.1%} and {config.n_tail} above the p"
+        f"{1 - config.tail_quantile:.1%}, after the point masses take their exact bins; "
+        "the rest of the bin budget is quantiles over the middle. `quantile only` is the "
+        "same bin count fitted the M1b way on the same values, so the two columns differ "
+        "by the tail rule and nothing else.\n\n"
+        "**The end bins** (quantile only / hybrid), widths in the channel's unit\n\n"
+        + table(
+            ["channel", "bins", "bottom-bin width", "top-bin width", "tail bins: lower / upper"],
+            ends,
+        )
+        + "\n**Reconstruction error** (quantile only / hybrid), as a share of the "
+        "interquartile range\n\n"
+        + table(["channel", "train", "validation"], errors)
+        + "\n**What the tail bins hold.** Training values per tail bin: smallest / median "
+        f"/ largest, and how many of the channel's tail bins hold fewer than "
+        f"{STARVED_TAIL_BIN:,}. A starved tail bin is the signal to turn `n_tail` down; the "
+        "median reconstruction error is not.\n\n"
+        + table(
+            [
+                "channel",
+                "tail boundaries",
+                "lower tail: min / median / max",
+                "upper tail: min / median / max",
+                f"bins under {STARVED_TAIL_BIN:,}",
+            ],
+            counts,
+        )
+        + "\n"
+        + kv_table(
+            {
+                "tails with no width, their bins returned to the middle": ", ".join(collapsed)
+                or "none",
+                f"tail bins under {STARVED_TAIL_BIN:,} training values": (
+                    f"{starved} of {sum(len(o.lower) + len(o.upper) for o in occupancy)}"
+                ),
+            }
+        )
+        + "\n**Every tail bin's training count**, lowest bin first.\n"
+    )
+    for o in occupancy:
+        lower = ", ".join(f"{c:,}" for c in o.lower) or "no lower tail"
+        upper = ", ".join(f"{c:,}" for c in o.upper) or "no upper tail"
+        body += f"\n**`{o.channel}`**\n\n```text\nlower: {lower}\nupper: {upper}\n```\n"
+    return section(f"The tails: {config.n_tail} fixed-width bins a side", body)
+
+
 def _edges_section(tokenizer: QuantileBinTokenizer) -> str:
     body = (
         "Every edge of the fitted tokenizer, lowest first; the first and last are the "
@@ -574,6 +754,8 @@ def render_bins(
     checks: Sequence[ExcludedChannel],
     tokenizer: QuantileBinTokenizer,
     training: Sequence[str],
+    quantile_only: Sequence[ChannelFit] = (),
+    occupancy: Sequence[TailOccupancy] = (),
 ) -> str:
     """Render the tokenizer report.
 
@@ -586,6 +768,9 @@ def render_bins(
         checks: One per excluded channel.
         tokenizer: The tokenizer written.
         training: The training sources.
+        quantile_only: Per channel, the chosen bin count fitted with pure quantiles on
+            the same values; empty under a pure-quantile configuration.
+        occupancy: Per channel, the training values in each fixed-width tail bin.
 
     Returns:
         A Markdown document.
@@ -613,6 +798,8 @@ def render_bins(
         _choice_section(config, fits),
         _masses_section(fits[config.n_bins]),
     ]
+    if config.n_tail:
+        parts.append(_tails_section(config, fits[config.n_bins], quantile_only, occupancy))
     parts.extend(
         _range_section(source, tally, fits[config.n_bins], config.channels)
         for source, tally in ranges.items()
@@ -661,6 +848,8 @@ def fit_bins(paths: ProjectPaths, config_path: Path) -> tuple[Path, Path]:
             n,
             point_masses=config.point_masses,
             max_point_masses=config.max_point_masses,
+            n_tail=config.n_tail,
+            tail_quantile=config.tail_quantile,
             meta={
                 "tokenizer_config": config_path.as_posix(),
                 "tokenizer_config_hash": digest,
@@ -680,6 +869,23 @@ def fit_bins(paths: ProjectPaths, config_path: Path) -> tuple[Path, Path]:
         for n, tokenizer in tokenizers.items()
     }
     chosen = tokenizers[config.n_bins]
+    # The controlled before to the hybrid's after: the same bin count, the same values,
+    # pure quantiles. It is measured and never written, so no run can read it by mistake.
+    quantile_only: list[ChannelFit] = []
+    occupancy: list[TailOccupancy] = []
+    if config.n_tail:
+        plain = QuantileBinTokenizer.fit_values(
+            fitted.values,
+            config.channels,
+            config.n_bins,
+            point_masses=config.point_masses,
+            max_point_masses=config.max_point_masses,
+        )
+        quantile_only = [
+            channel_fit(plain, name, fitted.values[name], held_back.values[name])
+            for name in config.channels
+        ]
+        occupancy = [tail_occupancy(chosen, name, fitted.values[name]) for name in config.channels]
     tokenizer_path = chosen.save(
         paths.tokenizers_dir / f"quantile_bins_v{config.version}_{digest}.json"
     )
@@ -689,7 +895,7 @@ def fit_bins(paths: ProjectPaths, config_path: Path) -> tuple[Path, Path]:
         for source, names in config.excluded.items()
         for name in names
     ]
-    header = "# The telemetry quantile-bin tokenizer (M1b step 11)\n\n" + kv_table(
+    header = "# The telemetry quantile-bin tokenizer\n\n" + kv_table(
         {
             "config": config_path.as_posix(),
             "config hash": digest,
@@ -701,7 +907,9 @@ def fit_bins(paths: ProjectPaths, config_path: Path) -> tuple[Path, Path]:
             "generated by": "faultline telemetry bins",
         }
     )
-    report = render_bins(header, config, fitted, fits, ranges, checks, chosen, training)
+    report = render_bins(
+        header, config, fitted, fits, ranges, checks, chosen, training, quantile_only, occupancy
+    )
     destination = paths.data_reports_dir / f"quantile_bins_{datetime.now(tz=UTC):%Y%m%d}.md"
     destination.write_text(report, encoding="utf-8")
     logger.info("wrote %s and %s", tokenizer_path, destination)

@@ -1510,7 +1510,7 @@ behaviour differs enough that one `n_tail` for every channel stops being defensi
 
 ## ADR-0015 The tail knob is turned as pre-registered, and the clamp bin is population-floored
 
-**Status:** Accepted · **Date:** 2026-09-12 · **Amends:** ADR-0014
+**Status:** Accepted; **frozen for Phase A** 2026-09-13 · **Date:** 2026-09-12 · **Amends:** ADR-0014
 
 > **The principle, which ADR-0012, ADR-0013 and ADR-0014 all rest on.** Datums are
 > conventions and are harmonised across sites. Physics is not harmonised; differences in
@@ -1630,9 +1630,33 @@ but a refit is the only way to be sure the difference is the rule and not the ru
 | Turn `n_tail` on the median reconstruction error | Already rejected in ADR-0014, repeated because the error table moves again here (0.475% to 0.740% on the training values). The median error is the rule's cost, not evidence about it. |
 | Fit a third time now that the cost is measured | Pre-registered against, above, and refused here. The record carries the limitation instead. |
 
-**What would change this decision.** A model result showing the tail tokens are still not
-learned, or that the widened clamp bins cost held-out performance -- either would reopen
-the rule, and the replacement should be the single design named above rather than another
-bolt-on. Also: a channel that fails the floor for a reason other than a point mass
-bounding its clamp bin, or a new source whose clamp share exceeds 0.1% by enough that the
-headroom stops being an order of magnitude.
+**FROZEN for Phase A, 2026-09-13.** `quantile_bins_v2` is the telemetry tokenizer for the
+rest of Phase A -- M2, M3 and the deployment work -- and is not refitted again inside it.
+Two reasons, and the second is the one that decides it:
+
+1. The joint model needs one frozen telemetry vocabulary. ADR-0003 makes the telemetry
+   region a stable prefix so that M1 shards survive the M2 text tokenizer; refitting the
+   bins inside Phase A would re-shard everything M1 produced and invalidate the ladder it
+   is the baseline for.
+2. **The trigger named below has not fired, because nothing has been able to test it.**
+   "A model result showing the tail tokens are still not learned" requires a risk run that
+   trained; the M1e ladder's risk arms did not (see the 2026-09-13 addendum to
+   `reports/data/ladder_v0_20260912.md`: H1 UNTESTED, the pretraining ablation
+   INCONCLUSIVE). A tokenizer must not be refitted on the strength of a model result that
+   the model runs cannot support, in either direction. Refitting now would be fitting the
+   vocabulary to noise.
+
+**The replacement design is Phase B / M4**, not Phase A: outer tail bins laid at equal
+*population* and inner ones at equal width, designed as one rule rather than a floor
+bolted onto a fixed-width tail. It is the tail rule the harmonisation-protocol claim will
+be written against, and under the Phase A / Phase B split it is not begun, scoped or
+prototyped while M1, M2 or M3 are open.
+
+**What would change this decision** -- and none of it inside Phase A. A model result
+showing the tail tokens are still not learned, or that the widened clamp bins cost
+held-out performance, either would reopen the rule, and the replacement should be the
+single design named above rather than another bolt-on; but such a result only counts if it
+comes from a risk run whose control arm demonstrably trained, which M3 step 0 is the
+pre-registered attempt at. Also: a channel that fails the floor for a reason other than a
+point mass bounding its clamp bin, or a new source whose clamp share exceeds 0.1% by
+enough that the headroom stops being an order of magnitude.

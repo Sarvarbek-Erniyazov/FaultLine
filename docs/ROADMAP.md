@@ -261,21 +261,42 @@ trained from scratch, evaluated as a risk model rather than a forecaster.
     2.242 (S3, 9.96M) nats. The seed half-range at the two rungs that have three seeds is
     about a fifth of the gap between adjacent rungs, so the curve is a curve and not
     noise. The course deliverable works.*
-  - ***Event risk does not scale, and sits near chance.** A 32-fold increase in parameters
-    moves validation AUPRC by less than the seed spread at the small rungs: the frozen
-    probe reads 0.031 / 0.044 / 0.043 / 0.048 and the fine-tune 0.052 / 0.055 / 0.042 /
-    0.043 across S0 to S3. Against base rates of 1.15% and 2.45% that is a lift of 1.1x to
-    2.8x, and on the test sites 0.90x to 1.95x -- several arms score BELOW their base rate.
-    This is a result about this label, this token stream and this budget, and it is
-    reported as one.*
-  - ***The pretraining ablation separates on validation and does not survive to test.** On
-    validation a pretrained backbone beats the randomly initialised control in 14 of 16
-    rung-by-arm-by-source comparisons, by +0.011 to +0.031 AUPRC. On the test sites it
-    leads in 17 of 24 -- but the single largest test lift in the whole table belongs to the
-    CONTROL (S2 random, Penmanshiel, 1.93x, against 1.24x and 1.16x for the pretrained
-    arms). The validation-side advantage is also partly an artefact of the control barely
-    learning: its validation lift is 1.00x to 1.17x at three of four rungs, so the gap
-    measures an under-trained control as much as a useful representation.*
+  - ***No risk arm learned beyond the prior at this budget with unweighted BCE; these runs
+    cannot separate an unlearnable label from a starved head.** The AUPRC measurements
+    stand and are unchanged: the frozen probe reads 0.031 / 0.044 / 0.043 / 0.048 and the
+    fine-tune 0.052 / 0.055 / 0.042 / 0.043 across S0 to S3, against base rates of 1.15%
+    and 2.45%, and on the test sites several arms score BELOW their own base rate. **The
+    conclusion first drawn from them -- that event risk "does not scale" -- is withdrawn**
+    (2026-09-13, docs-only, no retraining): it reads an absence of signal as a property of
+    the label, and the training arithmetic below shows this budget could not have
+    distinguished that from a head that never received enough positives to train.*
+  - ***The arithmetic, from the run config and the committed records.** The risk arms ran
+    at batch 16 with 2-step accumulation -- **32 windows an optimiser step** -- for 1,250
+    steps, 40,000 windows. The 24-hour narrow label runs at **2.2050%** of the windows the
+    sampler actually drew (16,524 positives in 749,387 stride-6 admissible training
+    windows, both sites pooled; the committed shards report's per-site 1.58% and 2.51%
+    agree to three figures). So a batch carried **0.71 positives on average**, **49% of
+    optimiser steps carried none at all**, and a whole run saw **882 positives** -- 5.3% of
+    the 16,524 distinct positive windows available to it. Mean training loss over each
+    run's last tenth: **0.1004 (probe), 0.0971 (finetune), 0.1009 (random) nats**, against
+    the binary entropy of the training base rate **H(p) = 0.1059 nats**. Every arm sits
+    within 8% of the loss a constant predictor achieves, and 4 of the 24 risk runs sit
+    above it.*
+  - ***The evidence that the head is starved rather than merely unsuccessful.** Validation
+    AUPRC was measured seven times a run on a pooled selection subsample holding 117
+    positives in 6,000 windows, so **0.0195 is exactly the score of a constant scorer** --
+    the average precision of an output carrying no ranking information at all. The
+    randomly initialised control reads exactly 0.0195 in **27 of its 56 measurements,
+    across 7 of its 8 runs** -- **S3/random 6 of 7, S2/random 3 of 7**. The fine-tune reads
+    it 3 times, each at its own first measurement, before moving off it; the probe never
+    does. A control pinned on the prior through most of training is not a measured
+    baseline, so **the pretraining ablation is INCONCLUSIVE**: the 14-of-16 validation
+    separation is a comparison against an arm that did not train, not evidence about a
+    representation.*
+  - ***Status, recorded rather than implied. H1 is UNTESTED** -- the ladder produces no
+    evidence for or against it, in either direction. **The pretraining ablation is
+    INCONCLUSIVE.** Neither is a negative result and neither may be cited as one. The
+    remedy is pre-registered as M3 step 0 below, and is not started here.*
   - *Held out per year (`per_year_sites`): Hill of Towie 2019 runs at a 3.89% base rate and
     2023 at 2.76%, and every arm tracks the base rate at both -- the site-shift penalty is
     not visible because there is not enough signal above chance for it to be visible in.*
@@ -350,8 +371,40 @@ gracefully under modality shift. They are stated as milestone criteria below rat
 than as numbered hypotheses, and will be written out as H1 and H2 when there are M1
 results to phrase them against.
 
+> **H1 — UNTESTED as of 2026-09-13.** The M1e ladder was the first run that could have
+> borne on it and does not: no risk arm trained on enough positives to separate a
+> representation from a starved head, so the ladder is evidence neither for H1 nor
+> against it. The pretraining ablation is **INCONCLUSIVE** for the same reason — its
+> control sat pinned at the prior for most of training. Neither may be cited as a
+> negative result. M3 step 0 is the pre-registered remedy and runs before any joint
+> model; H1 is written out as a numbered hypothesis when a risk run exists whose control
+> arm demonstrably trained.
+
 **Work**
 
+- **Step 0 — positive-aware risk training, before any joint work.** *Not started;
+  recorded 2026-09-13 from the M1e re-reading above, which left H1 UNTESTED and the
+  pretraining ablation INCONCLUSIVE because no risk arm trained on enough positives to
+  say otherwise.* Three changes, all pre-registered here rather than chosen once numbers
+  exist:
+  - **The loss becomes positive-aware** — `pos_weight` on the BCE, or balanced sampling
+    of the training windows. The arm that is chosen and the value it takes are recorded
+    before the runs; `positive_weight` is already a config knob and already defaults to
+    1.0 by an explicit decision, so this supersedes that default rather than discovering
+    it.
+  - **The risk budget is sized in positives seen, not optimiser steps.** 1,250 steps at
+    32 windows bought 882 positives; a budget stated in steps hides that, and a budget
+    stated in positives cannot. The window budget is derived from the positive target
+    and the measured base rate, and both go in the run config.
+  - **The frozen probe gets its own learning rate**, separate from the fine-tune's. M1e
+    pre-registered one shared rate and reported the cost as limitation (a); with the
+    control now known to have sat on the prior, a shared rate is no longer the
+    conservative choice it was argued to be. Each arm's rate is fixed before the runs so
+    the ablation stays a comparison of initialisation and not of tuning effort.
+
+  **Done when** the control arm moves off the prior — measured, not assumed: no run may
+  report a validation AUPRC series pinned at the selection subsample's base rate. Until
+  it does, H1 stays UNTESTED and no pretraining claim is made in either direction.
 - Concatenate the M1 and M2 vocabularies per ADR-0003; no retokenization.
 - Train the joint decoder; compare against both single-modality baselines.
 - Modality-shift evaluation: channels dropped or corrupted, text withheld, at

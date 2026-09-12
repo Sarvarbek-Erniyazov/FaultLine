@@ -50,7 +50,7 @@ def test_every_shipped_map_is_valid_and_leaves_nothing_open(repo_root: Path) -> 
 def test_hill_of_towie_resolves_every_channel_from_its_field_lookup(repo_root: Path) -> None:
     doc = load_channel_maps(repo_root / "configs", ["hill_of_towie"])["hill_of_towie"]
     assert doc.resolved_everywhere() == set(CHANNEL_NAMES)
-    power = doc.groups[0].entries["power_kw"]
+    power = doc.groups[0].entries["power_pu"]
     assert power.column == "tblSCTurGrid.wtc_ActPower_mean"
     assert power.evidence == "Active power (kW)"
 
@@ -69,24 +69,29 @@ def test_care_is_mapped_per_farm_with_its_unit_caveats(repo_root: Path) -> None:
     assert farms["farm_a"].directory == "Wind Farm A"
     assert farms["farm_c"].entries["wind_direction_deg"].status == "verified absent"
     assert farms["farm_b"].entries["gearbox_bearing_temp_c"].status == "ambiguous"
-    # CARE power is normalised; the map must not let it pass for kW
+    # CARE power is per unit of rated power by the provider's own documentation, and the
+    # map must cite that rather than infer it from the values (ADR-0013). Its own feature
+    # lookup says kW, which the note has to contradict explicitly.
     for group in doc.groups:
-        note = group.entries["power_kw"].unit_note
-        assert note is not None and "not kW" in note
+        note = group.entries["power_pu"].unit_note
+        assert note is not None
+        assert "per unit of rated power" in note
+        assert "3.1.4" in note
+        assert "not published" in note
 
 
 # -- validation -----------------------------------------------------------------------
 
 
 def test_a_mapped_channel_needs_evidence(tmp_path: Path) -> None:
-    path = write_map(tmp_path, channels={"power_kw": "Power (kW)"})
+    path = write_map(tmp_path, channels={"power_pu": "Power (kW)"})
     with pytest.raises(ValueError, match="no evidence"):
         parse_channel_map(path)
 
 
 def test_every_canonical_channel_must_be_declared(tmp_path: Path) -> None:
     path = tmp_path / "x.yaml"
-    path.write_text("channels:\n  power_kw: Power (kW)\n", encoding="utf-8")
+    path.write_text("channels:\n  power_pu: Power (kW)\n", encoding="utf-8")
     with pytest.raises(ValueError, match="every canonical channel must be declared"):
         parse_channel_map(path)
 
@@ -94,9 +99,9 @@ def test_every_canonical_channel_must_be_declared(tmp_path: Path) -> None:
 def test_a_channel_cannot_be_mapped_and_absent_at_once(tmp_path: Path) -> None:
     path = write_map(
         tmp_path,
-        channels={"power_kw": "Power (kW)"},
-        evidence={"power_kw": "active power"},
-        verified_absent={"power_kw": "not published"},
+        channels={"power_pu": "Power (kW)"},
+        evidence={"power_pu": "active power"},
+        verified_absent={"power_pu": "not published"},
     )
     with pytest.raises(ValueError, match="also listed as absent or ambiguous"):
         parse_channel_map(path)

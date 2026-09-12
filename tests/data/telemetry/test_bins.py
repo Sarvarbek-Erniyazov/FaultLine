@@ -37,12 +37,24 @@ def config(**overrides: object) -> QuantileBinsConfig:
 
 def test_the_shipped_configuration_loads(repo_root: Path) -> None:
     shipped = load_config(
-        repo_root / "configs" / "tokenizer" / "quantile_bins_v0.yaml", QuantileBinsConfig
+        repo_root / "configs" / "tokenizer" / "quantile_bins_v1.yaml", QuantileBinsConfig
     )
     assert shipped.fit_split == "train"
     assert shipped.n_bins == 256
     assert shipped.channels == list(CORE_CHANNELS)
-    assert shipped.excluded == {"care": ["power_kw"]}
+    assert shipped.telemetry_config == "configs/data/telemetry_v4.yaml"
+    # v0 excluded CARE power for want of a rating to convert it by. ADR-0013 includes it:
+    # the provider states it is already scaled by rated power, which is the canonical unit.
+    assert shipped.excluded == {}
+
+
+def test_the_v0_tokenizer_configuration_no_longer_loads(repo_root: Path) -> None:
+    # It names power_kw, which M1c renamed. Left as written; every report it produced is
+    # historical, as its own fitted tokenizer in data/tokenizers/ remains.
+    with pytest.raises(ValidationError, match="core channel in identifier order"):
+        load_config(
+            repo_root / "configs" / "tokenizer" / "quantile_bins_v0.yaml", QuantileBinsConfig
+        )
 
 
 def test_the_configuration_refuses_what_the_fit_could_not_honour() -> None:
@@ -55,7 +67,7 @@ def test_the_configuration_refuses_what_the_fit_could_not_honour() -> None:
     with pytest.raises(ValidationError, match="every core channel"):
         config(channels=[*CORE_CHANNELS, "wind_direction_deg"])
     with pytest.raises(ValidationError, match="needs a reason"):
-        config(excluded={"care": ["power_kw"]})
+        config(excluded={"care": ["power_pu"]})
     with pytest.raises(ValidationError, match="not fitted"):
         config(excluded={"care": ["wind_direction_deg"]}, exclusion_reasons={"care": "x"})
     with pytest.raises(ValidationError):
@@ -73,17 +85,17 @@ def test_only_the_split_asked_for_is_gathered_and_imputed_values_are_not(
     frame = pd.DataFrame(
         {
             "split": ["train", "train", "train", "val"],
-            "power_kw": [1.0, 2.0, np.nan, 9.0],
-            f"power_kw{IMPUTED_SUFFIX}": [False, True, False, False],
+            "power_pu": [1.0, 2.0, np.nan, 9.0],
+            f"power_pu{IMPUTED_SUFFIX}": [False, True, False, False],
         }
     )
     write_final(repo_paths, "kelmarsh", frame, "K1__2019.parquet")
-    gathered = split_values(repo_paths, ["kelmarsh"], ["power_kw"], "train")
-    assert gathered.values["power_kw"].tolist() == [1.0]
-    assert gathered.imputed == {"power_kw": 1}
+    gathered = split_values(repo_paths, ["kelmarsh"], ["power_pu"], "train")
+    assert gathered.values["power_pu"].tolist() == [1.0]
+    assert gathered.imputed == {"power_pu": 1}
     assert gathered.rows == {"kelmarsh": 3}
-    both = split_values(repo_paths, ["kelmarsh"], ["power_kw"], "train", include_imputed=True)
-    assert both.values["power_kw"].tolist() == [1.0, 2.0]
+    both = split_values(repo_paths, ["kelmarsh"], ["power_pu"], "train", include_imputed=True)
+    assert both.values["power_pu"].tolist() == [1.0, 2.0]
 
 
 def test_a_channel_fit_measures_errors_masses_and_end_bins() -> None:
@@ -127,14 +139,14 @@ def test_values_outside_the_training_range_are_counted_per_year(
 
 def test_normalised_power_would_read_as_idle(repo_paths: ProjectPaths) -> None:
     tokenizer = QuantileBinTokenizer.fit_values(
-        {"power_kw": np.linspace(-20, 2050, 1000)}, ["power_kw"], n_bins=64
+        {"power_pu": np.linspace(-20, 2050, 1000)}, ["power_pu"], n_bins=64
     )
     write_final(
         repo_paths,
         "care",
-        pd.DataFrame({"power_kw": [0.0, 0.5, 1.05, np.nan]}),
+        pd.DataFrame({"power_pu": [0.0, 0.5, 1.05, np.nan]}),
         "farm_a__2022.parquet",
     )
-    check = excluded_channel(repo_paths, "care", "power_kw", tokenizer)
+    check = excluded_channel(repo_paths, "care", "power_pu", tokenizer)
     assert (check.values, check.low, check.high) == (3, 0.0, 1.05)
     assert check.idle == 1.0

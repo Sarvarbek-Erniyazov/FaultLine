@@ -12,6 +12,13 @@ good file object.
 At M0 ``discover`` is implemented for every source and the loaders are implemented
 only where the member format has been confirmed by inspection. An unconfirmed
 loader raises rather than guessing at a column layout.
+
+An adapter is also the only place a **unit conversion** happens, because a unit is part
+of what a provider publishes. CARE's generator speed is divided by 60/(2*pi) to reach rpm
+from rad/s, and since M1c every source's power is divided by the nameplate rating of its
+machine to reach per unit of rated power (:meth:`BaseAdapter.to_canonical_units`,
+ADR-0013). Both divisors are declared in configuration and cited: a nameplate is a
+published fact about a machine, never a quantity fitted from the data.
 """
 
 from __future__ import annotations
@@ -28,6 +35,7 @@ import pandas as pd
 import yaml
 
 from faultline.data.telemetry.collapse import CollapseStats
+from faultline.download.zenodo import load_sources_config
 from faultline.logging_utils import get_logger
 
 logger = get_logger(__name__)
@@ -54,6 +62,10 @@ class FileAccount:
     turbine: str
     stats: CollapseStats
 
+
+#: The canonical power channel, held in per unit of rated power (ADR-0013). Named here
+#: rather than imported from the schema so that the adapter layer keeps one import edge.
+POWER_CHANNEL = "power_pu"
 
 #: Archive extensions treated as containers.
 ARCHIVE_SUFFIXES: frozenset[str] = frozenset({".zip"})
@@ -168,6 +180,26 @@ def load_channel_map(path: Path) -> dict[str, str]:
     return resolved
 
 
+def load_rated_power_kw(configs_dir: Path, source: str) -> float | None:
+    """Load a source's nameplate rated power per turbine, in kW.
+
+    Args:
+        configs_dir: The repository ``configs`` directory.
+        source: Source identifier.
+
+    Returns:
+        The rating in kW, or ``None`` where the specification declares none -- which
+        is how a source that publishes power already per unit says so (ADR-0013).
+    """
+    path = configs_dir / "data" / "sources_telemetry.yaml"
+    if not path.is_file():
+        logger.warning("source specification not found: %s", path)
+        return None
+    spec = load_sources_config(path).sources.get(source)
+    rated = spec.rated_power_kw if spec is not None else None
+    return float(rated.value) if rated is not None else None
+
+
 def load_farm_blocks(path: Path) -> dict[str, dict[str, Any]]:
     """Load the per-farm blocks of a channel map that maps each farm separately.
 
@@ -228,11 +260,15 @@ class BaseAdapter:
 
     Attributes:
         channel_map: Canonical-to-source column mapping loaded from configs.
+        rated_power_kw: Nameplate rated power per turbine in kW, the divisor that puts
+            the canonical power channel in per unit. ``None`` where the source publishes
+            power already per unit, or declares no rating.
         source_id: Source identifier.
         site_name: Human-readable site name.
     """
 
     channel_map: dict[str, str] = field(default_factory=dict)
+    rated_power_kw: float | None = None
 
     source_id: ClassVar[str] = "base"
     site_name: ClassVar[str] = "base"
@@ -274,7 +310,10 @@ class BaseAdapter:
             A configured adapter.
         """
         path = configs_dir / "data" / "channel_map" / f"{cls.source_id}.yaml"
-        return cls(channel_map=load_channel_map(path))
+        return cls(
+            channel_map=load_channel_map(path),
+            rated_power_kw=load_rated_power_kw(configs_dir, cls.source_id),
+        )
 
     def classify(self, name: str) -> MemberKind:
         """Classify a member by its name.
@@ -367,6 +406,30 @@ class BaseAdapter:
             The table name, or ``None``, and the field name.
         """
         return None, column
+
+    def to_canonical_units(self, frame: pd.DataFrame) -> pd.DataFrame:
+        """Put a loaded table's channels in their canonical units.
+
+        Power is canonically **per unit of the machine's rated power**, so a source that
+        publishes kW is divided by its nameplate rating (ADR-0013). This is a unit
+        conversion like CARE's rad/s to rpm, and it belongs here for the same reason: the
+        unit is part of what the provider published, and everything downstream of an
+        adapter is meant to read one schema in one set of units.
+
+        Args:
+            frame: A canonical wide table as the loader built it.
+
+        Returns:
+            The table in canonical units. Unchanged where the source declares no rating,
+            which is how a source already publishing per unit says so.
+        """
+        if self.rated_power_kw is None or POWER_CHANNEL not in frame.columns:
+            return frame
+        result = frame.copy()
+        result[POWER_CHANNEL] = (
+            pd.to_numeric(result[POWER_CHANNEL], errors="coerce") / self.rated_power_kw
+        )
+        return result
 
     def turbine_id(self, member: RawMember) -> str:
         """Identify the turbine a member belongs to.

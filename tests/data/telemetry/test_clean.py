@@ -16,7 +16,7 @@ from faultline.data.telemetry.clean import (
     resolve_duplicate_timestamps,
 )
 
-CHANNELS = ["wind_speed_ms", "power_kw"]
+CHANNELS = ["wind_speed_ms", "power_pu"]
 
 
 def synthetic(rows: int = 12, freq: str = "10min", naive: bool = True) -> pd.DataFrame:
@@ -31,7 +31,7 @@ def synthetic(rows: int = 12, freq: str = "10min", naive: bool = True) -> pd.Dat
             "turbine_id": "T1",
             "timestamp_utc": stamps,
             "wind_speed_ms": rng.uniform(3, 15, rows),
-            "power_kw": rng.uniform(0, 2000, rows),
+            "power_pu": rng.uniform(0, 2000, rows),
         }
     )
 
@@ -59,13 +59,13 @@ def test_parse_timestamps_requires_the_column() -> None:
 def test_duplicate_timestamps_mean() -> None:
     frame = synthetic(3, naive=False)
     duplicated = pd.concat([frame, frame.iloc[[0]]], ignore_index=True)
-    duplicated.loc[3, "power_kw"] = 0.0
+    duplicated.loc[3, "power_pu"] = 0.0
     collapsed, removed = resolve_duplicate_timestamps(duplicated, CHANNELS, "mean")
     assert removed == 1
     assert len(collapsed) == 3
-    expected = (frame.loc[0, "power_kw"] + 0.0) / 2
+    expected = (frame.loc[0, "power_pu"] + 0.0) / 2
     row = collapsed.loc[collapsed["timestamp_utc"] == frame.loc[0, "timestamp_utc"]]
-    assert row["power_kw"].iloc[0] == pytest.approx(expected)
+    assert row["power_pu"].iloc[0] == pytest.approx(expected)
     # identifier columns survive the collapse
     assert row["turbine_id"].iloc[0] == "T1"
 
@@ -73,10 +73,10 @@ def test_duplicate_timestamps_mean() -> None:
 def test_duplicate_timestamps_first() -> None:
     frame = synthetic(3, naive=False)
     duplicated = pd.concat([frame, frame.iloc[[0]]], ignore_index=True)
-    duplicated.loc[3, "power_kw"] = -999.0
+    duplicated.loc[3, "power_pu"] = -999.0
     collapsed, removed = resolve_duplicate_timestamps(duplicated, CHANNELS, "first")
     assert removed == 1
-    assert -999.0 not in set(collapsed["power_kw"])
+    assert -999.0 not in set(collapsed["power_pu"])
 
 
 def test_duplicate_strategy_is_validated() -> None:
@@ -109,13 +109,13 @@ def test_bounds_flag_out_of_range_values() -> None:
 def test_clean_turbine_frame_end_to_end() -> None:
     frame = synthetic(10)
     frame = pd.concat([frame, frame.iloc[[0]]], ignore_index=True)
-    frame.loc[11, "power_kw"] = 99999.0
+    frame.loc[11, "power_pu"] = 99999.0
     frame = frame.drop(index=[5]).reset_index(drop=True)
 
     cleaned, counts = clean_turbine_frame(
         frame,
         channels=CHANNELS,
-        bounds={"power_kw": BoundSpec(min=-100.0, max=2255.0)},
+        bounds={"power_pu": BoundSpec(min=-100.0, max=2255.0)},
         config=TelemetryCleanConfig(),
     )
     assert counts.duplicate_timestamps == 1
@@ -125,4 +125,4 @@ def test_clean_turbine_frame_end_to_end() -> None:
     assert str(cleaned["timestamp_utc"].dt.tz) == "UTC"
     counters = counts.as_counters()
     assert counters["duplicate_timestamps"] == 1
-    assert "bounds:power_kw" in counters
+    assert "bounds:power_pu" in counters

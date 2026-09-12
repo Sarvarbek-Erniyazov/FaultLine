@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 
 import requests
-from pydantic import Field
+from pydantic import Field, model_validator
 from requests.adapters import HTTPAdapter
 from tqdm import tqdm
 from urllib3.util.retry import Retry
@@ -70,6 +70,34 @@ class SiteSpec(StrictModel):
     note: str | None = None
 
 
+class RatedPower(StrictModel):
+    """Nameplate rated power per turbine, and where the number was read.
+
+    A nameplate is a published fact about the machine, not a quantity fitted from the
+    data, so dividing by it leaks nothing from an evaluation period (ADR-0013). The
+    citation is required for exactly that reason: a rating nobody can check would be a
+    guess, and a guess fitted to the record is what ADR-0011 rejected for CARE.
+
+    Attributes:
+        value: Rated power per turbine in kW.
+        citation: The published file, record or datasheet the number was read from.
+    """
+
+    value: float = Field(gt=0)
+    citation: str
+
+    @model_validator(mode="after")
+    def _cited(self) -> RatedPower:
+        """Reject a rating with no citation.
+
+        Raises:
+            ValueError: If the citation is blank.
+        """
+        if not self.citation.strip():
+            raise ValueError("a rated power needs a citation: where the number was read")
+        return self
+
+
 class SourceSpec(StrictModel):
     """One configured data source.
 
@@ -81,6 +109,9 @@ class SourceSpec(StrictModel):
         attribution: Attribution string required by the licence.
         cite: Optional accompanying publication.
         site: Site metadata.
+        rated_power_kw: Nameplate rated power per turbine, with its citation. The
+            adapters divide the canonical power channel by it to reach per unit
+            (ADR-0013); a source that publishes power already per unit has none.
         timezone: Timezone of the timestamps, or a TODO when unconfirmed.
         absolute_time: Whether the timestamps are real calendar instants. ``False`` for
             a record that anonymises its timestamps. Such a record keeps its 10-minute
@@ -100,6 +131,7 @@ class SourceSpec(StrictModel):
     attribution: str
     cite: str | None = None
     site: SiteSpec
+    rated_power_kw: RatedPower | None = None
     timezone: str | None = None
     absolute_time: bool = True
     provenance: str | None = None

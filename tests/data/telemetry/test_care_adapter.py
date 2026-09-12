@@ -122,4 +122,4 @@ def test_the_shipped_map_loads_every_farm_and_the_rad_per_second_scale(repo_root
     )
     assert shipped.farm_maps["farm_c"]["generator_speed_rpm"] == "sensor_8_avg"
     # CARE power is normalised and has no known factor, so nothing scales it
-    assert "power_kw" not in shipped.farm_scales["farm_a"]
+    assert "power_pu" not in shipped.farm_scales["farm_a"]

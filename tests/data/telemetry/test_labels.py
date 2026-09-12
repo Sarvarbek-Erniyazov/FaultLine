@@ -172,11 +172,11 @@ def test_each_step_is_labelled_for_every_horizon() -> None:
             "source": "kelmarsh",
             "turbine_id": "T1",
             "timestamp_utc": [T0 + STEP * i for i in range(12)],
-            "power_kw": [1.0] * 11 + [np.nan],
+            "power_pu": [1.0] * 11 + [np.nan],
         }
     )
     events = pd.DataFrame({"start_utc": [T0 + STEP * 10], "is_fault": [True]})
-    labels = label_turbine_year(grid, events, [1, 6], EventConfig(), ["power_kw"])
+    labels = label_turbine_year(grid, events, [1, 6], EventConfig(), ["power_pu"])
     assert labels["event_within_10min"].tolist() == [False] * 9 + [True, False, False]
     assert labels["event_within_1h"].tolist() == [False] * 4 + [True] * 6 + [False, False]
     assert labels["has_data"].sum() == 11
@@ -189,7 +189,7 @@ def test_the_label_stage_labels_a_cleaned_grid(repo_root: Path, repo_paths: Proj
             "site": "Kelmarsh",
             "turbine_id": "Kelmarsh 1",
             "timestamp_utc": [T0 + STEP * i for i in range(300)],
-            "power_kw": np.linspace(0, 2000, 300),
+            "power_pu": np.linspace(0, 2000, 300),
         }
     )
     grid.to_parquet(

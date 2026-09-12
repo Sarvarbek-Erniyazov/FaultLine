@@ -33,9 +33,10 @@ def config_path(repo_root: Path) -> Path:
 
 @pytest.fixture
 def current_path(repo_root: Path) -> Path:
-    # Runs through the final stage read the current split spec: v0's no longer loads, since
-    # it evaluates wind direction, extended from M1b step 10 (ADR-0008).
-    return repo_root / "configs" / "data" / "telemetry_v3.yaml"
+    # Runs through the final stage read the current split spec: v0's and v1's no longer
+    # load (they evaluate wind direction, extended from M1b step 10, ADR-0008), and v2's
+    # names power_kw, renamed at M1c (ADR-0013).
+    return repo_root / "configs" / "data" / "telemetry_v4.yaml"
 
 
 def synthetic_turbine_year(rows: int = 500) -> pd.DataFrame:
@@ -48,13 +49,13 @@ def synthetic_turbine_year(rows: int = 500) -> pd.DataFrame:
             "turbine_id": "T1",
             "timestamp_utc": stamps,
             "wind_speed_ms": rng.uniform(3, 18, rows),
-            "power_kw": rng.uniform(0, 2000, rows),
+            "power_pu": rng.uniform(0, 2000, rows),
             "rotor_speed_rpm": rng.uniform(5, 16, rows),
         }
     )
     # a short gap that imputation should fill, and a long one that ends a segment
-    frame.loc[100:101, ["wind_speed_ms", "power_kw", "rotor_speed_rpm"]] = np.nan
-    frame.loc[200:229, ["wind_speed_ms", "power_kw", "rotor_speed_rpm"]] = np.nan
+    frame.loc[100:101, ["wind_speed_ms", "power_pu", "rotor_speed_rpm"]] = np.nan
+    frame.loc[200:229, ["wind_speed_ms", "power_pu", "rotor_speed_rpm"]] = np.nan
     # an implausible reading that the bounds must reject
     frame.loc[10, "wind_speed_ms"] = 500.0
     return frame
@@ -76,15 +77,28 @@ def test_the_v1_config_loads_and_chooses_no_primary_horizon(repo_root: Path) -> 
     assert config.events.horizons_steps == [6, 36, 144]  # 1 h, 6 h, 24 h
     assert config.events.horizon_steps is None
     assert config.final.splits_config == "configs/data/splits_v1.yaml"
-    # CARE power is normalised, so its bound is per-unit, not kW
+    # v1 predates the rename and spells the channel power_kw. CARE's bound was already
+    # per unit there, which is why ADR-0013 had nothing to convert for it.
     assert config.bounds_for("care")["power_kw"].max == 1.1
 
 
-def test_per_source_bound_overrides(config_path: Path) -> None:
-    config = load_telemetry_config(config_path)
-    default = config.bounds_for("kelmarsh")["power_kw"].max
-    towie = config.bounds_for("hill_of_towie")["power_kw"].max
-    assert towie > default  # 2300 kW rated rather than 2050 kW
+def test_per_source_bound_overrides(config_path: Path, current_path: Path) -> None:
+    # v0, in kW: the held-out site's bound is higher because its machine is bigger.
+    v0 = load_telemetry_config(config_path)
+    assert (
+        v0.bounds_for("hill_of_towie")["power_kw"].max > v0.bounds_for("kelmarsh")["power_kw"].max
+    )
+
+    # v4, in per unit of rated power: the same bound is the same number at both sites,
+    # because dividing by the rating is what made them comparable (ADR-0013). The minima
+    # still differ: -100 kW was an absolute allowance and does not scale with a rating.
+    v4 = load_telemetry_config(current_path)
+    assert v4.bounds_for("kelmarsh")["power_pu"].max == 1.1
+    assert v4.bounds_for("hill_of_towie")["power_pu"].max == 1.1
+    assert v4.bounds_for("care")["power_pu"].max == 1.1
+    assert (
+        v4.bounds_for("hill_of_towie")["power_pu"].min > v4.bounds_for("kelmarsh")["power_pu"].min
+    )
 
 
 def test_turbine_year_name_is_filesystem_safe() -> None:
@@ -202,7 +216,7 @@ def test_clean_filter_final_on_a_synthetic_turbine_year(
     written = parquet_files(stage_source_dir(repo_paths, "final", SOURCE))
     assert written
     output = pd.read_parquet(written[0])
-    for channel in ("wind_speed_ms", "power_kw"):
+    for channel in ("wind_speed_ms", "power_pu"):
         assert f"{channel}{IMPUTED_SUFFIX}" in output.columns
     assert "split" in output.columns
     assert "segment_id" in output.columns
@@ -232,7 +246,7 @@ def test_long_gaps_are_never_imputed(current_path: Path, repo_paths: ProjectPath
 def test_the_final_stage_withholds_training_windows_inside_an_exclusion(
     current_path: Path, repo_paths: ProjectPaths
 ) -> None:
-    # splits_v2 excludes Penmanshiel from 2018-03-01 00:00; these twenty days start nine
+    # splits_v3 excludes Penmanshiel from 2018-03-01 00:00; these twenty days start nine
     # days before it, so the last 11 days' rows (1,584) lie inside the first span.
     config = load_telemetry_config(current_path)
     rows = 20 * 144

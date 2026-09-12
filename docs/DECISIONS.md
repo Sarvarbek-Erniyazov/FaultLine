@@ -1104,6 +1104,16 @@ There is no published rating to rescale it by, and binned against the training e
 all 5,240,487 of its values (-0.04 to 1.07) would decode to 10 kW or less: every CARE
 turbine would read as not producing.
 
+**Superseded, 2026-09-12 (M1c), by ADR-0013.** CARE's power is included, and the first of
+the three reasons above -- "its power channel is not on the kW scale the other sites share"
+-- no longer holds, because no site is on a kW scale. The canonical channel is per unit of
+rated power at every source, and the provider states that CARE's power is already scaled by
+rated power (*Data* 9(12):138, section 3.1.4), so it is in the canonical unit by
+documentation rather than by inference. Nothing else in this record changes: CARE stays a
+secondary, dataset-level probe with the interval its 45 anomalous datasets allow, its
+timestamps stay anonymised, and its per-farm missingness stays what it was. A rated power
+per farm is still unpublished and still inferred from nothing.
+
 ---
 
 ## ADR-0011 The telemetry tokenizer: 256 quantile bins, exact bins for point masses, fitted on the training split
@@ -1193,6 +1203,17 @@ bin of generator bearing temperature spans 42.7 degrees C and that of nacelle te
 would be `quantile_bins_v1.yaml`, a new tokenizer and new shards; or an M1c result showing the
 model starved in the tail bins, which would argue for fixed-width tail bins beside the
 quantiles.
+
+**Superseded in three parts, 2026-09-12 (M1c gate 3), by ADR-0012, ADR-0013 and ADR-0014.**
+Gate 3 decided all three of the things this record left open, and all three are
+`quantile_bins_v1.yaml`, a new tokenizer and new shards, as this record said they would be.
+The pitch hazard is answered by a uniform datum floor at 0.0 degrees (ADR-0012); the power
+hazard by putting every source's power in per unit of rated power, which also brings CARE's
+power back into the stream (ADR-0013); and **the coarse tails -- the third limit above, "a
+third limit applies everywhere" -- by hybrid tail bins (ADR-0014)**, which is the
+fixed-width-tails-beside-the-quantiles change this paragraph anticipated. The figures
+above stand as what the v0 tokenizer measured, and `quantile_bins_v0.yaml` no longer
+validates, because it names the old channel spelling.
 
 ---
 
@@ -1291,3 +1312,104 @@ nothing to revisit").
 **What would change this decision.** A published Siemens pitch datum, which would make the
 offset a documented conversion rather than a fitted one; or an M1c core-11 ablation showing
 the floored channel is worse than no pitch at all at the held-out site.
+
+---
+
+## ADR-0013 Power is per unit of rated power at every source, and CARE's power comes back
+
+**Status:** Accepted · **Date:** 2026-09-12
+
+> **The principle, which ADR-0012, ADR-0013 and ADR-0014 all rest on.** Datums are
+> conventions and are harmonised across sites. Physics is not harmonised; differences in
+> physics between sites are what the held-out evaluation measures.
+
+**Decision.** The canonical power channel holds **P / P_rated** at every source, and is
+renamed `power_kw` -> `power_pu` across the schema, the channel maps, the configurations
+and the tests. The division is done in the adapters, as any other unit conversion is,
+driven by `rated_power_kw` in `configs/data/sources_telemetry.yaml`:
+
+| source | machine | rated power | citation |
+| --- | --- | --- | --- |
+| Kelmarsh | Senvion MM92 | 2,050 kW | `Kelmarsh_WT_static.csv`, column "Rated power (kW)", Zenodo record 16807551: one distinct value at all 6 turbines |
+| Penmanshiel | Senvion MM82 | 2,050 kW | `Penmanshiel_WT_static.csv`, same column, record 16807304: one distinct value at all 29 listed turbines |
+| Hill of Towie | Siemens SWT-2.3-VS-82 | 2,300 kW | `Hill_of_Towie_turbine_metadata.csv`, same column, record 14870023: one distinct value at all 21 turbines |
+| CARE | anonymised | none declared | it publishes power already scaled by rated power; see below |
+
+Each number is read from the provider's own staged metadata file, not from a datasheet and
+not from the data. **A nameplate is a published fact about a machine, not a quantity fitted
+from the record, so dividing by it leaks nothing from an evaluation period.** The
+configuration model refuses a rating with no citation.
+
+**Why rename the channel.** A channel named `power_kw` holding values between 0 and 1 is
+precisely the error in CARE's own `feature_description.csv`, which gives every active-power
+feature a `unit` of kW while the values read -0.02 to 1.04 -- the error this project's
+diagnostic caught and spent a decision on. Repeating it in our own schema would be
+indefensible. The channel keeps its position and therefore its token identifier
+(ADR-0003); `schemas.RENAMED_CHANNELS` records the rename so that the frozen
+configurations can still be compared with the current schema instead of exempted from it.
+
+**CARE's power is included, on the provider's documentation.** Gueck, Bruns and Dupont
+(2024), *Data* 9(12):138, section 3.1.4 states that "power and reactive power features have
+been scaled with the rated power of the turbine", and the staged values read -0.043 to
+1.071. That is per unit **by documentation, not by inference from the range**. Since the
+canonical channel is now per unit, CARE's power is already in the target unit: no rating is
+needed, none is inferred from its percentiles for any purpose, and the tokenizer
+configuration's exclusion is removed (`quantile_bins_v1.yaml`, `excluded: {}`). This
+supersedes the note of 2026-09-11 on ADR-0010 and the `<nan>` rule in ADR-0011: both rested
+on there being no factor to convert kW edges by, and there are no kW edges now.
+
+**The bounds, converted.** `telemetry_v4.yaml` divides v3's power bounds by each site's
+rating:
+
+| source | v3, kW | v4, per unit | arithmetic |
+| --- | --- | --- | --- |
+| Kelmarsh, Penmanshiel (default) | [-100, 2255] | **[-0.04878, 1.1]** | -100/2050, 2255/2050 |
+| Hill of Towie | [-100, 2530] | **[-0.043478, 1.1]** | -100/2300, 2530/2300 |
+| CARE | [-0.1, 1.1] | **[-0.1, 1.1]** | unchanged: already per unit |
+
+The plausible **maximum is now the same number, 1.1 pu, at every source**, which is what
+the conversion buys: the three bounds were the same rule -- 110% of rated -- written three
+ways. The minima are not identical, and are not forced to be: -100 kW was an absolute
+allowance for a machine drawing from the grid while idle, and an absolute quantity does not
+scale with a rating. Recorded rather than tidied away.
+
+**Consequences beyond the channel.**
+
+* `splits_v3.yaml`. `splits_v2.yaml` names `power_kw` in `eval_channels` and therefore no
+  longer validates, exactly as `splits_v0` and `splits_v1` stopped validating when wind
+  direction was demoted. A specification a run has read is never edited, so v3 is written
+  as v2 with that one name changed and **nothing else whatever**; a test asserts the two
+  parse to the same object under the rename. `events_v2.yaml` is genuinely untouched: it
+  names no channel. Reports generated under `splits_v2` join `splits_v0` and `splits_v1`
+  as historical (ADR-0008, amendment of this date).
+* `quantile_bins_v0.yaml` no longer validates either, for the same reason. Its fitted
+  tokenizer stays in `data/tokenizers/` as the artifact of the run that produced the gate-3
+  tables.
+* The "producing" threshold in `verify.py` becomes **0.005 pu** instead of a flat 10 kW
+  (10.25 kW at a 2.05 MW machine, 11.5 kW at a 2.3 MW one). A threshold in per unit is the
+  same rule at every machine, which a threshold in kW is not.
+  `events_v2.yaml`'s provenance text records the 10 kW threshold its own measurement used,
+  and is not edited.
+
+**What this fixes, measured.** ADR-0011 reported 6.81% (2019) and 5.62% (2023) of Hill of
+Towie's power values above the highest training value, collapsing its top output into one
+bin, because the highest training value was 2,087.6 kW at a 2.05 MW machine and the
+held-out turbines are rated 2.3 MW. In per unit that ceiling is 1.018 pu of a Senvion
+against a Siemens reading up to about 1.0 pu of its own rating. **The share above range is
+expected to shrink and not to vanish** -- a turbine can exceed its nameplate -- and the
+re-fit reports the number it actually is.
+
+**Rejected.**
+
+| alternative | why rejected |
+| --- | --- |
+| Leaving power in kW | Two machine sizes on one scale: the held-out site's rated output sits above every training value, and its whole upper power range reads as one bin (ADR-0011). |
+| Keeping the name `power_kw` for per-unit values | The exact mistake in CARE's own feature lookup, which this project spent a diagnostic catching. |
+| Dividing in `clean.py` or a later stage | A unit is part of what a provider publishes, and an adapter is where provider-specific facts live. Everything downstream of an adapter is meant to read one schema in one set of units, and the bounds are applied downstream. |
+| Inferring a rating for CARE from its percentiles | Rejected at ADR-0011 and still rejected. Nothing needs one: section 3.1.4 says what the unit is. |
+| Recovering farm A's rating from EDP Open Data | Deferred, not refused. Farm A is 5 of 36 turbines and 22 of 95 datasets, and the EDP terms are still unverified (ADR-0004). Recorded as a possible **M3** refinement; it would narrow nothing at M1, because CARE's power needs no rating. |
+
+**What would change this decision.** A published rated power per CARE farm, which would
+make its power comparable in kW as well; a provider correcting the rating in its own
+metadata; or a site whose record publishes no rating at all, which would need its own rule
+rather than an inferred divisor.

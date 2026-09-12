@@ -9,9 +9,16 @@
 #      centred on -1.0. Same operating state, different datum (ADR-0012). The floor is
 #      applied after the plausibility bound, so a pitch below -5 is NaN and is not
 #      rescued to 0.
-#   2. POWER IN PER UNIT OF RATED POWER (`power_pu`, and its bounds). Decision 2 of the
-#      same gate; written into this file by the commit that made the rename, and
-#      described in the block below it.
+#   2. POWER IN PER UNIT OF RATED POWER. The canonical power channel is renamed
+#      power_kw -> power_pu and carries P / P_rated at every source. The adapters do the
+#      division, from the nameplate rating each record publishes in its own metadata
+#      (`rated_power_kw` in sources_telemetry.yaml, cited there): Kelmarsh and
+#      Penmanshiel 2,050 kW, Hill of Towie 2,300 kW. CARE declares none, because it
+#      publishes power already scaled by rated power (ADR-0013). The power bounds below
+#      are v3's divided by each site's rating, and the plausible MAXIMUM is now the same
+#      number at every site, which is the point of the conversion.
+#      The rename forces splits_v3.yaml: splits_v2 names `power_kw` in eval_channels and
+#      would no longer validate, and a specification a run has read is never edited.
 #
 # The core set is v3's: twelve core channels, two extended, wind direction extended.
 # Channel ORDER is unchanged: position is token identity (ADR-0003), and a channel that
@@ -26,7 +33,7 @@ telemetry:
 
   channels:
     - wind_speed_ms
-    - power_kw
+    - power_pu
     - rotor_speed_rpm
     - generator_speed_rpm
     - pitch_angle_deg
@@ -43,12 +50,12 @@ telemetry:
   # Twelve, in identifier order. Mapping evidence as in v1; coverage from the cleaned grid.
   core_channels:
     wind_speed_ms: "K/P 'Wind speed (m/s)', signal 1; HoT tblSCTurbine.wtc_AcWindSp_mean. Non-null K 98.7%, P 97.4%, H 99.6% (99.7% in 2019, 99.5% in 2023)"
-    power_kw: "K/P 'Power (kW)', signal 5; HoT tblSCTurGrid.wtc_ActPower_mean, kW. Non-null K 98.8%, P 97.5%, H 99.6% (99.7%, 99.5%)"
+    power_pu: "K/P 'Power (kW)', signal 5; HoT tblSCTurGrid.wtc_ActPower_mean; all three published in kW and divided by the site's rated power at ingest (ADR-0013). Non-null K 98.8%, P 97.5%, H 99.6% (99.7%, 99.5%)"
     rotor_speed_rpm: "K/P 'Rotor speed (RPM)', signal 54; HoT tblSCTurbine.wtc_MainSRpm_mean. Non-null K 96.0%, P 97.5%, H 99.6% (99.7%, 99.5%)"
     generator_speed_rpm: "K/P 'Generator RPM (RPM)', signal 86; HoT tblSCTurbine.wtc_GenRpm_mean. Non-null K 95.9%, P 97.5%, H 99.6% (99.7%, 99.5%)"
     pitch_angle_deg: "K/P blade A pitch, signal 80; HoT tblSCTurbine.wtc_PitcPosA_mean. Non-null K 95.2%, P 70.0% (71.9% outside the training exclusions), H 99.6% (99.7%, 99.5%). P is below 95%: absent from the record's start in June 2016 to spring 2018 at every turbine, an era of non-availability, all of it in train; condition (c), month-matched, clears (rate ratio 0.95, 0.83-1.09)"
     nacelle_position_deg: "K/P 'Nacelle position', signal 3; HoT tblSCTurbine.wtc_NacelPos_mean. Non-null K 96.0%, P 97.5%, H 99.6% (99.7%, 99.5%)"
-    ambient_temp_c: "K/P 'Nacelle ambient temperature', signal 24; HoT tblSCTurTemp.wtc_AmbieTmp_mean. Non-null K 95.2%, P 94.5% (96.9% outside the training exclusions: the spring-2018 site-wide outage is withheld from training windows, splits_v2.yaml), H 99.6% (99.7%, 99.5%)"
+    ambient_temp_c: "K/P 'Nacelle ambient temperature', signal 24; HoT tblSCTurTemp.wtc_AmbieTmp_mean. Non-null K 95.2%, P 94.5% (96.9% outside the training exclusions: the spring-2018 site-wide outage is withheld from training windows, splits_v3.yaml, as splits_v2.yaml before it), H 99.6% (99.7%, 99.5%)"
     nacelle_temp_c: "K/P 'Nacelle temperature', signal 25; HoT tblSCTurTemp.wtc_NacelTmp_mean. Non-null K 95.2%, P 94.5% (96.9% outside the training exclusions, as ambient), H 99.6% (99.7%, 99.5%)"
     gearbox_oil_temp_c: "K/P 'Gear oil temperature', signal 178; HoT tblSCTurTemp.wtc_GeOilTmp_mean. Non-null K 95.3%, P 70.2% (72.1% outside the training exclusions), H 99.6% (99.7%, 99.5%). P is below 95% on the same steps as pitch, and clears (c) the same way (0.95, 0.83-1.08)"
     generator_bearing_temp_c: "K/P front bearing, signal 119; HoT tblSCTurTemp.wtc_GenBeRTm_mean, drive end (front taken as drive end, an inference). Non-null K 96.0%, P 97.5%, H 99.6% (99.7%, 99.5%)"
@@ -64,7 +71,11 @@ telemetry:
   # ---------------------------------------------------------------------------
   bounds:
     wind_speed_ms: { min: 0.0, max: 40.0 }
-    power_kw: { min: -100.0, max: 2255.0 }
+    # v3's [-100, 2255] kW divided by the Senvion sites' 2,050 kW rating. The maximum
+    # is 1.1 pu -- 110% of rated -- at every site, which is what the conversion buys; the
+    # minimum is not, because -100 kW was an absolute allowance for a machine drawing
+    # from the grid while idle, and an absolute allowance does not scale with rating.
+    power_pu: { min: -0.04878, max: 1.1 }
     rotor_speed_rpm: { min: -1.0, max: 25.0 }
     generator_speed_rpm: { min: -10.0, max: 2500.0 }
     pitch_angle_deg: { min: -5.0, max: 100.0 }
@@ -80,9 +91,14 @@ telemetry:
 
   bounds_overrides:
     hill_of_towie:
-      power_kw: { min: -100.0, max: 2530.0 }
+      # v3's [-100, 2530] kW divided by 2,300 kW: the same 1.1 pu maximum as the default,
+      # kept as an override only because -100 kW converts to a different number here.
+      power_pu: { min: -0.043478, max: 1.1 }
     care:
-      power_kw: { min: -0.1, max: 1.1 }
+      # Unchanged from v3, and now on the same scale as everyone else rather than beside
+      # it: CARE publishes power already scaled by rated power, so there was nothing to
+      # convert. Its measured range is -0.043 to 1.071.
+      power_pu: { min: -0.1, max: 1.1 }
 
   # Datum harmonisation (ADR-0012), applied at every source AFTER the bounds above.
   # Datums are conventions and are harmonised across sites. Physics is not harmonised;
@@ -145,7 +161,7 @@ telemetry:
     seed: 20260909
 
   final:
-    splits_config: "configs/data/splits_v2.yaml"
+    splits_config: "configs/data/splits_v3.yaml"
     write_masks: true
 
   report:

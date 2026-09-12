@@ -5,17 +5,21 @@ from __future__ import annotations
 import zipfile
 from pathlib import Path
 
+import pandas as pd
 import pytest
+from pydantic import ValidationError
 
 from faultline.data.telemetry.adapters import ADAPTERS, get_adapter
 from faultline.data.telemetry.adapters.base import (
     BaseAdapter,
     RawMember,
     load_channel_map,
+    load_rated_power_kw,
     open_member,
 )
 from faultline.data.telemetry.adapters.hill_of_towie import HillOfTowieAdapter
 from faultline.data.telemetry.adapters.kelmarsh import KelmarshAdapter
+from faultline.download.zenodo import RatedPower, load_sources_config
 
 
 def make_archive(directory: Path, name: str, members: dict[str, str]) -> Path:
@@ -34,7 +38,7 @@ def test_get_adapter_loads_the_channel_map(repo_root: Path) -> None:
     adapter = get_adapter("kelmarsh", repo_root / "configs")
     assert adapter.source_id == "kelmarsh"
     # Kelmarsh was resolved at M0 from the real SCADA header.
-    assert adapter.channel_map["power_kw"] == "Power (kW)"
+    assert adapter.channel_map["power_pu"] == "Power (kW)"
     assert adapter.channel_map["wind_speed_ms"] == "Wind speed (m/s)"
     # The main-shaft bearing was added to the canonical list on 2026-09-09 and mapped
     # from signal 447, "Temperature of rotor bearing".
@@ -62,8 +66,8 @@ def test_hill_of_towie_map_names_the_table_as_well_as_the_field(repo_root: Path)
     # turbine's signals over several tables, so a column is <table>.<field>.
     towie = get_adapter("hill_of_towie", repo_root / "configs")
     assert len(towie.channel_map) == 14
-    assert towie.channel_map["power_kw"] == "tblSCTurGrid.wtc_ActPower_mean"
-    assert towie.split_channel_column(towie.channel_map["power_kw"]) == (
+    assert towie.channel_map["power_pu"] == "tblSCTurGrid.wtc_ActPower_mean"
+    assert towie.split_channel_column(towie.channel_map["power_pu"]) == (
         "tblSCTurGrid",
         "wtc_ActPower_mean",
     )
@@ -200,7 +204,7 @@ def test_channel_map_skips_unresolved_entries(tmp_path: Path) -> None:
     path.write_text(
         "channels:\n"
         "  wind_speed_ms: Wind speed (m/s)\n"
-        "  power_kw: null\n"
+        "  power_pu: null\n"
         "  rotor_speed_rpm: TODO(m1) fill from the mapping file\n",
         encoding="utf-8",
     )
@@ -209,3 +213,62 @@ def test_channel_map_skips_unresolved_entries(tmp_path: Path) -> None:
 
 def test_missing_channel_map_is_empty(tmp_path: Path) -> None:
     assert load_channel_map(tmp_path / "absent.yaml") == {}
+
+
+# -- power in per unit of rated power (ADR-0013) ---------------------------------------
+
+
+def test_every_source_that_publishes_kw_declares_a_cited_rating(repo_root: Path) -> None:
+    # The divisor is a nameplate fact, and it has to be checkable: a rating nobody can
+    # verify would be a guess, and a guess fitted to the record is what ADR-0011 rejected.
+    sources = load_sources_config(repo_root / "configs" / "data" / "sources_telemetry.yaml")
+    ratings = {name: spec.rated_power_kw for name, spec in sources.sources.items()}
+    assert {name: r.value for name, r in ratings.items() if r} == {
+        "kelmarsh": 2050.0,
+        "penmanshiel": 2050.0,
+        "hill_of_towie": 2300.0,
+    }
+    # CARE publishes power already per unit, so it declares no rating and none is inferred.
+    assert ratings["care"] is None
+    for name, rating in ratings.items():
+        if rating is not None:
+            assert "Rated power (kW)" in rating.citation, name
+            assert "Zenodo record" in rating.citation, name
+
+
+def test_a_rating_without_a_citation_is_rejected() -> None:
+    with pytest.raises(ValidationError, match="needs a citation"):
+        RatedPower.model_validate({"value": 2050, "citation": "  "})
+
+
+@pytest.mark.parametrize(
+    ("source", "rated"),
+    [("kelmarsh", 2050.0), ("penmanshiel", 2050.0), ("hill_of_towie", 2300.0), ("care", None)],
+)
+def test_the_adapter_carries_its_rating(repo_root: Path, source: str, rated: float | None) -> None:
+    assert get_adapter(source, repo_root / "configs").rated_power_kw == rated
+
+
+def test_power_is_divided_by_the_rating_and_nothing_else_is(repo_root: Path) -> None:
+    adapter = get_adapter("hill_of_towie", repo_root / "configs")
+    frame = pd.DataFrame({"power_pu": [0.0, 1150.0, 2300.0, None], "wind_speed_ms": [1.0] * 4})
+    out = adapter.to_canonical_units(frame)
+    assert out["power_pu"].tolist()[:3] == [0.0, 0.5, 1.0]
+    assert bool(pd.isna(out["power_pu"].iloc[3]))
+    assert out["wind_speed_ms"].tolist() == [1.0] * 4
+
+
+def test_a_source_with_no_rating_is_left_alone(repo_root: Path) -> None:
+    # CARE's values are already per unit; dividing them again would be the guess the
+    # record cannot support.
+    adapter = get_adapter("care", repo_root / "configs")
+    frame = pd.DataFrame({"power_pu": [0.0, 0.5, 1.04]})
+    assert adapter.to_canonical_units(frame)["power_pu"].tolist() == [0.0, 0.5, 1.04]
+
+
+def test_rated_power_of_an_unknown_source_is_none(repo_root: Path) -> None:
+    assert load_rated_power_kw(repo_root / "configs", "no_such_source") is None
+
+
+def test_rated_power_without_a_source_specification_is_none(tmp_path: Path) -> None:
+    assert load_rated_power_kw(tmp_path, "kelmarsh") is None

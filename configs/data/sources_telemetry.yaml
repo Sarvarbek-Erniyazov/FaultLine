@@ -34,6 +34,15 @@ sources:
       n_turbines: 6
       rated_kw: 2050
       period: "2016-2024"
+    # The divisor the adapter puts the canonical power channel in per unit of
+    # (power_pu, ADR-0013). A nameplate is a published fact about the machine, not a
+    # quantity fitted from the data, so it leaks nothing from an evaluation period.
+    rated_power_kw:
+      value: 2050
+      citation: >-
+        Kelmarsh_WT_static.csv, column "Rated power (kW)", in Zenodo record 16807551
+        (the pinned record this project downloads): 2050 at all 6 turbines, one distinct
+        value, Senvion MM92. Read 2026-09-12 from the staged file.
     # MEASURED 2026-09-09, not merely read. The preamble line "# Time zone: UTC" is a
     # claim by the exporter; the timestamps themselves were tested for the fingerprint
     # UK civil time leaves and cannot hide. Across all 54 staged turbine-years, every
@@ -85,6 +94,12 @@ sources:
       rated_kw: 2050
       period: "2016-2024"
       note: "turbine WT03 is absent from the record"
+    rated_power_kw:
+      value: 2050
+      citation: >-
+        Penmanshiel_WT_static.csv, column "Rated power (kW)", in Zenodo record 16807304:
+        2050 at all 29 listed turbines, one distinct value, Senvion MM82. Read 2026-09-12
+        from the staged file.
     # MEASURED 2026-09-10, not only declared: UTC across 98 turbine-years, and the power
     # column is kW (median p99.5 2,056 against a rated 2,050). The spring half does not
     # apply to the 14 turbine-years of 2016, because every turbine starts reporting in
@@ -144,6 +159,15 @@ sources:
       note: >-
         AeroUp retrofits 2021-2023 and TuneUp 2024 are a built-in regime change;
         install dates are in Hill_of_Towie_AeroUp_install_dates.csv
+    rated_power_kw:
+      value: 2300
+      citation: >-
+        Hill_of_Towie_turbine_metadata.csv, column "Rated power (kW)", in Zenodo record
+        14870023: 2300 at all 21 turbines, one distinct value, Siemens SWT-2.3-VS-82.
+        Read 2026-09-12 from the staged file. The AeroUp and TuneUp retrofits change the
+        power curve; the metadata publishes one nameplate rating and no post-retrofit
+        rating, so one divisor is used for both staged years and the retrofit stays what
+        the temporal axis measures.
     # MEASURED 2026-09-10 per station, on labels moved to interval start: UTC across 42
     # station-years (21 turbines, 2019 and 2023), both halves of the daylight-saving test
     # applied, and the power column is kW (median p99.5 2,299 against a rated 2,300).
@@ -186,7 +210,13 @@ sources:
       country: "PT / DE"
       oem: "TODO(m1): not published; turbines are anonymised"
       n_turbines: 36
-      rated_kw: 0 # TODO(m1): not published per farm
+      rated_kw: 0 # not published per farm; CARE publishes power already per unit
+    # No rated_power_kw, and none is needed. CARE publishes active power already scaled
+    # by the turbine's rated power -- Gueck, Bruns and Dupont (2024), Data 9(12):138,
+    # section 3.1.4: "power and reactive power features have been scaled with the rated
+    # power of the turbine" -- which is the unit the canonical channel is now in
+    # (ADR-0013). Inferring a rating from CARE's percentiles remains forbidden: nothing
+    # here needs one.
       period: "89 turbine-years"
       # COUNTED 2026-09-11 (M1a step 6c): the record README says "44 out the 95
       # datasets contain a labeled anomaly event and the other 51 datasets represent

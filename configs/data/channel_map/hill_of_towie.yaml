@@ -21,7 +21,7 @@ mapping_status: "resolved: 14 of 14 mapped from the provider's field lookup; win
 
 channels:
   wind_speed_ms: "tblSCTurbine.wtc_AcWindSp_mean"
-  power_kw: "tblSCTurGrid.wtc_ActPower_mean"
+  power_pu: "tblSCTurGrid.wtc_ActPower_mean"
   rotor_speed_rpm: "tblSCTurbine.wtc_MainSRpm_mean"
   generator_speed_rpm: "tblSCTurbine.wtc_GenRpm_mean"
   # Blade A, as at both Senvion sites.
@@ -55,7 +55,7 @@ channels:
 # unit. This is the evidence the channel report prints next to each column.
 evidence:
   wind_speed_ms: "Wind speed from active wind sensor (m/s)"
-  power_kw: "Active power (kW)"
+  power_pu: "Active power (kW)"
   rotor_speed_rpm: "Main shaft RPM (rpm)"
   generator_speed_rpm: "Generator RPM (rpm)"
   pitch_angle_deg: "Pitch angle, blade A (deg)"

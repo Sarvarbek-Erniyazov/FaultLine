@@ -82,7 +82,13 @@ class ChannelSpec:
 #: fails the coverage condition (a).
 CANONICAL_CHANNELS: tuple[ChannelSpec, ...] = (
     ChannelSpec("wind_speed_ms", "m/s", "Nacelle anemometer wind speed", "environment", "core"),
-    ChannelSpec("power_kw", "kW", "Active power output", "production", "core"),
+    # Renamed from power_kw at M1c (telemetry_v4.yaml, ADR-0013): the canonical unit is
+    # per unit of the machine's rated power, and a channel named kW holding values
+    # between 0 and 1 is the mistake CARE's own feature_description.csv makes. The
+    # position, and so the token identifier, does not move.
+    ChannelSpec(
+        "power_pu", "pu", "Active power output, per unit of rated power", "production", "core"
+    ),
     ChannelSpec("rotor_speed_rpm", "rpm", "Rotor rotational speed", "drivetrain", "core"),
     ChannelSpec("generator_speed_rpm", "rpm", "Generator rotational speed", "drivetrain", "core"),
     ChannelSpec("pitch_angle_deg", "deg", "Blade pitch angle", "control", "core"),
@@ -137,6 +143,27 @@ CORE_CHANNELS: tuple[str, ...] = tuple(
 EXTENDED_CHANNELS: tuple[str, ...] = tuple(
     spec.name for spec in CANONICAL_CHANNELS if spec.tier == "extended"
 )
+
+
+#: Canonical channels whose *name* changed after a configuration had already been
+#: written, old spelling to new. A rename is not a move: position is identity (ADR-0003)
+#: and the channel keeps its token identifier. The frozen configurations v0-v3 and the
+#: split specifications v0-v2 keep the old spelling, because a config a run has read is
+#: never edited; this mapping is what lets a test compare them with the current schema
+#: instead of exempting them.
+RENAMED_CHANNELS: dict[str, str] = {"power_kw": "power_pu"}
+
+
+def current_name(name: str) -> str:
+    """Return a channel's current canonical name, following any rename.
+
+    Args:
+        name: Channel name as some configuration spells it.
+
+    Returns:
+        The current spelling, unchanged when the channel was never renamed.
+    """
+    return RENAMED_CHANNELS.get(name, name)
 
 
 def channel_tier(name: str) -> ChannelTier:

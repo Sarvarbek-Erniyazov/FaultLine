@@ -15,7 +15,12 @@ from pydantic import ValidationError
 
 from faultline.data.telemetry.channels import derive_core, load_channel_maps
 from faultline.data.telemetry.pipeline import TelemetryPipelineConfig, load_telemetry_config
-from faultline.data.telemetry.schemas import CHANNEL_NAMES, CORE_CHANNELS, EXTENDED_CHANNELS
+from faultline.data.telemetry.schemas import (
+    CHANNEL_NAMES,
+    CORE_CHANNELS,
+    EXTENDED_CHANNELS,
+    current_name,
+)
 
 TRAINING = ["kelmarsh", "penmanshiel"]
 HOLDOUT = ["hill_of_towie"]
@@ -31,14 +36,21 @@ def v3(repo_root: Path) -> TelemetryPipelineConfig:
     return load_telemetry_config(repo_root / "configs" / "data" / "telemetry_v3.yaml")
 
 
+@pytest.fixture
+def v4(repo_root: Path) -> TelemetryPipelineConfig:
+    return load_telemetry_config(repo_root / "configs" / "data" / "telemetry_v4.yaml")
+
+
 def test_the_v1_core_set_is_what_the_maps_derive(
     repo_root: Path, v1: TelemetryPipelineConfig
 ) -> None:
     # v1 froze the maps' answer, and v1 is not edited.
+    # Read under the current spellings: M1c renamed power_kw to power_pu in the maps and
+    # in v1's answer alike, without moving the channel (ADR-0013).
     maps = load_channel_maps(repo_root / "configs", [*TRAINING, *HOLDOUT])
     core, extended = derive_core(maps, TRAINING, HOLDOUT)
-    assert list(v1.core_channels) == core
-    assert list(v1.extended_channels) == extended
+    assert [current_name(c) for c in v1.core_channels] == core
+    assert [current_name(c) for c in v1.extended_channels] == extended
 
 
 def test_the_v3_core_set_is_the_maps_less_what_coverage_demotes(
@@ -48,13 +60,20 @@ def test_the_v3_core_set_is_the_maps_less_what_coverage_demotes(
     # is mappable everywhere and fails condition (a) at the held-out site.
     maps = load_channel_maps(repo_root / "configs", [*TRAINING, *HOLDOUT])
     mappable, _ = derive_core(maps, TRAINING, HOLDOUT)
-    assert list(v3.core_channels) == [c for c in mappable if c != "wind_direction_deg"]
+    expected = [c for c in mappable if c != "wind_direction_deg"]
+    assert [current_name(c) for c in v3.core_channels] == expected
     assert len(v3.core_channels) == 12
 
 
-def test_the_declared_tiers_match_the_frozen_set(v3: TelemetryPipelineConfig) -> None:
-    assert tuple(v3.core_channels) == CORE_CHANNELS
-    assert tuple(v3.extended_channels) == EXTENDED_CHANNELS
+def test_the_declared_tiers_match_the_frozen_set(
+    v3: TelemetryPipelineConfig, v4: TelemetryPipelineConfig
+) -> None:
+    # v4 is the live configuration and matches the schema exactly; v3 matches it up to
+    # the one rename M1c made, which moved no channel.
+    assert tuple(v4.core_channels) == CORE_CHANNELS
+    assert tuple(v4.extended_channels) == EXTENDED_CHANNELS
+    assert tuple(current_name(c) for c in v3.core_channels) == CORE_CHANNELS
+    assert tuple(current_name(c) for c in v3.extended_channels) == EXTENDED_CHANNELS
 
 
 def test_the_two_extended_channels(
@@ -79,20 +98,40 @@ def test_every_tiered_channel_carries_its_evidence(
 
 
 def test_the_channel_order_is_unchanged_from_v0(
-    repo_root: Path, v1: TelemetryPipelineConfig, v3: TelemetryPipelineConfig
+    repo_root: Path,
+    v1: TelemetryPipelineConfig,
+    v3: TelemetryPipelineConfig,
+    v4: TelemetryPipelineConfig,
 ) -> None:
-    # Channel order is token identity (ADR-0003); a demotion must not move it.
+    # Channel order is token identity (ADR-0003); neither a demotion nor a rename moves
+    # it. v0 to v3 keep the spelling they were written with, because a config a run has
+    # read is never edited, so they are compared position by position under the rename.
     v0 = load_telemetry_config(repo_root / "configs" / "data" / "telemetry_v0.yaml")
-    assert v3.channels == v1.channels == v0.channels == list(CHANNEL_NAMES)
+    assert v3.channels == v1.channels == v0.channels
+    assert v4.channels == list(CHANNEL_NAMES)
+    assert [current_name(c) for c in v0.channels] == v4.channels
     assert not v0.core_channels  # v0 is left as M0 declared it
 
 
-def test_v3_reads_the_v2_split(v3: TelemetryPipelineConfig) -> None:
+def test_the_rename_moved_exactly_one_channel_name_and_no_position(
+    v3: TelemetryPipelineConfig, v4: TelemetryPipelineConfig
+) -> None:
+    # ADR-0013. The whole content of the rename, stated as a test: one name, same index.
+    differing = [(a, b) for a, b in zip(v3.channels, v4.channels, strict=True) if a != b]
+    assert differing == [("power_kw", "power_pu")]
+    assert v3.channels.index("power_kw") == v4.channels.index("power_pu")
+
+
+def test_each_version_reads_its_own_split(
+    v3: TelemetryPipelineConfig, v4: TelemetryPipelineConfig
+) -> None:
     assert v3.final.splits_config == "configs/data/splits_v2.yaml"
+    # v3 is forced by the rename, not by any change to the split itself (ADR-0013).
+    assert v4.final.splits_config == "configs/data/splits_v3.yaml"
 
 
 def _config(**overrides: object) -> TelemetryPipelineConfig:
-    payload: dict[str, object] = {"channels": ["wind_speed_ms", "power_kw"]}
+    payload: dict[str, object] = {"channels": ["wind_speed_ms", "power_pu"]}
     payload.update(overrides)
     return TelemetryPipelineConfig.model_validate(payload)
 
@@ -105,11 +144,11 @@ def test_tiers_must_cover_every_channel() -> None:
 def test_a_channel_cannot_be_core_and_extended() -> None:
     with pytest.raises(ValidationError, match="both core and extended"):
         _config(
-            core_channels={"wind_speed_ms": "x", "power_kw": "y"},
-            extended_channels={"power_kw": "z"},
+            core_channels={"wind_speed_ms": "x", "power_pu": "y"},
+            extended_channels={"power_pu": "z"},
         )
 
 
 def test_a_tier_without_evidence_is_rejected() -> None:
     with pytest.raises(ValidationError, match="evidence note"):
-        _config(core_channels={"wind_speed_ms": "both sites", "power_kw": "  "})
+        _config(core_channels={"wind_speed_ms": "both sites", "power_pu": "  "})

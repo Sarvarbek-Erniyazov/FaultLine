@@ -22,7 +22,7 @@ from faultline.data.telemetry.schemas import EVENT_COLUMNS, INDEX_COLUMNS, valid
 
 CHANNEL_MAP = {
     "wind_speed_ms": "Wind speed (m/s)",
-    "power_kw": "Power (kW)",
+    "power_pu": "Power (kW)",
     "rotor_speed_rpm": "Rotor speed (RPM)",
     "generator_speed_rpm": "Generator RPM (RPM)",
     "pitch_angle_deg": "Blade angle (pitch position) A (°)",
@@ -167,7 +167,7 @@ def test_a_repeated_greenbyte_export_collapses_without_losing_a_value(
         ],
     )
     frame, account = adapter.load_scada_with_stats(member)
-    assert list(frame["power_kw"]) == [1850.0, 1600.0, 1400.0]
+    assert list(frame["power_pu"]) == [1850.0, 1600.0, 1400.0]
     assert list(frame["wind_speed_ms"]) == [9.1, 8.2, 7.5]
     assert frame["timestamp_utc"].is_monotonic_increasing
     stats = account.stats
@@ -188,7 +188,7 @@ def test_penmanshiel_reads_the_same_greenbyte_export(scada_member: RawMember) ->
     # loader is shared, not copied.
     frame = PenmanshielAdapter(channel_map=dict(CHANNEL_MAP)).load_scada(scada_member)
     assert frame["source"].unique().tolist() == ["penmanshiel"]
-    assert frame["power_kw"].notna().any()
+    assert frame["power_pu"].notna().any()
 
 
 def test_load_scada_needs_a_channel_map(scada_member: RawMember) -> None:

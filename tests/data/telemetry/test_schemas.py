@@ -14,6 +14,7 @@ from faultline.data.telemetry.schemas import (
     CORE_CHANNELS,
     EXTENDED_CHANNELS,
     channel_tier,
+    current_name,
 )
 
 
@@ -47,7 +48,7 @@ def test_a_channel_verified_absent_from_a_training_site_is_extended() -> None:
 
 def test_channel_tier_rejects_an_unknown_name() -> None:
     with pytest.raises(KeyError, match="not a canonical channel"):
-        channel_tier("power_kwh")
+        channel_tier("power_puh")
 
 
 def test_the_shipped_config_lists_exactly_the_canonical_channels(repo_root: Path) -> None:
@@ -56,7 +57,9 @@ def test_the_shipped_config_lists_exactly_the_canonical_channels(repo_root: Path
     payload = yaml.safe_load(
         (repo_root / "configs" / "data" / "telemetry_v0.yaml").read_text(encoding="utf-8")
     )
-    assert tuple(payload["telemetry"]["channels"]) == CHANNEL_NAMES
+    # v0 is read under the current spellings: M1c renamed power_kw to power_pu without
+    # moving it (ADR-0013), and a rename must not read as a reordering.
+    assert tuple(current_name(c) for c in payload["telemetry"]["channels"]) == CHANNEL_NAMES
 
 
 def test_every_channel_map_declares_the_whole_canonical_list(repo_root: Path) -> None:
@@ -80,5 +83,5 @@ def test_every_channel_has_a_plausibility_bound(repo_root: Path) -> None:
         (repo_root / "configs" / "data" / "telemetry_v0.yaml").read_text(encoding="utf-8")
     )
     bounds = payload["telemetry"]["bounds"]
-    assert set(bounds) == set(CHANNEL_NAMES)
+    assert {current_name(name) for name in bounds} == set(CHANNEL_NAMES)
     assert bounds["main_bearing_temp_c"] == {"min": -40.0, "max": 150.0}

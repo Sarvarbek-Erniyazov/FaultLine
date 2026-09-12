@@ -37,6 +37,7 @@ from faultline.data.telemetry.adapters.base import (
     header_columns,
     load_channel_map,
     load_farm_blocks,
+    load_rated_power_kw,
     read_csv_member,
     read_csv_member_columns,
     resolved_columns,
@@ -122,6 +123,7 @@ class CareAdapter(BaseAdapter):
         blocks = load_farm_blocks(path)
         return cls(
             channel_map=load_channel_map(path),
+            rated_power_kw=load_rated_power_kw(configs_dir, cls.source_id),
             farm_maps={farm: resolved_columns(block) for farm, block in blocks.items()},
             farm_directories={
                 farm: str(block["directory"])
@@ -201,6 +203,9 @@ class CareAdapter(BaseAdapter):
         result.insert(0, "turbine_id", turbine)
         result.insert(0, "site", self.site_name)
         result.insert(0, "source", self.source_id)
+        # A no-op here, and called anyway: CARE declares no rating because it publishes
+        # power already per unit (ADR-0013), and the call says so rather than omitting it.
+        result = self.to_canonical_units(result)
         return result.reset_index(drop=True), FileAccount(member.label, turbine, stats)
 
     def load_events(self, member: RawMember) -> pd.DataFrame | None:

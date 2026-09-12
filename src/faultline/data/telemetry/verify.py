@@ -92,9 +92,12 @@ UNIFORM_WEEKEND_SHARE = 2 / 7
 WEEKDAYS: tuple[str, ...] = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 #: A rotor turning faster than this is not stopped.
 ROTATING_RPM = 1.0
-#: A step producing more than this is producing: the threshold the wind envelope's
-#: provenance in events_v2.yaml uses for "producing steps".
-PRODUCING_KW = 10.0
+#: A step producing more than this is producing, in per unit of rated power (ADR-0013).
+#: 0.005 pu is 10.25 kW at a 2.05 MW Senvion and 11.5 kW at a 2.3 MW Siemens; the rule it
+#: replaces was a flat 10 kW, and events_v2.yaml's provenance text records that threshold
+#: as the one its own measurement used. A threshold in per unit is the same rule at every
+#: machine, which a threshold in kW is not.
+PRODUCING_PU = 0.005
 #: Run lengths, seconds.
 DURATION_BUCKETS: tuple[tuple[float, float, str], ...] = (
     (0.0, 60.0, "< 1 min"),
@@ -289,7 +292,7 @@ def profile_timers(
 
     Args:
         state: One row per (turbine, step): the timers, ``telemetry_present``,
-            ``power_kw`` and ``rotor_speed_rpm``.
+            ``power_pu`` and ``rotor_speed_rpm``.
         causes: Timer column to the cause events_v2.yaml reads it as.
         turbines: Turbines at the site, for the farm-wide share.
 
@@ -316,7 +319,7 @@ def profile_timers(
                 durations=duration_shares(run_seconds),
                 telemetry_missing=_share(~active["telemetry_present"].to_numpy(dtype=bool)),
                 rotating=_share((active["rotor_speed_rpm"] > ROTATING_RPM).to_numpy()),
-                producing=_share((active["power_kw"] > PRODUCING_KW).to_numpy()),
+                producing=_share((active["power_pu"] > PRODUCING_PU).to_numpy()),
                 turbines_at_once=float(np.median(at_once)) if at_once.size else math.nan,
                 farm_wide=_share(at_once >= half),
             )
@@ -472,7 +475,7 @@ def _grid_state(grid_files: Sequence[Path], core: Sequence[str]) -> pd.DataFrame
                 else np.zeros(len(frame), dtype=bool),
             }
         )
-        for name in ("power_kw", "rotor_speed_rpm"):
+        for name in ("power_pu", "rotor_speed_rpm"):
             part[name] = frame[name].to_numpy(dtype=float) if name in frame.columns else np.nan
         parts.append(part)
     grid = pd.concat(parts, ignore_index=True)
@@ -968,7 +971,8 @@ class CareProbe:
         datasets: Per farm, datasets per provider label (``anomaly``, ``normal``).
         steps: Per farm, grid steps.
         presence: Per farm, the non-null share of each core channel on the clean grid.
-        power_bound: The configured power bound at CARE, which is per unit, not kW.
+        power_bound: The configured power bound at CARE, in per unit as every
+            source's now is.
         absolute_time: Whether the source specification declares real calendar time.
     """
 
@@ -1016,7 +1020,7 @@ def care_probe(
         for name in core:
             if name in frame.columns:
                 counts[name] += int(frame[name].notna().sum())
-    bound = config.bounds_for(source).get("power_kw")
+    bound = config.bounds_for(source).get("power_pu")
     sources = load_sources_config(paths.configs_dir / "data" / "sources_telemetry.yaml")
     spec = sources.sources.get(source)
     return CareProbe(
@@ -1487,7 +1491,12 @@ def _care_section(probe: CareProbe, core: Sequence[str]) -> str:
         + "\n**Why its steps do not compare**\n\n"
         + kv_table(
             {
-                "power": "normalised to a rated power the record does not publish"
+                # Since M1c the canonical channel is itself per unit, so power is no
+                # longer a reason CARE's steps do not compare (ADR-0013); the record
+                # still publishes no rating, which is why no kW figure is reported here.
+                "power": "scaled by the turbine's rated power by the provider "
+                "(Data 9(12):138, section 3.1.4), which is the canonical unit; the "
+                "rating itself is not published, so no kW figure is reported"
                 + (
                     f" (configured bound {probe.power_bound[0]:g} to "
                     f"{probe.power_bound[1]:g}, per unit)"

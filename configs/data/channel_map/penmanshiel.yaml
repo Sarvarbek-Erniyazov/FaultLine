@@ -36,7 +36,7 @@ channels:
   # Signal 5, "Actual value of active power". This mapping file records it in kW,
   # agreeing with the header, and MEASURED kW on 2026-09-10: median p99.5 2,056 against
   # a rated 2,050 (reports/data/resolved_penmanshiel_20260910.md).
-  power_kw: "Power (kW)"
+  power_pu: "Power (kW)"
 
   # Signal 54, "Value of rotor speed".
   rotor_speed_rpm: "Rotor speed (RPM)"
@@ -91,7 +91,7 @@ channels:
 # channel report prints next to each column.
 evidence:
   wind_speed_ms: "signal mapping 1: Wind speed"
-  power_kw: "signal mapping 5: Actual value of active power (kW)"
+  power_pu: "signal mapping 5: Actual value of active power (kW)"
   rotor_speed_rpm: "signal mapping 54: Value of rotor speed"
   generator_speed_rpm: "signal mapping 86: Generator speed"
   pitch_angle_deg: "signal mapping 80: Pitch angle for blade 1 (blade A of three)"

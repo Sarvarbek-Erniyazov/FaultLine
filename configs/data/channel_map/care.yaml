@@ -10,23 +10,34 @@
 # Checked against the data as well as the lookup, 2026-09-10. Every column below is in
 # the header of every dataset of its farm, and one dataset per farm was read to confirm
 # that the values sit in the stated physical units. One kind of column does not: every
-# active-power column is normalised, reading about -0.02 to 1.04, and the rated power
-# it is normalised by is not published. That is recorded under `units`, and it means
-# CARE power cannot be put on the kW scale the other three sources share.
+# active-power column reads about -0.02 to 1.04, against a `unit` of kW in the provider's
+# own feature_description.csv.
+#
+# What that column is was settled at M1c (ADR-0013). Gueck, Bruns and Dupont (2024),
+# "CARE to Compare", Data 9(12):138, section 3.1.4, states that "power and reactive power
+# features have been scaled with the rated power of the turbine". So the values are per
+# unit of rated power by the provider's own documentation, not by inference from their
+# range -- and per unit of rated power is what the canonical `power_pu` channel now holds.
+# CARE power therefore needs no conversion and no rating: it is already in the target
+# unit, and its `scale` stays empty. The rating itself is still not published, and none
+# is inferred from CARE's percentiles for any purpose.
+#
+# The mismatch in the provider's own lookup -- unit "kW", values 0 to 1 -- is exactly the
+# error the canonical rename avoids: a channel named kW must not hold per-unit values.
 #
 # CARE is evaluation-only (eval_only_sources in configs/data/splits_*.yaml). Nothing
 # here feeds training; it decides only what the label cross-check can read.
 
 source: care
 site: "CARE farms A/B/C"
-mapping_status: "resolved per farm from feature_description.csv: farm A 13, farm B 10, farm C 9 of 14 mapped; the rest verified absent or ambiguous; power is normalised, not kW"
+mapping_status: "resolved per farm from feature_description.csv: farm A 13, farm B 10, farm C 9 of 14 mapped; the rest verified absent or ambiguous; power is per unit of rated power by the provider's documentation (Data 9(12):138, s. 3.1.4), which the feature lookup mislabels kW"
 
 farms:
   farm_a:
     directory: "Wind Farm A"
     channels:
       wind_speed_ms: "wind_speed_3_avg"
-      power_kw: "power_30_avg"
+      power_pu: "power_30_avg"
       rotor_speed_rpm: "sensor_52_avg"
       generator_speed_rpm: "sensor_18_avg"
       pitch_angle_deg: "sensor_5_avg"
@@ -41,7 +52,7 @@ farms:
       main_bearing_temp_c: null
     evidence:
       wind_speed_ms: "wind_speed_3: Windspeed (m/s); wind_speed_4 is an estimate"
-      power_kw: "power_30: Grid power (kW); power_29 is the possible power"
+      power_pu: "power_30: Grid power (kW); power_29 is the possible power"
       rotor_speed_rpm: "sensor_52: Rotor rpm"
       generator_speed_rpm: "sensor_18: Generator rpm in latest period"
       pitch_angle_deg: "sensor_5: Pitch angle"
@@ -57,13 +68,13 @@ farms:
       main_bearing_temp_c: "none of the 54 sensors is a main, rotor or axle bearing temperature"
     ambiguous: {}
     units:
-      power_kw: "normalised to an unpublished rated power (read -0.02 to 0.98), not kW"
+      power_pu: "per unit of rated power by the provider (Data 9(12):138, s. 3.1.4); read -0.02 to 0.98. The feature lookup says kW and is wrong; the rating is not published and none is needed"
 
   farm_b:
     directory: "Wind Farm B"
     channels:
       wind_speed_ms: "wind_speed_61_avg"
-      power_kw: "power_62_avg"
+      power_pu: "power_62_avg"
       rotor_speed_rpm: "sensor_25_avg"
       generator_speed_rpm: "sensor_19_avg"
       pitch_angle_deg: "sensor_10_avg"
@@ -78,7 +89,7 @@ farms:
       main_bearing_temp_c: "sensor_51_avg"
     evidence:
       wind_speed_ms: "wind_speed_61: Wind speed (m/s); 59 and 60 are the two anemometers"
-      power_kw: "power_62: Active power (kW); power_58 is available power"
+      power_pu: "power_62: Active power (kW); power_58 is available power"
       rotor_speed_rpm: "sensor_25: Rotor speed (rpm)"
       generator_speed_rpm: "sensor_19: Generator converter rotational peed [sic] (rpm); sensor_20, gearbox rotational speed, reads within 0.5% of it"
       pitch_angle_deg: "sensor_10: Pitch angle"
@@ -94,13 +105,13 @@ farms:
       gearbox_bearing_temp_c: "sensor_34..37: Gearbox bearing temperature 1..4, positions not stated"
       generator_bearing_temp_c: "sensor_32/33: Generator bearing temperature 1/2, end not stated; farm A numbers bearing 2 as the drive end and the Senvion maps call bearing 1 the front, so a number does not identify an end"
     units:
-      power_kw: "normalised to an unpublished rated power (read -0.01 to 1.03), not kW"
+      power_pu: "per unit of rated power by the provider (Data 9(12):138, s. 3.1.4); read -0.01 to 1.03. The feature lookup says kW and is wrong; the rating is not published and none is needed"
 
   farm_c:
     directory: "Wind Farm C"
     channels:
       wind_speed_ms: "wind_speed_236_avg"
-      power_kw: "power_6_avg"
+      power_pu: "power_6_avg"
       rotor_speed_rpm: "sensor_144_avg"
       generator_speed_rpm: "sensor_8_avg"
       pitch_angle_deg: "sensor_103_avg"
@@ -115,7 +126,7 @@ farms:
       main_bearing_temp_c: "sensor_196_avg"
     evidence:
       wind_speed_ms: "wind_speed_236: Wind speed 1+2 (m/s), the combined anemometers"
-      power_kw: "power_6: Active power HV grid (kW); 2, 5 and 17 are converter-side"
+      power_pu: "power_6: Active power HV grid (kW); 2, 5 and 17 are converter-side"
       rotor_speed_rpm: "sensor_144: Rotor speed 1 (1/min)"
       generator_speed_rpm: "sensor_8: Generator angle speed (rad/s)"
       pitch_angle_deg: "sensor_103: Position rotor blade axis 1 (deg)"
@@ -131,9 +142,10 @@ farms:
       gearbox_bearing_temp_c: "sensor_151..166: sixteen planetary bearing temperatures, none singled out"
       generator_bearing_temp_c: "sensor_168/169: Temperature of axial bearing 1/2, component not stated"
     units:
-      power_kw: "normalised to an unpublished rated power (read -0.01 to 1.04), not kW"
+      power_pu: "per unit of rated power by the provider (Data 9(12):138, s. 3.1.4); read -0.01 to 1.04. The feature lookup says kW and is wrong; the rating is not published and none is needed"
       generator_speed_rpm: "rad/s, converted to rpm at ingest (scale below)"
     # Factors the adapter applies to reach the canonical unit. Only a conversion between
-    # two known units belongs here; normalised power has no known factor and stays out.
+    # two known units belongs here. Power needs none: it is already per unit of rated
+    # power, which is the canonical unit.
     scale:
       generator_speed_rpm: 9.549296585513721 # 60 / (2 pi): rad/s -> rpm

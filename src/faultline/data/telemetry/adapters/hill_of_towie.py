@@ -279,6 +279,7 @@ class HillOfTowieAdapter(BaseAdapter):
         result.insert(0, "site", self.site_name)
         result.insert(0, "source", self.source_id)
         result["timestamp_utc"] = pd.to_datetime(result["timestamp_utc"], utc=True)
+        result = self.to_canonical_units(result)
         return result.reset_index(drop=True), accounts
 
     def load_scada_with_stats(self, member: RawMember) -> tuple[pd.DataFrame, FileAccount]:

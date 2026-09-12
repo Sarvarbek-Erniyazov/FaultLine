@@ -87,7 +87,7 @@ def test_a_farm_wide_timer_and_a_single_turbine_timer_profile_apart() -> None:
             "grd": [600.0] * 4,
             "cmd": [600.0, 0.0, 0.0, 0.0],
             "telemetry_present": [False, True, True, True],
-            "power_kw": [0.0] * 4,
+            "power_pu": [0.0] * 4,
             "rotor_speed_rpm": [0.0, 5.0, 0.0, 0.0],
         }
     )
@@ -253,11 +253,11 @@ def test_care_is_reported_per_dataset_with_the_interval_its_counts_allow() -> No
             "farm_b": Counter({"anomaly": 6, "normal": 9}),
         },
         steps={"farm_a": 1000, "farm_b": 500},
-        presence={"farm_a": {"power_kw": 1.0}, "farm_b": {"power_kw": 0.5}},
+        presence={"farm_a": {"power_pu": 1.0}, "farm_b": {"power_pu": 0.5}},
         power_bound=(-0.1, 1.1),
         absolute_time=False,
     )
-    text = _care_section(probe, ["power_kw"])
+    text = _care_section(probe, ["power_pu"])
     assert "dataset-level generalisation probe" in text
     assert "| anomalous, all farms | 18 |" in text
     assert "| anomalous, without farm A (ADR-0004) | 6 |" in text

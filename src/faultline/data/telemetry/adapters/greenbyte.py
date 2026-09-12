@@ -140,6 +140,7 @@ class GreenbyteAdapter(BaseAdapter):
         result.insert(0, "turbine_id", turbine)
         result.insert(0, "site", self.site_name)
         result.insert(0, "source", self.source_id)
+        result = self.to_canonical_units(result)
         return result.reset_index(drop=True), FileAccount(member.label, turbine, stats)
 
     def load_events(self, member: RawMember) -> pd.DataFrame | None:

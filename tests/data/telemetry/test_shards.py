@@ -17,10 +17,18 @@ from faultline.data.telemetry.bins import QuantileBinsConfig
 from faultline.data.telemetry.harmonise import horizon_labels, to_seconds
 from faultline.data.telemetry.labels import label_column
 from faultline.data.telemetry.pipeline import stage_source_dir
-from faultline.data.telemetry.schemas import CORE_CHANNELS
-from faultline.data.telemetry.shards import build_shards, shards_dir, tokenizer_path
+from faultline.data.telemetry.schemas import CHANNEL_NAMES, CORE_CHANNELS
+from faultline.data.telemetry.shards import (
+    ShardSet,
+    ShardTally,
+    build_shards,
+    encode_turbine_year,
+    shards_dir,
+    tokenizer_path,
+)
 from faultline.paths import ProjectPaths
-from faultline.tokenizers.layout import BIN_OFFSET, SPECIAL_TOKENS
+from faultline.tokenizers.joint import JointVocab
+from faultline.tokenizers.layout import BIN_OFFSET, SPECIAL_TOKENS, VocabLayout
 from faultline.tokenizers.quantile_bins import QuantileBinTokenizer
 
 ROWS = 400
@@ -30,7 +38,7 @@ NAN = SPECIAL_TOKENS.index("<nan>")
 
 
 def config_path(paths: ProjectPaths) -> Path:
-    return paths.repo_root / "configs" / "tokenizer" / "quantile_bins_v0.yaml"
+    return paths.repo_root / "configs" / "tokenizer" / "quantile_bins_v1.yaml"
 
 
 def fit_tokenizer(paths: ProjectPaths) -> None:
@@ -129,14 +137,47 @@ def test_the_stream_is_thirteen_uint16_tokens_a_step(
     )
 
 
-def test_care_power_is_nan_whatever_its_value(
+def test_care_power_is_binned_like_any_other_channel(
     built: tuple[ProjectPaths, pd.DataFrame, Path, Path],
 ) -> None:
+    # v0 emitted it as <nan> for want of a rating to convert kW edges by. ADR-0013: the
+    # provider states CARE power is already scaled by rated power, which is the canonical
+    # unit, so it is binned like everything else and no rating is needed or inferred.
     _, _, manifest, _ = built
     tokens = np.memmap(manifest.parent / "care__test.bin", dtype=np.uint16, mode="r").reshape(
         -1, 13
     )
-    power = 1 + list(CORE_CHANNELS).index("power_kw")
+    power = 1 + list(CORE_CHANNELS).index("power_pu")
+    assert (tokens[:, power] != NAN).all()
+    assert (tokens[:, power] >= BIN_OFFSET).all()
+
+
+def test_a_masked_channel_is_emitted_as_nan_whatever_its_value(
+    repo_paths: ProjectPaths,
+) -> None:
+    # No source masks a channel at v1, and the mechanism stays for a future source whose
+    # channel cannot be put on the canonical scale. Tested directly, since no shipped
+    # configuration exercises it.
+    fit_tokenizer(repo_paths)
+    tokenizer = QuantileBinTokenizer.load(
+        tokenizer_path(repo_paths, load_config(config_path(repo_paths), QuantileBinsConfig))
+    )
+    frame = stage_kelmarsh(repo_paths)
+    vocab = JointVocab(
+        VocabLayout.from_sizes(0, len(CHANNEL_NAMES), tokenizer.n_bins), bin_tokenizer=tokenizer
+    )
+    splits = load_config(repo_paths.repo_root / "configs" / "data" / "splits_v3.yaml", SplitsConfig)
+    shards = ShardSet(repo_paths.data_root / "shards" / "masked")
+    shards.root.mkdir(parents=True, exist_ok=True)
+    tally = ShardTally(histogram=np.zeros(vocab.layout.total_size, dtype=np.int64))
+    try:
+        encode_turbine_year(frame, vocab, ["power_pu"], splits, HORIZONS, None, shards, tally)
+    finally:
+        shards.close()
+    tokens = np.memmap(
+        shards.tokens_path(("kelmarsh", "train")), dtype=np.uint16, mode="r"
+    ).reshape(-1, 13)
+    power = 1 + list(CORE_CHANNELS).index("power_pu")
     assert (tokens[:, power] == NAN).all()
     assert (tokens[:, 1] != NAN).all()
 
@@ -146,7 +187,7 @@ def test_the_index_holds_every_admissible_window_with_known_labels(
 ) -> None:
     paths, frame, manifest, _ = built
     index = pq.read_table(manifest.parent / "kelmarsh__train.windows.parquet").to_pandas()
-    splits = load_config(paths.repo_root / "configs" / "data" / "splits_v2.yaml", SplitsConfig)
+    splits = load_config(paths.repo_root / "configs" / "data" / "splits_v3.yaml", SplitsConfig)
     ends = window_ends(frame, splits, 6)
     labelled = frame["narrow_within_1h"].notna().to_numpy()
     # known is admissible AND labelled: the last hour's horizon runs past the turbine-year,

@@ -15,7 +15,7 @@ from faultline.data.telemetry.filter import (
     turbine_year_coverage,
 )
 
-CHANNELS = ["wind_speed_ms", "power_kw", "gearbox_oil_temp_c"]
+CHANNELS = ["wind_speed_ms", "power_pu", "gearbox_oil_temp_c"]
 
 
 def gridded(rows: int = 100) -> pd.DataFrame:
@@ -25,7 +25,7 @@ def gridded(rows: int = 100) -> pd.DataFrame:
         {
             "timestamp_utc": stamps,
             "wind_speed_ms": rng.uniform(3, 15, rows),
-            "power_kw": rng.uniform(0, 2000, rows),
+            "power_pu": rng.uniform(0, 2000, rows),
             "gearbox_oil_temp_c": np.nan,
         }
     )
@@ -33,10 +33,10 @@ def gridded(rows: int = 100) -> pd.DataFrame:
 
 def test_channel_coverage() -> None:
     frame = gridded(10)
-    frame.loc[0:4, "power_kw"] = np.nan
+    frame.loc[0:4, "power_pu"] = np.nan
     coverage = channel_coverage(frame, CHANNELS)
     assert coverage["wind_speed_ms"] == 1.0
-    assert coverage["power_kw"] == 0.5
+    assert coverage["power_pu"] == 0.5
     assert coverage["gearbox_oil_temp_c"] == 0.0
 
 
@@ -50,24 +50,24 @@ def test_empty_frame_coverage() -> None:
 
 def test_select_channels_drops_sparse_ones() -> None:
     frame = gridded(10)
-    frame.loc[0:6, "power_kw"] = np.nan
+    frame.loc[0:6, "power_pu"] = np.nan
     kept, coverage = select_channels(frame, CHANNELS, TelemetryFilterConfig())
     assert kept == ["wind_speed_ms"]
-    assert coverage["power_kw"] < 0.5
+    assert coverage["power_pu"] < 0.5
 
 
 def test_turbine_year_coverage_is_the_mean() -> None:
     frame = gridded(10)
-    frame.loc[0:4, "power_kw"] = np.nan
+    frame.loc[0:4, "power_pu"] = np.nan
     assert turbine_year_coverage(frame, CHANNELS) == (1.0 + 0.5 + 0.0) / 3
 
 
 def test_segments_split_on_long_gaps() -> None:
     frame = gridded(40)
     # a gap of 10 steps (100 minutes) exceeds the 6-step break threshold
-    frame.loc[10:19, ["wind_speed_ms", "power_kw"]] = np.nan
+    frame.loc[10:19, ["wind_speed_ms", "power_pu"]] = np.nan
     config = TelemetryFilterConfig(segment_break_steps=6, min_segment_steps=1)
-    ids = segment_ids(frame, ["wind_speed_ms", "power_kw"], config)
+    ids = segment_ids(frame, ["wind_speed_ms", "power_pu"], config)
     assert set(ids[ids >= 0]) == {0, 1}
     assert (ids == -1).sum() == 10
     lengths = segment_lengths(ids)
@@ -76,9 +76,9 @@ def test_segments_split_on_long_gaps() -> None:
 
 def test_short_gaps_do_not_split_a_segment() -> None:
     frame = gridded(30)
-    frame.loc[10:12, ["wind_speed_ms", "power_kw"]] = np.nan  # 3 steps, under the threshold
+    frame.loc[10:12, ["wind_speed_ms", "power_pu"]] = np.nan  # 3 steps, under the threshold
     config = TelemetryFilterConfig(segment_break_steps=6, min_segment_steps=1)
-    ids = segment_ids(frame, ["wind_speed_ms", "power_kw"], config)
+    ids = segment_ids(frame, ["wind_speed_ms", "power_pu"], config)
     assert set(ids[ids >= 0]) == {0}
 
 
@@ -87,10 +87,10 @@ def test_a_short_gap_stays_inside_its_segment_so_imputation_can_fill_it() -> Non
     # short gap's rows were labelled -1 and dropped with the long gaps, so imputation
     # never saw a gap in which every channel was missing.
     frame = gridded(30)
-    frame.loc[10:12, ["wind_speed_ms", "power_kw"]] = np.nan
-    frame.loc[0:1, ["wind_speed_ms", "power_kw"]] = np.nan  # before the first present row
+    frame.loc[10:12, ["wind_speed_ms", "power_pu"]] = np.nan
+    frame.loc[0:1, ["wind_speed_ms", "power_pu"]] = np.nan  # before the first present row
     config = TelemetryFilterConfig(segment_break_steps=6, min_segment_steps=1)
-    ids = segment_ids(frame, ["wind_speed_ms", "power_kw"], config)
+    ids = segment_ids(frame, ["wind_speed_ms", "power_pu"], config)
     assert ids.iloc[10:13].tolist() == [0, 0, 0]
     assert ids.iloc[0:2].tolist() == [-1, -1]
     filtered, _ = drop_short_segments(frame, ids, config)
@@ -104,9 +104,9 @@ def test_empty_frame_segments() -> None:
 
 def test_drop_short_segments() -> None:
     frame = gridded(40)
-    frame.loc[10:19, ["wind_speed_ms", "power_kw"]] = np.nan
+    frame.loc[10:19, ["wind_speed_ms", "power_pu"]] = np.nan
     config = TelemetryFilterConfig(segment_break_steps=6, min_segment_steps=15)
-    ids = segment_ids(frame, ["wind_speed_ms", "power_kw"], config)
+    ids = segment_ids(frame, ["wind_speed_ms", "power_pu"], config)
     filtered, counters = drop_short_segments(frame, ids, config)
 
     assert counters["segments_total"] == 2

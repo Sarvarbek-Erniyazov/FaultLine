@@ -1,0 +1,76 @@
+# Quantile-bin tokenizer for telemetry, version 1 (M1c, the gate-3 decisions).
+#
+# quantile_bins_v0.yaml is untouched. v1 is a new fit, on new final tables, and changes
+# three things from v0:
+#
+#   1. It reads telemetry_v4.yaml: pitch floored at 0.0 at every site (ADR-0012) and
+#      power in per unit of rated power (ADR-0013).
+#   2. CARE's power is no longer excluded. The provider states that it scaled power by
+#      the turbine's rated power (Data 9(12):138, section 3.1.4), which is now the
+#      canonical unit, so there is nothing to rescale and nothing to guess. v0 emitted it
+#      as <nan> because the edges were in kW and there was no published rating to convert
+#      by; that reason is gone, and no rating is inferred from CARE's percentiles for any
+#      purpose (ADR-0010, ADR-0013).
+#   3. HYBRID TAIL BINS (`n_tail`), the third gate-3 decision -- written into this file by
+#      the commit that made it, and described at the block below.
+#
+# Read by `faultline telemetry bins`, which fits the edges on the TRAIN split of the
+# training sites only -- Kelmarsh and Penmanshiel, 2016-2020, as splits_v3.yaml assigns
+# them through telemetry_v4.yaml -- and never on validation, the late test, the held-out
+# site or CARE. It writes the fitted tokenizer to data/tokenizers/ under this file's hash,
+# and reports every candidate in reports/data/quantile_bins_<date>.md.
+#
+# v0's probe of the training split still stands for what it measured, and the report
+# re-measures all of it on the new tables:
+#   * blade pitch sits at exactly 0 degrees for 31.5% of its v0 training values, and at
+#     44.99 and 45 for 9.8%; plain quantiles gave it 41, 79 and 154 distinct edges at 64,
+#     128 and 256 bins. Rotor speed has point masses at 0, 10.81 and 17.1 rpm. Hence exact
+#     bins. The pitch floor can only raise that 31.5%, and the report says by how much.
+#   * reconstruction error fell with every doubling on every other channel, on the
+#     validation split as on the training values.
+#
+# `tokenizer:` in telemetry_v4.yaml is not read by anything; this file is the tokenizer's
+# configuration (configs/tokenizer/README.md).
+
+version: 1
+telemetry_config: "configs/data/telemetry_v4.yaml"
+fit_split: "train"
+
+# Every core channel, in identifier order: in the fixed-order token stream (M1b step 12)
+# position is identity, so the order here is the order of the tokens in every step.
+channels:
+  - wind_speed_ms
+  - power_pu
+  - rotor_speed_rpm
+  - generator_speed_rpm
+  - pitch_angle_deg
+  - nacelle_position_deg
+  - ambient_temp_c
+  - nacelle_temp_c
+  - gearbox_oil_temp_c
+  - generator_bearing_temp_c
+  - generator_winding_temp_c
+  - main_bearing_temp_c
+
+candidates: [64, 128, 256]
+n_bins: 256
+n_bins_reason: >-
+  Reconstruction error falls with every doubling on every channel, on the validation split
+  as on the training values, so the grid has no interior optimum and the finest candidate
+  is chosen. It costs 256 of the bin block's 1,024 fixed identifiers (ADR-0003) and nothing
+  in sequence length, one token per channel per step at any bin count; and it leaves every
+  bin about 13,000 training values or more (3.35 million for pitch and gear oil, 4.5 to 4.7
+  million for the rest). The tails stay coarse at every candidate.
+
+# A value holding at least 1/n_bins of a channel's training values gets an exact bin.
+point_masses: true
+max_point_masses: 16
+
+# Imputed values are interpolations, not measurements (ADR-0006), and are not fitted on.
+include_imputed: false
+
+# Channels emitted as <nan> at a source whatever their value. EMPTY at v1: v0's only
+# entry was CARE power, and ADR-0013 includes it. The mechanism stays, because a future
+# source may publish a channel this project cannot put on the canonical scale.
+excluded: {}
+exclusion_reasons: {}

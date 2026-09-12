@@ -11,7 +11,7 @@ from faultline.tokenizers.layout import TELEMETRY_PREFIX_SIZE, VocabLayout
 from faultline.tokenizers.quantile_bins import QuantileBinTokenizer
 from faultline.tokenizers.text_bpe import TextBPETokenizer
 
-CHANNELS = ["wind_speed_ms", "power_kw"]
+CHANNELS = ["wind_speed_ms", "power_pu"]
 
 
 class FakeTextTokenizer:
@@ -33,7 +33,7 @@ def frame() -> pd.DataFrame:
     return pd.DataFrame(
         {
             "wind_speed_ms": rng.uniform(0, 25, 500),
-            "power_kw": rng.uniform(0, 2050, 500),
+            "power_pu": rng.uniform(0, 2050, 500),
         }
     )
 
@@ -60,7 +60,7 @@ def test_sizes_sum_correctly(vocab: JointVocab) -> None:
 def test_layout_and_tokenizer_must_agree(bin_tokenizer: QuantileBinTokenizer) -> None:
     with pytest.raises(ValueError, match="bins"):
         JointVocab(VocabLayout.from_sizes(100, 2, 64), bin_tokenizer=bin_tokenizer)
-    # power_kw is canonical channel 1, so a layout of one channel identifier cannot hold it
+    # power_pu is canonical channel 1, so a layout of one channel identifier cannot hold it
     with pytest.raises(ValueError, match="channel identifiers"):
         JointVocab(VocabLayout.from_sizes(100, 1, 8), bin_tokenizer=bin_tokenizer)
     # a layout with room to spare is fine: channel identifiers are canonical positions
@@ -98,18 +98,18 @@ def test_encode_telemetry_interleaves_channel_and_bin(
 def test_channel_tokens_are_canonical_positions_not_the_fitted_order(frame: pd.DataFrame) -> None:
     # ADR-0003: the canonical channel list fixes channel identifiers. A tokenizer fitted in
     # another order must not renumber them (the M0 encoder took the tokenizer's position).
-    reordered = QuantileBinTokenizer.fit(frame, ["power_kw", "wind_speed_ms"], n_bins=8)
+    reordered = QuantileBinTokenizer.fit(frame, ["power_pu", "wind_speed_ms"], n_bins=8)
     vocab = JointVocab(VocabLayout.from_sizes(0, 2, 8), bin_tokenizer=reordered)
     body = vocab.encode_telemetry(frame.head(1))[1:-1]
     channels = [vocab.decode(value).local_id for value in body[0::2]]
-    assert channels == [1, 0]  # power_kw is canonical 1, wind_speed_ms canonical 0
+    assert channels == [1, 0]  # power_pu is canonical 1, wind_speed_ms canonical 0
 
 
 def test_the_fixed_order_stream_is_a_delimiter_and_one_bin_token_a_channel(
     vocab: JointVocab, frame: pd.DataFrame
 ) -> None:
     window = frame.head(5).copy()
-    window.loc[window.index[2], "power_kw"] = np.nan
+    window.loc[window.index[2], "power_pu"] = np.nan
     steps = vocab.encode_steps(window)
     assert steps.dtype == np.uint16
     assert steps.shape == (5, 1 + len(CHANNELS))
@@ -125,7 +125,7 @@ def test_the_fixed_order_stream_is_a_delimiter_and_one_bin_token_a_channel(
 
 
 def test_a_masked_channel_is_nan_whatever_its_value(vocab: JointVocab, frame: pd.DataFrame) -> None:
-    steps = vocab.encode_steps(frame.head(3), masked=["power_kw"])
+    steps = vocab.encode_steps(frame.head(3), masked=["power_pu"])
     assert (steps[:, 2] == vocab.special("<nan>")).all()
     assert (steps[:, 1] != vocab.special("<nan>")).all()
     with pytest.raises(KeyError, match="not fitted"):
@@ -141,7 +141,7 @@ def test_missing_values_become_the_nan_token(vocab: JointVocab, frame: pd.DataFr
 
 
 def test_channel_subset_encoding(vocab: JointVocab, frame: pd.DataFrame) -> None:
-    body = vocab.encode_telemetry(frame.head(3), channels=["power_kw"])[1:-1]
+    body = vocab.encode_telemetry(frame.head(3), channels=["power_pu"])[1:-1]
     assert len(body) == 3 * 2
     assert {vocab.decode(value).local_id for value in body[0::2]} == {1}
 

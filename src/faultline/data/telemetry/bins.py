@@ -53,9 +53,9 @@ from faultline.tokenizers.quantile_bins import QuantileBinTokenizer
 
 logger = get_logger(__name__)
 
-#: A power bin whose representative is at or below this reads as a turbine not producing
-#: (the threshold of ``verify.PRODUCING_KW``).
-IDLE_KW = 10.0
+#: A power bin whose representative is at or below this reads as a turbine not producing,
+#: in per unit of rated power (the threshold of ``verify.PRODUCING_PU``, ADR-0013).
+IDLE_PU = 0.005
 
 
 class QuantileBinsConfig(StrictModel):
@@ -362,7 +362,7 @@ class ExcludedChannel:
         low: The lowest value.
         high: The highest value.
         idle: Share of values landing in a bin whose representative reads as a turbine
-            not producing (at or below :data:`IDLE_KW`); for power only.
+            not producing (at or below :data:`IDLE_PU`); for power only.
     """
 
     source: str
@@ -400,7 +400,7 @@ def excluded_channel(
         count += int(values.size)
         low, high = min(low, float(values.min())), max(high, float(values.max()))
         decoded = tokenizer.inverse(tokenizer.transform_channel(values, channel), channel)
-        idle += int((decoded <= IDLE_KW).sum())
+        idle += int((decoded <= IDLE_PU).sum())
     return ExcludedChannel(
         source=source,
         channel=channel,
@@ -548,7 +548,7 @@ def _excluded_section(config: QuantileBinsConfig, checks: Sequence[ExcludedChann
             }
         )
         + "\nWhat the values would have read as, binned against the training edges: the share "
-        f"landing in a bin that decodes to {IDLE_KW:g} kW or less, a turbine not producing.\n\n"
+        f"landing in a bin that decodes to {IDLE_PU:g} pu or less, a turbine not producing.\n\n"
         + table(["source", "channel", "values", "range", "would read as idle"], rows)
     )
     return section("Excluded channels", body)

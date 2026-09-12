@@ -25,7 +25,7 @@ timezone: "UTC"
 
 channels:
   wind_speed_ms: "Wind speed (m/s)"
-  power_kw: "Power (kW)"
+  power_pu: "Power (kW)"
   rotor_speed_rpm: "Rotor speed (RPM)"
   generator_speed_rpm: "Generator RPM (RPM)"
 
@@ -79,7 +79,7 @@ channels:
 # This is the evidence the channel report prints next to each column.
 evidence:
   wind_speed_ms: "signal mapping: Wind speed (m/s)"
-  power_kw: "signal mapping: Actual value of active power; unit measured as kW, not the kWh the file states"
+  power_pu: "signal mapping: Actual value of active power; unit measured as kW, not the kWh the file states"
   rotor_speed_rpm: "signal mapping: Value of rotor speed"
   generator_speed_rpm: "signal mapping: Generator speed"
   pitch_angle_deg: "signal mapping: Pitch angle for blade 1 (blade A of three)"

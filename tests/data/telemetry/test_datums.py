@@ -22,7 +22,7 @@ FLOOR = {"pitch_angle_deg": DatumSpec(floor=0.0, reason="Senvion 0.0, Siemens -1
 
 
 def frame(values: list[float]) -> pd.DataFrame:
-    return pd.DataFrame({"pitch_angle_deg": values, "power_kw": [1.0] * len(values)})
+    return pd.DataFrame({"pitch_angle_deg": values, "power_pu": [1.0] * len(values)})
 
 
 def test_a_value_below_the_floor_is_raised_to_it() -> None:
@@ -39,12 +39,12 @@ def test_missing_stays_missing_and_is_not_counted() -> None:
 
 def test_an_undeclared_channel_is_untouched() -> None:
     out, _ = apply_datums(frame([-1.0]), FLOOR)
-    assert out["power_kw"].tolist() == [1.0]
+    assert out["power_pu"].tolist() == [1.0]
 
 
 def test_a_channel_absent_from_the_table_is_skipped() -> None:
-    out, moved = apply_datums(pd.DataFrame({"power_kw": [1.0]}), FLOOR)
-    assert list(out.columns) == ["power_kw"]
+    out, moved = apply_datums(pd.DataFrame({"power_pu": [1.0]}), FLOOR)
+    assert list(out.columns) == ["power_pu"]
     assert moved == {}
 
 
@@ -85,7 +85,7 @@ def test_a_datum_on_an_unknown_channel_is_rejected() -> None:
     with pytest.raises(ValidationError, match="not configured"):
         TelemetryPipelineConfig.model_validate(
             {
-                "channels": ["power_kw"],
+                "channels": ["power_pu"],
                 "harmonise": {"pitch_angle_deg": {"floor": 0.0, "reason": "x"}},
             }
         )

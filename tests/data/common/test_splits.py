@@ -19,7 +19,7 @@ from faultline.data.common.splits import (
     split_counts,
 )
 from faultline.data.telemetry.adapters import ADAPTERS
-from faultline.data.telemetry.schemas import CORE_CHANNELS, EXTENDED_CHANNELS
+from faultline.data.telemetry.schemas import CORE_CHANNELS, EXTENDED_CHANNELS, current_name
 
 
 def config(**overrides: object) -> SplitsConfig:
@@ -90,7 +90,7 @@ def rows() -> pd.DataFrame:
 
 
 def test_the_shipped_split_config_loads(repo_root: Path) -> None:
-    loaded = load_config(repo_root / "configs" / "data" / "splits_v2.yaml", SplitsConfig)
+    loaded = load_config(repo_root / "configs" / "data" / "splits_v3.yaml", SplitsConfig)
     assert loaded.holdout_sites == ["hill_of_towie"]
     assert loaded.time.val_until > loaded.time.train_until
     # The shipped config holds a site out, so it must read core channels only.
@@ -100,12 +100,36 @@ def test_the_shipped_split_config_loads(repo_root: Path) -> None:
     assert loaded.report_without_messages == ["anemometer defect"]
 
 
+@pytest.mark.parametrize("name", ["splits_v0.yaml", "splits_v1.yaml", "splits_v2.yaml"])
+def test_every_superseded_split_specification_no_longer_loads(repo_root: Path, name: str) -> None:
+    # Each is left exactly as it was written, and none of them validates today. v0 and v1
+    # name wind_direction_deg in eval_channels with a site held out (M1b step 10); all
+    # three name power_kw, which M1c renamed power_pu (ADR-0013). The unknown-channel
+    # check fires first, so that is the message; the wind-direction rule is tested on a
+    # constructed specification below, and on v0's own list here.
+    with pytest.raises(ValidationError, match="not canonical channels"):
+        load_config(repo_root / "configs" / "data" / name, SplitsConfig)
+
+
 @pytest.mark.parametrize("name", ["splits_v0.yaml", "splits_v1.yaml"])
 def test_a_split_that_evaluates_wind_direction_is_rejected(repo_root: Path, name: str) -> None:
-    # M1b step 10: wind direction is extended (0% of the held-out site's 2019 grid). v0 and
-    # v1 are left as they were written, and a leave-site-out evaluation reading it fails.
+    # M1b step 10: wind direction is extended (0% of the held-out site's 2019 grid). Read
+    # v0 and v1 under the current channel names, so the rename does not hide the rule
+    # these two files fail on.
+    payload = yaml.safe_load((repo_root / "configs" / "data" / name).read_text(encoding="utf-8"))
+    payload["eval_channels"] = [current_name(c) for c in payload["eval_channels"]]
     with pytest.raises(ValidationError, match="wind_direction_deg"):
-        load_config(repo_root / "configs" / "data" / name, SplitsConfig)
+        SplitsConfig.model_validate(payload)
+
+
+def test_v3_is_v2_with_nothing_changed_but_the_channel_name(repo_root: Path) -> None:
+    configs = repo_root / "configs" / "data"
+    v2 = yaml.safe_load((configs / "splits_v2.yaml").read_text(encoding="utf-8"))
+    v3 = yaml.safe_load((configs / "splits_v3.yaml").read_text(encoding="utf-8"))
+    assert v2.pop("version") == 2
+    assert v3.pop("version") == 3
+    v2["eval_channels"] = [current_name(name) for name in v2["eval_channels"]]
+    assert v2 == v3
 
 
 def test_leave_site_out_rejects_extended_channels() -> None:
@@ -140,8 +164,8 @@ def test_eval_channels_defaults_to_empty() -> None:
 # -- the leave-site-out rule, on the real channel maps ---------------------------------
 
 
-def test_the_v2_split_passes_the_leave_site_out_rule_on_the_real_maps(repo_root: Path) -> None:
-    spec = load_config(repo_root / "configs" / "data" / "splits_v2.yaml", SplitsConfig)
+def test_the_v3_split_passes_the_leave_site_out_rule_on_the_real_maps(repo_root: Path) -> None:
+    spec = load_config(repo_root / "configs" / "data" / "splits_v3.yaml", SplitsConfig)
     mappable = check_eval_channels_against_maps(spec, repo_root / "configs", list(ADAPTERS))
     # the maps are necessary, not sufficient: every mappable channel is evaluated except
     # the one the coverage rule demotes
@@ -190,15 +214,17 @@ def test_the_v0_split_bug_fails_loudly_instead_of_training_on_the_held_out_site(
     payload = yaml.safe_load(
         (repo_root / "configs" / "data" / "splits_v0.yaml").read_text(encoding="utf-8")
     )
-    payload["eval_channels"] = [c for c in payload["eval_channels"] if c in CORE_CHANNELS]
+    payload["eval_channels"] = [
+        name for c in payload["eval_channels"] if (name := current_name(c)) in CORE_CHANNELS
+    ]
     v0 = SplitsConfig.model_validate(payload)
     with pytest.raises(ValueError, match="would be left in training"):
         assign_splits(adapter_rows(), v0)
 
 
-def test_the_v2_split_holds_the_same_rows_out(repo_root: Path) -> None:
-    v2 = load_config(repo_root / "configs" / "data" / "splits_v2.yaml", SplitsConfig)
-    labels = assign_splits(adapter_rows(), v2)
+def test_the_v3_split_holds_the_same_rows_out(repo_root: Path) -> None:
+    v3 = load_config(repo_root / "configs" / "data" / "splits_v3.yaml", SplitsConfig)
+    labels = assign_splits(adapter_rows(), v3)
     assert list(labels) == ["train", "test"]
 
 
@@ -222,8 +248,8 @@ def test_a_per_year_site_must_be_held_out() -> None:
 
 
 def test_the_shipped_exclusions_are_the_two_measured_spans(repo_root: Path) -> None:
-    v2 = load_config(repo_root / "configs" / "data" / "splits_v2.yaml", SplitsConfig)
-    spans = [(e.source, e.start_utc, e.end_utc) for e in v2.training_exclusions]
+    v3 = load_config(repo_root / "configs" / "data" / "splits_v3.yaml", SplitsConfig)
+    spans = [(e.source, e.start_utc, e.end_utc) for e in v3.training_exclusions]
     assert spans == [
         (
             "penmanshiel",
@@ -236,7 +262,7 @@ def test_the_shipped_exclusions_are_the_two_measured_spans(repo_root: Path) -> N
             pd.Timestamp("2018-05-16T10:10Z"),
         ),
     ]
-    assert all(len(e.channels) >= 2 and e.reason.strip() for e in v2.training_exclusions)
+    assert all(len(e.channels) >= 2 and e.reason.strip() for e in v3.training_exclusions)
 
 
 def test_an_exclusion_of_one_channel_is_not_an_outage() -> None:
@@ -295,7 +321,7 @@ def test_rows_inside_an_exclusion_are_those_of_its_source_and_span() -> None:
 
 
 def test_the_shipped_config_keeps_care_out_of_training(repo_root: Path) -> None:
-    loaded = load_config(repo_root / "configs" / "data" / "splits_v2.yaml", SplitsConfig)
+    loaded = load_config(repo_root / "configs" / "data" / "splits_v3.yaml", SplitsConfig)
     assert loaded.eval_only_sources == ["care"]
     assert loaded.source_column == "source"
 

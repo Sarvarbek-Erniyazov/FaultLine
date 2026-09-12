@@ -16,7 +16,7 @@ from faultline.tokenizers.quantile_bins import (
     sorted_quantiles,
 )
 
-CHANNELS = ["wind_speed_ms", "power_kw"]
+CHANNELS = ["wind_speed_ms", "power_pu"]
 
 
 @pytest.fixture
@@ -25,7 +25,7 @@ def frame() -> pd.DataFrame:
     return pd.DataFrame(
         {
             "wind_speed_ms": rng.uniform(0, 25, 5000),
-            "power_kw": rng.uniform(0, 2050, 5000),
+            "power_pu": rng.uniform(0, 2050, 5000),
         }
     )
 
@@ -113,7 +113,7 @@ def test_round_trip_lands_in_the_same_bin(tokenizer: QuantileBinTokenizer) -> No
 
 def test_channel_index_is_the_fit_order(tokenizer: QuantileBinTokenizer) -> None:
     assert tokenizer.channel_index("wind_speed_ms") == 0
-    assert tokenizer.channel_index("power_kw") == 1
+    assert tokenizer.channel_index("power_pu") == 1
     with pytest.raises(KeyError):
         tokenizer.channel_index("absent")
 

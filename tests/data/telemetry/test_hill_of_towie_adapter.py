@@ -19,7 +19,7 @@ from faultline.data.telemetry.adapters.hill_of_towie import HillOfTowieAdapter
 CHANNEL_MAP = {
     "wind_speed_ms": "tblSCTurbine.wtc_AcWindSp_mean",
     "wind_direction_deg": "tblSCTurbine.wtc_ActualWindDirection_mean",
-    "power_kw": "tblSCTurGrid.wtc_ActPower_mean",
+    "power_pu": "tblSCTurGrid.wtc_ActPower_mean",
     "ambient_temp_c": "tblSCTurTemp.wtc_AmbieTmp_mean",
 }
 
@@ -98,11 +98,11 @@ def test_the_month_is_joined_named_and_moved_to_interval_start(
     # interval-end label 00:10 names the interval that opened at 00:00
     first = frame[frame["turbine_id"] == "T01"].sort_values("timestamp_utc").iloc[0]
     assert first["timestamp_utc"] == pd.Timestamp("2019-03-01 00:00", tz="UTC")
-    assert (first["wind_speed_ms"], first["power_kw"], first["ambient_temp_c"]) == (9.5, 1800, 4.0)
+    assert (first["wind_speed_ms"], first["power_pu"], first["ambient_temp_c"]) == (9.5, 1800, 4.0)
     # the 2019 export has no wind direction: missing data, not a crash
     assert "wind_direction_deg" not in frame.columns
     t02 = frame[frame["turbine_id"] == "T02"].sort_values("timestamp_utc")
-    assert t02["power_kw"].isna().tolist() == [False, True]
+    assert t02["power_pu"].isna().tolist() == [False, True]
     assert t02["ambient_temp_c"].notna().all()  # the join keeps the other tables' values
 
     assert len(accounts) == 3
@@ -139,7 +139,7 @@ def test_shutdown_duration_is_a_downtime_series_and_not_an_event_log(
 def test_a_missing_station_file_is_an_error_not_a_guess(tmp_path: Path) -> None:
     with zipfile.ZipFile(tmp_path / "2019.zip", "w") as handle:
         handle.writestr("tblSCTurGrid_2019_03.csv", MONTH["tblSCTurGrid_2019_03.csv"])
-    adapter = HillOfTowieAdapter(channel_map={"power_kw": CHANNEL_MAP["power_kw"]})
+    adapter = HillOfTowieAdapter(channel_map={"power_pu": CHANNEL_MAP["power_pu"]})
     unit = adapter.scada_units(adapter.discover(tmp_path))[0]
     with pytest.raises(RuntimeError, match="station ids cannot be named"):
         adapter.load_scada_unit(unit)

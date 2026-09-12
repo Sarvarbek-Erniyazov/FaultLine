@@ -63,16 +63,16 @@ def test_impute_frame_emits_mask_columns() -> None:
     frame = pd.DataFrame(
         {
             "wind_speed_ms": [1.0, np.nan, 3.0, 4.0],
-            "power_kw": [10.0, 20.0, np.nan, 40.0],
+            "power_pu": [10.0, 20.0, np.nan, 40.0],
         }
     )
-    imputed, counts = impute_frame(frame, ["wind_speed_ms", "power_kw"], ImputeConfig())
+    imputed, counts = impute_frame(frame, ["wind_speed_ms", "power_pu"], ImputeConfig())
 
-    for channel in ("wind_speed_ms", "power_kw"):
+    for channel in ("wind_speed_ms", "power_pu"):
         mask = f"{channel}{IMPUTED_SUFFIX}"
         assert mask in imputed.columns
         assert imputed[mask].dtype == bool
-    assert counts == {"wind_speed_ms": 1, "power_kw": 1}
+    assert counts == {"wind_speed_ms": 1, "power_pu": 1}
     assert imputed["wind_speed_ms"][1] == pytest.approx(2.0)
     assert imputed.loc[1, "wind_speed_ms" + IMPUTED_SUFFIX]
     assert not imputed.loc[0, "wind_speed_ms" + IMPUTED_SUFFIX]

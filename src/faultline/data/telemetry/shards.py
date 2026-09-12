@@ -718,7 +718,7 @@ def build_shards(paths: ProjectPaths, config_path: Path) -> tuple[Path, Path]:
         encoding="utf-8",
     )
     dataset_level = list(rules.event_info.sources)
-    header = "# Token shards and the window index (M1b step 12)\n\n" + kv_table(
+    header = "# Token shards and the window index\n\n" + kv_table(
         {
             "tokenizer config": config_path.as_posix(),
             "tokenizer": source_tokenizer.relative_to(paths.repo_root).as_posix(),

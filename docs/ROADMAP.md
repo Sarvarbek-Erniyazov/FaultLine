@@ -179,6 +179,30 @@ trained from scratch, evaluated as a risk model rather than a forecaster.
   for the extended-channel ablation, and a channel token's identifier is now its canonical
   position.*
 - *Gate 3, reached 2026-09-12: report and stop. The model is not chosen here.*
+- *M1c, 2026-09-12: the gate-3 decisions applied together -- one config version, one
+  re-tokenise, one re-shard, one leakage re-check (`telemetry_v4.yaml`,
+  `quantile_bins_v1.yaml`, `splits_v3.yaml`; ADR-0012, ADR-0013, ADR-0014).*
+  - *Pitch is floored at 0.0 degrees at every site as a declared datum transform applied
+    after the bounds (`harmonise`, `datums.py`): Senvion reports fine pitch as an exact 0.0
+    (41.30% / 21.12% of values), Siemens as a band centred on -1.0 (45.29% / 32.84% within
+    0.05 deg of it). 3,819,549 values moved, 25.6% of all rows. Hill of Towie pitch below
+    the training range: 71.40% / 61.83% -> 0.00% / 0.00%.*
+  - *Power is per unit of rated power everywhere (`power_kw` -> `power_pu`), divided in the
+    adapters by each record's own published nameplate (2,050 / 2,050 / 2,300 kW). CARE's
+    power comes back into the stream on the provider's documentation, so `<nan>` falls from
+    11.61% to 8.90% of all tokens and from 29.68% to 21.34% at CARE. Hill of Towie power
+    above the training range: 6.81% / 5.62% -> 0.00% / 0.00%.*
+  - *The tails get 16 fixed-width bins a side out of the same 256. Against a pure-quantile
+    fit of the same bin count on the same values, the median reconstruction error falls from
+    0.82% to 0.48% of the interquartile range (validation 1.19% to 0.50%) and the generator
+    bearing's top bin from 42.7 degC to 2.78. **184 of 352 tail bins hold fewer than 500
+    training values and 42 hold none**, which is the pre-registered signal to turn `n_tail`
+    down; it is reported at gate 4, not acted on.*
+  - *Every pre-registered invariant holds: the ingest, filter and final reports are
+    byte-identical to M1b's apart from the channel rename, all 441 label tables regenerate
+    unchanged, and the token counts, window counts at every split, horizon and label set,
+    the 43,580,055-window leakage re-check and the label recomputation checks are unchanged.*
+- *Gate 4, reached 2026-09-12: report and stop. The model ladder does not start here.*
 - Fit `QuantileBinTokenizer` on the training split only.
 - Model, training loop, checkpointing; multi-seed runs.
 - Risk evaluation: AUPRC, event-level F1, false alarms per hour, detection delay.

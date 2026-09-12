@@ -1,1 +1,1390 @@
 2026-09-12 17:56:16,530 INFO     faultline.runs | run 20260912-085616_all_telemetry_4be519df started (config hash 4be519df)
+2026-09-12 18:06:44,049 WARNING  faultline.data.telemetry.adapters.hill_of_towie | 2019.zip::tblAlarmLog_2019_08.csv: stations [91] are not turbines in Hill_of_Towie_turbine_metadata.csv; their rows are dropped
+2026-09-12 18:06:44,413 WARNING  faultline.data.telemetry.adapters.hill_of_towie | 2019.zip::tblAlarmLog_2019_09.csv: stations [91] are not turbines in Hill_of_Towie_turbine_metadata.csv; their rows are dropped
+2026-09-12 18:06:45,915 WARNING  faultline.data.telemetry.adapters.hill_of_towie | 2023.zip::tblAlarmLog_2023_05.csv: stations [91] are not turbines in Hill_of_Towie_turbine_metadata.csv; their rows are dropped
+2026-09-12 18:10:49,046 INFO     faultline.runs | wrote ingest_stats_report.md
+2026-09-12 18:10:49,122 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 10 values outside [-1, 25]
+2026-09-12 18:10:49,122 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 2 values outside [-10, 2500]
+2026-09-12 18:10:49,124 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 7 values outside [-5, 100]
+2026-09-12 18:10:49,248 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 9 values outside [-1, 25]
+2026-09-12 18:10:49,250 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:10:49,392 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:10:49,393 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 4 values outside [-5, 100]
+2026-09-12 18:10:49,534 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:10:49,864 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 4 values outside [-10, 2500]
+2026-09-12 18:10:49,865 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 4 values outside [-5, 100]
+2026-09-12 18:10:50,019 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:10:50,019 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 1 values outside [-5, 100]
+2026-09-12 18:10:50,187 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:10:50,342 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:10:50,353 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 6332 values raised to the datum floor 0
+2026-09-12 18:10:50,500 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:10:50,501 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 7 values outside [-5, 100]
+2026-09-12 18:10:50,627 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 4 values outside [-10, 2500]
+2026-09-12 18:10:50,627 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 9 values outside [-5, 100]
+2026-09-12 18:10:50,771 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 4 values outside [-10, 2500]
+2026-09-12 18:10:50,772 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 1 values outside [-5, 100]
+2026-09-12 18:10:50,911 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 2 values outside [-10, 2500]
+2026-09-12 18:10:51,064 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 2 values outside [-10, 2500]
+2026-09-12 18:10:51,231 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:10:51,232 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 6 values outside [-5, 100]
+2026-09-12 18:10:51,385 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:10:51,542 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:10:51,693 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 2 values outside [-10, 2500]
+2026-09-12 18:10:51,845 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 4 values outside [-10, 2500]
+2026-09-12 18:10:51,847 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 6 values outside [-5, 100]
+2026-09-12 18:10:51,964 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:10:51,965 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 9 values outside [-5, 100]
+2026-09-12 18:10:52,108 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 6 values outside [-10, 2500]
+2026-09-12 18:10:52,109 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 2 values outside [-5, 100]
+2026-09-12 18:10:52,244 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 2 values outside [-10, 2500]
+2026-09-12 18:10:52,395 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:10:52,544 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 6 values outside [-10, 2500]
+2026-09-12 18:10:52,691 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 4 values outside [-10, 2500]
+2026-09-12 18:10:52,835 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 2 values outside [-10, 2500]
+2026-09-12 18:10:52,981 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 4 values outside [-10, 2500]
+2026-09-12 18:10:53,131 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:10:53,132 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 6 values outside [-5, 100]
+2026-09-12 18:10:53,253 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 13 values outside [-10, 2500]
+2026-09-12 18:10:53,253 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 16 values outside [-5, 100]
+2026-09-12 18:10:53,392 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 7 values outside [-10, 2500]
+2026-09-12 18:10:53,394 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 2 values outside [-5, 100]
+2026-09-12 18:10:53,541 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 8 values outside [-10, 2500]
+2026-09-12 18:10:53,696 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 2 values outside [-10, 2500]
+2026-09-12 18:10:53,843 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 2 values outside [-10, 2500]
+2026-09-12 18:10:53,991 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 4 values outside [-10, 2500]
+2026-09-12 18:10:54,151 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:10:54,154 INFO     faultline.data.telemetry.clean | channel gearbox_oil_temp_c: 1 values outside [-30, 100]
+2026-09-12 18:10:54,313 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 7 values outside [-10, 2500]
+2026-09-12 18:10:54,471 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 4 values outside [-10, 2500]
+2026-09-12 18:10:54,472 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 6 values outside [-5, 100]
+2026-09-12 18:10:54,594 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 284 values outside [-10, 2500]
+2026-09-12 18:10:54,595 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 10 values outside [-5, 100]
+2026-09-12 18:10:54,734 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:10:54,736 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 1 values outside [-5, 100]
+2026-09-12 18:10:54,870 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 4 values outside [-10, 2500]
+2026-09-12 18:10:55,018 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:10:55,176 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 31 values outside [-10, 2500]
+2026-09-12 18:10:55,329 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 6 values outside [-10, 2500]
+2026-09-12 18:10:55,337 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 13 values raised to the datum floor 0
+2026-09-12 18:10:55,480 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:10:55,490 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1021 values raised to the datum floor 0
+2026-09-12 18:10:55,634 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 13 values outside [-10, 2500]
+2026-09-12 18:10:55,644 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 9381 values raised to the datum floor 0
+2026-09-12 18:10:55,786 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 4 values outside [-10, 2500]
+2026-09-12 18:10:55,787 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 7 values outside [-5, 100]
+2026-09-12 18:10:55,906 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 13 values outside [-10, 2500]
+2026-09-12 18:10:55,907 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 9 values outside [-5, 100]
+2026-09-12 18:10:56,039 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 8 values outside [-10, 2500]
+2026-09-12 18:10:56,040 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 2 values outside [-5, 100]
+2026-09-12 18:10:56,176 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 6 values outside [-10, 2500]
+2026-09-12 18:10:56,321 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 186 values outside [-10, 2500]
+2026-09-12 18:10:56,481 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 4 values outside [-10, 2500]
+2026-09-12 18:10:56,627 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:10:56,778 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:10:56,932 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 5034 values raised to the datum floor 0
+2026-09-12 18:10:57,054 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 2 values outside [-10, 2500]
+2026-09-12 18:10:57,268 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 6 values outside [-10, 2500]
+2026-09-12 18:10:57,406 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 9 values outside [-10, 2500]
+2026-09-12 18:10:57,552 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:10:57,561 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 496 values raised to the datum floor 0
+2026-09-12 18:10:57,700 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:10:57,701 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 2 values outside [-5, 100]
+2026-09-12 18:10:57,848 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:10:57,859 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 483 values raised to the datum floor 0
+2026-09-12 18:10:57,995 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 2 values outside [-10, 2500]
+2026-09-12 18:10:58,082 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 2 values outside [-10, 2500]
+2026-09-12 18:10:58,200 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:10:58,327 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 7 values outside [-10, 2500]
+2026-09-12 18:10:58,328 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 87 values outside [-5, 100]
+2026-09-12 18:10:58,483 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 12 values outside [-10, 2500]
+2026-09-12 18:10:58,630 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:10:58,631 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 2 values outside [-5, 100]
+2026-09-12 18:10:58,786 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 6 values outside [-10, 2500]
+2026-09-12 18:10:58,921 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:10:59,007 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:10:59,127 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 6 values outside [-10, 2500]
+2026-09-12 18:10:59,284 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:10:59,438 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:10:59,447 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1 values raised to the datum floor 0
+2026-09-12 18:10:59,585 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 62 values outside [-10, 2500]
+2026-09-12 18:10:59,586 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 4 values outside [-5, 100]
+2026-09-12 18:10:59,736 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 7 values outside [-10, 2500]
+2026-09-12 18:10:59,865 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:10:59,956 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:00,073 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 4 values outside [-10, 2500]
+2026-09-12 18:11:00,217 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 4 values outside [-10, 2500]
+2026-09-12 18:11:00,359 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:11:00,509 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 6 values outside [-10, 2500]
+2026-09-12 18:11:00,510 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 11 values outside [-5, 100]
+2026-09-12 18:11:00,658 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 4 values outside [-10, 2500]
+2026-09-12 18:11:00,994 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 8 values outside [-10, 2500]
+2026-09-12 18:11:01,123 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:11:01,273 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 7 values outside [-10, 2500]
+2026-09-12 18:11:01,428 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 42 values outside [-10, 2500]
+2026-09-12 18:11:01,429 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 2 values outside [-5, 100]
+2026-09-12 18:11:01,573 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:11:01,711 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:01,808 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:11:01,932 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:11:02,066 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:11:02,227 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 12 values outside [-10, 2500]
+2026-09-12 18:11:02,395 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 6 values outside [-10, 2500]
+2026-09-12 18:11:02,396 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 3 values outside [-5, 100]
+2026-09-12 18:11:02,556 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:11:02,713 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:02,809 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:02,933 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:11:03,078 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:11:03,253 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 6 values outside [-10, 2500]
+2026-09-12 18:11:03,424 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:11:03,588 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 6 values outside [-10, 2500]
+2026-09-12 18:11:03,964 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 6 values outside [-10, 2500]
+2026-09-12 18:11:04,123 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 10 values outside [-10, 2500]
+2026-09-12 18:11:04,295 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 9 values outside [-10, 2500]
+2026-09-12 18:11:04,295 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 4 values outside [-5, 100]
+2026-09-12 18:11:04,305 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 26 values raised to the datum floor 0
+2026-09-12 18:11:04,462 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 4 values outside [-10, 2500]
+2026-09-12 18:11:04,463 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 7 values outside [-5, 100]
+2026-09-12 18:11:04,471 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1623 values raised to the datum floor 0
+2026-09-12 18:11:04,634 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 6 values outside [-10, 2500]
+2026-09-12 18:11:04,645 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 205 values raised to the datum floor 0
+2026-09-12 18:11:05,001 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 4 values outside [-10, 2500]
+2026-09-12 18:11:05,143 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 8 values outside [-10, 2500]
+2026-09-12 18:11:05,311 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 10 values outside [-10, 2500]
+2026-09-12 18:11:05,321 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 30 values raised to the datum floor 0
+2026-09-12 18:11:05,476 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:11:05,477 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 1 values outside [-5, 100]
+2026-09-12 18:11:05,485 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 151 values raised to the datum floor 0
+2026-09-12 18:11:05,639 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:11:05,644 INFO     faultline.data.telemetry.clean | channel generator_winding_temp_c: 1 values outside [-30, 180]
+2026-09-12 18:11:06,045 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:11:06,204 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 4 values outside [-10, 2500]
+2026-09-12 18:11:06,390 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 10 values outside [-10, 2500]
+2026-09-12 18:11:06,550 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 12 values outside [-10, 2500]
+2026-09-12 18:11:06,551 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 3 values outside [-5, 100]
+2026-09-12 18:11:06,713 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:06,949 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:07,073 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 8 values outside [-10, 2500]
+2026-09-12 18:11:07,230 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 8 values outside [-10, 2500]
+2026-09-12 18:11:07,411 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 6 values outside [-10, 2500]
+2026-09-12 18:11:07,413 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 1 values outside [-5, 100]
+2026-09-12 18:11:07,576 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:11:07,586 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 19 values raised to the datum floor 0
+2026-09-12 18:11:07,756 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 83 values outside [-10, 2500]
+2026-09-12 18:11:08,000 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:08,121 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:11:08,275 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:11:08,444 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 10 values outside [-10, 2500]
+2026-09-12 18:11:08,445 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 3 values outside [-5, 100]
+2026-09-12 18:11:08,456 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 27 values raised to the datum floor 0
+2026-09-12 18:11:08,602 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:11:08,603 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 2 values outside [-5, 100]
+2026-09-12 18:11:08,785 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:11:08,795 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1 values raised to the datum floor 0
+2026-09-12 18:11:09,136 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:11:09,277 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 4 values outside [-10, 2500]
+2026-09-12 18:11:09,441 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 9 values outside [-10, 2500]
+2026-09-12 18:11:09,604 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:11:09,606 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 1 values outside [-5, 100]
+2026-09-12 18:11:09,767 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:11:09,913 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:09,999 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:10,121 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 6 values outside [-10, 2500]
+2026-09-12 18:11:10,273 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 2 values outside [-10, 2500]
+2026-09-12 18:11:10,440 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 8 values outside [-10, 2500]
+2026-09-12 18:11:10,450 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1726 values raised to the datum floor 0
+2026-09-12 18:11:10,603 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 11 values outside [-10, 2500]
+2026-09-12 18:11:10,612 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 819 values raised to the datum floor 0
+2026-09-12 18:11:10,760 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 10 values outside [-10, 2500]
+2026-09-12 18:11:10,966 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 38310 values raised to the datum floor 0
+2026-09-12 18:11:11,092 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1 values raised to the datum floor 0
+2026-09-12 18:11:11,164 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 32729 values raised to the datum floor 0
+2026-09-12 18:11:11,377 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 38589 values raised to the datum floor 0
+2026-09-12 18:11:11,501 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1 values raised to the datum floor 0
+2026-09-12 18:11:11,574 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 32277 values raised to the datum floor 0
+2026-09-12 18:11:11,764 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 38659 values raised to the datum floor 0
+2026-09-12 18:11:11,883 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1 values raised to the datum floor 0
+2026-09-12 18:11:11,959 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 34002 values raised to the datum floor 0
+2026-09-12 18:11:12,156 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 37569 values raised to the datum floor 0
+2026-09-12 18:11:12,268 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1 values raised to the datum floor 0
+2026-09-12 18:11:12,345 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 33485 values raised to the datum floor 0
+2026-09-12 18:11:12,544 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 39319 values raised to the datum floor 0
+2026-09-12 18:11:12,662 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1 values raised to the datum floor 0
+2026-09-12 18:11:12,745 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 31998 values raised to the datum floor 0
+2026-09-12 18:11:12,931 INFO     faultline.data.telemetry.clean | channel gearbox_bearing_temp_c: 1 values outside [-30, 120]
+2026-09-12 18:11:12,932 INFO     faultline.data.telemetry.clean | channel generator_bearing_temp_c: 4 values outside [-30, 120]
+2026-09-12 18:11:12,940 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 36406 values raised to the datum floor 0
+2026-09-12 18:11:13,053 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1 values raised to the datum floor 0
+2026-09-12 18:11:13,127 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 32463 values raised to the datum floor 0
+2026-09-12 18:11:13,324 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 37570 values raised to the datum floor 0
+2026-09-12 18:11:13,450 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1 values raised to the datum floor 0
+2026-09-12 18:11:13,529 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 33764 values raised to the datum floor 0
+2026-09-12 18:11:13,724 INFO     faultline.data.telemetry.clean | channel gearbox_bearing_temp_c: 1 values outside [-30, 120]
+2026-09-12 18:11:13,732 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 38621 values raised to the datum floor 0
+2026-09-12 18:11:13,867 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1 values raised to the datum floor 0
+2026-09-12 18:11:13,946 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 33327 values raised to the datum floor 0
+2026-09-12 18:11:14,169 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 38532 values raised to the datum floor 0
+2026-09-12 18:11:14,285 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1 values raised to the datum floor 0
+2026-09-12 18:11:14,369 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 33662 values raised to the datum floor 0
+2026-09-12 18:11:14,566 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 38237 values raised to the datum floor 0
+2026-09-12 18:11:14,761 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 31631 values raised to the datum floor 0
+2026-09-12 18:11:14,978 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 37680 values raised to the datum floor 0
+2026-09-12 18:11:15,161 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 32759 values raised to the datum floor 0
+2026-09-12 18:11:15,364 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 37984 values raised to the datum floor 0
+2026-09-12 18:11:15,484 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1 values raised to the datum floor 0
+2026-09-12 18:11:15,560 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 33349 values raised to the datum floor 0
+2026-09-12 18:11:15,753 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 37067 values raised to the datum floor 0
+2026-09-12 18:11:15,870 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1 values raised to the datum floor 0
+2026-09-12 18:11:15,943 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 33133 values raised to the datum floor 0
+2026-09-12 18:11:16,137 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 37445 values raised to the datum floor 0
+2026-09-12 18:11:16,251 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1 values raised to the datum floor 0
+2026-09-12 18:11:16,327 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 34243 values raised to the datum floor 0
+2026-09-12 18:11:16,526 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 37331 values raised to the datum floor 0
+2026-09-12 18:11:16,722 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 30743 values raised to the datum floor 0
+2026-09-12 18:11:16,927 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 37772 values raised to the datum floor 0
+2026-09-12 18:11:17,120 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 29915 values raised to the datum floor 0
+2026-09-12 18:11:17,297 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 63 values outside [0, 40]
+2026-09-12 18:11:17,308 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 37318 values raised to the datum floor 0
+2026-09-12 18:11:17,519 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 31984 values raised to the datum floor 0
+2026-09-12 18:11:17,641 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1 values raised to the datum floor 0
+2026-09-12 18:11:17,714 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 35490 values raised to the datum floor 0
+2026-09-12 18:11:17,913 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 29869 values raised to the datum floor 0
+2026-09-12 18:11:18,114 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 38148 values raised to the datum floor 0
+2026-09-12 18:11:18,226 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1 values raised to the datum floor 0
+2026-09-12 18:11:18,303 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 32875 values raised to the datum floor 0
+2026-09-12 18:11:18,444 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1 values raised to the datum floor 0
+2026-09-12 18:11:18,518 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 38177 values raised to the datum floor 0
+2026-09-12 18:11:18,630 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1 values raised to the datum floor 0
+2026-09-12 18:11:18,711 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 32950 values raised to the datum floor 0
+2026-09-12 18:11:18,917 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 36552 values raised to the datum floor 0
+2026-09-12 18:11:19,033 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1 values raised to the datum floor 0
+2026-09-12 18:11:19,099 INFO     faultline.data.telemetry.clean | channel gearbox_bearing_temp_c: 3 values outside [-30, 120]
+2026-09-12 18:11:19,107 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 33112 values raised to the datum floor 0
+2026-09-12 18:11:19,255 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 10579 values raised to the datum floor 0
+2026-09-12 18:11:19,343 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 16027 values raised to the datum floor 0
+2026-09-12 18:11:19,455 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 18073 values raised to the datum floor 0
+2026-09-12 18:11:19,544 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 9579 values raised to the datum floor 0
+2026-09-12 18:11:19,611 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 6462 values raised to the datum floor 0
+2026-09-12 18:11:19,695 INFO     faultline.data.telemetry.clean | channel generator_bearing_temp_c: 1 values outside [-30, 120]
+2026-09-12 18:11:19,701 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 20684 values raised to the datum floor 0
+2026-09-12 18:11:19,829 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 26016 values raised to the datum floor 0
+2026-09-12 18:11:19,914 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1438 values raised to the datum floor 0
+2026-09-12 18:11:19,983 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 14340 values raised to the datum floor 0
+2026-09-12 18:11:20,102 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 12069 values raised to the datum floor 0
+2026-09-12 18:11:20,174 INFO     faultline.data.telemetry.clean | channel generator_bearing_temp_c: 1 values outside [-30, 120]
+2026-09-12 18:11:20,177 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 6744 values raised to the datum floor 0
+2026-09-12 18:11:20,257 INFO     faultline.data.telemetry.clean | channel generator_bearing_temp_c: 1 values outside [-30, 120]
+2026-09-12 18:11:20,263 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 20746 values raised to the datum floor 0
+2026-09-12 18:11:20,349 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 5178 values raised to the datum floor 0
+2026-09-12 18:11:20,450 INFO     faultline.data.telemetry.clean | channel generator_bearing_temp_c: 1 values outside [-30, 120]
+2026-09-12 18:11:20,456 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 23450 values raised to the datum floor 0
+2026-09-12 18:11:20,562 INFO     faultline.data.telemetry.clean | channel generator_bearing_temp_c: 1 values outside [-30, 120]
+2026-09-12 18:11:20,567 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 18440 values raised to the datum floor 0
+2026-09-12 18:11:20,652 INFO     faultline.data.telemetry.clean | channel generator_bearing_temp_c: 1 values outside [-30, 120]
+2026-09-12 18:11:20,655 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 9245 values raised to the datum floor 0
+2026-09-12 18:11:20,753 INFO     faultline.data.telemetry.clean | channel generator_bearing_temp_c: 1 values outside [-30, 120]
+2026-09-12 18:11:20,760 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 26591 values raised to the datum floor 0
+2026-09-12 18:11:20,847 INFO     faultline.data.telemetry.clean | channel generator_bearing_temp_c: 1 values outside [-30, 120]
+2026-09-12 18:11:20,848 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1102 values raised to the datum floor 0
+2026-09-12 18:11:20,901 INFO     faultline.data.telemetry.clean | channel generator_bearing_temp_c: 1 values outside [-30, 120]
+2026-09-12 18:11:20,904 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 8943 values raised to the datum floor 0
+2026-09-12 18:11:20,986 INFO     faultline.data.telemetry.clean | channel generator_bearing_temp_c: 1 values outside [-30, 120]
+2026-09-12 18:11:20,992 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 18100 values raised to the datum floor 0
+2026-09-12 18:11:21,090 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 15691 values raised to the datum floor 0
+2026-09-12 18:11:21,180 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 11471 values raised to the datum floor 0
+2026-09-12 18:11:21,261 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 11127 values raised to the datum floor 0
+2026-09-12 18:11:21,349 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 15506 values raised to the datum floor 0
+2026-09-12 18:11:21,443 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 9067 values raised to the datum floor 0
+2026-09-12 18:11:21,539 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 18623 values raised to the datum floor 0
+2026-09-12 18:11:21,647 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 19482 values raised to the datum floor 0
+2026-09-12 18:11:21,734 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 7393 values raised to the datum floor 0
+2026-09-12 18:11:21,833 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 24422 values raised to the datum floor 0
+2026-09-12 18:11:21,939 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 5617 values raised to the datum floor 0
+2026-09-12 18:11:22,019 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 14704 values raised to the datum floor 0
+2026-09-12 18:11:22,111 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 15995 values raised to the datum floor 0
+2026-09-12 18:11:22,219 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 21098 values raised to the datum floor 0
+2026-09-12 18:11:22,316 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 9004 values raised to the datum floor 0
+2026-09-12 18:11:22,397 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 10171 values raised to the datum floor 0
+2026-09-12 18:11:22,493 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 20384 values raised to the datum floor 0
+2026-09-12 18:11:22,591 INFO     faultline.data.telemetry.clean | channel generator_bearing_temp_c: 1 values outside [-30, 120]
+2026-09-12 18:11:22,592 INFO     faultline.data.telemetry.clean | channel generator_winding_temp_c: 1 values outside [-30, 180]
+2026-09-12 18:11:22,598 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 16086 values raised to the datum floor 0
+2026-09-12 18:11:22,692 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 9967 values raised to the datum floor 0
+2026-09-12 18:11:22,768 INFO     faultline.data.telemetry.clean | channel generator_bearing_temp_c: 1 values outside [-30, 120]
+2026-09-12 18:11:22,768 INFO     faultline.data.telemetry.clean | channel generator_winding_temp_c: 1 values outside [-30, 180]
+2026-09-12 18:11:22,773 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 9230 values raised to the datum floor 0
+2026-09-12 18:11:22,873 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 15591 values raised to the datum floor 0
+2026-09-12 18:11:22,954 INFO     faultline.data.telemetry.clean | channel generator_bearing_temp_c: 1 values outside [-30, 120]
+2026-09-12 18:11:22,955 INFO     faultline.data.telemetry.clean | channel generator_winding_temp_c: 1 values outside [-30, 180]
+2026-09-12 18:11:22,958 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 6095 values raised to the datum floor 0
+2026-09-12 18:11:23,058 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 21047 values raised to the datum floor 0
+2026-09-12 18:11:23,149 INFO     faultline.data.telemetry.clean | channel generator_bearing_temp_c: 1 values outside [-30, 120]
+2026-09-12 18:11:23,149 INFO     faultline.data.telemetry.clean | channel generator_winding_temp_c: 1 values outside [-30, 180]
+2026-09-12 18:11:23,151 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 5783 values raised to the datum floor 0
+2026-09-12 18:11:23,243 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 21076 values raised to the datum floor 0
+2026-09-12 18:11:23,330 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 8 values outside [-10, 2500]
+2026-09-12 18:11:23,336 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 366 values raised to the datum floor 0
+2026-09-12 18:11:23,430 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 14 values outside [-10, 2500]
+2026-09-12 18:11:23,442 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 803 values raised to the datum floor 0
+2026-09-12 18:11:23,556 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 30 values outside [-10, 2500]
+2026-09-12 18:11:23,567 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 31 values raised to the datum floor 0
+2026-09-12 18:11:23,659 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 2 values raised to the datum floor 0
+2026-09-12 18:11:23,745 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 30 values outside [-10, 2500]
+2026-09-12 18:11:23,759 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 31 values raised to the datum floor 0
+2026-09-12 18:11:23,921 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1470 values raised to the datum floor 0
+2026-09-12 18:11:24,004 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 11 values outside [-10, 2500]
+2026-09-12 18:11:24,012 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 702 values raised to the datum floor 0
+2026-09-12 18:11:24,106 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:24,116 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1537 values raised to the datum floor 0
+2026-09-12 18:11:24,198 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 11 values outside [-10, 2500]
+2026-09-12 18:11:24,204 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 429 values raised to the datum floor 0
+2026-09-12 18:11:24,288 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1233 values raised to the datum floor 0
+2026-09-12 18:11:24,372 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 30 values outside [-10, 2500]
+2026-09-12 18:11:24,381 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 794 values raised to the datum floor 0
+2026-09-12 18:11:24,483 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1452 values raised to the datum floor 0
+2026-09-12 18:11:24,563 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 30 values outside [-10, 2500]
+2026-09-12 18:11:24,571 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 727 values raised to the datum floor 0
+2026-09-12 18:11:24,653 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 15 values outside [-10, 2500]
+2026-09-12 18:11:24,662 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 282 values raised to the datum floor 0
+2026-09-12 18:11:24,745 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 1 values outside [0, 40]
+2026-09-12 18:11:24,748 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 2 values outside [-10, 2500]
+2026-09-12 18:11:24,756 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 344 values raised to the datum floor 0
+2026-09-12 18:11:24,849 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 15 values outside [-10, 2500]
+2026-09-12 18:11:24,859 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 360 values raised to the datum floor 0
+2026-09-12 18:11:24,941 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 1 values outside [0, 40]
+2026-09-12 18:11:24,944 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:24,951 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 234 values raised to the datum floor 0
+2026-09-12 18:11:25,040 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:11:25,051 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 307 values raised to the datum floor 0
+2026-09-12 18:11:25,143 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 32 values outside [-10, 2500]
+2026-09-12 18:11:25,154 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 698 values raised to the datum floor 0
+2026-09-12 18:11:25,239 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 2 values outside [-10, 2500]
+2026-09-12 18:11:25,241 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 2 values outside [-30, 50]
+2026-09-12 18:11:25,242 INFO     faultline.data.telemetry.clean | channel gearbox_oil_temp_c: 6 values outside [-30, 100]
+2026-09-12 18:11:25,244 INFO     faultline.data.telemetry.clean | channel main_bearing_temp_c: 229 values outside [-30, 100]
+2026-09-12 18:11:25,246 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 315 values raised to the datum floor 0
+2026-09-12 18:11:25,333 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 1 values outside [0, 40]
+2026-09-12 18:11:25,335 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 6 values outside [-10, 2500]
+2026-09-12 18:11:25,340 INFO     faultline.data.telemetry.clean | channel main_bearing_temp_c: 5 values outside [-30, 100]
+2026-09-12 18:11:25,345 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 635 values raised to the datum floor 0
+2026-09-12 18:11:25,459 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1116 values raised to the datum floor 0
+2026-09-12 18:11:25,536 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 4 values outside [-10, 2500]
+2026-09-12 18:11:25,544 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 2356 values raised to the datum floor 0
+2026-09-12 18:11:25,690 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 4 values outside [-10, 2500]
+2026-09-12 18:11:25,702 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 3264 values raised to the datum floor 0
+2026-09-12 18:11:25,799 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 267 values raised to the datum floor 0
+2026-09-12 18:11:25,860 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 334 values raised to the datum floor 0
+2026-09-12 18:11:25,939 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 9 values outside [-10, 2500]
+2026-09-12 18:11:25,950 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 512 values raised to the datum floor 0
+2026-09-12 18:11:26,056 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 307 values raised to the datum floor 0
+2026-09-12 18:11:26,129 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 9 values outside [-10, 2500]
+2026-09-12 18:11:26,140 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 472 values raised to the datum floor 0
+2026-09-12 18:11:26,255 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 427 values outside [0, 40]
+2026-09-12 18:11:26,257 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 10 values outside [-1, 25]
+2026-09-12 18:11:26,258 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 1 values outside [-5, 100]
+2026-09-12 18:11:26,260 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 1 values outside [-30, 50]
+2026-09-12 18:11:26,268 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 25940 values raised to the datum floor 0
+2026-09-12 18:11:26,388 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 2644 values raised to the datum floor 0
+2026-09-12 18:11:26,441 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 5078 values raised to the datum floor 0
+2026-09-12 18:11:26,524 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 507 values outside [0, 40]
+2026-09-12 18:11:26,526 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 10 values outside [-1, 25]
+2026-09-12 18:11:26,527 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 1 values outside [-5, 100]
+2026-09-12 18:11:26,529 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 1 values outside [-30, 50]
+2026-09-12 18:11:26,536 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 25528 values raised to the datum floor 0
+2026-09-12 18:11:26,660 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 435 values outside [0, 40]
+2026-09-12 18:11:26,661 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 10 values outside [-1, 25]
+2026-09-12 18:11:26,662 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 1 values outside [-5, 100]
+2026-09-12 18:11:26,665 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 1 values outside [-30, 50]
+2026-09-12 18:11:26,672 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 27081 values raised to the datum floor 0
+2026-09-12 18:11:26,759 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 897 values raised to the datum floor 0
+2026-09-12 18:11:26,817 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 2 values outside [0, 40]
+2026-09-12 18:11:26,818 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 1 values outside [-5, 100]
+2026-09-12 18:11:26,827 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 20289 values raised to the datum floor 0
+2026-09-12 18:11:26,914 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 4659 values raised to the datum floor 0
+2026-09-12 18:11:26,998 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 7 values outside [0, 40]
+2026-09-12 18:11:26,999 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 1007 values outside [-1, 25]
+2026-09-12 18:11:27,002 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 2 values outside [-30, 50]
+2026-09-12 18:11:27,010 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 23893 values raised to the datum floor 0
+2026-09-12 18:11:27,097 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1004 values raised to the datum floor 0
+2026-09-12 18:11:27,142 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 1 values outside [0, 40]
+2026-09-12 18:11:27,143 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 2 values outside [-10, 2500]
+2026-09-12 18:11:27,148 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 8009 values raised to the datum floor 0
+2026-09-12 18:11:27,227 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:11:27,228 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 3 values outside [-5, 100]
+2026-09-12 18:11:27,237 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 22402 values raised to the datum floor 0
+2026-09-12 18:11:27,328 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 4 values outside [-10, 2500]
+2026-09-12 18:11:27,336 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 11409 values raised to the datum floor 0
+2026-09-12 18:11:27,426 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 7 values outside [-1, 25]
+2026-09-12 18:11:27,427 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 5 values outside [-10, 2500]
+2026-09-12 18:11:27,427 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 7 values outside [-5, 100]
+2026-09-12 18:11:27,430 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 2 values outside [-30, 50]
+2026-09-12 18:11:27,432 INFO     faultline.data.telemetry.clean | channel gearbox_oil_temp_c: 6 values outside [-30, 100]
+2026-09-12 18:11:27,436 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 15579 values raised to the datum floor 0
+2026-09-12 18:11:27,515 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1646 values raised to the datum floor 0
+2026-09-12 18:11:27,585 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 3 values outside [-5, 100]
+2026-09-12 18:11:27,595 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 28161 values raised to the datum floor 0
+2026-09-12 18:11:27,679 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 28 values raised to the datum floor 0
+2026-09-12 18:11:27,726 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 5 values outside [-1, 25]
+2026-09-12 18:11:27,731 INFO     faultline.data.telemetry.clean | channel generator_winding_temp_c: 2 values outside [-30, 180]
+2026-09-12 18:11:27,735 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 21134 values raised to the datum floor 0
+2026-09-12 18:11:27,826 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 10330 values raised to the datum floor 0
+2026-09-12 18:11:27,893 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 1 values outside [0, 40]
+2026-09-12 18:11:27,893 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 17 values outside [-1, 25]
+2026-09-12 18:11:27,895 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 1 values outside [-30, 50]
+2026-09-12 18:11:27,896 INFO     faultline.data.telemetry.clean | channel gearbox_oil_temp_c: 4 values outside [-30, 100]
+2026-09-12 18:11:27,903 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 4945 values raised to the datum floor 0
+2026-09-12 18:11:27,973 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 3 values outside [-5, 100]
+2026-09-12 18:11:27,983 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 25898 values raised to the datum floor 0
+2026-09-12 18:11:28,098 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 13372 values raised to the datum floor 0
+2026-09-12 18:11:28,174 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 7 values outside [-5, 100]
+2026-09-12 18:11:28,182 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 15505 values raised to the datum floor 0
+2026-09-12 18:11:28,253 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 828 values raised to the datum floor 0
+2026-09-12 18:11:28,330 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 1 values outside [0, 40]
+2026-09-12 18:11:28,331 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 276 values outside [-1, 25]
+2026-09-12 18:11:28,332 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:11:28,334 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 1 values outside [-30, 50]
+2026-09-12 18:11:28,345 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 26944 values raised to the datum floor 0
+2026-09-12 18:11:28,435 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 48 values raised to the datum floor 0
+2026-09-12 18:11:28,473 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 4627 values raised to the datum floor 0
+2026-09-12 18:11:28,563 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 1 values outside [0, 40]
+2026-09-12 18:11:28,565 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 276 values outside [-1, 25]
+2026-09-12 18:11:28,566 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:11:28,568 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 1 values outside [-30, 50]
+2026-09-12 18:11:28,576 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 23359 values raised to the datum floor 0
+2026-09-12 18:11:28,693 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 1 values outside [-5, 100]
+2026-09-12 18:11:28,702 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 23836 values raised to the datum floor 0
+2026-09-12 18:11:28,788 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 1 values outside [0, 40]
+2026-09-12 18:11:28,794 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 3206 values raised to the datum floor 0
+2026-09-12 18:11:28,852 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 4002 values raised to the datum floor 0
+2026-09-12 18:11:28,931 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 9 values outside [-5, 100]
+2026-09-12 18:11:28,934 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 45 values outside [-30, 50]
+2026-09-12 18:11:28,943 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 26096 values raised to the datum floor 0
+2026-09-12 18:11:29,049 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 7113 values raised to the datum floor 0
+2026-09-12 18:11:29,124 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 9 values outside [-5, 100]
+2026-09-12 18:11:29,126 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 45 values outside [-30, 50]
+2026-09-12 18:11:29,134 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 23362 values raised to the datum floor 0
+2026-09-12 18:11:29,239 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 15931 values raised to the datum floor 0
+2026-09-12 18:11:29,315 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 10 values outside [0, 40]
+2026-09-12 18:11:29,317 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 373 values outside [-1, 25]
+2026-09-12 18:11:29,319 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:11:29,320 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 7 values outside [-5, 100]
+2026-09-12 18:11:29,322 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 1 values outside [-30, 50]
+2026-09-12 18:11:29,327 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 14348 values raised to the datum floor 0
+2026-09-12 18:11:29,420 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 11190 values raised to the datum floor 0
+2026-09-12 18:11:29,516 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 10 values outside [0, 40]
+2026-09-12 18:11:29,517 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 373 values outside [-1, 25]
+2026-09-12 18:11:29,519 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 3 values outside [-10, 2500]
+2026-09-12 18:11:29,519 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 14 values outside [-5, 100]
+2026-09-12 18:11:29,521 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 1 values outside [-30, 50]
+2026-09-12 18:11:29,527 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 18021 values raised to the datum floor 0
+2026-09-12 18:11:29,636 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 2 values outside [0, 40]
+2026-09-12 18:11:29,638 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 9 values outside [-1, 25]
+2026-09-12 18:11:29,639 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 1 values outside [-5, 100]
+2026-09-12 18:11:29,641 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 1 values outside [-30, 50]
+2026-09-12 18:11:29,649 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 25729 values raised to the datum floor 0
+2026-09-12 18:11:29,737 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 1 values outside [0, 40]
+2026-09-12 18:11:29,740 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 1 values outside [-30, 50]
+2026-09-12 18:11:29,743 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 3929 values raised to the datum floor 0
+2026-09-12 18:11:29,833 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 2 values outside [0, 40]
+2026-09-12 18:11:29,834 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 9 values outside [-1, 25]
+2026-09-12 18:11:29,836 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 1 values outside [-5, 100]
+2026-09-12 18:11:29,837 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 1 values outside [-30, 50]
+2026-09-12 18:11:29,847 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 26107 values raised to the datum floor 0
+2026-09-12 18:11:29,933 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 1 values outside [0, 40]
+2026-09-12 18:11:29,936 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 1 values outside [-30, 50]
+2026-09-12 18:11:29,939 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 1523 values raised to the datum floor 0
+2026-09-12 18:11:30,016 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 2 values outside [0, 40]
+2026-09-12 18:11:30,018 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 714 values outside [-1, 25]
+2026-09-12 18:11:30,022 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 2 values outside [-30, 50]
+2026-09-12 18:11:30,030 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 25508 values raised to the datum floor 0
+2026-09-12 18:11:30,117 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 2607 values raised to the datum floor 0
+2026-09-12 18:11:30,187 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 2 values outside [0, 40]
+2026-09-12 18:11:30,188 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 714 values outside [-1, 25]
+2026-09-12 18:11:30,190 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 2 values outside [-30, 50]
+2026-09-12 18:11:30,196 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 20849 values raised to the datum floor 0
+2026-09-12 18:11:30,284 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 6262 values raised to the datum floor 0
+2026-09-12 18:11:30,345 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:30,351 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 9157 values raised to the datum floor 0
+2026-09-12 18:11:30,434 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 10 values outside [-10, 2500]
+2026-09-12 18:11:30,442 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 20413 values raised to the datum floor 0
+2026-09-12 18:11:30,525 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 7 values outside [-10, 2500]
+2026-09-12 18:11:30,532 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 12158 values raised to the datum floor 0
+2026-09-12 18:11:30,613 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 17 values outside [-10, 2500]
+2026-09-12 18:11:30,614 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 7 values outside [-5, 100]
+2026-09-12 18:11:30,621 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 17057 values raised to the datum floor 0
+2026-09-12 18:11:30,703 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 6 values outside [-10, 2500]
+2026-09-12 18:11:30,704 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 2 values outside [-5, 100]
+2026-09-12 18:11:30,710 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 13380 values raised to the datum floor 0
+2026-09-12 18:11:30,797 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 10 values outside [-10, 2500]
+2026-09-12 18:11:30,806 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 16700 values raised to the datum floor 0
+2026-09-12 18:11:30,894 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 8 values outside [-10, 2500]
+2026-09-12 18:11:30,902 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 16512 values raised to the datum floor 0
+2026-09-12 18:11:30,984 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 8 values outside [-10, 2500]
+2026-09-12 18:11:30,984 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 4 values outside [-5, 100]
+2026-09-12 18:11:30,990 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 13626 values raised to the datum floor 0
+2026-09-12 18:11:31,081 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 1 values outside [-5, 100]
+2026-09-12 18:11:31,094 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 27050 values raised to the datum floor 0
+2026-09-12 18:11:31,183 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 760 values raised to the datum floor 0
+2026-09-12 18:11:31,243 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 1 values outside [-5, 100]
+2026-09-12 18:11:31,251 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 20566 values raised to the datum floor 0
+2026-09-12 18:11:31,340 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 8389 values raised to the datum floor 0
+2026-09-12 18:11:31,412 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 6711 values raised to the datum floor 0
+2026-09-12 18:11:31,491 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 24460 values raised to the datum floor 0
+2026-09-12 18:11:31,592 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 1 values outside [-5, 100]
+2026-09-12 18:11:31,601 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 25979 values raised to the datum floor 0
+2026-09-12 18:11:31,693 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 5033 values raised to the datum floor 0
+2026-09-12 18:11:31,749 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 2066 values raised to the datum floor 0
+2026-09-12 18:11:31,810 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:31,819 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 25749 values raised to the datum floor 0
+2026-09-12 18:11:31,910 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 3181 values raised to the datum floor 0
+2026-09-12 18:11:31,976 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:31,985 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 23653 values raised to the datum floor 0
+2026-09-12 18:11:32,081 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 7344 values raised to the datum floor 0
+2026-09-12 18:11:32,159 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 5 values outside [-5, 100]
+2026-09-12 18:11:32,170 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 22106 values raised to the datum floor 0
+2026-09-12 18:11:32,291 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 6562 values raised to the datum floor 0
+2026-09-12 18:11:32,366 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 5 values outside [-5, 100]
+2026-09-12 18:11:32,376 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 23601 values raised to the datum floor 0
+2026-09-12 18:11:32,480 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 5447 values raised to the datum floor 0
+2026-09-12 18:11:32,582 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 2 values outside [0, 40]
+2026-09-12 18:11:32,585 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 2 values outside [-5, 100]
+2026-09-12 18:11:32,588 INFO     faultline.data.telemetry.clean | channel gearbox_oil_temp_c: 3 values outside [-30, 100]
+2026-09-12 18:11:32,596 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 21971 values raised to the datum floor 0
+2026-09-12 18:11:32,697 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 9030 values raised to the datum floor 0
+2026-09-12 18:11:32,780 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 2 values outside [0, 40]
+2026-09-12 18:11:32,782 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 2 values outside [-5, 100]
+2026-09-12 18:11:32,785 INFO     faultline.data.telemetry.clean | channel gearbox_oil_temp_c: 1 values outside [-30, 100]
+2026-09-12 18:11:32,791 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 19676 values raised to the datum floor 0
+2026-09-12 18:11:32,891 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 19 values outside [-1, 25]
+2026-09-12 18:11:32,896 INFO     faultline.data.telemetry.clean | channel generator_winding_temp_c: 2 values outside [-30, 180]
+2026-09-12 18:11:32,901 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 19266 values raised to the datum floor 0
+2026-09-12 18:11:32,987 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 2 values outside [0, 40]
+2026-09-12 18:11:32,994 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 10831 values raised to the datum floor 0
+2026-09-12 18:11:33,070 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 10669 values raised to the datum floor 0
+2026-09-12 18:11:33,145 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 2 values outside [0, 40]
+2026-09-12 18:11:33,147 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 2 values outside [-5, 100]
+2026-09-12 18:11:33,153 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 18468 values raised to the datum floor 0
+2026-09-12 18:11:33,242 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 12751 values raised to the datum floor 0
+2026-09-12 18:11:33,324 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 5 values outside [-5, 100]
+2026-09-12 18:11:33,332 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 22380 values raised to the datum floor 0
+2026-09-12 18:11:33,436 INFO     faultline.data.telemetry.clean | channel generator_winding_temp_c: 2 values outside [-30, 180]
+2026-09-12 18:11:33,440 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 22321 values raised to the datum floor 0
+2026-09-12 18:11:33,532 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 10967 values raised to the datum floor 0
+2026-09-12 18:11:33,600 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 2 values outside [-1, 25]
+2026-09-12 18:11:33,601 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:33,605 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 4720 values raised to the datum floor 0
+2026-09-12 18:11:33,677 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:33,678 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 5 values outside [-5, 100]
+2026-09-12 18:11:33,689 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 23775 values raised to the datum floor 0
+2026-09-12 18:11:33,786 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 2 values outside [-1, 25]
+2026-09-12 18:11:33,788 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:33,794 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 10318 values raised to the datum floor 0
+2026-09-12 18:11:33,869 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:33,869 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 5 values outside [-5, 100]
+2026-09-12 18:11:33,877 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 18723 values raised to the datum floor 0
+2026-09-12 18:11:33,969 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 3 values outside [0, 40]
+2026-09-12 18:11:33,969 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 892 values outside [-1, 25]
+2026-09-12 18:11:33,971 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:33,977 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 17736 values raised to the datum floor 0
+2026-09-12 18:11:34,059 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:34,059 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 1 values outside [-5, 100]
+2026-09-12 18:11:34,065 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 11657 values raised to the datum floor 0
+2026-09-12 18:11:34,134 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:34,138 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 5345 values raised to the datum floor 0
+2026-09-12 18:11:34,207 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:34,208 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 32 values outside [-5, 100]
+2026-09-12 18:11:34,216 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 22508 values raised to the datum floor 0
+2026-09-12 18:11:34,302 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 3 values outside [0, 40]
+2026-09-12 18:11:34,304 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:34,310 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 10661 values raised to the datum floor 0
+2026-09-12 18:11:34,392 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:34,393 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 32 values outside [-5, 100]
+2026-09-12 18:11:34,403 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 17890 values raised to the datum floor 0
+2026-09-12 18:11:34,504 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 3 values outside [0, 40]
+2026-09-12 18:11:34,506 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 17422 values outside [-1, 25]
+2026-09-12 18:11:34,507 INFO     faultline.data.telemetry.clean | channel generator_speed_rpm: 1 values outside [-10, 2500]
+2026-09-12 18:11:34,512 INFO     faultline.data.telemetry.clean | channel generator_winding_temp_c: 2 values outside [-30, 180]
+2026-09-12 18:11:34,518 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 26207 values raised to the datum floor 0
+2026-09-12 18:11:34,610 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 2616 values raised to the datum floor 0
+2026-09-12 18:11:34,654 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 813 values raised to the datum floor 0
+2026-09-12 18:11:34,722 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 3 values outside [0, 40]
+2026-09-12 18:11:34,723 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 112 values outside [-1, 25]
+2026-09-12 18:11:34,726 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 5 values outside [-30, 50]
+2026-09-12 18:11:34,735 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 26133 values raised to the datum floor 0
+2026-09-12 18:11:34,825 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 40 values raised to the datum floor 0
+2026-09-12 18:11:34,865 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 1 values outside [0, 40]
+2026-09-12 18:11:34,872 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 7288 values raised to the datum floor 0
+2026-09-12 18:11:34,954 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 2 values outside [0, 40]
+2026-09-12 18:11:34,956 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 106 values outside [-1, 25]
+2026-09-12 18:11:34,959 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 4 values outside [-30, 50]
+2026-09-12 18:11:34,966 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 20822 values raised to the datum floor 0
+2026-09-12 18:11:35,059 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 1 values outside [0, 40]
+2026-09-12 18:11:35,062 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 1 values outside [-5, 100]
+2026-09-12 18:11:35,069 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 14721 values raised to the datum floor 0
+2026-09-12 18:11:35,155 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 2 values outside [0, 40]
+2026-09-12 18:11:35,156 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 106 values outside [-1, 25]
+2026-09-12 18:11:35,158 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 4 values outside [-30, 50]
+2026-09-12 18:11:35,164 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 15202 values raised to the datum floor 0
+2026-09-12 18:11:35,240 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 1 values outside [0, 40]
+2026-09-12 18:11:35,247 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 7982 values raised to the datum floor 0
+2026-09-12 18:11:35,336 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 2 values outside [0, 40]
+2026-09-12 18:11:35,337 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 106 values outside [-1, 25]
+2026-09-12 18:11:35,340 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 4 values outside [-30, 50]
+2026-09-12 18:11:35,346 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 19643 values raised to the datum floor 0
+2026-09-12 18:11:35,470 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 1 values outside [0, 40]
+2026-09-12 18:11:35,472 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 1 values outside [-5, 100]
+2026-09-12 18:11:35,481 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 21493 values raised to the datum floor 0
+2026-09-12 18:11:35,570 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 3311 values raised to the datum floor 0
+2026-09-12 18:11:35,656 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 3 values outside [0, 40]
+2026-09-12 18:11:35,657 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 112 values outside [-1, 25]
+2026-09-12 18:11:35,660 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 5 values outside [-30, 50]
+2026-09-12 18:11:35,669 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 25969 values raised to the datum floor 0
+2026-09-12 18:11:35,759 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 224 values raised to the datum floor 0
+2026-09-12 18:11:35,821 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 21390 values raised to the datum floor 0
+2026-09-12 18:11:35,913 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 9086 values raised to the datum floor 0
+2026-09-12 18:11:35,995 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 7229 values raised to the datum floor 0
+2026-09-12 18:11:36,072 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 8 values outside [-5, 100]
+2026-09-12 18:11:36,081 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 22662 values raised to the datum floor 0
+2026-09-12 18:11:36,175 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 12066 values raised to the datum floor 0
+2026-09-12 18:11:36,256 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 8 values outside [-5, 100]
+2026-09-12 18:11:36,264 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 18376 values raised to the datum floor 0
+2026-09-12 18:11:36,359 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 15588 values raised to the datum floor 0
+2026-09-12 18:11:36,443 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 4 values outside [-5, 100]
+2026-09-12 18:11:36,450 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 15428 values raised to the datum floor 0
+2026-09-12 18:11:36,542 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 12080 values raised to the datum floor 0
+2026-09-12 18:11:36,620 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 9 values outside [-5, 100]
+2026-09-12 18:11:36,627 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 18445 values raised to the datum floor 0
+2026-09-12 18:11:36,728 INFO     faultline.data.telemetry.clean | channel wind_speed_ms: 2 values outside [0, 40]
+2026-09-12 18:11:36,729 INFO     faultline.data.telemetry.clean | channel rotor_speed_rpm: 6 values outside [-1, 25]
+2026-09-12 18:11:36,730 INFO     faultline.data.telemetry.clean | channel pitch_angle_deg: 1 values outside [-5, 100]
+2026-09-12 18:11:36,732 INFO     faultline.data.telemetry.clean | channel ambient_temp_c: 2 values outside [-30, 50]
+2026-09-12 18:11:36,739 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 24782 values raised to the datum floor 0
+2026-09-12 18:11:36,830 INFO     faultline.data.telemetry.datums | channel pitch_angle_deg: 5507 values raised to the datum floor 0
+2026-09-12 18:11:36,866 INFO     faultline.runs | wrote clean_stats_report.md
+2026-09-12 18:11:36,886 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:36,985 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:37,101 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:37,220 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:37,359 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:37,500 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:37,642 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:37,776 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:37,914 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:38,054 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:38,158 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:38,285 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:38,401 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:38,541 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:38,679 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:38,805 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:38,930 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:39,059 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:39,182 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:39,279 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:39,403 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:39,527 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:39,669 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:39,802 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:39,934 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:40,064 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:40,195 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:40,321 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:40,426 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:40,542 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:40,665 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:40,788 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:40,941 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:41,068 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:41,195 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:41,317 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:41,449 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:41,554 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:41,673 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:41,787 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:41,913 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:42,040 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:42,167 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:42,292 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:42,435 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:42,560 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:42,660 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:42,770 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:42,880 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:43,008 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:43,132 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:43,255 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:43,386 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:43,516 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:43,649 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:43,715 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:43,802 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:43,913 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:44,039 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:44,166 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:44,294 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:44,422 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:44,487 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:44,581 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:44,706 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:44,834 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:44,959 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:45,090 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:45,212 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:45,278 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:45,368 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:45,482 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:45,609 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:45,737 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:45,870 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:45,997 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:46,063 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:46,154 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:46,266 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:46,408 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:46,536 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:46,682 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:46,809 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:46,874 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:46,965 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:47,090 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:47,226 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:47,367 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:47,499 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:47,624 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:47,699 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:47,791 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:47,903 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:48,034 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:48,166 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:48,296 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:48,428 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:48,484 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:48,573 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:48,696 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:48,822 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:48,946 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:49,071 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:49,192 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:49,247 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:49,339 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:49,460 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:49,586 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:49,727 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:49,852 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:49,976 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:50,035 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:50,128 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:50,241 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:50,369 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:50,498 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:50,634 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:50,763 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:50,822 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:50,915 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:51,032 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:51,175 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:51,305 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:51,442 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:51,572 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:51,635 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:51,742 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:51,858 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:51,990 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:52,121 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:52,251 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:52,381 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:52,442 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:52,534 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:52,650 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:52,786 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:52,917 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:53,050 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:53,172 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:53,231 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:53,321 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:53,442 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:53,582 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:53,728 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:53,869 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:54,004 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:54,062 INFO     faultline.data.telemetry.filter | dropping 3 channels below coverage threshold: ['pitch_angle_deg', 'gearbox_bearing_temp_c', 'gearbox_oil_temp_c']
+2026-09-12 18:11:54,157 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:54,275 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:54,413 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:54,543 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:54,681 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['gearbox_bearing_temp_c']
+2026-09-12 18:11:54,817 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:54,855 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:55,145 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:55,171 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:55,453 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:55,481 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:55,760 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:55,791 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:56,064 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:56,091 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:56,375 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:56,402 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:56,696 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:56,728 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:57,041 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:57,069 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:57,362 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:57,388 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:57,664 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:57,692 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:57,986 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:58,013 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:58,309 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:58,334 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:58,630 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:58,658 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:58,942 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:58,968 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:59,240 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:59,270 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:59,550 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:59,575 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:59,840 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:11:59,867 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:12:00,138 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:12:00,164 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:12:00,436 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:12:00,461 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:12:00,724 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:12:00,752 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:12:01,024 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:12:01,051 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['wind_direction_deg']
+2026-09-12 18:12:01,322 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:01,390 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:01,461 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:01,530 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:01,581 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:01,637 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:01,716 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:01,811 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:01,842 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:01,908 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:01,969 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:02,017 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:02,094 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:02,138 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:02,222 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:02,294 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:02,351 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:02,441 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:02,474 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:02,527 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:02,599 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:02,665 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:02,723 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:02,780 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:02,850 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:02,904 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:02,979 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:03,050 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:03,099 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:03,176 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:03,217 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:03,280 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:03,345 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:03,422 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:03,471 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:03,524 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:03,594 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:03,661 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:03,714 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:03,767 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:03,837 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:03,882 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:03,957 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:04,005 INFO     faultline.data.telemetry.filter | dropping 1 channels below coverage threshold: ['main_bearing_temp_c']
+2026-09-12 18:12:04,080 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:04,130 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:04,202 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:04,286 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:04,328 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:04,421 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:04,454 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:04,517 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:04,576 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:04,644 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:04,693 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:04,746 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:04,812 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:04,878 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:04,939 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:04,993 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:05,064 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:05,127 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:05,196 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:05,256 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:05,330 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:05,381 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:05,459 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:05,512 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:05,580 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:05,610 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:05,699 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:05,734 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:05,788 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:05,870 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:05,923 INFO     faultline.data.telemetry.filter | dropping 4 channels below coverage threshold: ['nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c', 'generator_winding_temp_c']
+2026-09-12 18:12:05,995 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:06,078 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:06,118 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:06,160 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:06,245 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:06,332 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:06,370 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:06,444 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:06,492 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:06,576 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:06,609 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:06,657 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:06,729 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:06,784 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:06,847 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:06,886 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:06,963 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:06,989 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:07,056 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:07,112 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:07,155 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:07,235 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:07,291 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:07,350 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:07,384 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:07,471 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:07,492 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:07,537 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:07,640 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:07,719 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:07,763 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:07,805 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:07,894 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:07,941 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:08,017 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:08,081 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:08,143 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:08,197 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:08,271 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:08,351 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:08,404 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:08,489 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:08,527 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:08,612 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:08,653 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:08,732 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:08,779 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:08,831 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:08,912 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:08,971 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:09,039 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:09,098 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:09,179 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:09,250 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:09,313 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:09,398 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:09,434 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:09,507 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:09,559 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:09,607 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:09,683 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:09,762 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:09,807 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:09,843 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:09,931 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:09,972 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:10,050 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:10,100 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:10,174 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:10,224 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:10,298 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:10,346 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:10,434 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:10,489 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:10,557 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:10,627 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:10,684 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:10,738 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:10,804 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:10,862 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:10,939 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:11,002 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:11,060 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:11,102 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:11,177 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:11,231 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:11,300 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:11,369 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:11,434 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:11,479 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:11,553 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:11,606 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:11,674 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:11,750 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:11,789 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:11,816 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:11,907 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:11,929 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:11,980 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:12,061 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:12,124 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:12,192 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:12,243 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:12,317 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:12,409 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:12,453 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:12,540 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:12,565 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:12,637 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:12,689 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:12,745 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:12,818 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:12,878 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:12,950 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:13,008 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:13,069 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:13,126 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:13,192 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:13,273 INFO     faultline.data.telemetry.filter | dropping 5 channels below coverage threshold: ['nacelle_position_deg', 'wind_direction_deg', 'nacelle_temp_c', 'gearbox_bearing_temp_c', 'generator_bearing_temp_c']
+2026-09-12 18:12:13,307 INFO     faultline.runs | wrote filter_stats_report.md
+2026-09-12 18:12:13,509 INFO     faultline.data.telemetry.impute | imputed 466 values across 13 channels
+2026-09-12 18:12:14,452 INFO     faultline.data.telemetry.impute | imputed 223 values across 13 channels
+2026-09-12 18:12:15,402 INFO     faultline.data.telemetry.impute | imputed 148 values across 13 channels
+2026-09-12 18:12:16,383 INFO     faultline.data.telemetry.impute | imputed 41 values across 13 channels
+2026-09-12 18:12:17,350 INFO     faultline.data.telemetry.impute | imputed 182 values across 13 channels
+2026-09-12 18:12:18,305 INFO     faultline.data.telemetry.impute | imputed 135 values across 13 channels
+2026-09-12 18:12:19,309 INFO     faultline.data.telemetry.impute | imputed 73 values across 13 channels
+2026-09-12 18:12:20,282 INFO     faultline.data.telemetry.impute | imputed 53 values across 13 channels
+2026-09-12 18:12:21,283 INFO     faultline.data.telemetry.impute | imputed 53 values across 13 channels
+2026-09-12 18:12:22,358 INFO     faultline.data.telemetry.impute | imputed 420 values across 13 channels
+2026-09-12 18:12:23,266 INFO     faultline.data.telemetry.impute | imputed 148 values across 13 channels
+2026-09-12 18:12:24,221 INFO     faultline.data.telemetry.impute | imputed 96 values across 13 channels
+2026-09-12 18:12:25,201 INFO     faultline.data.telemetry.impute | imputed 157 values across 13 channels
+2026-09-12 18:12:26,177 INFO     faultline.data.telemetry.impute | imputed 153 values across 13 channels
+2026-09-12 18:12:27,159 INFO     faultline.data.telemetry.impute | imputed 134 values across 13 channels
+2026-09-12 18:12:28,120 INFO     faultline.data.telemetry.impute | imputed 96 values across 13 channels
+2026-09-12 18:12:29,115 INFO     faultline.data.telemetry.impute | imputed 92 values across 13 channels
+2026-09-12 18:12:30,080 INFO     faultline.data.telemetry.impute | imputed 54 values across 13 channels
+2026-09-12 18:12:31,215 INFO     faultline.data.telemetry.impute | imputed 437 values across 13 channels
+2026-09-12 18:12:32,098 INFO     faultline.data.telemetry.impute | imputed 199 values across 13 channels
+2026-09-12 18:12:33,067 INFO     faultline.data.telemetry.impute | imputed 72 values across 13 channels
+2026-09-12 18:12:34,015 INFO     faultline.data.telemetry.impute | imputed 106 values across 13 channels
+2026-09-12 18:12:35,117 INFO     faultline.data.telemetry.impute | imputed 229 values across 13 channels
+2026-09-12 18:12:36,166 INFO     faultline.data.telemetry.impute | imputed 127 values across 13 channels
+2026-09-12 18:12:37,184 INFO     faultline.data.telemetry.impute | imputed 106 values across 13 channels
+2026-09-12 18:12:38,328 INFO     faultline.data.telemetry.impute | imputed 52 values across 13 channels
+2026-09-12 18:12:39,314 INFO     faultline.data.telemetry.impute | imputed 55 values across 13 channels
+2026-09-12 18:12:40,462 INFO     faultline.data.telemetry.impute | imputed 432 values across 13 channels
+2026-09-12 18:12:41,387 INFO     faultline.data.telemetry.impute | imputed 268 values across 13 channels
+2026-09-12 18:12:42,392 INFO     faultline.data.telemetry.impute | imputed 216 values across 13 channels
+2026-09-12 18:12:43,360 INFO     faultline.data.telemetry.impute | imputed 198 values across 13 channels
+2026-09-12 18:12:44,397 INFO     faultline.data.telemetry.impute | imputed 171 values across 13 channels
+2026-09-12 18:12:45,436 INFO     faultline.data.telemetry.impute | imputed 132 values across 13 channels
+2026-09-12 18:12:46,487 INFO     faultline.data.telemetry.impute | imputed 81 values across 13 channels
+2026-09-12 18:12:47,519 INFO     faultline.data.telemetry.impute | imputed 121 values across 13 channels
+2026-09-12 18:12:48,583 INFO     faultline.data.telemetry.impute | imputed 72 values across 13 channels
+2026-09-12 18:12:49,682 INFO     faultline.data.telemetry.impute | imputed 435 values across 13 channels
+2026-09-12 18:12:50,634 INFO     faultline.data.telemetry.impute | imputed 368 values across 13 channels
+2026-09-12 18:12:51,609 INFO     faultline.data.telemetry.impute | imputed 170 values across 13 channels
+2026-09-12 18:12:52,598 INFO     faultline.data.telemetry.impute | imputed 155 values across 13 channels
+2026-09-12 18:12:53,587 INFO     faultline.data.telemetry.impute | imputed 161 values across 13 channels
+2026-09-12 18:12:54,572 INFO     faultline.data.telemetry.impute | imputed 137 values across 13 channels
+2026-09-12 18:12:55,554 INFO     faultline.data.telemetry.impute | imputed 96 values across 13 channels
+2026-09-12 18:12:56,542 INFO     faultline.data.telemetry.impute | imputed 108 values across 13 channels
+2026-09-12 18:12:57,580 INFO     faultline.data.telemetry.impute | imputed 163 values across 13 channels
+2026-09-12 18:12:58,655 INFO     faultline.data.telemetry.impute | imputed 448 values across 13 channels
+2026-09-12 18:12:59,590 INFO     faultline.data.telemetry.impute | imputed 232 values across 13 channels
+2026-09-12 18:13:00,550 INFO     faultline.data.telemetry.impute | imputed 165 values across 13 channels
+2026-09-12 18:13:01,534 INFO     faultline.data.telemetry.impute | imputed 175 values across 13 channels
+2026-09-12 18:13:02,536 INFO     faultline.data.telemetry.impute | imputed 176 values across 13 channels
+2026-09-12 18:13:03,541 INFO     faultline.data.telemetry.impute | imputed 121 values across 13 channels
+2026-09-12 18:13:04,518 INFO     faultline.data.telemetry.impute | imputed 79 values across 13 channels
+2026-09-12 18:13:05,548 INFO     faultline.data.telemetry.impute | imputed 79 values across 13 channels
+2026-09-12 18:13:06,516 INFO     faultline.data.telemetry.impute | imputed 65 values across 13 channels
+2026-09-12 18:13:07,528 INFO     faultline.data.telemetry.impute | imputed 101 values across 13 channels
+2026-09-12 18:13:09,076 INFO     faultline.data.telemetry.impute | imputed 96 values across 13 channels
+2026-09-12 18:13:10,017 INFO     faultline.data.telemetry.impute | imputed 109 values across 13 channels
+2026-09-12 18:13:11,004 INFO     faultline.data.telemetry.impute | imputed 116 values across 13 channels
+2026-09-12 18:13:11,983 INFO     faultline.data.telemetry.impute | imputed 110 values across 13 channels
+2026-09-12 18:13:12,976 INFO     faultline.data.telemetry.impute | imputed 197 values across 13 channels
+2026-09-12 18:13:14,000 INFO     faultline.data.telemetry.impute | imputed 69 values across 13 channels
+2026-09-12 18:13:14,602 INFO     faultline.data.telemetry.impute | imputed 2 values across 13 channels
+2026-09-12 18:13:15,595 INFO     faultline.data.telemetry.impute | imputed 54 values across 13 channels
+2026-09-12 18:13:16,500 INFO     faultline.data.telemetry.impute | imputed 163 values across 13 channels
+2026-09-12 18:13:17,491 INFO     faultline.data.telemetry.impute | imputed 200 values across 13 channels
+2026-09-12 18:13:18,470 INFO     faultline.data.telemetry.impute | imputed 144 values across 13 channels
+2026-09-12 18:13:19,451 INFO     faultline.data.telemetry.impute | imputed 162 values across 13 channels
+2026-09-12 18:13:20,487 INFO     faultline.data.telemetry.impute | imputed 47 values across 13 channels
+2026-09-12 18:13:21,083 INFO     faultline.data.telemetry.impute | imputed 1 values across 13 channels
+2026-09-12 18:13:22,078 INFO     faultline.data.telemetry.impute | imputed 110 values across 13 channels
+2026-09-12 18:13:22,993 INFO     faultline.data.telemetry.impute | imputed 96 values across 13 channels
+2026-09-12 18:13:24,009 INFO     faultline.data.telemetry.impute | imputed 151 values across 13 channels
+2026-09-12 18:13:24,952 INFO     faultline.data.telemetry.impute | imputed 104 values across 13 channels
+2026-09-12 18:13:25,968 INFO     faultline.data.telemetry.impute | imputed 196 values across 13 channels
+2026-09-12 18:13:26,954 INFO     faultline.data.telemetry.impute | imputed 78 values across 13 channels
+2026-09-12 18:13:27,547 INFO     faultline.data.telemetry.impute | imputed 1 values across 13 channels
+2026-09-12 18:13:28,552 INFO     faultline.data.telemetry.impute | imputed 110 values across 13 channels
+2026-09-12 18:13:29,460 INFO     faultline.data.telemetry.impute | imputed 68 values across 13 channels
+2026-09-12 18:13:30,477 INFO     faultline.data.telemetry.impute | imputed 178 values across 13 channels
+2026-09-12 18:13:31,417 INFO     faultline.data.telemetry.impute | imputed 84 values across 13 channels
+2026-09-12 18:13:32,469 INFO     faultline.data.telemetry.impute | imputed 207 values across 13 channels
+2026-09-12 18:13:33,499 INFO     faultline.data.telemetry.impute | imputed 34 values across 13 channels
+2026-09-12 18:13:35,142 INFO     faultline.data.telemetry.impute | imputed 78 values across 13 channels
+2026-09-12 18:13:36,098 INFO     faultline.data.telemetry.impute | imputed 109 values across 13 channels
+2026-09-12 18:13:37,087 INFO     faultline.data.telemetry.impute | imputed 111 values across 13 channels
+2026-09-12 18:13:38,077 INFO     faultline.data.telemetry.impute | imputed 86 values across 13 channels
+2026-09-12 18:13:39,069 INFO     faultline.data.telemetry.impute | imputed 238 values across 13 channels
+2026-09-12 18:13:40,107 INFO     faultline.data.telemetry.impute | imputed 67 values across 13 channels
+2026-09-12 18:13:40,807 INFO     faultline.data.telemetry.impute | imputed 14 values across 13 channels
+2026-09-12 18:13:41,772 INFO     faultline.data.telemetry.impute | imputed 94 values across 13 channels
+2026-09-12 18:13:42,716 INFO     faultline.data.telemetry.impute | imputed 31 values across 13 channels
+2026-09-12 18:13:43,670 INFO     faultline.data.telemetry.impute | imputed 135 values across 13 channels
+2026-09-12 18:13:44,667 INFO     faultline.data.telemetry.impute | imputed 85 values across 13 channels
+2026-09-12 18:13:45,656 INFO     faultline.data.telemetry.impute | imputed 161 values across 13 channels
+2026-09-12 18:13:46,647 INFO     faultline.data.telemetry.impute | imputed 34 values across 13 channels
+2026-09-12 18:13:47,144 INFO     faultline.data.telemetry.impute | imputed 1 values across 13 channels
+2026-09-12 18:13:48,099 INFO     faultline.data.telemetry.impute | imputed 136 values across 13 channels
+2026-09-12 18:13:49,059 INFO     faultline.data.telemetry.impute | imputed 43 values across 13 channels
+2026-09-12 18:13:50,080 INFO     faultline.data.telemetry.impute | imputed 110 values across 13 channels
+2026-09-12 18:13:51,096 INFO     faultline.data.telemetry.impute | imputed 105 values across 13 channels
+2026-09-12 18:13:52,103 INFO     faultline.data.telemetry.impute | imputed 223 values across 13 channels
+2026-09-12 18:13:53,166 INFO     faultline.data.telemetry.impute | imputed 44 values across 13 channels
+2026-09-12 18:13:54,652 INFO     faultline.data.telemetry.impute | imputed 70 values across 13 channels
+2026-09-12 18:13:55,561 INFO     faultline.data.telemetry.impute | imputed 84 values across 13 channels
+2026-09-12 18:13:56,567 INFO     faultline.data.telemetry.impute | imputed 128 values across 13 channels
+2026-09-12 18:13:57,521 INFO     faultline.data.telemetry.impute | imputed 106 values across 13 channels
+2026-09-12 18:13:58,510 INFO     faultline.data.telemetry.impute | imputed 162 values across 13 channels
+2026-09-12 18:13:59,517 INFO     faultline.data.telemetry.impute | imputed 66 values across 13 channels
+2026-09-12 18:14:00,994 INFO     faultline.data.telemetry.impute | imputed 55 values across 13 channels
+2026-09-12 18:14:01,890 INFO     faultline.data.telemetry.impute | imputed 60 values across 13 channels
+2026-09-12 18:14:02,901 INFO     faultline.data.telemetry.impute | imputed 181 values across 13 channels
+2026-09-12 18:14:03,848 INFO     faultline.data.telemetry.impute | imputed 89 values across 13 channels
+2026-09-12 18:14:04,871 INFO     faultline.data.telemetry.impute | imputed 137 values across 13 channels
+2026-09-12 18:14:05,844 INFO     faultline.data.telemetry.impute | imputed 77 values across 13 channels
+2026-09-12 18:14:07,339 INFO     faultline.data.telemetry.impute | imputed 56 values across 13 channels
+2026-09-12 18:14:08,242 INFO     faultline.data.telemetry.impute | imputed 72 values across 13 channels
+2026-09-12 18:14:09,275 INFO     faultline.data.telemetry.impute | imputed 189 values across 13 channels
+2026-09-12 18:14:10,232 INFO     faultline.data.telemetry.impute | imputed 95 values across 13 channels
+2026-09-12 18:14:11,229 INFO     faultline.data.telemetry.impute | imputed 216 values across 13 channels
+2026-09-12 18:14:12,161 INFO     faultline.data.telemetry.impute | imputed 33 values across 13 channels
+2026-09-12 18:14:12,686 INFO     faultline.data.telemetry.impute | imputed 1 values across 13 channels
+2026-09-12 18:14:13,667 INFO     faultline.data.telemetry.impute | imputed 85 values across 13 channels
+2026-09-12 18:14:14,573 INFO     faultline.data.telemetry.impute | imputed 60 values across 13 channels
+2026-09-12 18:14:15,561 INFO     faultline.data.telemetry.impute | imputed 213 values across 13 channels
+2026-09-12 18:14:16,529 INFO     faultline.data.telemetry.impute | imputed 66 values across 13 channels
+2026-09-12 18:14:17,548 INFO     faultline.data.telemetry.impute | imputed 145 values across 13 channels
+2026-09-12 18:14:18,529 INFO     faultline.data.telemetry.impute | imputed 66 values across 13 channels
+2026-09-12 18:14:19,112 INFO     faultline.data.telemetry.impute | imputed 23 values across 13 channels
+2026-09-12 18:14:20,071 INFO     faultline.data.telemetry.impute | imputed 78 values across 13 channels
+2026-09-12 18:14:20,983 INFO     faultline.data.telemetry.impute | imputed 109 values across 13 channels
+2026-09-12 18:14:21,975 INFO     faultline.data.telemetry.impute | imputed 222 values across 13 channels
+2026-09-12 18:14:22,961 INFO     faultline.data.telemetry.impute | imputed 92 values across 13 channels
+2026-09-12 18:14:23,957 INFO     faultline.data.telemetry.impute | imputed 148 values across 13 channels
+2026-09-12 18:14:24,963 INFO     faultline.data.telemetry.impute | imputed 55 values across 13 channels
+2026-09-12 18:14:25,456 INFO     faultline.data.telemetry.impute | imputed 1 values across 13 channels
+2026-09-12 18:14:26,430 INFO     faultline.data.telemetry.impute | imputed 55 values across 13 channels
+2026-09-12 18:14:27,357 INFO     faultline.data.telemetry.impute | imputed 94 values across 13 channels
+2026-09-12 18:14:28,332 INFO     faultline.data.telemetry.impute | imputed 189 values across 13 channels
+2026-09-12 18:14:29,331 INFO     faultline.data.telemetry.impute | imputed 86 values across 13 channels
+2026-09-12 18:14:30,311 INFO     faultline.data.telemetry.impute | imputed 107 values across 13 channels
+2026-09-12 18:14:31,315 INFO     faultline.data.telemetry.impute | imputed 34 values across 13 channels
+2026-09-12 18:14:31,891 INFO     faultline.data.telemetry.impute | imputed 34 values across 13 channels
+2026-09-12 18:14:32,854 INFO     faultline.data.telemetry.impute | imputed 92 values across 13 channels
+2026-09-12 18:14:33,778 INFO     faultline.data.telemetry.impute | imputed 119 values across 13 channels
+2026-09-12 18:14:34,760 INFO     faultline.data.telemetry.impute | imputed 188 values across 13 channels
+2026-09-12 18:14:35,746 INFO     faultline.data.telemetry.impute | imputed 115 values across 13 channels
+2026-09-12 18:14:36,728 INFO     faultline.data.telemetry.impute | imputed 150 values across 13 channels
+2026-09-12 18:14:37,822 INFO     faultline.data.telemetry.impute | imputed 26 values across 14 channels
+2026-09-12 18:14:38,862 INFO     faultline.data.telemetry.impute | imputed 56 values across 14 channels
+2026-09-12 18:14:39,928 INFO     faultline.data.telemetry.impute | imputed 26 values across 14 channels
+2026-09-12 18:14:40,993 INFO     faultline.data.telemetry.impute | imputed 98 values across 14 channels
+2026-09-12 18:14:42,093 INFO     faultline.data.telemetry.impute | imputed 39 values across 14 channels
+2026-09-12 18:14:43,194 INFO     faultline.data.telemetry.impute | imputed 70 values across 14 channels
+2026-09-12 18:14:44,353 INFO     faultline.data.telemetry.impute | imputed 39 values across 14 channels
+2026-09-12 18:14:45,429 INFO     faultline.data.telemetry.impute | imputed 90 values across 14 channels
+2026-09-12 18:14:46,507 INFO     faultline.data.telemetry.impute | imputed 39 values across 14 channels
+2026-09-12 18:14:47,565 INFO     faultline.data.telemetry.impute | imputed 126 values across 14 channels
+2026-09-12 18:14:48,624 INFO     faultline.data.telemetry.impute | imputed 153 values across 14 channels
+2026-09-12 18:14:49,665 INFO     faultline.data.telemetry.impute | imputed 126 values across 14 channels
+2026-09-12 18:14:50,757 INFO     faultline.data.telemetry.impute | imputed 39 values across 14 channels
+2026-09-12 18:14:51,803 INFO     faultline.data.telemetry.impute | imputed 79 values across 14 channels
+2026-09-12 18:14:52,875 INFO     faultline.data.telemetry.impute | imputed 52 values across 14 channels
+2026-09-12 18:14:53,922 INFO     faultline.data.telemetry.impute | imputed 84 values across 14 channels
+2026-09-12 18:14:54,980 INFO     faultline.data.telemetry.impute | imputed 52 values across 14 channels
+2026-09-12 18:14:56,028 INFO     faultline.data.telemetry.impute | imputed 56 values across 14 channels
+2026-09-12 18:14:57,111 INFO     faultline.data.telemetry.impute | imputed 26 values across 14 channels
+2026-09-12 18:14:58,149 INFO     faultline.data.telemetry.impute | imputed 98 values across 14 channels
+2026-09-12 18:14:59,229 INFO     faultline.data.telemetry.impute | imputed 39 values across 14 channels
+2026-09-12 18:15:00,280 INFO     faultline.data.telemetry.impute | imputed 196 values across 14 channels
+2026-09-12 18:15:01,367 INFO     faultline.data.telemetry.impute | imputed 26 values across 14 channels
+2026-09-12 18:15:02,420 INFO     faultline.data.telemetry.impute | imputed 171 values across 14 channels
+2026-09-12 18:15:03,508 INFO     faultline.data.telemetry.impute | imputed 39 values across 14 channels
+2026-09-12 18:15:04,553 INFO     faultline.data.telemetry.impute | imputed 112 values across 14 channels
+2026-09-12 18:15:05,646 INFO     faultline.data.telemetry.impute | imputed 39 values across 14 channels
+2026-09-12 18:15:06,704 INFO     faultline.data.telemetry.impute | imputed 56 values across 14 channels
+2026-09-12 18:15:07,770 INFO     faultline.data.telemetry.impute | imputed 78 values across 14 channels
+2026-09-12 18:15:08,836 INFO     faultline.data.telemetry.impute | imputed 84 values across 14 channels
+2026-09-12 18:15:09,893 INFO     faultline.data.telemetry.impute | imputed 26 values across 14 channels
+2026-09-12 18:15:10,968 INFO     faultline.data.telemetry.impute | imputed 70 values across 14 channels
+2026-09-12 18:15:11,985 INFO     faultline.data.telemetry.impute | imputed 76 values across 14 channels
+2026-09-12 18:15:13,073 INFO     faultline.data.telemetry.impute | imputed 112 values across 14 channels
+2026-09-12 18:15:14,102 INFO     faultline.data.telemetry.impute | imputed 91 values across 14 channels
+2026-09-12 18:15:15,168 INFO     faultline.data.telemetry.impute | imputed 140 values across 14 channels
+2026-09-12 18:15:16,203 INFO     faultline.data.telemetry.impute | imputed 65 values across 14 channels
+2026-09-12 18:15:17,275 INFO     faultline.data.telemetry.impute | imputed 70 values across 14 channels
+2026-09-12 18:15:18,335 INFO     faultline.data.telemetry.impute | imputed 52 values across 14 channels
+2026-09-12 18:15:19,419 INFO     faultline.data.telemetry.impute | imputed 126 values across 14 channels
+2026-09-12 18:15:20,458 INFO     faultline.data.telemetry.impute | imputed 91 values across 14 channels
+2026-09-12 18:15:21,523 INFO     faultline.data.telemetry.impute | imputed 72 values across 14 channels
+2026-09-12 18:15:23,022 INFO     faultline.data.telemetry.impute | imputed 91 values across 14 channels
+2026-09-12 18:15:23,758 INFO     faultline.data.telemetry.impute | imputed 26 values across 14 channels
+2026-09-12 18:15:24,449 INFO     faultline.data.telemetry.impute | imputed 13 values across 14 channels
+2026-09-12 18:15:25,427 INFO     faultline.data.telemetry.impute | imputed 156 values across 14 channels
+2026-09-12 18:15:26,280 INFO     faultline.data.telemetry.impute | imputed 26 values across 14 channels
+2026-09-12 18:15:27,371 INFO     faultline.data.telemetry.impute | imputed 26 values across 14 channels
+2026-09-12 18:15:28,030 INFO     faultline.data.telemetry.impute | imputed 13 values across 14 channels
+2026-09-12 18:15:28,605 INFO     faultline.data.telemetry.impute | imputed 117 values across 14 channels
+2026-09-12 18:15:29,075 INFO     faultline.data.telemetry.impute | imputed 195 values across 14 channels
+2026-09-12 18:15:29,899 INFO     faultline.data.telemetry.impute | imputed 78 values across 14 channels
+2026-09-12 18:15:30,318 INFO     faultline.data.telemetry.impute | imputed 208 values across 14 channels
+2026-09-12 18:15:31,200 INFO     faultline.data.telemetry.impute | imputed 286 values across 14 channels
+2026-09-12 18:15:31,906 INFO     faultline.data.telemetry.impute | imputed 130 values across 14 channels
+2026-09-12 18:15:32,508 INFO     faultline.data.telemetry.impute | imputed 325 values across 14 channels
+2026-09-12 18:15:33,346 INFO     faultline.data.telemetry.impute | imputed 104 values across 14 channels
+2026-09-12 18:15:33,617 INFO     faultline.data.telemetry.impute | imputed 117 values across 14 channels
+2026-09-12 18:15:34,119 INFO     faultline.data.telemetry.impute | imputed 195 values across 14 channels
+2026-09-12 18:15:34,886 INFO     faultline.data.telemetry.impute | imputed 91 values across 14 channels
+2026-09-12 18:15:36,091 INFO     faultline.data.telemetry.impute | imputed 13 values across 14 channels
+2026-09-12 18:15:36,674 INFO     faultline.data.telemetry.impute | imputed 26 values across 14 channels
+2026-09-12 18:15:37,342 INFO     faultline.data.telemetry.impute | imputed 13 values across 14 channels
+2026-09-12 18:15:37,869 INFO     faultline.data.telemetry.impute | imputed 65 values across 14 channels
+2026-09-12 18:15:38,675 INFO     faultline.data.telemetry.impute | imputed 91 values across 14 channels
+2026-09-12 18:15:39,892 INFO     faultline.data.telemetry.impute | imputed 130 values across 14 channels
+2026-09-12 18:15:40,675 INFO     faultline.data.telemetry.impute | imputed 13 values across 14 channels
+2026-09-12 18:15:41,109 INFO     faultline.data.telemetry.impute | imputed 52 values across 14 channels
+2026-09-12 18:15:41,721 INFO     faultline.data.telemetry.impute | imputed 26 values across 14 channels
+2026-09-12 18:15:42,404 INFO     faultline.data.telemetry.impute | imputed 91 values across 14 channels
+2026-09-12 18:15:43,115 INFO     faultline.data.telemetry.impute | imputed 26 values across 14 channels
+2026-09-12 18:15:43,612 INFO     faultline.data.telemetry.impute | imputed 13 values across 14 channels
+2026-09-12 18:15:44,146 INFO     faultline.data.telemetry.impute | imputed 117 values across 14 channels
+2026-09-12 18:15:44,915 INFO     faultline.data.telemetry.impute | imputed 137 values across 14 channels
+2026-09-12 18:15:45,618 INFO     faultline.data.telemetry.impute | imputed 26 values across 14 channels
+2026-09-12 18:15:46,172 INFO     faultline.data.telemetry.impute | imputed 98 values across 14 channels
+2026-09-12 18:15:46,711 INFO     faultline.data.telemetry.impute | imputed 39 values across 14 channels
+2026-09-12 18:15:47,429 INFO     faultline.data.telemetry.impute | imputed 85 values across 14 channels
+2026-09-12 18:15:47,897 INFO     faultline.data.telemetry.impute | imputed 143 values across 14 channels
+2026-09-12 18:15:48,692 INFO     faultline.data.telemetry.impute | imputed 85 values across 14 channels
+2026-09-12 18:15:49,184 INFO     faultline.data.telemetry.impute | imputed 143 values across 14 channels
+2026-09-12 18:15:49,983 INFO     faultline.data.telemetry.impute | imputed 110 values across 14 channels
+2026-09-12 18:15:50,470 INFO     faultline.data.telemetry.impute | imputed 21 values across 14 channels
+2026-09-12 18:15:51,309 INFO     faultline.data.telemetry.impute | imputed 30 values across 14 channels
+2026-09-12 18:15:52,560 INFO     faultline.data.telemetry.impute | imputed 30 values across 14 channels
+2026-09-12 18:15:53,643 INFO     faultline.data.telemetry.impute | imputed 10 values across 14 channels
+2026-09-12 18:15:54,299 INFO     faultline.data.telemetry.impute | imputed 3 values across 14 channels
+2026-09-12 18:15:54,995 INFO     faultline.data.telemetry.impute | imputed 11 values across 14 channels
+2026-09-12 18:15:55,679 INFO     faultline.data.telemetry.impute | imputed 3 values across 14 channels
+2026-09-12 18:15:56,236 INFO     faultline.data.telemetry.impute | imputed 10 values across 14 channels
+2026-09-12 18:15:56,753 INFO     faultline.data.telemetry.impute | imputed 2 values across 14 channels
+2026-09-12 18:15:57,475 INFO     faultline.data.telemetry.impute | imputed 10 values across 14 channels
+2026-09-12 18:15:58,072 INFO     faultline.data.telemetry.impute | imputed 2 values across 14 channels
+2026-09-12 18:15:58,745 INFO     faultline.data.telemetry.impute | imputed 39 values across 14 channels
+2026-09-12 18:15:59,274 INFO     faultline.data.telemetry.impute | imputed 3 values across 14 channels
+2026-09-12 18:16:00,038 INFO     faultline.data.telemetry.impute | imputed 39 values across 14 channels
+2026-09-12 18:16:00,591 INFO     faultline.data.telemetry.impute | imputed 2 values across 14 channels
+2026-09-12 18:16:01,294 INFO     faultline.data.telemetry.impute | imputed 63 values across 14 channels
+2026-09-12 18:16:01,921 INFO     faultline.data.telemetry.impute | imputed 201 values across 14 channels
+2026-09-12 18:16:02,698 INFO     faultline.data.telemetry.impute | imputed 140 values across 14 channels
+2026-09-12 18:16:03,203 INFO     faultline.data.telemetry.impute | imputed 43 values across 14 channels
+2026-09-12 18:16:04,003 INFO     faultline.data.telemetry.impute | imputed 10 values across 14 channels
+2026-09-12 18:16:04,463 INFO     faultline.data.telemetry.impute | imputed 4 values across 14 channels
+2026-09-12 18:16:05,433 INFO     faultline.data.telemetry.impute | imputed 14 values across 14 channels
+2026-09-12 18:16:06,596 INFO     faultline.data.telemetry.impute | imputed 10 values across 14 channels
+2026-09-12 18:16:07,916 INFO     faultline.data.telemetry.impute | imputed 10 values across 14 channels
+2026-09-12 18:16:09,211 INFO     faultline.data.telemetry.impute | imputed 136 values across 14 channels
+2026-09-12 18:16:10,736 INFO     faultline.data.telemetry.impute | imputed 185 values across 14 channels
+2026-09-12 18:16:11,663 INFO     faultline.data.telemetry.impute | imputed 144 values across 14 channels
+2026-09-12 18:16:12,745 INFO     faultline.data.telemetry.impute | imputed 9 values across 14 channels
+2026-09-12 18:16:13,529 INFO     faultline.data.telemetry.impute | imputed 3 values across 14 channels
+2026-09-12 18:16:14,001 INFO     faultline.data.telemetry.impute | imputed 17 values across 14 channels
+2026-09-12 18:16:15,030 INFO     faultline.data.telemetry.impute | imputed 3 values across 14 channels
+2026-09-12 18:16:15,500 INFO     faultline.data.telemetry.impute | imputed 15 values across 14 channels
+2026-09-12 18:16:16,255 INFO     faultline.data.telemetry.impute | imputed 4 values across 14 channels
+2026-09-12 18:16:16,838 INFO     faultline.data.telemetry.impute | imputed 18 values across 14 channels
+2026-09-12 18:16:17,709 INFO     faultline.data.telemetry.impute | imputed 3 values across 14 channels
+2026-09-12 18:16:18,755 INFO     faultline.data.telemetry.impute | imputed 6 values across 14 channels
+2026-09-12 18:16:19,983 INFO     faultline.data.telemetry.impute | imputed 2 values across 14 channels
+2026-09-12 18:16:20,377 INFO     faultline.data.telemetry.impute | imputed 3 values across 14 channels
+2026-09-12 18:16:21,838 INFO     faultline.data.telemetry.impute | imputed 3 values across 14 channels
+2026-09-12 18:16:22,729 INFO     faultline.data.telemetry.impute | imputed 4 values across 14 channels
+2026-09-12 18:16:24,062 INFO     faultline.data.telemetry.impute | imputed 4 values across 14 channels
+2026-09-12 18:16:24,957 INFO     faultline.data.telemetry.impute | imputed 1 values across 14 channels
+2026-09-12 18:16:25,706 INFO     faultline.data.telemetry.impute | imputed 1 values across 14 channels
+2026-09-12 18:16:26,468 INFO     faultline.data.telemetry.impute | imputed 4 values across 14 channels
+2026-09-12 18:16:27,326 INFO     faultline.data.telemetry.impute | imputed 3 values across 14 channels
+2026-09-12 18:16:27,808 INFO     faultline.data.telemetry.impute | imputed 4 values across 14 channels
+2026-09-12 18:16:28,612 INFO     faultline.data.telemetry.impute | imputed 3 values across 14 channels
+2026-09-12 18:16:29,218 INFO     faultline.data.telemetry.impute | imputed 17 values across 14 channels
+2026-09-12 18:16:29,883 INFO     faultline.data.telemetry.impute | imputed 3 values across 14 channels
+2026-09-12 18:16:30,437 INFO     faultline.data.telemetry.impute | imputed 19 values across 14 channels
+2026-09-12 18:16:31,187 INFO     faultline.data.telemetry.impute | imputed 17 values across 14 channels
+2026-09-12 18:16:32,006 INFO     faultline.data.telemetry.impute | imputed 49 values across 14 channels
+2026-09-12 18:16:32,451 INFO     faultline.data.telemetry.impute | imputed 17 values across 14 channels
+2026-09-12 18:16:33,286 INFO     faultline.data.telemetry.impute | imputed 49 values across 14 channels
+2026-09-12 18:16:33,609 INFO     faultline.data.telemetry.impute | imputed 2 values across 14 channels
+2026-09-12 18:16:34,817 INFO     faultline.data.telemetry.impute | imputed 2 values across 14 channels
+2026-09-12 18:16:35,968 INFO     faultline.data.telemetry.impute | imputed 1 values across 14 channels
+2026-09-12 18:16:36,479 INFO     faultline.data.telemetry.impute | imputed 13 values across 14 channels
+2026-09-12 18:16:37,220 INFO     faultline.data.telemetry.impute | imputed 10 values across 14 channels
+2026-09-12 18:16:37,788 INFO     faultline.data.telemetry.impute | imputed 24 values across 14 channels
+2026-09-12 18:16:38,505 INFO     faultline.data.telemetry.impute | imputed 8 values across 14 channels
+2026-09-12 18:16:39,059 INFO     faultline.data.telemetry.impute | imputed 13 values across 14 channels
+2026-09-12 18:16:39,739 INFO     faultline.data.telemetry.impute | imputed 11 values across 14 channels
+2026-09-12 18:16:40,393 INFO     faultline.data.telemetry.impute | imputed 12 values across 14 channels
+2026-09-12 18:16:41,028 INFO     faultline.data.telemetry.impute | imputed 13 values across 14 channels
+2026-09-12 18:16:42,161 INFO     faultline.data.telemetry.impute | imputed 10 values across 14 channels
+2026-09-12 18:16:44,641 INFO     faultline.data.telemetry.impute | imputed 13 values across 14 channels
+2026-09-12 18:16:46,163 INFO     faultline.data.telemetry.impute | imputed 1 values across 14 channels
+2026-09-12 18:16:47,415 INFO     faultline.data.telemetry.impute | imputed 1 values across 14 channels
+2026-09-12 18:16:48,271 INFO     faultline.data.telemetry.impute | imputed 3 values across 14 channels
+2026-09-12 18:16:48,770 INFO     faultline.data.telemetry.impute | imputed 4 values across 14 channels
+2026-09-12 18:16:49,549 INFO     faultline.data.telemetry.impute | imputed 3 values across 14 channels
+2026-09-12 18:16:50,028 INFO     faultline.data.telemetry.impute | imputed 4 values across 14 channels
+2026-09-12 18:16:51,269 INFO     faultline.data.telemetry.impute | imputed 93 values across 14 channels
+2026-09-12 18:16:52,655 INFO     faultline.data.telemetry.impute | imputed 91 values across 14 channels
+2026-09-12 18:16:53,420 INFO     faultline.data.telemetry.impute | imputed 5 values across 14 channels
+2026-09-12 18:16:54,123 INFO     faultline.data.telemetry.impute | imputed 2 values across 14 channels
+2026-09-12 18:16:54,669 INFO     faultline.data.telemetry.impute | imputed 3 values across 14 channels
+2026-09-12 18:16:55,253 INFO     faultline.data.telemetry.impute | imputed 91 values across 14 channels
+2026-09-12 18:16:56,515 INFO     faultline.data.telemetry.impute | imputed 8 values across 14 channels
+2026-09-12 18:16:58,530 INFO     faultline.data.telemetry.impute | imputed 3 values across 14 channels
+2026-09-12 18:16:58,973 INFO     faultline.data.telemetry.impute | imputed 4 values across 14 channels
+2026-09-12 18:16:59,817 INFO     faultline.data.telemetry.impute | imputed 3 values across 14 channels
+2026-09-12 18:17:00,353 INFO     faultline.data.telemetry.impute | imputed 4 values across 14 channels
+2026-09-12 18:17:01,122 INFO     faultline.data.telemetry.impute | imputed 9 values across 14 channels
+2026-09-12 18:17:01,782 INFO     faultline.data.telemetry.impute | imputed 2 values across 14 channels
+2026-09-12 18:17:02,404 INFO     faultline.data.telemetry.impute | imputed 1 values across 14 channels
+2026-09-12 18:17:02,808 INFO     faultline.data.telemetry.impute | imputed 2 values across 14 channels
+2026-09-12 18:17:03,616 INFO     faultline.data.telemetry.impute | imputed 4 values across 14 channels
+2026-09-12 18:17:04,153 INFO     faultline.data.telemetry.impute | imputed 2 values across 14 channels
+2026-09-12 18:17:04,927 INFO     faultline.data.telemetry.impute | imputed 9 values across 14 channels
+2026-09-12 18:17:06,269 INFO     faultline.data.telemetry.impute | imputed 18 values across 14 channels
+2026-09-12 18:17:07,263 INFO     faultline.data.telemetry.impute | imputed 1 values across 14 channels
+2026-09-12 18:17:07,729 INFO     faultline.data.telemetry.impute | imputed 17 values across 14 channels
+2026-09-12 18:17:08,532 INFO     faultline.data.telemetry.impute | imputed 5 values across 14 channels
+2026-09-12 18:17:09,141 INFO     faultline.data.telemetry.impute | imputed 2 values across 14 channels
+2026-09-12 18:17:09,770 INFO     faultline.data.telemetry.impute | imputed 1 values across 14 channels
+2026-09-12 18:17:10,270 INFO     faultline.data.telemetry.impute | imputed 17 values across 14 channels
+2026-09-12 18:17:11,047 INFO     faultline.data.telemetry.impute | imputed 5 values across 14 channels
+2026-09-12 18:17:12,271 INFO     faultline.data.telemetry.impute | imputed 18 values across 14 channels
+2026-09-12 18:17:14,913 INFO     faultline.data.telemetry.impute | imputed 6 values across 14 channels
+2026-09-12 18:17:15,756 INFO     faultline.data.telemetry.impute | imputed 9 values across 14 channels
+2026-09-12 18:17:16,299 INFO     faultline.data.telemetry.impute | imputed 6 values across 14 channels
+2026-09-12 18:17:17,611 INFO     faultline.data.telemetry.impute | imputed 4 values across 14 channels
+2026-09-12 18:17:18,806 INFO     faultline.data.telemetry.impute | imputed 4 values across 14 channels
+2026-09-12 18:17:19,551 INFO     faultline.data.telemetry.impute | imputed 10 values across 14 channels
+2026-09-12 18:17:20,846 INFO     faultline.runs | wrote final_stats_report.md
+2026-09-12 18:17:20,996 INFO     faultline.runs | run 20260912-085616_all_telemetry_4be519df ok in 1264.32s -> C:\Users\sharg\Desktop\github\FaultLine\reports\data\20260912-085616_all_telemetry_4be519df

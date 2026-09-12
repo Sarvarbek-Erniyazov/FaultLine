@@ -223,6 +223,18 @@ trained from scratch, evaluated as a risk model rather than a forecaster.
     cascades and the clamp bin ends up spanning the whole 0.5% tail against a quantile end
     bin's 0.39%. Reported and not iterated on, as pre-registered; ADR-0015 carries it as
     the limitation and names the single design that would replace both rules.*
+  - *Re-sharded under the v2 tokenizer (`reports/data/shards_v2_20260912.md`). **Every
+    pre-registered invariant holds byte-identically**: the report differs from the v1
+    shards' only in the three lines naming the tokenizer, its hash and the run. 61,601,722
+    training tokens, every window count at every split, horizon and label set, the
+    43,580,055-window leakage re-check, all 22,355,601 stored labels equal to those
+    recomputed from the events, and `<nan>` at 8.90% -- all unchanged, as they must be:
+    the bin edges moved and nothing else did.*
+  - *The two reports gate 4 left historical are regenerated under `telemetry_v4.yaml`:
+    ranges (`reports/data/ranges_20260912.md`, power percentiles now in per unit) and
+    verification (`reports/data/verification_20260912.md`, splits_v3, and the producing
+    threshold now printed as 0.005 pu -- the column heading still read "> 10 kW" while the
+    code had used per unit since M1c).*
 - Fit `QuantileBinTokenizer` on the training split only.
 - Model, training loop, checkpointing; multi-seed runs.
 - Risk evaluation: AUPRC, event-level F1, false alarms per hour, detection delay.

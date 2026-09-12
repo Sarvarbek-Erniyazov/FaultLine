@@ -1107,8 +1107,8 @@ def _stop_class_section(evidence: StopClassEvidence) -> str:
         [
             "timer",
             "steps with no core telemetry",
-            "steps with the rotor turning (> 1 rpm)",
-            "steps producing (> 10 kW)",
+            f"steps with the rotor turning (> {ROTATING_RPM:g} rpm)",
+            f"steps producing (> {PRODUCING_PU:g} pu)",
             "turbines in the class in the same step (median)",
             f"steps with at least {math.ceil(evidence.turbines / 2)} of "
             f"{evidence.turbines} turbines in it",

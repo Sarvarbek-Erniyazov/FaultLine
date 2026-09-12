@@ -159,6 +159,44 @@ def download_telemetry(
             time.sleep(retry_delay)
 
 
+@download_app.command(
+    "text",
+    help="Stage the NRC operator-narrative text sources and update their manifests.",
+)
+def download_text(
+    config: ConfigOption = Path("configs/data/sources_text.yaml"),
+    source: Annotated[str | None, typer.Option("--source", help="Limit to one source id.")] = None,
+) -> None:
+    """Stage every enabled text source and write its manifest.
+
+    Args:
+        config: Text source specification file.
+        source: Restrict the run to a single source.
+
+    Raises:
+        typer.Exit: With code 1 if the source id is unknown.
+    """
+    from faultline.download.nrc_text import (
+        NrcTextClient,
+        fetch_source,
+        load_sources_text_config,
+        stage_documents,
+    )
+
+    paths = ProjectPaths.resolve()
+    spec = load_sources_text_config(config)
+    if source and source not in spec.sources:
+        typer.echo(f"unknown source {source!r}; configured: {', '.join(spec.sources)}")
+        raise typer.Exit(code=1)
+    names = [source] if source else [name for name, s in spec.sources.items() if s.enabled]
+    client = NrcTextClient()
+    for name in names:
+        source_spec = spec.sources[name]
+        documents = fetch_source(name, source_spec, client, paths)
+        manifest = stage_documents(name, source_spec, documents, paths)
+        typer.echo(f"{name}: staged {len(manifest.files)} documents")
+
+
 @inspect_app.command(
     "telemetry",
     help="Inventory staged archives in place and write raw inventory reports.",
@@ -461,6 +499,38 @@ def cards_build(
     for name in [source] if source else list(spec.sources):
         card = build_card(name, spec.sources[name], paths)
         typer.echo(f"{name}: wrote {card}")
+
+
+@text_app.command(
+    "corpus",
+    help="Combine staged per-source raw text into one JSONL corpus for `text run`.",
+)
+def text_corpus(
+    source: Annotated[
+        list[str], typer.Option("--source", help="Source id to include; repeat for several.")
+    ],
+    corpus_name: Annotated[
+        str, typer.Option("--corpus-name", help="Name written as <corpus_name>.jsonl.")
+    ],
+) -> None:
+    """Assemble named, already-staged text sources into one pipeline input file.
+
+    Args:
+        source: Source ids to combine, each already staged with `download text`.
+        corpus_name: Output corpus name.
+
+    Raises:
+        typer.Exit: With code 1 if a named source has not been staged yet.
+    """
+    from faultline.download.nrc_text import assemble_corpus
+
+    paths = ProjectPaths.resolve()
+    try:
+        destination = assemble_corpus(paths, source, corpus_name)
+    except FileNotFoundError as exc:
+        typer.echo(str(exc))
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"wrote {destination}")
 
 
 @text_app.command("run", help="Run the text corpus pipeline and write per-stage reports.")

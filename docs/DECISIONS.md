@@ -1660,3 +1660,104 @@ comes from a risk run whose control arm demonstrably trained, which M3 step 0 is
 pre-registered attempt at. Also: a channel that fails the floor for a reason other than a
 point mass bounding its clamp bin, or a new source whose clamp share exceeds 0.1% by
 enough that the headroom stops being an order of magnitude.
+
+---
+
+## ADR-0016 The M2 text corpus is NRC operator-narrative documents, not the four-source Tier-1/Tier-2 list as scoped
+
+**Status:** Accepted · **Date:** 2026-09-13
+
+**Decision.** The M2 text corpus is drawn from `www.nrc.gov` alone: Event
+Notification Reports (native HTML, the whole collection) and four "generic
+communications" collections -- Information Notices, Bulletins, Generic Letters,
+Regulatory Issue Summaries -- restricted to the documents that stay on `nrc.gov`
+outside `/docs/` (below). A fifth generic-communications collection, Preliminary
+Notification Reports, is configured and disabled: measured to hold zero documents
+through the permitted route. A tiny sixth source, the Kelmarsh/Penmanshiel
+status-message code book, is drawn from telemetry already staged for M1, not
+fetched over the network. Every other candidate named in the M2 brief -- both
+Tier-1 sources (NRC Licensee Event Reports, PHMSA pipeline incidents, DOE OE-417)
+and every Tier-2 candidate (NERC Lessons Learned, four sampled ISO/RTO notice
+pages, NREL/OSTI technical reports) -- is excluded, each for a reason measured on
+2026-09-13 and recorded in `configs/data/sources_text.yaml`'s
+`excluded_candidates` block, not merely asserted here.
+
+**Why this reopens the M2 brief's source list.** The brief named four Tier-1
+sources on the understanding that a federal public-domain source is reachable by a
+bulk route. Measured, three of the four are not, by three different failure modes:
+
+| source | failure mode | evidence |
+| --- | --- | --- |
+| NRC Licensee Event Reports | the only full-text route disallows crawling outright | `lersearch.inl.gov/robots.txt`: `User-agent: *` / `Disallow: /`, commented "Don't index this site". ADAMS' public interface moved from `adams.nrc.gov/wba` (now NXDOMAIN) to `adams-search.nrc.gov`, a single-page application with no documented public API as of this check. |
+| PHMSA pipeline incidents | the edge blocks every non-browser client, including from reading its own crawl policy | `www.phmsa.dot.gov/robots.txt` returns HTTP 403, from two separate networks. The flagged-incident-file download returns the same. |
+| DOE OE-417 disturbance reports | the publishing host is unreachable from this network; its one mirror disallows the route that would substitute, and is thin regardless | `www.oe.netl.doe.gov` resolves IPv6-only; this network has no IPv6 route. `openenergyhub.ornl.gov`'s `robots.txt` disallows `/api/` and `/explore/download`; its dataset holds 341 short structured rows for 2023 with no narrative field. |
+
+None of these is a licence problem -- all three would be admissible on terms alone.
+Each is a **measured, present-tense access barrier**, checked from this machine on
+the date above and reported as such rather than assumed permanent.
+
+**The user's decision, 2026-09-13, on being shown this evidence.** Expand within
+the one source family that is actually reachable (`nrc.gov`) rather than search
+for substitutes or work around the barriers above. Explicitly rejected and
+recorded here: fetching the blocked routes with a browser `User-Agent` string,
+which would technically succeed against PHMSA's WAF and would violate
+`lersearch.inl.gov`'s explicit `Disallow: /`. The project's defensibility rests on
+a provenance chain that can be written plainly in a dataset card; a route chosen
+specifically to look like something it is not cannot be written plainly, no
+matter how defensible the underlying licence. If PHMSA or the LERs are wanted
+later, the stated route is a written request to the agency for a bulk export.
+
+**The `/docs/` finding, measured rather than inferred from robots.txt.**
+`nrc.gov/robots.txt`'s general `User-agent: *` rule does not disallow `/docs/`
+(only two named crawlers, `Akamai-SiteSnapshot` and `Amazonbot`, are disallowed
+there). In practice, every request to a `/docs/*.pdf` URL --  the ADAMS accession
+path every generic-communications document has linked to since roughly the early
+2000s -- returned `HTTP 403 Access Denied` from the Akamai edge, repeatably, on
+requests that were not part of any burst (a plain `nrc.gov` HTML page fetched
+immediately before and after each 403 returned 200 both times). This is a
+structural block at the edge, separate from the robots.txt statement and from the
+rate-limit-shaped 403s seen on `nrc.gov` HTML pages during reconnaissance (which
+cleared after a pause -- the reason `NrcTextClient` paces every request at
+`MIN_REQUEST_INTERVAL` regardless of server response time). Per the decision
+above, this module does not attempt to work around either kind of block: it
+follows only links that stay on `nrc.gov` outside `/docs/`, measured per
+collection before anything was staged.
+
+**What the `/docs/` exclusion costs, measured 2026-09-13** (`html` = native pages
+kept, `pdf` = `/docs/` links found and not fetched):
+
+| collection | years checked | html docs | pdf docs (not fetched) |
+| --- | --- | --- | --- |
+| Information Notices | 1979-2026 | 439 | 1,814 |
+| Bulletins | 1971-2026 | 230 | 28 |
+| Generic Letters | 1977-2026 | 574 | 13 |
+| Regulatory Issue Summaries | 1999-2026 | 180 | 267 |
+| Preliminary Notification Reports | 2003-2025 | **0** | 118 |
+
+Preliminary Notification Reports is disabled in `sources_text.yaml` rather than
+staged empty: every one of its 118 measured document links across all 20
+published years routes through `/docs/`. It is named in the brief and kept in the
+config, disabled, so the measurement that excludes it is traceable to the
+collection it was made against.
+
+**Tier 2, checked and excluded, each for a different reason:**
+
+| candidate | reason | evidence |
+| --- | --- | --- |
+| NERC Lessons Learned | the publisher names Claude specifically for exclusion | `nerc.com/robots.txt`: `Content-Signal: search=yes,ai-train=no,use=reference` (an express rights reservation under EU Directive 2019/790 Art. 4, by the file's own preamble) and, separately, `User-agent: ClaudeBot` / `Disallow: /`. |
+| ISO/RTO operator notices (CAISO, PJM, ERCOT, MISO sampled) | no permissive licence stated anywhere checked; access posture is restrictive where it says anything | CAISO disallows `/resources/*`; ERCOT's `robots.txt` itself returns 403; MISO carries the same `ClaudeBot: Disallow: /` as NERC; PJM has no blanket block but also no licence statement. |
+| NREL/OSTI technical reports | the licence question is per-document, which does not scale to a corpus-acquisition step | OSTI's own copyright policy: public access is not public domain, and "for technical reports created in the performance of the contract, permission from DOE is required to establish and claim copyright" -- the marking must be checked per document. `www.nrel.gov` also does not resolve from this network. |
+
+**Floor and target, re-read against the evidence.** The M2 brief set a 30M-token
+floor and a 100M-token target against an assumption of four reachable Tier-1
+sources. With one reachable, the floor is evidence to report against, not a gate
+to iterate toward: per the brief's own words, "the pipeline and its reports are
+the gate, not the token count." The measured corpus size and which bound it hit
+are reported in the M2a acquisition report and carried into the Gate 6 summary as
+a stated limitation, not chased by loosening the source list further.
+
+**What would change this decision.** Any of the three blocked Tier-1 sources
+publishing a bulk route this project can use without impersonating a browser or
+crossing a stated `Disallow`; PHMSA or NRC granting a written bulk-export request
+for the LERs; or IPv6 connectivity becoming available on the machines this
+project runs on, which would reopen the DOE OE-417 host.

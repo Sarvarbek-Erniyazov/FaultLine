@@ -1,72 +1,225 @@
-# Operator-narrative text sources. PLANNED, M2. Nothing here is downloaded.
+# Operator-narrative text sources, version 1 (M2a).
 #
-# Every entry is `enabled: false` and stays that way until two things are true:
+# v0 (git history) recorded three research leads, all `enabled: false`, all TODO.
+# None of them survived contact with the actual terms and access routes -- see
+# `excluded_candidates` below and ADR-0016, which carries the full evidence. This file
+# is the schema `src/faultline/download/nrc_text.py` reads; it was never executed by a
+# run (every v0 source was disabled), so it is edited in place rather than versioned
+# alongside it, the same way `sources_telemetry.yaml` is.
 #
-#   1. the licence or public-domain status is verified in writing, from the
-#      publisher's own terms page, and recorded in docs/DATA_LICENSES.md (ADR-0004);
-#   2. an access route is confirmed that does not involve scraping a site whose
-#      terms forbid it.
+# WHAT SURVIVED: two families of documents published by the U.S. Nuclear Regulatory
+# Commission on www.nrc.gov, both under 17 U.S.C. 105 (a work of the United States
+# federal government carries no domestic copyright), both permitted by
+# nrc.gov/robots.txt's general `User-agent: *` rule -- quoted in full below, exactly
+# as it reads (fetched 2026-09-13):
 #
-# Why this corpus exists at all: public SCADA event logs carry template-like alarm
-# and status strings, not open-ended language (ADR-0001, and see the raw inventory
-# reports for the evidence). A language model needs language. Incident and event
-# narratives written by operators of power and process plants are the closest public
-# text to the telemetry domain: same equipment vocabulary, same failure reasoning,
-# and written by the same kind of people who would read this model's output.
+#   user-agent:*
+#   Sitemap: https://www.nrc.gov/sitemapindex.xml
+#   Disallow: https://www.nrc.gov/ads.txt/
+#   Disallow: https://www.nrc.gov/autodiscover/autodiscover.xml
+#   Disallow: https://www.nrc.gov/site-help/search
+#   Disallow: https://www.nrc.gov/site-help/search.html
 #
-# The candidates below are recorded as research leads, not as verified sources. Each
-# one needs its terms checked before it can be enabled, and the check goes in the
-# card, not in a commit message.
+#   user-agent: Akamai-SiteSnapshot
+#   Disallow: https://www.nrc.gov/docs/
+#   ...
+#   User-agent: Amazonbot
+#   Disallow: /docs/
+#
+# Only two named crawlers (Akamai-SiteSnapshot, Amazonbot) are disallowed from
+# `/docs/`; the general rule is not. In practice `/docs/` -- the ADAMS PDF path --
+# returns `403 Access Denied` from the Akamai edge to this project's plain HTTP
+# client regardless, measured directly and repeatably, on requests that were not part
+# of any burst (a plain HTML page fetched immediately before and after each 403
+# returned 200). That is a structural block, not a robots.txt rule, and per the
+# 2026-09-13 decision this project does not go around it: every source below fetches
+# only documents that stay on nrc.gov outside `/docs/`, and what that excludes is
+# measured and named per source, not silently dropped.
 
-version: 0
-
-defaults:
-  enabled: false
-  # PII policy for narrative corpora (ADR-0005): mask contact details, keep numbers.
-  # "pressure fell to 850000 Pa" is the content, not an identifier.
-  pii:
-    mask_emails: true
-    mask_phones: true
-    mask_digits: false
+version: 1
 
 sources:
-  us_federal_incident_reports:
-    enabled: false
-    description: >-
-      Incident, event and inspection narratives published by United States federal
-      agencies covering power generation, pipelines and process plants. Works of the
-      US federal government are generally not subject to domestic copyright, which is
-      what makes this family the strongest candidate.
-    license: "TODO(m2): verify per publisher; US federal works are usually public domain, but this must be confirmed per dataset and recorded here"
-    access: "TODO(m2): identify the bulk download or API endpoint; no scraping"
-    expected_documents: "TODO(m2): unknown until the endpoint is identified"
-    notes: >-
-      Narratives are the target field, not the structured incident metadata. Check
-      whether reports are redacted at source, and whether the same incident appears
-      in multiple filings -- exact deduplication will not catch that, which is why
-      the pipeline reserves a MinHash strategy.
+  # ---------------------------------------------------------------------------------
+  # Event Notification Reports -- native HTML for the whole collection, no /docs/
+  # exclusion. One report-day page names one or more events; each event with
+  # non-empty "Event Text" is staged as its own document.
+  # ---------------------------------------------------------------------------------
+  nrc_event_notifications:
+    kind: event_notifications
+    enabled: true
+    provider: "U.S. Nuclear Regulatory Commission"
+    license: "public domain (17 U.S.C. 105); works of the U.S. federal government carry no domestic copyright"
+    attribution: "U.S. Nuclear Regulatory Commission, Event Notification Reports, nrc.gov (public domain, 17 U.S.C. 105)"
+    base_url: "https://www.nrc.gov/reading-rm/doc-collections/event-status/event"
+    year_start: 1999
+    year_end: 2026
+    robots_basis: "nrc.gov/robots.txt user-agent:* carries no Disallow covering this collection"
 
-  eu_and_national_safety_authority_reports:
-    enabled: false
-    description: >-
-      Public incident and event reports from European and national safety or energy
-      regulators covering power and process installations.
-    license: "TODO(m2): verify per publisher; several publish under CC BY or an equivalent open licence, but this varies by country and must be checked individually"
-    access: "TODO(m2): identify per-publisher bulk access"
-    expected_documents: "TODO(m2)"
-    notes: >-
-      Language coverage must be checked: a corpus that is mostly machine-translated
-      would teach the model translation artefacts rather than operator language.
+  # ---------------------------------------------------------------------------------
+  # Generic communications. Each collection mixes native-HTML document pages (older)
+  # with a redirect to a PDF under /docs/ (newer, an ADAMS accession) -- measured per
+  # collection in reports/data/nrc_text_yield_20260913.md. Only the native-HTML
+  # documents are staged; pdf_excluded: true records that this is a deliberate,
+  # measured omission, not an oversight.
+  # ---------------------------------------------------------------------------------
+  nrc_info_notices:
+    kind: generic_comm
+    enabled: true
+    provider: "U.S. Nuclear Regulatory Commission"
+    license: "public domain (17 U.S.C. 105)"
+    attribution: "U.S. Nuclear Regulatory Commission, Information Notices, nrc.gov (public domain, 17 U.S.C. 105)"
+    label: "Information Notices"
+    index_url: "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/index"
+    year_start: 1979
+    year_end: 2026
+    robots_basis: "nrc.gov/robots.txt user-agent:* carries no Disallow covering this collection"
+    pdf_excluded: true
 
-  open_licensed_technical_incident_corpora:
+  nrc_bulletins:
+    kind: generic_comm
+    enabled: true
+    provider: "U.S. Nuclear Regulatory Commission"
+    license: "public domain (17 U.S.C. 105)"
+    attribution: "U.S. Nuclear Regulatory Commission, Bulletins, nrc.gov (public domain, 17 U.S.C. 105)"
+    label: "Bulletins"
+    index_url: "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/index"
+    year_start: 1971
+    year_end: 2026
+    robots_basis: "nrc.gov/robots.txt user-agent:* carries no Disallow covering this collection"
+    pdf_excluded: true
+
+  nrc_gen_letters:
+    kind: generic_comm
+    enabled: true
+    provider: "U.S. Nuclear Regulatory Commission"
+    license: "public domain (17 U.S.C. 105)"
+    attribution: "U.S. Nuclear Regulatory Commission, Generic Letters, nrc.gov (public domain, 17 U.S.C. 105)"
+    label: "Generic Letters"
+    index_url: "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/gen-letters/index"
+    year_start: 1977
+    year_end: 2026
+    robots_basis: "nrc.gov/robots.txt user-agent:* carries no Disallow covering this collection"
+    pdf_excluded: true
+
+  nrc_reg_issues:
+    kind: generic_comm
+    enabled: true
+    provider: "U.S. Nuclear Regulatory Commission"
+    license: "public domain (17 U.S.C. 105)"
+    attribution: "U.S. Nuclear Regulatory Commission, Regulatory Issue Summaries, nrc.gov (public domain, 17 U.S.C. 105)"
+    label: "Regulatory Issue Summaries"
+    index_url: "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/index"
+    year_start: 1999
+    year_end: 2026
+    robots_basis: "nrc.gov/robots.txt user-agent:* carries no Disallow covering this collection"
+    pdf_excluded: true
+
+  nrc_prelim_notices:
+    kind: generic_comm
     enabled: false
-    description: >-
-      Existing research corpora of maintenance and incident narratives released under
-      CC0, CC BY or a permissive licence.
-    license: "TODO(m2): verify per corpus"
-    access: "TODO(m2): per-corpus"
-    expected_documents: "TODO(m2)"
-    notes: >-
-      Preferred where they exist, because the licence question is already settled by
-      the publisher. Watch for corpora that are themselves scraped from sources with
-      restrictive terms -- an open licence on a derived work does not launder that.
+    provider: "U.S. Nuclear Regulatory Commission"
+    license: "public domain (17 U.S.C. 105)"
+    attribution: "U.S. Nuclear Regulatory Commission, Preliminary Notification Reports, nrc.gov (public domain, 17 U.S.C. 105)"
+    label: "Preliminary Notification Reports"
+    index_url: "https://www.nrc.gov/reading-rm/doc-collections/event-status/prelim-notice/index"
+    year_start: 2003
+    year_end: 2025
+    robots_basis: "nrc.gov/robots.txt user-agent:* carries no Disallow covering this collection"
+    pdf_excluded: true
+    # DISABLED, not merely pdf_excluded: measured 2026-09-13 across all 20 published
+    # years (2003-2025), every single document link routes through /docs/ (0 native
+    # HTML documents of the 118 links found). This collection contributes nothing
+    # through the permitted route and is not staged. Named in the roadmap brief and
+    # kept in this file, disabled, rather than deleted, so the measurement is
+    # traceable to the collection it was made against (ADR-0016).
+
+  # ---------------------------------------------------------------------------------
+  # The status-message code book (ADR-0007's tiny, separately-carded source). Not
+  # fetched over the network: pooled from the Kelmarsh and Penmanshiel telemetry
+  # event tables already staged for M1, under the licence those records already
+  # carry (docs/DATA_LICENSES.md).
+  # ---------------------------------------------------------------------------------
+  status_code_book:
+    kind: status_code_book
+    enabled: true
+    provider: "Cubico Sustainable Investments Ltd (Kelmarsh and Penmanshiel wind farm status logs)"
+    license: "CC BY 4.0 (inherited: the same licence as the Kelmarsh and Penmanshiel telemetry records)"
+    attribution: "Cubico Sustainable Investments Ltd, Kelmarsh and Penmanshiel wind farm data, Zenodo, doi:10.5281/zenodo.5841833 and doi:10.5281/zenodo.5946807 (CC BY 4.0)"
+    telemetry_sources: [kelmarsh, penmanshiel]
+
+# ------------------------------------------------------------------------------------
+# Candidates considered at M2a and not staged. Recorded with the evidence, per
+# ADR-0016, rather than silently dropped -- a documented exclusion is a result.
+# ------------------------------------------------------------------------------------
+excluded_candidates:
+  nrc_licensee_event_reports:
+    status: blocked
+    reason: "the only published full-text access route disallows crawling outright"
+    evidence: >-
+      lersearch.inl.gov/robots.txt (fetched 2026-09-13): "User-agent: *\nDisallow: /"
+      with the comment "# Don't index this site". data.gov's own listing for this
+      dataset (catalog.data.gov/dataset/u-s-nuclear-plant-licensee-event-reports)
+      points at the same search interface and offers no bulk download. ADAMS, the
+      other route, moved its public interface from adams.nrc.gov/wba (now NXDOMAIN)
+      to adams-search.nrc.gov, a JavaScript single-page application with no
+      documented public API as of this check.
+
+  phmsa_pipeline_incidents:
+    status: blocked
+    reason: "the Akamai edge returns 403 to every non-browser request, including to robots.txt itself"
+    evidence: >-
+      www.phmsa.dot.gov/robots.txt -> HTTP 403 (fetched 2026-09-13, from two separate
+      networks), so even the crawl policy cannot be read. The flagged-incident-file
+      download (phmsa.dot.gov/sites/phmsa.dot.gov/files/data_statistics/pipeline/
+      PHMSA_Pipeline_Safety_Flagged_Incidents.zip) returns the same 403.
+
+  doe_oe417_disturbance_reports:
+    status: blocked
+    reason: "the publishing host is unreachable from this network, and its mirror disallows the routes that would substitute for it"
+    evidence: >-
+      www.oe.netl.doe.gov resolves to an IPv6-only address (2620:111:a002:153::10:75)
+      from the DNS used here; this network has no IPv6 route (direct connection
+      attempts to that address fail). The ORNL OpenEnergyHub mirror
+      (openenergyhub.ornl.gov) is reachable but its robots.txt disallows
+      /api/ and /explore/download for the general user agent, which is exactly the
+      route that would be needed; browsing its dataset directly also shows only 341
+      short structured rows for 2023 (event_month, dates, area_affected, NERC region
+      -- no narrative field), thin even if the route were open.
+
+  nerc_lessons_learned:
+    status: excluded
+    reason: "the publisher's own robots.txt names Claude specifically for exclusion"
+    evidence: >-
+      nerc.com/robots.txt (fetched 2026-09-13) sets, for the general user agent,
+      `Content-Signal: search=yes,ai-train=no,use=reference` -- an express reservation
+      of rights under EU Directive 2019/790 Article 4, by the file's own preamble --
+      and separately lists `User-agent: ClaudeBot\nDisallow: /`. NERC is not a federal
+      agency (Tier 2), so ADR-0004's default applies regardless; the named exclusion
+      removes any question of it.
+
+  iso_rto_operator_notices:
+    status: excluded
+    reason: "no ISO/RTO checked states a permissive licence for its notices, and the access posture is restrictive where it says anything at all"
+    evidence: >-
+      Sampled CAISO, PJM, ERCOT and MISO (fetched 2026-09-13). CAISO's robots.txt
+      disallows /resources/* (where notices of this kind are typically served).
+      ERCOT's robots.txt itself returns HTTP 403. MISO's robots.txt uses the same
+      Content-Signal convention as NERC and separately lists
+      `User-agent: ClaudeBot\nDisallow: /`. PJM's robots.txt carries no blanket block
+      but also no licence statement anywhere checked. None of the four states an
+      affirmative permissive licence for operator notices; ADR-0004's default is
+      exclusion absent one.
+
+  nrel_osti_technical_reports:
+    status: excluded
+    reason: "no blanket permissive statement exists; the licence question is per-document and the publishing host for one arm is unreachable"
+    evidence: >-
+      OSTI.GOV's copyright policy (osti.gov/copyright, per its own FAQ) states
+      explicitly that public access does not mean public domain: documents marked
+      "U.S. Government Work" are freely reusable, but "for technical reports created
+      in the performance of the contract, permission from DOE is required to
+      establish and claim copyright" -- i.e. contractor-authored lab reports may be
+      copyrighted, and the marking must be checked per document. That check does not
+      scale to a corpus acquisition step, and this Tier-2 source requires exactly the
+      opposite: a document-level check before use. www.nrel.gov (the other candidate
+      host) does not resolve from this network at all.

@@ -165,6 +165,23 @@ def test_final_stage_splits_and_shards(
     assert sum(len(list(read_jsonl(shard))) for shard in shards) == final.rows_out
 
 
+def test_extra_fields_survive_every_stage_to_final(
+    config_path: Path, fixture_corpus: Path, tmp_paths: ProjectPaths
+) -> None:
+    """A field beside ``text`` (here the fixture's ``id``) must reach ``final``.
+
+    M2b reports per-source perplexity, which needs a ``source`` field carried
+    untouched from the raw corpus through every stage. Only ``clean`` ever rebuilt
+    its output record from scratch; this is the regression test for that fix.
+    """
+    results, _ = run_full_pipeline(config_path, fixture_corpus, tmp_paths)
+    final = results[-1]
+    shards = list(Path(final.details["directory"]).glob("*.jsonl"))
+    records = [record for shard in shards for record in read_jsonl(shard)]
+    assert records
+    assert all("id" in record for record in records)
+
+
 def test_split_assignment_is_deterministic_and_content_addressed() -> None:
     from faultline.data.text.pipeline import FinalConfig
 

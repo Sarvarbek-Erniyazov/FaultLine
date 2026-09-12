@@ -464,7 +464,7 @@ class CleanStage(TextStage):
                 chars_out += len(cleaned)
                 lengths.append(len(cleaned))
                 samples.offer(f"{original[:100]} -> {cleaned[:100]}")
-                yield {field_name: cleaned}
+                yield {**record, field_name: cleaned}
 
         rows_out = write_jsonl(self.layout.cleaned, records())
         logger.info("clean: %d -> %d documents", rows_in, rows_out)

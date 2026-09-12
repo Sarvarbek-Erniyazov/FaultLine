@@ -1,0 +1,12 @@
+2026-09-13 07:04:51,408 INFO     faultline.runs | run 20260912-220451_all_text_3b08fa30 started (config hash 3b08fa30)
+2026-09-13 07:04:51,423 INFO     faultline.data.text.pipeline | clean: 264 -> 264 documents
+2026-09-13 07:04:51,431 INFO     faultline.runs | wrote clean_stats_report.md
+2026-09-13 07:04:51,442 INFO     faultline.data.text.pipeline | filter: 264 -> 264 documents
+2026-09-13 07:04:51,443 INFO     faultline.runs | wrote filter_stats_report.md
+2026-09-13 07:04:51,454 INFO     faultline.data.text.pipeline | dedup: 264 -> 264 documents
+2026-09-13 07:04:51,454 INFO     faultline.runs | wrote dedup_stats_report.md
+2026-09-13 07:04:51,463 INFO     faultline.data.text.pipeline | pii: 264 documents, replacements {'email': 0, 'phone': 0, 'digits': 0}
+2026-09-13 07:04:51,464 INFO     faultline.runs | wrote pii_stats_report.md
+2026-09-13 07:04:51,472 INFO     faultline.data.text.pipeline | final: 264 documents into C:\Users\sharg\Desktop\github\FaultLine\data\final\text\status_code_book
+2026-09-13 07:04:51,474 INFO     faultline.runs | wrote final_stats_report.md
+2026-09-13 07:04:51,634 INFO     faultline.runs | run 20260912-220451_all_text_3b08fa30 ok in 0.07s -> C:\Users\sharg\Desktop\github\FaultLine\reports\data\20260912-220451_all_text_3b08fa30

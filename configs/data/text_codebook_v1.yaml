@@ -1,0 +1,72 @@
+# Text pipeline configuration for the status-message code book, version 1 (M2a/M2b).
+#
+# The status-message code book (ADR-0007's tiny, separately-carded source: 264
+# distinct Kelmarsh/Penmanshiel status strings, pooled from telemetry already staged
+# for M1) is not narrative prose, and text_v1.yaml's thresholds are wrong for it in
+# one place: `filter.min_chars: 200` would drop every single entry. The code book's
+# own strings run 6-41 characters (mean 22.7, measured on the staged source) --
+# `faultline inspect telemetry`'s own dataset-card evidence already states this is a
+# closed set of short status labels, not written prose, so a length filter built for
+# narrative documents does not apply to it. That is the ONE departure from text_v1.yaml
+# below; everything else -- the two regex fixes (ADR-0007's "<" comparison operator,
+# ADR-0005's phone pattern), PII policy, dedup strategy -- is identical, because this
+# source flows through the same tokenizer and the same discipline should apply.
+#
+# `final.split_fractions`/`shard_size` are also re-sized for a source this small: the
+# 98/1/1 split text_v1.yaml uses would put 2-3 documents in val and test out of 264,
+# which is thin but not unreasonable for a source whose whole point is tokenizer
+# readiness rather than a held-out loss estimate carrying weight of its own.
+#
+# This file is versioned, not edited: a run copies it into its own report directory
+# and records its hash. Changing anything else means writing text_codebook_v2.yaml.
+
+text:
+  io:
+    corpus_name: "status_code_book"
+    input_path: null # null = <data_root>/raw/text/status_code_book.jsonl
+    text_field: "text"
+
+  clean:
+    unescape_html_entities: true
+    remove_html_tags: true
+    html_tag_pattern: "v1" # ADR-0007: "Wind < start wind" must not clean to "Wind"
+    unicode_form: "NFKC"
+    remove_control_chars: true
+    normalize_whitespace: true
+    drop_empty: true
+
+  filter:
+    min_chars: 5 # FaultLine departure from text_v1.yaml: this source's shortest
+      # measured string is 6 characters; 200 would drop all 264 entries
+    max_chars: 100000 # course default, unreached by anything this short
+    min_alpha_ratio: 0.30 # course default; the shortest measured ratio here is 0.43
+    max_repeated_line_ratio: 0.30 # course default; single-line documents are unaffected
+
+  dedup:
+    strategy: "exact" # the 264 strings are already distinct by construction
+      # (pooled via faultline.data.telemetry.inspect's Counter), so this is a
+      # no-op safety net, not load-bearing
+    lowercase: true
+    strip: true
+
+  pii:
+    mask_emails: true
+    mask_phones: true
+    mask_digits: false
+    phone_pattern: "v1" # ADR-0005, same as text_v1.yaml
+    email_placeholder: "<EMAIL>"
+    phone_placeholder: "<PHONE>"
+    number_placeholder: "<NUMBER>"
+
+  final:
+    shard_size: 5000 # everything fits in one shard per split regardless
+    split_fractions: # FaultLine departure from text_v1.yaml: a source this small
+      train: 0.90 # needs enough in val/test to be worth reading, not a
+      val: 0.05 # perplexity estimate with any real precision
+      test: 0.05
+    split_seed: 20260909 # same seed as text_v1.yaml, for no reason that matters here
+
+  report:
+    sample_size: 5
+    sample_chars: 200
+    sample_seed: 20260909

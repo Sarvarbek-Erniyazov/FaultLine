@@ -97,6 +97,12 @@ convention = "google"
 # Missing-docstring rules are relaxed for tests and thin script wrappers only.
 "tests/**" = ["D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107"]
 "scripts/**" = ["D100", "D103"]
+# `import torch.nn.functional as F` is how every reader of torch code expects to see it,
+# and renaming it would make the model modules harder to check against the literature.
+"src/faultline/model/**" = ["N812"]
+"src/faultline/training/**" = ["N812"]
+"src/faultline/evaluation/**" = ["N812"]
+"tests/model/**" = ["N812"]
 
 [tool.mypy]
 # No python_version pin: the numpy stubs shipped with this lockfile use 3.12 syntax,

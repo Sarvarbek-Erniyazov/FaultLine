@@ -40,6 +40,7 @@ cards_app = typer.Typer(
 )
 text_app = typer.Typer(help="Run the text corpus pipeline.", no_args_is_help=True)
 telemetry_app = typer.Typer(help="Run the telemetry pipeline.", no_args_is_help=True)
+model_app = typer.Typer(help="Train and evaluate models.", no_args_is_help=True)
 check_app = typer.Typer(help="Repository self-checks.", no_args_is_help=True)
 
 app.add_typer(download_app, name="download")
@@ -47,6 +48,7 @@ app.add_typer(inspect_app, name="inspect")
 app.add_typer(cards_app, name="cards")
 app.add_typer(text_app, name="text")
 app.add_typer(telemetry_app, name="telemetry")
+app.add_typer(model_app, name="model")
 app.add_typer(check_app, name="check")
 
 ConfigOption = Annotated[
@@ -581,6 +583,30 @@ def telemetry_shards(
 
     manifest, report = build_shards(ProjectPaths.resolve(), config)
     typer.echo(f"wrote {manifest}")
+    typer.echo(f"wrote {report}")
+
+
+@model_app.command(
+    "ladder",
+    help="Train the size ladder -- language model, frozen probe, fine-tune and the "
+    "randomly initialised control at every rung -- and write the ladder report.",
+)
+def model_ladder(
+    config: ConfigOption = Path("configs/train/telemetry_v0.yaml"),
+    device: Annotated[
+        str | None,
+        typer.Option("--device", help="Torch device; chosen automatically when omitted."),
+    ] = None,
+) -> None:
+    """Run the whole ladder and write its report.
+
+    Args:
+        config: The training configuration, which names the model configuration.
+        device: Torch device to run on.
+    """
+    from faultline.evaluation.ladder import run_ladder
+
+    report = run_ladder(ProjectPaths.resolve(), config, device)
     typer.echo(f"wrote {report}")
 
 

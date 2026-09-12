@@ -122,6 +122,16 @@ class ProjectPaths:
         return self._mk(self.repo_root / "data" / "tokenizers")
 
     @property
+    def checkpoints_dir(self) -> Path:
+        """Directory holding trained checkpoints.
+
+        Never committed: ``.gitignore`` excludes it and a pre-commit hook fails on any
+        path under it, because a checkpoint is derived data and can be reproduced from
+        the shards, the configuration and the seed.
+        """
+        return self._mk(self.repo_root / "checkpoints")
+
+    @property
     def reports_dir(self) -> Path:
         """Root directory for tracked Markdown reports."""
         return self._mk(self.repo_root / "reports")

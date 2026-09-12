@@ -1,0 +1,112 @@
+# Training the telemetry ladder, version 0 (M1e). What the runs DO to the models in
+# configs/model/ladder_v0.yaml.
+#
+# FOUR RUNS AT EVERY RUNG, in this order, because each reads the one before:
+#
+#   1. lm       -- next-token prediction on the train split. The course deliverable and
+#                  the representation runs 2 and 3 read. Selected on validation
+#                  next-token loss.
+#   2. probe    -- the language model's backbone FROZEN, a shallow risk head trained on
+#                  the 24-hour narrow label. Selected on validation AUPRC.
+#   3. finetune -- the same, unfrozen. Selected on validation AUPRC.
+#   4. random   -- the same head, the same budget and the same size on a RANDOMLY
+#                  INITIALISED backbone.
+#
+# Run 4 is what makes this an experiment rather than a size sweep. (2) and (3) against (4)
+# is the comparison that answers whether next-token pretraining on quantised telemetry
+# buys anything for event risk, and it is a publishable result either way, including if
+# the answer is no. The configuration REFUSES TO LOAD if the control's budget differs from
+# the fine-tuned run's in windows, batch, accumulation or learning rate: the comparison is
+# initialisation and nothing else, and that is enforced rather than trusted.
+#
+# ONE LEARNING RATE FOR ALL THREE RISK RUNS. A frozen head usually prefers a higher rate
+# than a full fine-tune, and a randomly initialised backbone may prefer a higher one still.
+# Tuning each run separately on validation would turn the ablation into a comparison of how
+# much tuning each arm received, so every risk run gets the same rate and the report carries
+# this as a limitation. It is pre-registered here, before the runs.
+#
+# TRAINING STRIDE 6, NOT 1. The training split has 4,738,594 steps. At stride 1 successive
+# windows share 143 of their 144 steps, so the windows are near-identical and the effective
+# sample size is far below the token count -- an epoch would be mostly one window seen
+# 144 times. Stride 6 is hourly and is a knob, not a constant. EVALUATION KEEPS STRIDE 1,
+# because a risk model is scored on every step it would have to make a call on.
+#
+# BUDGETS ARE IN WINDOWS, NOT EPOCHS. An epoch is a different amount of work at every rung
+# and the comparison is between rungs. The figures below were sized from measured
+# throughput on one 8 GB card (S0 327, S1 139, S2 81, S3 41 windows/s at batch 16) to put
+# the whole ladder -- 32 runs, training and scoring -- inside about five hours.
+#
+# NEVER SELECTED ON TEST. Every selection metric above is a validation quantity. The test
+# split is read once per selected checkpoint, at the end, and never feeds a choice.
+
+version: 0
+tokenizer_config: "configs/tokenizer/quantile_bins_v2.yaml"
+model_config_path: "configs/model/ladder_v0.yaml"
+
+train_stride: 6
+runs: [lm, probe, finetune, random]
+
+optimiser:
+  weight_decay: 0.1
+  beta1: 0.9
+  beta2: 0.95
+  warmup_fraction: 0.02
+  grad_clip: 1.0
+  precision: bf16
+
+# 80,000 windows is 149.8 million tokens, about 2.4 passes over the 61.6 million distinct
+# training tokens the shards hold.
+lm:
+  windows: 80000
+  batch_windows: 16
+  accumulate: 2
+  learning_rate: 0.0006
+  evaluations: 6
+
+risk:
+  label: "narrow_within_24h"
+  # 1.0: the loss is not reweighted. The 24-hour narrow label runs at 1.6% (Kelmarsh) and
+  # 2.5% (Penmanshiel) of training windows, and AUPRC is a ranking metric that a class
+  # weight does not change the ordering of; a weight would change calibration, which the
+  # selective-prediction work of M1 handles properly rather than by a thumb on the loss.
+  positive_weight: 1.0
+  probe:
+    windows: 40000
+    batch_windows: 16
+    accumulate: 2
+    learning_rate: 0.0005
+    evaluations: 6
+  finetune:
+    windows: 40000
+    batch_windows: 16
+    accumulate: 2
+    learning_rate: 0.0005
+    evaluations: 6
+  random:
+    windows: 40000
+    batch_windows: 16
+    accumulate: 2
+    learning_rate: 0.0005
+    evaluations: 6
+
+# Windows are capped PER SOURCE. At stride 1 the test split holds about nine million
+# windows and roughly seventeen billion tokens of forward pass per checkpoint, which is not
+# a budget this project has. The cap is seeded and identical for every checkpoint, so the
+# ladder compares like with like even where it cannot see everything, and every table it
+# produces prints the window count it was computed from.
+evaluation:
+  stride: 1
+  selection_windows: 3000
+  validation_windows: 15000
+  test_windows: 12000
+  seed: 20260912
+  batch_windows: 32
+
+notes: >-
+  Two limitations of this configuration, stated before the runs rather than after them.
+  (a) Every risk run shares one learning rate, so no arm of the ablation is tuned and none
+  is tuned more than another; a frozen probe would ordinarily take a higher rate than a
+  full fine-tune, so the probe is the arm most likely to be under-served by this choice.
+  (b) Evaluation is capped per source, so every figure is a subsample -- seeded, fixed, and
+  identical across checkpoints, but a subsample. Neither is hidden in the tables: the
+  window count sits in the table it belongs to.

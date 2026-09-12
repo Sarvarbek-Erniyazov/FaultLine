@@ -235,7 +235,13 @@ trained from scratch, evaluated as a risk model rather than a forecaster.
     verification (`reports/data/verification_20260912.md`, splits_v3, and the producing
     threshold now printed as 0.005 pu -- the column heading still read "> 10 kW" while the
     code had used per unit since M1c).*
-- Fit `QuantileBinTokenizer` on the training split only.
+- *M1e, 2026-09-12: the model code. A decoder-only causal transformer written from
+  scratch (`src/faultline/model/`), the window sampler over the shards, the training loop
+  the four runs share, average precision written out and checked against hand-computed
+  values, and the ladder that runs the experiment and writes one report
+  (`faultline model ladder`; `configs/model/ladder_v0.yaml`,
+  `configs/train/telemetry_v0.yaml`). Four sizes, four runs each, context held fixed as a
+  separate ablation, and 57 tests.*
 - Model, training loop, checkpointing; multi-seed runs.
 - Risk evaluation: AUPRC, event-level F1, false alarms per hour, detection delay.
 - Selective prediction: risk–coverage curves, AURC, conformal risk control with a

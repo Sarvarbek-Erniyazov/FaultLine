@@ -1,0 +1,58 @@
+# The telemetry model ladder, version 0 (M1e). The architecture, and only the architecture.
+#
+# A decoder-only causal transformer over the joint vocabulary's fixed telemetry prefix,
+# written from scratch (`src/faultline/model/transformer.py`). Four sizes, because the
+# result this milestone reports is a CURVE and not a model: one rung picked out and
+# presented as "the model" would be a weaker claim than the four together, and a claim
+# nobody could check for size-dependence.
+#
+# CONTEXT IS HELD FIXED ACROSS THE LADDER. 144 steps x 13 tokens = 1,872 tokens at every
+# rung. Context length is a separate ablation; varying it with size would confound the two
+# and neither axis could then be read.
+#
+# Parameters are counted EXCLUDING EMBEDDINGS, which is the axis of every plot in the
+# report and what `12 * n_layer * d_model^2` approximates (4 d^2 of attention and 8 d^2 of
+# feed-forward per block). The embeddings are excluded because they scale with the
+# vocabulary and the context, and the ladder holds both fixed: at d_model 288 they are
+# 880k parameters, which would dominate the two smallest rungs and flatten the axis.
+#
+#   rung | d_model | layers | heads | 12 L d^2 | measured backbone
+#     S0 |      80 |      4 |     5 |     307k |           307,920
+#     S1 |     128 |      6 |     8 |   1,180k |         1,181,312
+#     S2 |     192 |      8 |     8 |   3,539k |         3,542,208
+#     S3 |     288 |     10 |    12 |   9,953k |         9,959,328
+#
+# WHY S0 HAS FIVE HEADS AND NOT FOUR. The head count is not part of the size axis --
+# attention costs 4 d^2 whatever the head count is, and S0 has exactly 307,920 backbone
+# parameters either way -- but it decides whether the attention runs at all. The fused
+# attention kernels require a head dimension divisible by 8. At d_model 80 with 4 heads the
+# head dimension is 20, which misses it, and torch falls back WITHOUT ERROR to the kernel
+# that materialises the whole 1,872 x 1,872 score matrix. Measured on this project's 8 GB
+# card at batch 16: 42 windows/s and 6.72 GB against 327 windows/s and 0.83 GB at 5 heads.
+# Same parameters, same arithmetic, an eighth of the throughput. Five heads gives head
+# dimension 16 and the fast path, and the report prints the head dimension and whether it
+# clears the requirement for every rung, so this cannot recur silently.
+#
+# SEEDS. Three at S0 and S1, one at S2 and S3. That is what one 8 GB card allows, and it is
+# said here rather than implied: the spread measured where there are three seeds is the
+# error bar the single-seed rungs are read with, and no single-seed figure carries an
+# interval of its own.
+
+version: 0
+context_steps: 144
+dropout: 0.0
+
+# The risk head (`src/faultline/model/risk.py`): one hidden layer of d_model, reading the
+# LAST position only. Shallow on purpose -- run (2) freezes the backbone and trains only
+# this, and that run is evidence about the representation; a head deep enough to solve the
+# task by itself would answer a different question. Last position rather than a pooled
+# window because the backbone is causal and the last position is the only one that exists
+# in the streaming inference M3 has to demonstrate.
+head_hidden: 1.0
+head_dropout: 0.0
+
+rungs:
+  - {name: S0, d_model: 80, n_layer: 4, n_head: 5, seeds: [1, 2, 3]}
+  - {name: S1, d_model: 128, n_layer: 6, n_head: 8, seeds: [1, 2, 3]}
+  - {name: S2, d_model: 192, n_layer: 8, n_head: 8, seeds: [1]}
+  - {name: S3, d_model: 288, n_layer: 10, n_head: 12, seeds: [1]}

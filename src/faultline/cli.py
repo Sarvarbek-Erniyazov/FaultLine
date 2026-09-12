@@ -533,6 +533,24 @@ def text_corpus(
     typer.echo(f"wrote {destination}")
 
 
+@text_app.command(
+    "bpe", help="Fit the byte-level BPE tokenizer on a finished corpus and report it."
+)
+def text_bpe(
+    config: ConfigOption = Path("configs/tokenizer/text_bpe_v1.yaml"),
+) -> None:
+    """Fit the text BPE tokenizer and write it and its report.
+
+    Args:
+        config: The tokenizer configuration.
+    """
+    from faultline.data.text.bpe_fit import fit_text_bpe
+
+    tokenizer_path, report_path = fit_text_bpe(ProjectPaths.resolve(), config)
+    typer.echo(f"wrote {tokenizer_path}")
+    typer.echo(f"wrote {report_path}")
+
+
 @text_app.command("run", help="Run the text corpus pipeline and write per-stage reports.")
 def text_run(
     config: ConfigOption = Path("configs/data/text_v0.yaml"),

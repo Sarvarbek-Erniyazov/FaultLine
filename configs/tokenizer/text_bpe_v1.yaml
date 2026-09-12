@@ -1,0 +1,16 @@
+# The text BPE tokenizer, version 1 (M2c).
+#
+# One fit; no iteration -- the M2 brief pre-registers this, so there is no candidate
+# sweep here the way configs/tokenizer/quantile_bins_v*.yaml compares bin counts.
+#
+# vocab_size 32,768 fills the text region [1184, 1184 + 32768) of the joint layout
+# exactly (ADR-0003); this is a LOCAL vocabulary size (base 256 bytes plus merges),
+# offset into that region at fit time by JointVocab.encode_text, never by this config
+# or by text_bpe.py itself.
+
+version: 1
+corpus_name: "nrc_operator_narratives"
+fit_split: "train"
+vocab_size: 32768
+report_splits: ["val", "test"]
+code_book_corpus: "status_code_book"

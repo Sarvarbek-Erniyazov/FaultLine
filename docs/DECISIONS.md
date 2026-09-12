@@ -1665,47 +1665,64 @@ enough that the headroom stops being an order of magnitude.
 
 ## ADR-0016 The M2 text corpus is NRC operator-narrative documents, not the four-source Tier-1/Tier-2 list as scoped
 
-**Status:** Accepted · **Date:** 2026-09-13
+**Status:** Accepted, corrected 2026-09-13 (Tier-1 table restructured; PHMSA and
+DOE OE-417 re-tested) · **Date:** 2026-09-13
 
-**Decision.** The M2 text corpus is drawn from `www.nrc.gov` alone: Event
-Notification Reports (native HTML, the whole collection) and four "generic
-communications" collections -- Information Notices, Bulletins, Generic Letters,
-Regulatory Issue Summaries -- restricted to the documents that stay on `nrc.gov`
-outside `/docs/` (below). A fifth generic-communications collection, Preliminary
-Notification Reports, is configured and disabled: measured to hold zero documents
-through the permitted route. A tiny sixth source, the Kelmarsh/Penmanshiel
-status-message code book, is drawn from telemetry already staged for M1, not
-fetched over the network. Every other candidate named in the M2 brief -- both
-Tier-1 sources (NRC Licensee Event Reports, PHMSA pipeline incidents, DOE OE-417)
-and every Tier-2 candidate (NERC Lessons Learned, four sampled ISO/RTO notice
-pages, NREL/OSTI technical reports) -- is excluded, each for a reason measured on
-2026-09-13 and recorded in `configs/data/sources_text.yaml`'s
-`excluded_candidates` block, not merely asserted here.
+**Decision.** The M2 text corpus is drawn from `www.nrc.gov`: Event Notification
+Reports (native HTML, the whole collection) and four "generic communications"
+collections -- Information Notices, Bulletins, Generic Letters, Regulatory Issue
+Summaries -- restricted to the documents that stay on `nrc.gov` outside `/docs/`
+(below). A fifth generic-communications collection, Preliminary Notification
+Reports, is configured and disabled: measured to hold zero documents through the
+permitted route. A tiny sixth source, the Kelmarsh/Penmanshiel status-message code
+book, is drawn from telemetry already staged for M1, not fetched over the
+network. Every Tier-2 candidate (NERC Lessons Learned, four sampled ISO/RTO
+notice pages, NREL/OSTI technical reports) is excluded, each for a reason
+measured on 2026-09-13 and recorded in `configs/data/sources_text.yaml`'s
+`excluded_candidates` block, not merely asserted here. Of the three other
+Tier-1 sources, one (NRC Licensee Event Reports) is excluded on the same terms;
+one (DOE OE-417) is excluded for thinness, corrected below from an earlier,
+overstated "unreachable"; and one (PHMSA) is **not excluded** -- it is pending a
+manual download this ADR names the exact file for.
 
-**Why this reopens the M2 brief's source list.** The brief named four Tier-1
-sources on the understanding that a federal public-domain source is reachable by a
-bulk route. Measured, three of the four are not, by three different failure modes:
+**The table below distinguishes two different claims a "blocked" line can
+mean, and the original version of this ADR conflated them.** "This project's
+automated crawler cannot fetch this under the access policies it honours" and
+"this project cannot obtain this data by any permitted route" are different
+statements. A person downloading a stated-public-domain file in their own
+browser and recording its URL, retrieval date and hash in the manifest is
+ordinary provenance -- the same kind every Zenodo-staged telemetry source
+already uses -- not a workaround; it is distinct from an automated client
+presenting itself as something it is not (a browser, a different crawler),
+which stays refused regardless of what it would unlock. The table reports
+both routes for each source, separately.
 
-| source | failure mode | evidence |
-| --- | --- | --- |
-| NRC Licensee Event Reports | the only full-text route disallows crawling outright | `lersearch.inl.gov/robots.txt`: `User-agent: *` / `Disallow: /`, commented "Don't index this site". ADAMS' public interface moved from `adams.nrc.gov/wba` (now NXDOMAIN) to `adams-search.nrc.gov`, a single-page application with no documented public API as of this check. |
-| PHMSA pipeline incidents | the edge blocks every non-browser client, including from reading its own crawl policy | `www.phmsa.dot.gov/robots.txt` returns HTTP 403, from two separate networks. The flagged-incident-file download returns the same. |
-| DOE OE-417 disturbance reports | the publishing host is unreachable from this network; its one mirror disallows the route that would substitute, and is thin regardless | `www.oe.netl.doe.gov` resolves IPv6-only; this network has no IPv6 route. `openenergyhub.ornl.gov`'s `robots.txt` disallows `/api/` and `/explore/download`; its dataset holds 341 short structured rows for 2023 with no narrative field. |
+| source | automated route | manual route | estimated narrative yield | decision |
+| --- | --- | --- | --- | --- |
+| NRC Licensee Event Reports | **Blocked.** `lersearch.inl.gov/robots.txt`: `User-agent: *` / `Disallow: /`, commented "Don't index this site" -- a direct instruction, honoured rather than tested around. ADAMS' own public interface moved from `adams.nrc.gov/wba` (now NXDOMAIN) to `adams-search.nrc.gov`, a single-page app with no documented public API. data.gov's catalogue entry for this dataset names the LERSearch UI as its sole resource -- no bulk export. | **Not open, and nothing to name.** LERSearch is a case-by-case search form, not a bulk listing, so there is no "exact file" a human could fetch the way PHMSA's can be named below. | Likely substantial -- LERs are the NRC's longest-form technical narrative filings, longer than an Event Notification -- but unmeasured: no route, automated or manual-bulk, is open to measure it from. | **Excluded.** Route forward: a written bulk-export request to NRC, recorded as such if it is ever made; not something this session can action. |
+| PHMSA pipeline incidents | **Blocked, tested from a second, independent angle this time.** `data.transportation.gov` (DOT's Socrata portal) is a different host from `phmsa.dot.gov`'s Akamai front, with its own `robots.txt` (permits `/resource/*` and `/api/views/*` for a generic agent). Queried directly: the named dataset ("Pipeline Incident Flagged Files", `qdme-9bbm`) is a metadata-only record (`"assetType": "href"`) -- Socrata never hosted the rows, only a pointer. Its `additionalAccessPoints.zip` field, and a sibling dataset's (`27nc-rsge`) access point, both resolve to files still served from `phmsa.dot.gov` -- the same host already found to 403 every non-browser client. Confirmed independently: Claude's own `WebFetch` tool (a different client, different network path) also received `403 Forbidden` fetching the PHMSA landing page. Two different automated tools, two networks, the same result: there is no independently-hosted export for this data, only a catalogue pointer back to the blocked host. | **Open.** An edge rule built against non-browser traffic does not block a human browser session, and downloading a stated-public-domain file and recording its URL, date and hash is ordinary provenance. **Exact file, named via `data.transportation.gov`'s own structured metadata:** `https://www.phmsa.dot.gov/sites/phmsa.dot.gov/files/data_statistics/pipeline/PHMSA_Pipeline_Safety_Flagged_Incidents.zip` ("Flagged Files (zip file)", the `qdme-9bbm` record's access point). The broader per-year accident/incident files live under `https://www.phmsa.dot.gov/data-and-statistics/pipeline/distribution-transmission-gathering-lng-and-liquid-accident-and-incident-data`, which this project cannot enumerate (both `requests` and `WebFetch` are blocked there) but a browser reaches normally. | Unmeasured pending the file. PHMSA's own dataset description names "significant incidents," "reported incidents" and cause information among the underlying fields -- exactly what a downloaded file needs to be profiled against (`faultline inspect telemetry`'s free-text-verdict method, `docs/DATASET_CARD_TEMPLATE.md`) before any yield number is reported. | **Not staged, not excluded.** Awaiting a manual download at the file named above; this project will profile it and report the free-text verdict once it exists. Licence already confirmed clean: `27nc-rsge`'s Socrata metadata states `License: http://www.usa.gov/publicdomain/label/1.0/`, consistent with 17 U.S.C. 105. |
+| DOE OE-417 disturbance reports | The publishing host, `www.oe.netl.doe.gov`, resolves IPv6-only from this network and is genuinely unreachable -- that part stands. **The original exclusion reason is corrected here**: it said "unreachable," true of that one host and false of the source as a whole, conflating the two. The ORNL OpenEnergyHub mirror (`openenergyhub.ornl.gov`) *is* reachable and was queried, in the original reconnaissance and again for this correction, via its `/api/explore/...` REST endpoint -- **which its own `robots.txt` disallows for a generic `User-agent: *`** (`Disallow: /api/`, with `Allow: /api/` carved out for `Googlebot` only). That is a compliance error in this project's own prior action, caught rereading the same file rather than by anyone else, and it is corrected here: the mirror's API is not an open automated route, on the same standard this ADR applies to every other source. | Not tested, given the measured thinness below. If this source is wanted later, the mirror's human-facing dataset page (`/explore/dataset/oe-417-annual-summaries/`, not disallowed) or a written request to DOE/ORNL are the routes to check first. | **Measured** (the data already retrieved is kept as evidence of thinness, not relied on as an ongoing route -- see the correction above): 341 rows total, covering 2023 only -- the mirror's own description states it captures "annual summary... for 2023 only for data discovery purposes," not a multi-year archive. Its one text-bearing field (`alert_criteria`) holds **27 distinct values across all 341 rows**: a closed set of regulatory reporting categories, not free narrative -- the same code-book-versus-narrative distinction ADR-0001 draws for the telemetry sources. Every text field combined (`area_affected`, `alert_criteria`, `event_type`) totals **9,614 whitespace-delimited tokens** for the entire dataset. | **Excluded -- for thinness, not unreachability.** A public-domain source (confirmed) with a 2023-only sample of a few hundred rows and a 27-entry code book where a narrative field would be; profiled the way the telemetry sources are, it would not clear `docs/DATASET_CARD_TEMPLATE.md`'s `VERIFIED no` threshold. |
 
-None of these is a licence problem -- all three would be admissible on terms alone.
-Each is a **measured, present-tense access barrier**, checked from this machine on
-the date above and reported as such rather than assumed permanent.
+None of the three is a licence problem -- all three would be admissible on terms
+alone, and two of the three have an explicit public-domain statement on record.
+Two are genuinely blocked by every route checked; the third (PHMSA) has an open
+manual route this ADR names a file for, which the original version did not
+distinguish from the other two.
 
-**The user's decision, 2026-09-13, on being shown this evidence.** Expand within
-the one source family that is actually reachable (`nrc.gov`) rather than search
-for substitutes or work around the barriers above. Explicitly rejected and
-recorded here: fetching the blocked routes with a browser `User-Agent` string,
-which would technically succeed against PHMSA's WAF and would violate
-`lersearch.inl.gov`'s explicit `Disallow: /`. The project's defensibility rests on
-a provenance chain that can be written plainly in a dataset card; a route chosen
-specifically to look like something it is not cannot be written plainly, no
-matter how defensible the underlying licence. If PHMSA or the LERs are wanted
-later, the stated route is a written request to the agency for a bulk export.
+**The user's decision, 2026-09-13, on being shown the original evidence.**
+Expand within the one source family that is actually reachable by an automated,
+robots.txt-compliant route (`nrc.gov`) for the corpus proper, rather than search
+for substitutes or work around the barriers above with automation. Explicitly
+refused, and still refused after this correction: fetching a blocked route with
+a spoofed browser `User-Agent`, or any other automated presentation of this
+project's client as something it is not -- that would technically succeed
+against PHMSA's WAF and would violate `lersearch.inl.gov`'s explicit
+`Disallow: /`, and the project's defensibility rests on a provenance chain that
+can be written plainly in a dataset card. A **human** downloading a
+public-domain file in their own browser and recording it in the manifest is a
+different act from that, not a smaller version of it, which is what this
+correction's table now says explicitly. If the NRC LERs are wanted later, the
+stated route is a written request to the agency for a bulk export.
 
 **The `/docs/` finding, measured rather than inferred from robots.txt.**
 `nrc.gov/robots.txt`'s general `User-agent: *` rule does not disallow `/docs/`
@@ -1756,8 +1773,12 @@ the gate, not the token count." The measured corpus size and which bound it hit
 are reported in the M2a acquisition report and carried into the Gate 6 summary as
 a stated limitation, not chased by loosening the source list further.
 
-**What would change this decision.** Any of the three blocked Tier-1 sources
+**What would change this decision.** For NRC LERs and DOE OE-417: either
 publishing a bulk route this project can use without impersonating a browser or
-crossing a stated `Disallow`; PHMSA or NRC granting a written bulk-export request
-for the LERs; or IPv6 connectivity becoming available on the machines this
-project runs on, which would reopen the DOE OE-417 host.
+crossing a stated `Disallow`; NRC granting a written bulk-export request for
+the LERs; or IPv6 connectivity becoming available on the machines this project
+runs on, which would reopen the DOE OE-417 host directly (the ORNL mirror
+would still be measured thin on the evidence above, corrected access route or
+not). For PHMSA: the manual download named above actually happening, and the
+retrieved file's free-text verdict clearing the same bar every other source in
+this project was profiled against.

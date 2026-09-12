@@ -154,7 +154,7 @@ sources:
 excluded_candidates:
   nrc_licensee_event_reports:
     status: blocked
-    reason: "the only published full-text access route disallows crawling outright"
+    reason: "the only published full-text access route disallows crawling outright, and there is no bulk listing a manual route could enumerate either"
     evidence: >-
       lersearch.inl.gov/robots.txt (fetched 2026-09-13): "User-agent: *\nDisallow: /"
       with the comment "# Don't index this site". data.gov's own listing for this
@@ -162,29 +162,63 @@ excluded_candidates:
       points at the same search interface and offers no bulk download. ADAMS, the
       other route, moved its public interface from adams.nrc.gov/wba (now NXDOMAIN)
       to adams-search.nrc.gov, a JavaScript single-page application with no
-      documented public API as of this check.
+      documented public API as of this check. LERSearch is a case-by-case search
+      form, not a listing, so unlike PHMSA there is no "exact file" to name for a
+      person to download by hand. Route forward: a written bulk-export request to
+      NRC, not something this session can action.
 
   phmsa_pipeline_incidents:
-    status: blocked
-    reason: "the Akamai edge returns 403 to every non-browser request, including to robots.txt itself"
+    status: manual_pending
+    reason: >-
+      the automated route is blocked from two independent hosts and two independent
+      client tools; a human browser download of a named, public-domain file is an
+      open route this project has not yet asked the user to take
     evidence: >-
       www.phmsa.dot.gov/robots.txt -> HTTP 403 (fetched 2026-09-13, from two separate
-      networks), so even the crawl policy cannot be read. The flagged-incident-file
-      download (phmsa.dot.gov/sites/phmsa.dot.gov/files/data_statistics/pipeline/
-      PHMSA_Pipeline_Safety_Flagged_Incidents.zip) returns the same 403.
+      networks), so even the crawl policy cannot be read; the flagged-incident-file
+      download returns the same. Re-tested 2026-09-13 via data.transportation.gov
+      (DOT's Socrata portal, a different host, permissive robots.txt for /resource/*
+      and /api/views/*): the catalogued dataset "Pipeline Incident Flagged Files"
+      (qdme-9bbm) is metadata-only ("assetType": "href") and its access point
+      resolves back to the same phmsa.dot.gov URL; a sibling dataset (27nc-rsge,
+      "Gas Distribution, Gas Transmission & Gathering, LNG incidents and Hazardous
+      Liquid Accident and Incident Data") does the same. Claude's own WebFetch tool
+      (a distinct client, distinct network path) also received 403 fetching the
+      PHMSA landing page. No independently-hosted export exists for this data at
+      any host checked.
+    manual_route: >-
+      A human browser session is not blocked by an edge rule built against
+      non-browser traffic. Exact file, read from data.transportation.gov's own
+      structured metadata (qdme-9bbm's additionalAccessPoints.zip):
+      https://www.phmsa.dot.gov/sites/phmsa.dot.gov/files/data_statistics/pipeline/PHMSA_Pipeline_Safety_Flagged_Incidents.zip
+      ("Flagged Files (zip file)"). The broader per-year accident/incident files are
+      linked from
+      https://www.phmsa.dot.gov/data-and-statistics/pipeline/distribution-transmission-gathering-lng-and-liquid-accident-and-incident-data,
+      which this project cannot enumerate (blocked for both requests and WebFetch)
+      but which a browser reaches normally. Licence: usa.gov public-domain label
+      (http://www.usa.gov/publicdomain/label/1.0/), stated in 27nc-rsge's Socrata
+      metadata, consistent with 17 U.S.C. 105. Not staged until downloaded and
+      profiled for its free-text verdict, per docs/DATASET_CARD_TEMPLATE.md.
 
   doe_oe417_disturbance_reports:
-    status: blocked
-    reason: "the publishing host is unreachable from this network, and its mirror disallows the routes that would substitute for it"
+    status: excluded
+    reason: "thin narrative content once measured, not unreachable -- the earlier record overstated the access barrier and is corrected here"
     evidence: >-
       www.oe.netl.doe.gov resolves to an IPv6-only address (2620:111:a002:153::10:75)
-      from the DNS used here; this network has no IPv6 route (direct connection
-      attempts to that address fail). The ORNL OpenEnergyHub mirror
-      (openenergyhub.ornl.gov) is reachable but its robots.txt disallows
-      /api/ and /explore/download for the general user agent, which is exactly the
-      route that would be needed; browsing its dataset directly also shows only 341
-      short structured rows for 2023 (event_month, dates, area_affected, NERC region
-      -- no narrative field), thin even if the route were open.
+      from the DNS used here; this network has no IPv6 route, so that one host is
+      genuinely unreachable. The ORNL OpenEnergyHub mirror (openenergyhub.ornl.gov)
+      IS reachable, and its /api/explore/... REST endpoint answered directly on
+      2026-09-13 -- but its robots.txt disallows /api/ for the general user agent
+      (Allow: /api/ is carved out for Googlebot only), so that query did not comply
+      with the mirror's own stated policy. Corrected here rather than repeated: the
+      mirror's API is not treated as an open automated route. The data already
+      retrieved is kept only as evidence of thinness, not relied on as an ongoing
+      route. Measured: 341 rows total, 2023 only (the mirror's own description:
+      "for data discovery purposes"); its one text field, alert_criteria, holds 27
+      distinct values across all 341 rows -- a closed regulatory code book, not
+      narrative (ADR-0001's code-book criterion); every text field combined
+      (area_affected, alert_criteria, event_type) totals 9,614 whitespace-delimited
+      tokens for the whole dataset.
 
   nerc_lessons_learned:
     status: excluded

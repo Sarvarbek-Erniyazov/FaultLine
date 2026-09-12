@@ -213,16 +213,26 @@ class ExcludedCandidate(StrictModel):
     """A source considered and not staged, with the evidence recorded rather than dropped.
 
     Attributes:
-        status: ``blocked`` (a technical access barrier) or ``excluded`` (terms not
-            clearly permissive, per ADR-0004's default).
+        status: ``blocked`` (no route, automated or manual-bulk, is open) or
+            ``excluded`` (a route is open but the source fails on other grounds --
+            terms not clearly permissive per ADR-0004's default, or measured
+            thinness) or ``manual_pending`` (the automated route is blocked, but a
+            human downloading a named public-domain file is an open, ordinary
+            route, not attempted yet). ``manual_pending`` is not a synonym for
+            ``blocked``: conflating "this project's automated client cannot fetch
+            it" with "no permitted route exists" is exactly the distinction
+            ADR-0016 was corrected to draw.
         reason: One-line reason.
         evidence: What was actually observed -- a status code, a robots.txt line, a
             DNS failure -- not a paraphrase of it.
+        manual_route: For ``manual_pending``, the exact file(s) a human would
+            download, and where that URL was read from.
     """
 
-    status: Literal["blocked", "excluded"]
+    status: Literal["blocked", "excluded", "manual_pending"]
     reason: str
     evidence: str
+    manual_route: str | None = None
 
 
 class SourcesTextConfig(StrictModel):

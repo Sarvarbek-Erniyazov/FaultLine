@@ -75,7 +75,10 @@ telemetry:
     # is 1.1 pu -- 110% of rated -- at every site, which is what the conversion buys; the
     # minimum is not, because -100 kW was an absolute allowance for a machine drawing
     # from the grid while idle, and an absolute allowance does not scale with rating.
-    power_pu: { min: -0.04878, max: 1.1 }
+    # The minima are rounded AWAY from zero, so that no value the kW bound admitted is
+    # rejected by the converted one. No source comes near it: the lowest power on the
+    # cleaned grid is -21.17 kW (reports/data/ranges_20260910.md).
+    power_pu: { min: -0.0487805, max: 1.1 }
     rotor_speed_rpm: { min: -1.0, max: 25.0 }
     generator_speed_rpm: { min: -10.0, max: 2500.0 }
     pitch_angle_deg: { min: -5.0, max: 100.0 }
@@ -93,7 +96,7 @@ telemetry:
     hill_of_towie:
       # v3's [-100, 2530] kW divided by 2,300 kW: the same 1.1 pu maximum as the default,
       # kept as an override only because -100 kW converts to a different number here.
-      power_pu: { min: -0.043478, max: 1.1 }
+      power_pu: { min: -0.0434783, max: 1.1 }
     care:
       # Unchanged from v3, and now on the same scale as everyone else rather than beside
       # it: CARE publishes power already scaled by rated power, so there was nothing to

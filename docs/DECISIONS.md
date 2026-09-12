@@ -1363,15 +1363,17 @@ rating:
 
 | source | v3, kW | v4, per unit | arithmetic |
 | --- | --- | --- | --- |
-| Kelmarsh, Penmanshiel (default) | [-100, 2255] | **[-0.04878, 1.1]** | -100/2050, 2255/2050 |
-| Hill of Towie | [-100, 2530] | **[-0.043478, 1.1]** | -100/2300, 2530/2300 |
+| Kelmarsh, Penmanshiel (default) | [-100, 2255] | **[-0.0487805, 1.1]** | -100/2050, 2255/2050 |
+| Hill of Towie | [-100, 2530] | **[-0.0434783, 1.1]** | -100/2300, 2530/2300 |
 | CARE | [-0.1, 1.1] | **[-0.1, 1.1]** | unchanged: already per unit |
 
 The plausible **maximum is now the same number, 1.1 pu, at every source**, which is what
 the conversion buys: the three bounds were the same rule -- 110% of rated -- written three
 ways. The minima are not identical, and are not forced to be: -100 kW was an absolute
 allowance for a machine drawing from the grid while idle, and an absolute quantity does not
-scale with a rating. Recorded rather than tidied away.
+scale with a rating. Recorded rather than tidied away. Both minima are rounded away
+from zero, so the converted bound admits everything the kW bound did; no source comes
+near it, the lowest power on the cleaned grid being -21.17 kW.
 
 **Consequences beyond the channel.**
 

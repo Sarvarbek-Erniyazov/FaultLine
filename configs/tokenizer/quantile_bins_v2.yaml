@@ -1,0 +1,140 @@
+# Quantile-bin tokenizer for telemetry, version 2 (M1d, the gate-4 decision).
+#
+# quantile_bins_v0.yaml and quantile_bins_v1.yaml are untouched. v2 is a new fit, on the
+# same final tables as v1, and changes exactly two things from it. Both are about the
+# tails; nothing about the telemetry configuration, the split specification, the channels,
+# the bin count or what the edges are fitted on changes, so the report's before-and-after
+# is the tail rule and nothing else.
+#
+#   1. `n_tail: 4`, down from 16. THE PRE-REGISTERED SIGNAL FIRED. ADR-0014 wrote, before
+#      the v1 fit, that the knob is `n_tail` and the signal to turn it down is degenerate
+#      tail bins -- many holding under about 500 training values -- and NOT the median
+#      reconstruction error. At n_tail 16, 184 of 352 tail bins held under 500 training
+#      values and 42 held none (reports/data/quantile_bins_20260912.md). The curve below was
+#      measured at gate 4 and is RE-MEASURED by this run, in the report's section
+#      `The curve n_tail was turned on`; where the two disagree the report is right
+#      and this comment is the stale one:
+#
+#          n_tail | tail bins under 500 | empty | generator-bearing top bin
+#              16 |             184/352 |    42 |                  2.78 degC
+#              12 |             130/264 |    25 |                  3.71
+#               8 |              76/176 |    12 |                  5.57
+#               4 |               30/88 |     1 |                 11.13
+#               2 |               10/44 |     0 |                 22.27
+#
+#      4 is the turn the signal asks for: it is where the empty bins nearly vanish while
+#      the top bin stays a quarter of the 42.68 degC a pure-quantile fit gives it. This is
+#      the last tokenizer change before the model ladder.
+#
+#   2. `clamp_floor: 0.001`. THE OUTERMOST BIN ON EACH SIDE IS POPULATION-FLOORED. After
+#      the 4 fixed-width bins are laid, the outermost is merged inward until it holds at
+#      least 0.1% of that channel's measured training values (ADR-0015). The outermost bin
+#      is the clamp target for every value beyond the training range, so its effective
+#      width is unbounded whatever its nominal width is; giving it the narrowest nominal
+#      width made the catch-all the rarest token. Concretely, at n_tail 16
+#      `main_bearing_temp_c`'s top bin held 24 training values while 2.68% of Hill of
+#      Towie's 2023 values clamp into it -- a token the model sees 24 times in training
+#      and would have to read a fortieth of the held-out site through.
+#
+# Rule 5 of ADR-0014 (a zero-width tail returns its bins to the centre) is UNCHANGED and
+# is expected to fire again on the lower tails of `pitch_angle_deg` and `rotor_speed_rpm`,
+# whose p0.5 is their minimum and a point mass at once.
+#
+# THE ACCEPTANCE CHECK IS PRE-REGISTERED AND IS REPORTED, NOT ITERATED ON (ADR-0015):
+#   * no tail bin empty at any channel;
+#   * every clamp bin at or above the 0.1% floor -- the report names any channel that is
+#     not, and such a channel is recorded as a limitation in ADR-0015 rather than fitted
+#     again;
+#   * the generator-bearing top-bin width against both prior fits;
+#   * the reconstruction-error table against both prior fits.
+# `reference_fits` below is what makes the last two like-for-like: each control is the
+# same bin count on the same values, differing from the chosen fit by the tail rule alone.
+#
+# Read by `faultline telemetry bins`, which fits the edges on the TRAIN split of the
+# training sites only -- Kelmarsh and Penmanshiel, 2016-2020, as splits_v3.yaml assigns
+# them through telemetry_v4.yaml -- and never on validation, the late test, the held-out
+# site or CARE. It writes the fitted tokenizer to data/tokenizers/ under this file's hash,
+# and reports every candidate in reports/data/quantile_bins_<date>.md.
+#
+# `tokenizer:` in telemetry_v4.yaml is not read by anything; this file is the tokenizer's
+# configuration (configs/tokenizer/README.md).
+
+version: 2
+telemetry_config: "configs/data/telemetry_v4.yaml"
+fit_split: "train"
+
+# Every core channel, in identifier order: in the fixed-order token stream (M1b step 12)
+# position is identity, so the order here is the order of the tokens in every step.
+channels:
+  - wind_speed_ms
+  - power_pu
+  - rotor_speed_rpm
+  - generator_speed_rpm
+  - pitch_angle_deg
+  - nacelle_position_deg
+  - ambient_temp_c
+  - nacelle_temp_c
+  - gearbox_oil_temp_c
+  - generator_bearing_temp_c
+  - generator_winding_temp_c
+  - main_bearing_temp_c
+
+candidates: [64, 128, 256]
+n_bins: 256
+n_bins_reason: >-
+  Unchanged from v0's finding and v1's: reconstruction error falls with every doubling on
+  every channel, on the validation split as on the training values, so the grid has no
+  interior optimum and the finest candidate is chosen. The bin count is not reopened here
+  (ADR-0011). What changes at v2 is how the 256 are spent: 8 go to the fixed-width tails
+  rather than 32, and the outermost bin of each tail is merged inward until it is a token
+  the model can learn, so the quantile middle gets back what the tails give up.
+
+# A value holding at least 1/n_bins of a channel's training values gets an exact bin.
+point_masses: true
+max_point_masses: 16
+
+# THE TAIL RULE (ADR-0014, amended by ADR-0015). One rule for every channel, in this
+# order:
+#
+#   1. Point-mass bins are carved out first, exactly as at v0 and v1.
+#   2. The tail boundaries are the channel's training p0.5 and p99.5.
+#   3. Each tail gets n_tail bins of EQUAL WIDTH over [train_min, p0.5) and
+#      (p99.5, train_max].
+#   4. NEW AT v2: the outermost bin of each tail is merged with its inward neighbour,
+#      repeatedly, until it holds at least clamp_floor of the channel's measured training
+#      values. The boundary with the quantile middle is never merged away, so a tail
+#      never eats into the middle and keeps at least one bin; neither is a point mass's
+#      exact bin, so where one bounds the outermost bin the merge stops short of the
+#      floor and the report names the channel.
+#   5. The remaining 256 - n_pointmass - (tail bins that survived 4) bins are quantile
+#      bins over [p0.5, p99.5]. What the floor merges away comes back here.
+#   6. If a tail has zero width -- its boundary already at the range edge, or inside the
+#      exact bin of a point mass -- its n_tail bins go back to the central quantile pool.
+#   7. A value outside the training range clamps to the extreme bin, as at v0 and v1.
+n_tail: 4
+tail_quantile: 0.005
+clamp_floor: 0.001
+
+# The n_tail values whose tail-bin occupancy the report measures and prints as a curve, so
+# that the turn of the knob is evidenced by this run rather than asserted from gate 4's
+# reading. Measured WITHOUT the floor: the curve is the n_tail signal on its own, so that
+# the two changes v2 makes stay separable.
+tail_curve: [16, 12, 8, 4, 2]
+
+# The controls measured beside the chosen fit and never written to disk. The pure-quantile
+# fit of the same bin count is always measured and is not listed here; this adds the fit
+# v2 supersedes, so that the report's error and width tables read as a ladder -- what the
+# M1b rule gave, what n_tail 16 gave, what this gives -- rather than as a pair.
+reference_fits:
+  - label: "n_tail 16"
+    n_tail: 16
+    clamp_floor: 0.0
+
+# Imputed values are interpolations, not measurements (ADR-0006), and are not fitted on.
+include_imputed: false
+
+# Channels emitted as <nan> at a source whatever their value. EMPTY since v1: v0's only
+# entry was CARE power, and ADR-0013 includes it. The mechanism stays, because a future
+# source may publish a channel this project cannot put on the canonical scale.
+excluded: {}
+exclusion_reasons: {}

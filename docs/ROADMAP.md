@@ -203,6 +203,26 @@ trained from scratch, evaluated as a risk model rather than a forecaster.
     unchanged, and the token counts, window counts at every split, horizon and label set,
     the 43,580,055-window leakage re-check and the label recomputation checks are unchanged.*
 - *Gate 4, reached 2026-09-12: report and stop. The model ladder does not start here.*
+- *M1d, 2026-09-12: the last tokenizer change before the ladder (`quantile_bins_v2.yaml`,
+  ADR-0015, `reports/data/quantile_bins_v2_20260912.md`). Two changes, both about the
+  tails, on the same tables and the same splits as M1c.*
+  - *`n_tail` turned from 16 to 4, as ADR-0014 pre-registered: the signal was 184 of 352
+    tail bins under 500 training values and 42 empty, and it fired. The curve it was
+    turned on is re-measured by the run rather than quoted: 16 -> 184/42, 12 -> 130/25,
+    8 -> 76/12, 4 -> 30/1, 2 -> 10/0. After the fit, 0 of 41 tail bins are starved and
+    none are empty.*
+  - *The outermost bin of each tail is population-floored at 0.1% of the channel's own
+    training values: it is the clamp target for every out-of-range value, so its effective
+    width is unbounded, and at `n_tail` 16 `main_bearing_temp_c`'s top bin held 24
+    training values while 2.68% of the held-out site's 2023 values clamp into it. It now
+    holds 23,285. Both pre-registered acceptance checks pass and no channel is named.*
+  - ***And the floor cancelled the tail rule on most channels while doing it.** Of 88
+    fixed-width bins laid, 47 were merged back; 8 of 12 channels ended with a top bin
+    wider than a pure-quantile fit's -- wider than doing nothing, on the measure ADR-0014
+    was accepted for. A tail's values pack against its inner boundary, so the merge
+    cascades and the clamp bin ends up spanning the whole 0.5% tail against a quantile end
+    bin's 0.39%. Reported and not iterated on, as pre-registered; ADR-0015 carries it as
+    the limitation and names the single design that would replace both rules.*
 - Fit `QuantileBinTokenizer` on the training split only.
 - Model, training loop, checkpointing; multi-seed runs.
 - Risk evaluation: AUPRC, event-level F1, false alarms per hour, detection delay.

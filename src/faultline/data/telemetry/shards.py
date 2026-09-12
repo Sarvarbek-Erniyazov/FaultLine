@@ -735,7 +735,11 @@ def build_shards(paths: ProjectPaths, config_path: Path) -> tuple[Path, Path]:
     report = render_shards(
         header, tally, shards, vocab, horizons, splits, dataset_level, config.excluded
     )
-    destination = paths.data_reports_dir / f"shards_{datetime.now(tz=UTC):%Y%m%d}.md"
+    # Named for the tokenizer version, as the tokenizer report is: two versions can be
+    # sharded on one day and the second must not overwrite the first's report.
+    destination = (
+        paths.data_reports_dir / f"shards_v{config.version}_{datetime.now(tz=UTC):%Y%m%d}.md"
+    )
     destination.write_text(report, encoding="utf-8")
     logger.info("wrote %s and %s", manifest, destination)
     return manifest, destination

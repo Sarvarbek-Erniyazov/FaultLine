@@ -28,6 +28,12 @@ Three rules matter for the science and are enforced here:
   is cut into ``n_tail`` bins of equal width, and only what is left of ``n_bins`` after
   the point masses and the tails goes to quantiles over the middle. A tail with no
   width gives its bins back to the middle.
+* **The outermost bin on each side is population-floored** (``clamp_floor > 0``,
+  ADR-0015). It is the clamp target for every value beyond the training range, so its
+  effective width is unbounded whatever its nominal width; a fixed-width rule that
+  leaves it nearly empty makes the catch-all the rarest token. After the fixed-width
+  bins are laid, the outermost is merged inward until it holds at least ``clamp_floor``
+  of the channel's fitted values.
 """
 
 from __future__ import annotations
@@ -90,6 +96,8 @@ class ChannelBins:
         tail_bins: How many fixed-width bins the lower and the upper tail actually got.
             ``(0, 0)`` under a pure-quantile fit, and ``0`` on a side whose tail had no
             width -- its bins went back to the quantile middle (ADR-0014, rule 5).
+        clamp_merges: How many outer bins the population floor merged away on each side
+            (ADR-0015). ``(0, 0)`` when the floor is off or already met.
     """
 
     edges: list[float]
@@ -97,6 +105,7 @@ class ChannelBins:
     point_masses: list[float]
     tail_edges: tuple[float, float] = (math.nan, math.nan)
     tail_bins: tuple[int, int] = (0, 0)
+    clamp_merges: tuple[int, int] = (0, 0)
 
 
 def fit_channel(
@@ -106,6 +115,7 @@ def fit_channel(
     max_point_masses: int | None = None,
     n_tail: int = 0,
     tail_quantile: float = 0.005,
+    clamp_floor: float = 0.0,
 ) -> ChannelBins:
     """Fit one channel's bins.
 
@@ -127,10 +137,13 @@ def fit_channel(
         n_tail: Fixed-width bins in each tail; ``0`` for a pure-quantile fit.
         tail_quantile: Where a tail ends. ``0.005`` puts the tails below the training
             p0.5 and above the training p99.5.
+        clamp_floor: The share of the channel's fitted values the outermost bin on each
+            side must hold; the outer tail bins are merged inward until it does
+            (ADR-0015). ``0.0`` leaves the fixed-width bins as laid.
 
     Returns:
-        The edges, the representative of each bin, the point masses and what the tails
-        got.
+        The edges, the representative of each bin, the point masses, what the tails got
+        and what the floor merged.
 
     Raises:
         ValueError: If there is no finite value, or the fixed bins alone cannot fit in
@@ -170,8 +183,8 @@ def fit_channel(
             inside |= (cuts >= start) & (cuts <= stop)
         return inside
 
-    lo_edge, hi_edge, tail_cuts = _tail_cuts(
-        ordered, low, high, n_tail, tail_quantile, inside_a_mass
+    lo_edge, hi_edge, tail_cuts, merges = _tail_cuts(
+        ordered, low, high, n_tail, tail_quantile, inside_a_mass, mass_cuts, clamp_floor
     )
     fixed = np.unique(np.concatenate([mass_cuts, tail_cuts]))
     fixed = fixed[(fixed > low) & (fixed < high)]
@@ -209,6 +222,7 @@ def fit_channel(
         masses.tolist(),
         (lo_edge, hi_edge),
         (int(np.sum(edges <= lo_edge)) - 1, int(np.sum(edges >= hi_edge)) - 1),
+        merges,
     )
 
 
@@ -236,6 +250,51 @@ def _heavy_values(
     return heavy
 
 
+def _merge_outward_in(
+    ordered: np.ndarray,
+    cuts: np.ndarray,
+    mass_cuts: np.ndarray,
+    floor: int,
+    upper: bool,
+) -> tuple[np.ndarray, int]:
+    """Merge one tail's outermost bin inward until it holds ``floor`` values.
+
+    The outermost bin is where every value beyond the training range clamps, so its
+    effective width is unbounded and a nominal width that leaves it nearly empty makes
+    the catch-all the rarest token (ADR-0015). Outer cuts are dropped one at a time.
+
+    Two things are never merged away. The innermost cut is the boundary with the
+    quantile middle, so the tail never eats into the middle; and a point mass's exact
+    bin bounds the outermost bin where one lies outside it, in which case no tail cut
+    can widen that bin and the merge stops short of the floor. The report names any
+    channel left below it.
+
+    Args:
+        ordered: The channel's finite values, sorted.
+        cuts: The tail's cuts, ascending, the boundary with the middle included.
+        mass_cuts: Every cut a point mass's exact bin contributes.
+        floor: Values the outermost bin must hold; ``0`` merges nothing.
+        upper: Whether this is the upper tail, whose outermost cut is the last.
+
+    Returns:
+        The surviving cuts and how many bins were merged away.
+    """
+    merged = 0
+    while cuts.size > 1:
+        boundary = float(cuts[-1] if upper else cuts[0])
+        if upper:
+            bounded = bool(np.any(mass_cuts > boundary))
+            held = int(ordered.size - np.searchsorted(ordered, boundary, side="left"))
+        else:
+            bounded = bool(np.any(mass_cuts < boundary))
+            held = int(np.searchsorted(ordered, boundary, side="left"))
+        if bounded or held >= floor:
+            break
+        cuts = cuts[:-1] if upper else cuts[1:]
+        merged += 1
+    return cuts, merged
+
+
 def _tail_cuts(
     ordered: np.ndarray,
     low: float,
@@ -243,7 +302,9 @@ def _tail_cuts(
     n_tail: int,
     tail_quantile: float,
     inside_a_mass: Callable[[np.ndarray], np.ndarray],
-) -> tuple[float, float, np.ndarray]:
+    mass_cuts: np.ndarray,
+    clamp_floor: float = 0.0,
+) -> tuple[float, float, np.ndarray, tuple[int, int]]:
     """The fixed-width cuts of the two tails, and where each tail ends.
 
     Args:
@@ -253,27 +314,39 @@ def _tail_cuts(
         n_tail: Fixed-width bins in each tail; ``0`` carves none.
         tail_quantile: Where the lower tail ends; the upper ends at its complement.
         inside_a_mass: Which of a set of cuts fall in a point mass's exact bin.
+        mass_cuts: Every cut a point mass's exact bin contributes.
+        clamp_floor: The share of the channel's values the outermost bin must hold.
 
     Returns:
         The lower and upper tail boundaries -- collapsed onto the range edge where the
-        tail has no width -- and every surviving tail cut.
+        tail has no width -- every surviving tail cut, and how many bins the population
+        floor merged away on each side.
     """
     if n_tail <= 0:
-        return low, high, np.zeros(0, dtype=float)
+        return low, high, np.zeros(0, dtype=float), (0, 0)
     lo_edge, hi_edge = sorted_quantiles(ordered, np.array([tail_quantile, 1 - tail_quantile]))
-    pieces = []
+    floor = int(math.ceil(clamp_floor * ordered.size))
+    pieces: list[np.ndarray] = []
+    merges = [0, 0]
     if lo_edge > low:
-        pieces.append(np.linspace(low, lo_edge, n_tail + 1)[1:])
+        side = np.linspace(low, lo_edge, n_tail + 1)[1:]
+        side = side[~inside_a_mass(side)]
+        if side.size:
+            side, merges[0] = _merge_outward_in(ordered, side, mass_cuts, floor, upper=False)
+        pieces.append(side)
     else:
         lo_edge = low
     if hi_edge < high:
-        pieces.append(np.linspace(hi_edge, high, n_tail + 1)[:-1])
+        side = np.linspace(hi_edge, high, n_tail + 1)[:-1]
+        side = side[~inside_a_mass(side)]
+        if side.size:
+            side, merges[1] = _merge_outward_in(ordered, side, mass_cuts, floor, upper=True)
+        pieces.append(side)
     else:
         hi_edge = high
     if not pieces:
-        return float(lo_edge), float(hi_edge), np.zeros(0, dtype=float)
-    candidate = np.concatenate(pieces)
-    return float(lo_edge), float(hi_edge), candidate[~inside_a_mass(candidate)]
+        return float(lo_edge), float(hi_edge), np.zeros(0, dtype=float), (0, 0)
+    return float(lo_edge), float(hi_edge), np.concatenate(pieces), (merges[0], merges[1])
 
 
 class QuantileBinTokenizer:
@@ -371,6 +444,7 @@ class QuantileBinTokenizer:
         max_point_masses: int | None = None,
         n_tail: int = 0,
         tail_quantile: float = 0.005,
+        clamp_floor: float = 0.0,
     ) -> QuantileBinTokenizer:
         """Fit quantile edges per channel.
 
@@ -384,6 +458,8 @@ class QuantileBinTokenizer:
             max_point_masses: The most point masses per channel.
             n_tail: Fixed-width bins in each tail; ``0`` for a pure-quantile fit.
             tail_quantile: Where each tail ends (module docstring).
+            clamp_floor: The share of a channel's fitted values its outermost bin on
+                each side must hold (module docstring).
 
         Returns:
             A fitted tokenizer.
@@ -410,6 +486,7 @@ class QuantileBinTokenizer:
             max_point_masses=max_point_masses,
             n_tail=n_tail,
             tail_quantile=tail_quantile,
+            clamp_floor=clamp_floor,
             meta={
                 "fit_rows": int(len(sampled)),
                 "fit_rows_available": int(len(frame)),
@@ -428,6 +505,7 @@ class QuantileBinTokenizer:
         max_point_masses: int | None = None,
         n_tail: int = 0,
         tail_quantile: float = 0.005,
+        clamp_floor: float = 0.0,
         meta: dict[str, Any] | None = None,
     ) -> QuantileBinTokenizer:
         """Fit every channel from arrays of its values.
@@ -440,6 +518,8 @@ class QuantileBinTokenizer:
             max_point_masses: The most point masses per channel.
             n_tail: Fixed-width bins in each tail; ``0`` for a pure-quantile fit.
             tail_quantile: Where each tail ends (module docstring).
+            clamp_floor: The share of a channel's fitted values its outermost bin on
+                each side must hold (module docstring).
             meta: Provenance to record beside the fit's own.
 
         Returns:
@@ -462,7 +542,13 @@ class QuantileBinTokenizer:
             coverage[name] = int(np.isfinite(array).sum())
             try:
                 fitted = fit_channel(
-                    array, n_bins, point_masses, max_point_masses, n_tail, tail_quantile
+                    array,
+                    n_bins,
+                    point_masses,
+                    max_point_masses,
+                    n_tail,
+                    tail_quantile,
+                    clamp_floor,
                 )
             except ValueError as exc:
                 raise ValueError(f"channel {name!r} cannot be binned: {exc}") from exc
@@ -475,6 +561,8 @@ class QuantileBinTokenizer:
                 "high": fitted.tail_edges[1],
                 "lower_bins": fitted.tail_bins[0],
                 "upper_bins": fitted.tail_bins[1],
+                "lower_merged": fitted.clamp_merges[0],
+                "upper_merged": fitted.clamp_merges[1],
             }
 
         provenance = {
@@ -483,6 +571,7 @@ class QuantileBinTokenizer:
             "point_masses": point_masses,
             "n_tail": n_tail,
             "tail_quantile": tail_quantile,
+            "clamp_floor": clamp_floor,
             "tails": tails,
             "finite_values_per_channel": coverage,
             "fitted_at": datetime.now(tz=UTC).isoformat(timespec="seconds"),

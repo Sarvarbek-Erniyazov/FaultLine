@@ -1213,7 +1213,9 @@ power back into the stream (ADR-0013); and **the coarse tails -- the third limit
 third limit applies everywhere" -- by hybrid tail bins (ADR-0014)**, which is the
 fixed-width-tails-beside-the-quantiles change this paragraph anticipated. The figures
 above stand as what the v0 tokenizer measured, and `quantile_bins_v0.yaml` no longer
-validates, because it names the old channel spelling.
+validates, because it names the old channel spelling. ADR-0014 was itself amended at M1d
+by **ADR-0015**, which turns the tail knob as ADR-0014 pre-registered and floors the clamp
+bin; `quantile_bins_v2.yaml` is the current fit.
 
 ---
 
@@ -1423,6 +1425,15 @@ rather than an inferred divisor.
 
 **Status:** Accepted · **Date:** 2026-09-12
 
+**Amended, 2026-09-12 (M1d), by ADR-0015.** The signal this record pre-registered fired
+at the v1 fit -- 184 of 352 tail bins under 500 training values, 42 empty -- and `n_tail`
+is turned to 4 as written. ADR-0015 also adds a rule this record has no clause for: the
+outermost bin of each tail is population-floored, because it is the clamp target for every
+value beyond the training range and rule 6 therefore gives it unbounded effective width.
+Rules 1, 2, 5 and 6 below are unchanged; rule 3 reads 4 instead of 16, and rule 4 is
+recomputed after the floor. Read the two records together, and ADR-0015 for what the floor
+cost.
+
 > **The principle, which ADR-0012, ADR-0013 and ADR-0014 all rest on.** Datums are
 > conventions and are harmonised across sites. Physics is not harmonised; differences in
 > physics between sites are what the held-out evaluation measures.
@@ -1494,3 +1505,134 @@ three decisions.
 below, which turns `n_tail` down; a model result showing the tail tokens are not learned
 at all, which would argue for fewer and wider tail bins; or a new channel whose tail
 behaviour differs enough that one `n_tail` for every channel stops being defensible.
+
+---
+
+## ADR-0015 The tail knob is turned as pre-registered, and the clamp bin is population-floored
+
+**Status:** Accepted · **Date:** 2026-09-12 · **Amends:** ADR-0014
+
+> **The principle, which ADR-0012, ADR-0013 and ADR-0014 all rest on.** Datums are
+> conventions and are harmonised across sites. Physics is not harmonised; differences in
+> physics between sites are what the held-out evaluation measures.
+
+**Decision.** `configs/tokenizer/quantile_bins_v2.yaml` changes exactly two things from
+v1, both about the tails. Nothing about the telemetry configuration, the split
+specification, the channels, the bin count or what the edges are fitted on changes.
+
+1. **`n_tail: 4`, down from 16.** ADR-0014 named the knob and the signal before the v1 fit
+   was run: the knob is `n_tail`, and the signal to turn it down is degenerate tail bins
+   -- many holding under about 500 training values -- and explicitly *not* the median
+   reconstruction error. **The signal fired.** At `n_tail = 16`, 184 of 352 tail bins held
+   under 500 training values and 42 held none. The knob is turned as written.
+2. **The outermost bin on each side is population-floored (`clamp_floor: 0.001`).** After
+   the four fixed-width bins are laid, the outermost is merged with its inward neighbour,
+   repeatedly, until it holds at least **0.1% of that channel's measured training values**.
+
+The merge has two stops, and both are rules rather than tuning. The boundary with the
+quantile middle is never merged away, so a tail always keeps at least one bin and never
+eats into the middle. A point mass's exact bin is never merged away either -- rule 1 of
+ADR-0014 outranks this rule -- so where one bounds the outermost bin the merge stops short
+of the floor and the report names the channel. Whatever the merge gives up returns to the
+central quantile pool, exactly as rule 5 returns the bins of a zero-width tail.
+
+**Why the clamp bin needs a floor at all, which ADR-0014 could not have known.** A
+fixed-width tail gives its outermost bin a *nominal* width. The outermost bin is also
+where **every value beyond the training range clamps** (rule 6), so its *effective* width
+is unbounded in the direction that matters. ADR-0014 gave the catch-all the narrowest
+nominal width available and therefore made it the rarest token in the channel. The
+concrete case: at `n_tail = 16`, `main_bearing_temp_c`'s top bin held **24** training
+values, while **2.68%** of Hill of Towie's 2023 values clamp into it. A token the model
+sees 24 times in training is not a token it learns, and the held-out site would read a
+fortieth of that channel through it. Turning `n_tail` down alone does not fix this: the
+defect is that the bin at the boundary of the known range is sized by geometry when it is
+the one bin that must be sized by population.
+
+0.1% is chosen as an order of magnitude of headroom below the worst measured clamp share
+(2.68%), and still leaves roughly 4,700 training values behind the token at the channels
+with the most values. It is a share of each channel's own values, not a fixed count,
+because the channels do not have the same number of measured values -- pitch and gear oil
+have about 3.35 million, the rest about 4.66 million.
+
+**Pre-registered acceptance check, fixed before the fit, REPORTED AND NOT ITERATED ON.**
+A channel that fails one is recorded as a limitation here; it is **not** a reason to fit a
+third time. Stated in advance because the failure mode of a knob with a good rationale is
+fitting until the table is clean.
+
+**What came out** (`reports/data/quantile_bins_v2_20260912.md`, config hash `9cd52b65`):
+
+| check | result |
+| --- | --- |
+| no tail bin empty at any channel | **PASS** — 0 of 41 |
+| every tail bin at or above 500 training values | 0 of 41 starved (was 184 of 352) |
+| every clamp bin at or above the 0.1% floor | **PASS** — all 24, no channel named |
+| `generator_bearing_temp_c` top bin | 42.68 degC quantile only → 2.783 at `n_tail` 16 → **33.4** chosen |
+| median reconstruction error, train | 0.815% quantile only → 0.475% at `n_tail` 16 → **0.740%** chosen |
+| median reconstruction error, validation | 1.190% → 0.500% → **1.055%** |
+| `main_bearing_temp_c` top bin, training values | 24 at `n_tail` 16 → **23,285** (0.500%) |
+
+The curve the knob was turned on, re-measured by this run rather than quoted from gate 4,
+each point a whole refit at 256 bins on the same training values:
+
+| `n_tail` | tail bins | under 500 | empty | `generator_bearing_temp_c` top bin |
+| --- | --- | --- | --- | --- |
+| 16 | 352 | 184 (52%) | 42 | 2.783 |
+| 12 | 264 | 130 (49%) | 25 | 3.711 |
+| 8 | 176 | 76 (43%) | 12 | 5.566 |
+| **4** | 88 | 30 (34%) | 1 | 11.13 |
+| 2 | 44 | 10 (23%) | 0 | 22.27 |
+
+4 is where the empty bins all but vanish while the witness channel's top bin is still a
+quarter of the 42.68 degrees C pure quantiles give it. 2 clears the signal outright and
+gives half of that back; 8 leaves a double-figure count of bins the model would see fewer
+than 500 times.
+
+**The limitation this record has to carry, and it is the important part.** The floor met
+its own objective and **cancelled the tail rule on most channels while doing it**. Of the
+88 fixed-width bins laid, the merge took 47 back; 8 of 12 channels ended with a **top bin
+wider than the pure-quantile control's**, and 2 of 12 with a wider bottom bin. Wider than
+doing nothing at all, on the measure ADR-0014 was accepted for.
+
+The mechanism is arithmetic and was foreseeable, and was not foreseen. A tail's values are
+packed against its inner boundary, so the outer fixed-width bins are nearly empty and the
+merge cascades. Where it runs all the way to the boundary the clamp bin spans the entire
+tail and holds `tail_quantile` = 0.5% of the channel's values by construction -- against
+the 0.39% (1/256) a pure quantile end bin holds. A population floor and a fixed-width tail
+pull in opposite directions, and with only merging available the floor always wins.
+
+So this fit buys a clamp token the model can actually learn and pays for it in clamp
+*resolution* on two thirds of the channels. Both halves of that sentence are the measured
+result; neither is the outcome the decision was written expecting. It stands as fitted for
+the model ladder, because the ladder needs one frozen vocabulary and because a token seen
+24 times is the worse of the two defects, and the next tokenizer revision -- if the model
+results call for one -- should design the tail rule and the floor together rather than
+bolt the second onto the first. The obvious candidate, not run here: make the tail
+boundary itself a function of the floor, so that the outer tail bins are laid at equal
+*population* and only the inner ones at equal width.
+
+**What is compared with what.** Three fits of the same bin count on the same training
+values, differing by the tail rule alone: pure quantiles (the M1b rule), `n_tail = 16`
+without a floor (v1, which this supersedes), and the chosen fit. The controls are measured
+and never written to `data/tokenizers/`, so no run can read one by mistake. Comparing
+against v1's *report* instead would have been cheaper and wrong: v1's numbers are sound,
+but a refit is the only way to be sure the difference is the rule and not the run.
+
+**Rejected.**
+
+| alternative | why rejected |
+| --- | --- |
+| Keep `n_tail = 16` and floor the clamp bins only | The floor repairs the outermost bin; it does nothing for the 180-odd bins *behind* it that the signal was raised about. The two changes answer two defects and both were needed. |
+| Drop the fixed-width tails and return to pure quantiles | Throws away what ADR-0014 was accepted for. The witness channel's top bin returns to 42.68 degrees C, which is the defect that started this. |
+| A fixed count -- "at least 500 values" -- instead of a share | 500 is the *starvation* threshold, a floor on a bin the model must learn. The clamp bin carries a different burden, and the channels do not have the same number of measured values, so a share is the comparable quantity. |
+| Floor every tail bin, not just the outermost | That is quantile binning of the tail, which spends the resolution back where the data is dense -- the thing fixed-width tails exist to avoid. Only the outermost bin has unbounded effective width, so only it is floored. |
+| Merge the boundary with the middle away when the floor is still unmet | The tail would eat into the quantile middle, and one bin spanning the tail *and* part of the middle is neither rule. The merge stops and the channel is named instead. |
+| Size the floor from the held-out site's clamp share | Fits the tokenizer to the held-out site. The floor is fixed from the training values alone; the 2.68% is what made the defect visible, not an input to the rule. |
+| Turn `n_tail` on the median reconstruction error | Already rejected in ADR-0014, repeated because the error table moves again here (0.475% to 0.740% on the training values). The median error is the rule's cost, not evidence about it. |
+| Fit a third time now that the cost is measured | Pre-registered against, above, and refused here. The record carries the limitation instead. |
+
+**What would change this decision.** A model result showing the tail tokens are still not
+learned, or that the widened clamp bins cost held-out performance -- either would reopen
+the rule, and the replacement should be the single design named above rather than another
+bolt-on. Also: a channel that fails the floor for a reason other than a point mass
+bounding its clamp bin, or a new source whose clamp share exceeds 0.1% by enough that the
+headroom stops being an order of magnitude.

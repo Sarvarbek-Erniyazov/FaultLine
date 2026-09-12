@@ -1086,19 +1086,22 @@ def run_ladder(paths: ProjectPaths, config_path: Path, device_name: str | None =
         }
     )
     report = render_ladder(header, config, model_config, shards, records)
-    destination = (
-        paths.data_reports_dir / f"ladder_v{config.version}_{datetime.now(tz=UTC):%Y%m%d}.md"
-    )
+    stem = f"ladder_v{config.version}_{datetime.now(tz=UTC):%Y%m%d}"
+    destination = paths.data_reports_dir / f"{stem}.md"
     destination.write_text(report, encoding="utf-8")
-    (checkpoints / "records.json").write_text(
+    # The machine-readable results go beside the report and NOT beside the checkpoints.
+    # `checkpoints/` is git-ignored and a pre-commit hook refuses anything under it, so a
+    # record written there is a result of the headline experiment that no commit carries.
+    records_path = paths.data_reports_dir / f"{stem}.json"
+    records_path.write_text(
         json.dumps([_serialise(r) for r in records], indent=2) + "\n", encoding="utf-8"
     )
-    logger.info("wrote %s", destination)
+    logger.info("wrote %s and %s", destination, records_path)
     return destination
 
 
 def _serialise(record: RunRecord) -> dict[str, Any]:
-    """The machine-readable form of one run, written beside its checkpoints."""
+    """The machine-readable form of one run, written beside the report it summarises."""
     return {
         "kind": record.kind,
         "rung": record.rung,

@@ -242,6 +242,38 @@ trained from scratch, evaluated as a risk model rather than a forecaster.
   (`faultline model ladder`; `configs/model/ladder_v0.yaml`,
   `configs/train/telemetry_v0.yaml`). Four sizes, four runs each, context held fixed as a
   separate ablation, and 57 tests.*
+- *M1e results, 2026-09-13: the ladder run in full -- 32 runs, 4 sizes x 4 runs x the
+  configured seeds, 3.0 billion training tokens, 4h57m wall clock on one 8 GB card
+  (`reports/data/ladder_v0_20260912.md`, `.json`). **Two results, and they do not point
+  the same way.***
+  - ***Next-token loss scales cleanly.** Validation loss falls monotonically with size:
+    2.791 +/- 0.047 (S0, 308k) -> 2.597 +/- 0.056 (S1, 1.18M) -> 2.371 (S2, 3.54M) ->
+    2.242 (S3, 9.96M) nats. The seed half-range at the two rungs that have three seeds is
+    about a fifth of the gap between adjacent rungs, so the curve is a curve and not
+    noise. The course deliverable works.*
+  - ***Event risk does not scale, and sits near chance.** A 32-fold increase in parameters
+    moves validation AUPRC by less than the seed spread at the small rungs: the frozen
+    probe reads 0.031 / 0.044 / 0.043 / 0.048 and the fine-tune 0.052 / 0.055 / 0.042 /
+    0.043 across S0 to S3. Against base rates of 1.15% and 2.45% that is a lift of 1.1x to
+    2.8x, and on the test sites 0.90x to 1.95x -- several arms score BELOW their base rate.
+    This is a result about this label, this token stream and this budget, and it is
+    reported as one.*
+  - ***The pretraining ablation separates on validation and does not survive to test.** On
+    validation a pretrained backbone beats the randomly initialised control in 14 of 16
+    rung-by-arm-by-source comparisons, by +0.011 to +0.031 AUPRC. On the test sites it
+    leads in 17 of 24 -- but the single largest test lift in the whole table belongs to the
+    CONTROL (S2 random, Penmanshiel, 1.93x, against 1.24x and 1.16x for the pretrained
+    arms). The validation-side advantage is also partly an artefact of the control barely
+    learning: its validation lift is 1.00x to 1.17x at three of four rungs, so the gap
+    measures an under-trained control as much as a useful representation.*
+  - *Held out per year (`per_year_sites`): Hill of Towie 2019 runs at a 3.89% base rate and
+    2023 at 2.76%, and every arm tracks the base rate at both -- the site-shift penalty is
+    not visible because there is not enough signal above chance for it to be visible in.*
+  - *Pre-registered and honoured: context held fixed at 144 steps across the ladder,
+    training stride 6 with evaluation at stride 1, selection never on test, the control
+    budget-matched to the fine-tune and enforced by the configuration, and three seeds at
+    S0 and S1 quoted as the error bar for the single-seed S2 and S3 rather than implied
+    throughout.*
 - Model, training loop, checkpointing; multi-seed runs.
 - Risk evaluation: AUPRC, event-level F1, false alarms per hour, detection delay.
 - Selective prediction: risk–coverage curves, AURC, conformal risk control with a

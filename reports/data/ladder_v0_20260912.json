@@ -1,0 +1,4122 @@
+[
+  {
+    "kind": "lm",
+    "rung": "S0",
+    "seed": 1,
+    "params": {
+      "backbone": 307920,
+      "embeddings": 244480,
+      "total": 552400,
+      "nominal": 307200
+    },
+    "selection": "validation next-token loss",
+    "best": {
+      "step": 2500,
+      "value": 2.844497174580892
+    },
+    "history": [
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 4.148179272969564
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 3.4684017715454103
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 3.181973872502645
+      },
+      {
+        "step": 1664,
+        "windows": 53248,
+        "value": 2.998992883682251
+      },
+      {
+        "step": 2080,
+        "windows": 66560,
+        "value": 2.898272782643636
+      },
+      {
+        "step": 2496,
+        "windows": 79872,
+        "value": 2.8454940077463786
+      },
+      {
+        "step": 2500,
+        "windows": 80000,
+        "value": 2.844497174580892
+      }
+    ],
+    "seconds": 282.34898179996526,
+    "windows": 80000,
+    "tokens": 149760000,
+    "train_loss": 2.7430696544647217,
+    "lm_loss": {
+      "kelmarsh": 2.77432578163147,
+      "penmanshiel": 2.9180877765655517
+    },
+    "validation": [],
+    "test": [],
+    "test_years": [],
+    "checkpoint": "S0_lm_seed1.pt"
+  },
+  {
+    "kind": "probe",
+    "rung": "S0",
+    "seed": 1,
+    "params": {
+      "backbone": 307920,
+      "embeddings": 244480,
+      "total": 552400,
+      "nominal": 307200
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 624,
+      "value": 0.029895191678187917,
+      "base_rate": 0.0195,
+      "loss": 0.09701061040285988
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.01833395708111798
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.024556042018787964
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.029895191678187917
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.02651644776811086
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.02790971214553772
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.027336894070680913
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.027350277558374353
+      }
+    ],
+    "seconds": 53.7475138999871,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.10003477182984352,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.013262637083344834,
+        "base_rate": 0.011466666666666667,
+        "lift": 1.1566253270358866,
+        "loss": 0.06823323500501026,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.03623298567385797,
+        "base_rate": 0.024466666666666668,
+        "lift": 1.4809122210023693,
+        "loss": 0.11656435175026723,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [
+      {
+        "source": "care",
+        "windows": 12000,
+        "positives": 16,
+        "auprc": 0.0012544915974510476,
+        "base_rate": 0.0013333333333333333,
+        "lift": 0.9408686980882857,
+        "loss": 0.03705177125723024,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "windows": 12000,
+        "positives": 399,
+        "auprc": 0.03641411285805746,
+        "base_rate": 0.03325,
+        "lift": 1.095161288964134,
+        "loss": 0.15626505222564258,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "windows": 12000,
+        "positives": 438,
+        "auprc": 0.03857208151929334,
+        "base_rate": 0.0365,
+        "lift": 1.0567693566929683,
+        "loss": 0.16923953488923532,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 12000,
+        "positives": 481,
+        "auprc": 0.04636122584187834,
+        "base_rate": 0.04008333333333333,
+        "lift": 1.1566210189241997,
+        "loss": 0.18114362115859747,
+        "nan_share": 0.003326244212962963
+      }
+    ],
+    "test_years": [
+      {
+        "source": "care",
+        "year": 2022,
+        "windows": 5597,
+        "positives": 1,
+        "auprc": 0.0007830853563038371,
+        "base_rate": 0.00017866714311238162,
+        "lift": 4.382928739232576,
+        "loss": 0.03291664651888894,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2023,
+        "windows": 6390,
+        "positives": 15,
+        "auprc": 0.00215576911381271,
+        "base_rate": 0.002347417840375587,
+        "lift": 0.9183576424842145,
+        "loss": 0.04066401932309494,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2024,
+        "windows": 13,
+        "positives": 0,
+        "auprc": NaN,
+        "base_rate": 0.0,
+        "lift": NaN,
+        "loss": 0.04182315738191012,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2019,
+        "windows": 5990,
+        "positives": 233,
+        "auprc": 0.03962616166583754,
+        "base_rate": 0.03889816360601002,
+        "lift": 1.0187154866024328,
+        "loss": 0.1818682387639053,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2023,
+        "windows": 6010,
+        "positives": 166,
+        "auprc": 0.0352621237881396,
+        "base_rate": 0.02762063227953411,
+        "lift": 1.2766588190766206,
+        "loss": 0.1307470676392543,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2022,
+        "windows": 3972,
+        "positives": 120,
+        "auprc": 0.03647755123601302,
+        "base_rate": 0.030211480362537766,
+        "lift": 1.207406945912031,
+        "loss": 0.14148105238708675,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2023,
+        "windows": 4097,
+        "positives": 183,
+        "auprc": 0.040763028375950694,
+        "base_rate": 0.0446668293873566,
+        "lift": 0.9126017882856283,
+        "loss": 0.20731964376693895,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2024,
+        "windows": 3931,
+        "positives": 135,
+        "auprc": 0.042303543372265384,
+        "base_rate": 0.03434240651233783,
+        "lift": 1.2318165110842607,
+        "loss": 0.1575993635401085,
+        "nan_share": 0.0011313175154320989
+      }
+    ],
+    "checkpoint": "S0_probe_seed1.pt"
+  },
+  {
+    "kind": "finetune",
+    "rung": "S0",
+    "seed": 1,
+    "params": {
+      "backbone": 307920,
+      "embeddings": 244480,
+      "total": 552400,
+      "nominal": 307200
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 1040,
+      "value": 0.03876980733230115,
+      "base_rate": 0.0195,
+      "loss": 0.09417960240525745
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.026283469372578284
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.026276401116384848
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.030444273226337727
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.038131827104119755
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.03876980733230115
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.03802681634542574
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.03862053109833992
+      }
+    ],
+    "seconds": 142.2491304000141,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.09637854427099228,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.01903557253571146,
+        "base_rate": 0.011466666666666667,
+        "lift": 1.6600790002073946,
+        "loss": 0.06217837105019523,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.04556167279596003,
+        "base_rate": 0.024466666666666668,
+        "lift": 1.8621937110065407,
+        "loss": 0.11435033213496429,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [
+      {
+        "source": "care",
+        "windows": 12000,
+        "positives": 16,
+        "auprc": 0.0016826695372746169,
+        "base_rate": 0.0013333333333333333,
+        "lift": 1.2620021529559626,
+        "loss": 0.02412833082274626,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "windows": 12000,
+        "positives": 399,
+        "auprc": 0.037588454234665634,
+        "base_rate": 0.03325,
+        "lift": 1.1304798266064853,
+        "loss": 0.1555409080006163,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "windows": 12000,
+        "positives": 438,
+        "auprc": 0.0533121460278329,
+        "base_rate": 0.0365,
+        "lift": 1.4606067404885728,
+        "loss": 0.16636653676417437,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 12000,
+        "positives": 481,
+        "auprc": 0.054121342060364966,
+        "base_rate": 0.04008333333333333,
+        "lift": 1.3502205919425772,
+        "loss": 0.1775986249777405,
+        "nan_share": 0.003326244212962963
+      }
+    ],
+    "test_years": [
+      {
+        "source": "care",
+        "year": 2022,
+        "windows": 5597,
+        "positives": 1,
+        "auprc": 0.0016556291390728477,
+        "base_rate": 0.00017866714311238162,
+        "lift": 9.26655629139073,
+        "loss": 0.019482455525399636,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2023,
+        "windows": 6390,
+        "positives": 15,
+        "auprc": 0.0028132602264603385,
+        "base_rate": 0.002347417840375587,
+        "lift": 1.198448856472104,
+        "loss": 0.028206436143616176,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2024,
+        "windows": 13,
+        "positives": 0,
+        "auprc": NaN,
+        "base_rate": 0.0,
+        "lift": NaN,
+        "loss": 0.01981071842968607,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2019,
+        "windows": 5990,
+        "positives": 233,
+        "auprc": 0.0418641745519824,
+        "base_rate": 0.03889816360601002,
+        "lift": 1.0762506676668437,
+        "loss": 0.1806739475671608,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2023,
+        "windows": 6010,
+        "positives": 166,
+        "auprc": 0.03546371871252364,
+        "base_rate": 0.02762063227953411,
+        "lift": 1.283957526881127,
+        "loss": 0.13049150583695548,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2022,
+        "windows": 3972,
+        "positives": 120,
+        "auprc": 0.049345902893835135,
+        "base_rate": 0.030211480362537766,
+        "lift": 1.633349385785943,
+        "loss": 0.138995814465386,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2023,
+        "windows": 4097,
+        "positives": 183,
+        "auprc": 0.04519971093367095,
+        "base_rate": 0.0446668293873566,
+        "lift": 1.0119301404112016,
+        "loss": 0.20431738047221235,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2024,
+        "windows": 3931,
+        "positives": 135,
+        "auprc": 0.0895493228001614,
+        "base_rate": 0.03434240651233783,
+        "lift": 2.607543614277292,
+        "loss": 0.15446928474152258,
+        "nan_share": 0.0011313175154320989
+      }
+    ],
+    "checkpoint": "S0_finetune_seed1.pt"
+  },
+  {
+    "kind": "random",
+    "rung": "S0",
+    "seed": 1,
+    "params": {
+      "backbone": 307920,
+      "embeddings": 244480,
+      "total": 552400,
+      "nominal": 307200
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 624,
+      "value": 0.02093913461742623,
+      "base_rate": 0.0195,
+      "loss": 0.09614344044368006
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.019678564898315026
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.0195
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.02093913461742623
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.0195
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.019526776883434703
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.018488391442943054
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.01871749427760517
+      }
+    ],
+    "seconds": 142.1252687999513,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.10041738986968994,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.01422577565474258,
+        "base_rate": 0.011466666666666667,
+        "lift": 1.2406199698903413,
+        "loss": 0.06538601111888949,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.02752551851931983,
+        "base_rate": 0.024466666666666668,
+        "lift": 1.1250211928877314,
+        "loss": 0.11515364030485077,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [
+      {
+        "source": "care",
+        "windows": 12000,
+        "positives": 16,
+        "auprc": 0.0013333333333333333,
+        "base_rate": 0.0013333333333333333,
+        "lift": 1.0,
+        "loss": 0.026315796826962733,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "windows": 12000,
+        "positives": 399,
+        "auprc": 0.03242343175447057,
+        "base_rate": 0.03325,
+        "lift": 0.9751408046457314,
+        "loss": 0.14880765859480688,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "windows": 12000,
+        "positives": 438,
+        "auprc": 0.034834279734408016,
+        "base_rate": 0.0365,
+        "lift": 0.9543638283399457,
+        "loss": 0.16128957251142656,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 12000,
+        "positives": 481,
+        "auprc": 0.04078193149231638,
+        "base_rate": 0.04008333333333333,
+        "lift": 1.0174286442989535,
+        "loss": 0.1750100688132302,
+        "nan_share": 0.003326244212962963
+      }
+    ],
+    "test_years": [
+      {
+        "source": "care",
+        "year": 2022,
+        "windows": 5597,
+        "positives": 1,
+        "auprc": 0.00017866714311238162,
+        "base_rate": 0.00017866714311238162,
+        "lift": 1.0,
+        "loss": 0.02187722430445455,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2023,
+        "windows": 6390,
+        "positives": 15,
+        "auprc": 0.002347417840375587,
+        "base_rate": 0.002347417840375587,
+        "lift": 1.0,
+        "loss": 0.030213975751174262,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2024,
+        "windows": 13,
+        "positives": 0,
+        "auprc": NaN,
+        "base_rate": 0.0,
+        "lift": NaN,
+        "loss": 0.021187110885932798,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2019,
+        "windows": 5990,
+        "positives": 233,
+        "auprc": 0.037589039433427715,
+        "base_rate": 0.03889816360601002,
+        "lift": 0.9663448335031416,
+        "loss": 0.17042522689892262,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2023,
+        "windows": 6010,
+        "positives": 166,
+        "auprc": 0.027204821355282828,
+        "base_rate": 0.02762063227953411,
+        "lift": 0.9849456406340349,
+        "loss": 0.12726202895393285,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2022,
+        "windows": 3972,
+        "positives": 120,
+        "auprc": 0.02788620619934168,
+        "base_rate": 0.030211480362537766,
+        "lift": 0.9230334251982095,
+        "loss": 0.1372186208793986,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2023,
+        "windows": 4097,
+        "positives": 183,
+        "auprc": 0.04404652469409861,
+        "base_rate": 0.0446668293873566,
+        "lift": 0.9861126320859126,
+        "loss": 0.1925539771883765,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2024,
+        "windows": 3931,
+        "positives": 135,
+        "auprc": 0.03315041610640695,
+        "base_rate": 0.03434240651233783,
+        "lift": 0.9652910052910052,
+        "loss": 0.15302693041550977,
+        "nan_share": 0.0011313175154320989
+      }
+    ],
+    "checkpoint": "S0_random_seed1.pt"
+  },
+  {
+    "kind": "lm",
+    "rung": "S0",
+    "seed": 2,
+    "params": {
+      "backbone": 307920,
+      "embeddings": 244480,
+      "total": 552400,
+      "nominal": 307200
+    },
+    "selection": "validation next-token loss",
+    "best": {
+      "step": 2500,
+      "value": 2.749951207478841
+    },
+    "history": [
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 4.147185094197591
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 3.4232040570576987
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 3.0779090582529705
+      },
+      {
+        "step": 1664,
+        "windows": 53248,
+        "value": 2.890495266596476
+      },
+      {
+        "step": 2080,
+        "windows": 66560,
+        "value": 2.792700955708822
+      },
+      {
+        "step": 2496,
+        "windows": 79872,
+        "value": 2.7504291280110675
+      },
+      {
+        "step": 2500,
+        "windows": 80000,
+        "value": 2.749951207478841
+      }
+    ],
+    "seconds": 279.6452461000299,
+    "windows": 80000,
+    "tokens": 149760000,
+    "train_loss": 2.6573605065345762,
+    "lm_loss": {
+      "kelmarsh": 2.6760645065307616,
+      "penmanshiel": 2.8289007780710858
+    },
+    "validation": [],
+    "test": [],
+    "test_years": [],
+    "checkpoint": "S0_lm_seed2.pt"
+  },
+  {
+    "kind": "probe",
+    "rung": "S0",
+    "seed": 2,
+    "params": {
+      "backbone": 307920,
+      "embeddings": 244480,
+      "total": 552400,
+      "nominal": 307200
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 1248,
+      "value": 0.021345614363511064,
+      "base_rate": 0.0195,
+      "loss": 0.098253434568146
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.0181897610672454
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.018809137699159532
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.019950435500970212
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.020629255598077285
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.02101061819975534
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.021345614363511064
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.021305401946342492
+      }
+    ],
+    "seconds": 54.256637599959504,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.1115624906718731,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.010755871201183842,
+        "base_rate": 0.011466666666666667,
+        "lift": 0.938012023359056,
+        "loss": 0.06772858838195435,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.02952638825889488,
+        "base_rate": 0.024466666666666668,
+        "lift": 1.2068006100365753,
+        "loss": 0.11694108238758487,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [],
+    "test_years": [],
+    "checkpoint": "S0_probe_seed2.pt"
+  },
+  {
+    "kind": "finetune",
+    "rung": "S0",
+    "seed": 2,
+    "params": {
+      "backbone": 307920,
+      "embeddings": 244480,
+      "total": 552400,
+      "nominal": 307200
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 624,
+      "value": 0.059419144222304404,
+      "base_rate": 0.0195,
+      "loss": 0.09700060978146742
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.046005395000600385
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.056292330321637996
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.059419144222304404
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.04813399558644819
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.04981862411481323
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.05665993808770645
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.056638251293064185
+      }
+    ],
+    "seconds": 142.1010580000002,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.10341708737611771,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.020107090423300795,
+        "base_rate": 0.011466666666666667,
+        "lift": 1.7535253276134415,
+        "loss": 0.06229518488406282,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.0720707285469687,
+        "base_rate": 0.024466666666666668,
+        "lift": 2.9456701040995377,
+        "loss": 0.1184747358992267,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [],
+    "test_years": [],
+    "checkpoint": "S0_finetune_seed2.pt"
+  },
+  {
+    "kind": "random",
+    "rung": "S0",
+    "seed": 2,
+    "params": {
+      "backbone": 307920,
+      "embeddings": 244480,
+      "total": 552400,
+      "nominal": 307200
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 832,
+      "value": 0.02053710612052028,
+      "base_rate": 0.0195,
+      "loss": 0.09644504043421363
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.0195
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.0195
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.0195
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.02053710612052028
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.019466561703403808
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.01950975487743872
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.019407614135592537
+      }
+    ],
+    "seconds": 142.1078329999582,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.10693417227268219,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.01084476238107146,
+        "base_rate": 0.011466666666666667,
+        "lift": 0.9457641611399529,
+        "loss": 0.0665370914958376,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.02628878873876847,
+        "base_rate": 0.024466666666666668,
+        "lift": 1.0744736541730981,
+        "loss": 0.11494229370090334,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [],
+    "test_years": [],
+    "checkpoint": "S0_random_seed2.pt"
+  },
+  {
+    "kind": "lm",
+    "rung": "S0",
+    "seed": 3,
+    "params": {
+      "backbone": 307920,
+      "embeddings": 244480,
+      "total": 552400,
+      "nominal": 307200
+    },
+    "selection": "validation next-token loss",
+    "best": {
+      "step": 2496,
+      "value": 2.7785583063761394
+    },
+    "history": [
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 4.175266431172688
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 3.426739583333333
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 3.106201108932495
+      },
+      {
+        "step": 1664,
+        "windows": 53248,
+        "value": 2.9110575046539306
+      },
+      {
+        "step": 2080,
+        "windows": 66560,
+        "value": 2.8221841367085774
+      },
+      {
+        "step": 2496,
+        "windows": 79872,
+        "value": 2.7785583063761394
+      },
+      {
+        "step": 2500,
+        "windows": 80000,
+        "value": 2.7786549612681073
+      }
+    ],
+    "seconds": 279.7427186999703,
+    "windows": 80000,
+    "tokens": 149760000,
+    "train_loss": 2.6850165181159973,
+    "lm_loss": {
+      "kelmarsh": 2.7168943256378175,
+      "penmanshiel": 2.843117476272583
+    },
+    "validation": [],
+    "test": [],
+    "test_years": [],
+    "checkpoint": "S0_lm_seed3.pt"
+  },
+  {
+    "kind": "probe",
+    "rung": "S0",
+    "seed": 3,
+    "params": {
+      "backbone": 307920,
+      "embeddings": 244480,
+      "total": 552400,
+      "nominal": 307200
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 416,
+      "value": 0.04141873916952039,
+      "base_rate": 0.0195,
+      "loss": 0.09888122961230457
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.03965086473509967
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.04141873916952039
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.03606699605215892
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.03598064868969032
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.03870619122455558
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.04015281970488732
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.040141593368839046
+      }
+    ],
+    "seconds": 54.31715079996502,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.09549091592431068,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.015044351384431784,
+        "base_rate": 0.011466666666666667,
+        "lift": 1.3120073881771905,
+        "loss": 0.07460670456295652,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.02915777004235267,
+        "base_rate": 0.024466666666666668,
+        "lift": 1.1917344703958856,
+        "loss": 0.12304109159597101,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [],
+    "test_years": [],
+    "checkpoint": "S0_probe_seed3.pt"
+  },
+  {
+    "kind": "finetune",
+    "rung": "S0",
+    "seed": 3,
+    "params": {
+      "backbone": 307920,
+      "embeddings": 244480,
+      "total": 552400,
+      "nominal": 307200
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 832,
+      "value": 0.057031950059067825,
+      "base_rate": 0.0195,
+      "loss": 0.09813567371099222
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.04267438267055127
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.04228351563712131
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.048284331458370355
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.057031950059067825
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.054056622043819336
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.053307214405999906
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.052813630772043915
+      }
+    ],
+    "seconds": 142.24488169996766,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.08977835160493851,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.02366150789989519,
+        "base_rate": 0.011466666666666667,
+        "lift": 2.0635035959210923,
+        "loss": 0.07310432286325302,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.0858897078492224,
+        "base_rate": 0.024466666666666668,
+        "lift": 3.510478522447782,
+        "loss": 0.11445567913608971,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [],
+    "test_years": [],
+    "checkpoint": "S0_finetune_seed3.pt"
+  },
+  {
+    "kind": "random",
+    "rung": "S0",
+    "seed": 3,
+    "params": {
+      "backbone": 307920,
+      "embeddings": 244480,
+      "total": 552400,
+      "nominal": 307200
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 208,
+      "value": 0.021175258859732985,
+      "base_rate": 0.0195,
+      "loss": 0.09607056443498614
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.021175258859732985
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.019335286601109388
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.01932456994482311
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.019564333564333566
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.02029361281401066
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.018931167374741067
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.018389509282133128
+      }
+    ],
+    "seconds": 142.20643710001605,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.09601113361120224,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.012884355768607891,
+        "base_rate": 0.011466666666666667,
+        "lift": 1.1236356774948741,
+        "loss": 0.06439328341187243,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.027177008838684454,
+        "base_rate": 0.024466666666666668,
+        "lift": 1.1107769280116262,
+        "loss": 0.11564286526039301,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [],
+    "test_years": [],
+    "checkpoint": "S0_random_seed3.pt"
+  },
+  {
+    "kind": "lm",
+    "rung": "S1",
+    "seed": 1,
+    "params": {
+      "backbone": 1181312,
+      "embeddings": 391168,
+      "total": 1572480,
+      "nominal": 1179648
+    },
+    "selection": "validation next-token loss",
+    "best": {
+      "step": 2500,
+      "value": 2.6464054082234703
+    },
+    "history": [
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 3.719247126261393
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 3.0845691108703615
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 2.8715294602711996
+      },
+      {
+        "step": 1664,
+        "windows": 53248,
+        "value": 2.7543700675964358
+      },
+      {
+        "step": 2080,
+        "windows": 66560,
+        "value": 2.6817509759267173
+      },
+      {
+        "step": 2496,
+        "windows": 79872,
+        "value": 2.647338347117106
+      },
+      {
+        "step": 2500,
+        "windows": 80000,
+        "value": 2.6464054082234703
+      }
+    ],
+    "seconds": 649.5833597000455,
+    "windows": 80000,
+    "tokens": 149760000,
+    "train_loss": 2.5633981981277465,
+    "lm_loss": {
+      "kelmarsh": 2.5651672387441,
+      "penmanshiel": 2.7352351432800295
+    },
+    "validation": [],
+    "test": [],
+    "test_years": [],
+    "checkpoint": "S1_lm_seed1.pt"
+  },
+  {
+    "kind": "probe",
+    "rung": "S1",
+    "seed": 1,
+    "params": {
+      "backbone": 1181312,
+      "embeddings": 391168,
+      "total": 1572480,
+      "nominal": 1179648
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 1250,
+      "value": 0.052944437728325376,
+      "base_rate": 0.0195,
+      "loss": 0.09164746702234583
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.04115222458622195
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.04284479507924924
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.047401385263986115
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.052122830547375085
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.05276748154589367
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.052829065628566076
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.052944437728325376
+      }
+    ],
+    "seconds": 130.56758229999105,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.10031299072504044,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.028503664607590597,
+        "base_rate": 0.011466666666666667,
+        "lift": 2.4857847041503427,
+        "loss": 0.06324508618956612,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.0380532772060036,
+        "base_rate": 0.024466666666666668,
+        "lift": 1.555311057466087,
+        "loss": 0.11447122601673398,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [
+      {
+        "source": "care",
+        "windows": 12000,
+        "positives": 16,
+        "auprc": 0.0012394665733196533,
+        "base_rate": 0.0013333333333333333,
+        "lift": 0.9295999299897401,
+        "loss": 0.02890544373198398,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "windows": 12000,
+        "positives": 399,
+        "auprc": 0.029946798683487937,
+        "base_rate": 0.03325,
+        "lift": 0.9006555995033966,
+        "loss": 0.16233493687878636,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "windows": 12000,
+        "positives": 438,
+        "auprc": 0.04802945237779911,
+        "base_rate": 0.0365,
+        "lift": 1.3158754076109347,
+        "loss": 0.16817876538293847,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 12000,
+        "positives": 481,
+        "auprc": 0.04872666653270495,
+        "base_rate": 0.04008333333333333,
+        "lift": 1.2156340922920155,
+        "loss": 0.17814141998109967,
+        "nan_share": 0.003326244212962963
+      }
+    ],
+    "test_years": [
+      {
+        "source": "care",
+        "year": 2022,
+        "windows": 5597,
+        "positives": 1,
+        "auprc": 0.00018460402436773122,
+        "base_rate": 0.00017866714311238162,
+        "lift": 1.0332287243861917,
+        "loss": 0.024655650549613547,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2023,
+        "windows": 6390,
+        "positives": 15,
+        "auprc": 0.002371442702613902,
+        "base_rate": 0.002347417840375587,
+        "lift": 1.0102345913135222,
+        "loss": 0.0326094126105926,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2024,
+        "windows": 13,
+        "positives": 0,
+        "auprc": NaN,
+        "base_rate": 0.0,
+        "lift": NaN,
+        "loss": 0.03796169814876637,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2019,
+        "windows": 5990,
+        "positives": 233,
+        "auprc": 0.03182961697480735,
+        "base_rate": 0.03889816360601002,
+        "lift": 0.8182807110690816,
+        "loss": 0.1904997016353731,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2023,
+        "windows": 6010,
+        "positives": 166,
+        "auprc": 0.029465564671029173,
+        "base_rate": 0.02762063227953411,
+        "lift": 1.0667954438125622,
+        "loss": 0.13426389846082387,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2022,
+        "windows": 3972,
+        "positives": 120,
+        "auprc": 0.05305067319507378,
+        "base_rate": 0.030211480362537766,
+        "lift": 1.7559772827569422,
+        "loss": 0.13967781700567766,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2023,
+        "windows": 4097,
+        "positives": 183,
+        "auprc": 0.04906770715218818,
+        "base_rate": 0.0446668293873566,
+        "lift": 1.0985267552049998,
+        "loss": 0.20715942476359883,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2024,
+        "windows": 3931,
+        "positives": 135,
+        "auprc": 0.05085219993368408,
+        "base_rate": 0.03434240651233783,
+        "lift": 1.480740725476386,
+        "loss": 0.1563502244192942,
+        "nan_share": 0.0011313175154320989
+      }
+    ],
+    "checkpoint": "S1_probe_seed1.pt"
+  },
+  {
+    "kind": "finetune",
+    "rung": "S1",
+    "seed": 1,
+    "params": {
+      "backbone": 1181312,
+      "embeddings": 391168,
+      "total": 1572480,
+      "nominal": 1179648
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 1248,
+      "value": 0.057836756858060154,
+      "base_rate": 0.0195,
+      "loss": 0.09284015003731819
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.0195
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.02917710621268233
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.05431786386372853
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.054196576945649826
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.053050158885682555
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.057836756858060154
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.05739173561675773
+      }
+    ],
+    "seconds": 347.0232802000246,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.09531669855117798,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.026150049873441227,
+        "base_rate": 0.011466666666666667,
+        "lift": 2.2805276052419674,
+        "loss": 0.06240257591986239,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.055345092301889894,
+        "base_rate": 0.024466666666666668,
+        "lift": 2.2620609932652544,
+        "loss": 0.1139529706451041,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [
+      {
+        "source": "care",
+        "windows": 12000,
+        "positives": 16,
+        "auprc": 0.0015191790079083704,
+        "base_rate": 0.0013333333333333333,
+        "lift": 1.139384255931278,
+        "loss": 0.04309124685487782,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "windows": 12000,
+        "positives": 399,
+        "auprc": 0.03348636651181107,
+        "base_rate": 0.03325,
+        "lift": 1.0071087672725134,
+        "loss": 0.15451176693216556,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "windows": 12000,
+        "positives": 438,
+        "auprc": 0.06189499147693914,
+        "base_rate": 0.0365,
+        "lift": 1.6957531911490176,
+        "loss": 0.16206124852257872,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 12000,
+        "positives": 481,
+        "auprc": 0.07815898925747128,
+        "base_rate": 0.04008333333333333,
+        "lift": 1.9499124139078075,
+        "loss": 0.1734824571445258,
+        "nan_share": 0.003326244212962963
+      }
+    ],
+    "test_years": [
+      {
+        "source": "care",
+        "year": 2022,
+        "windows": 5597,
+        "positives": 1,
+        "auprc": 0.00034106412005457026,
+        "base_rate": 0.00017866714311238162,
+        "lift": 1.90893587994543,
+        "loss": 0.03768229719175682,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2023,
+        "windows": 6390,
+        "positives": 15,
+        "auprc": 0.0026844980668080175,
+        "base_rate": 0.002347417840375587,
+        "lift": 1.1435961764602154,
+        "loss": 0.047744237620106676,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2024,
+        "windows": 13,
+        "positives": 0,
+        "auprc": NaN,
+        "base_rate": 0.0,
+        "lift": NaN,
+        "loss": 0.08472819106071361,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2019,
+        "windows": 5990,
+        "positives": 233,
+        "auprc": 0.03952006408480543,
+        "base_rate": 0.03889816360601002,
+        "lift": 1.0159879135965,
+        "loss": 0.17673174161148514,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2023,
+        "windows": 6010,
+        "positives": 166,
+        "auprc": 0.0293463167190098,
+        "base_rate": 0.02762063227953411,
+        "lift": 1.0624780932605355,
+        "loss": 0.13236573559620476,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2022,
+        "windows": 3972,
+        "positives": 120,
+        "auprc": 0.07195060623857802,
+        "base_rate": 0.030211480362537766,
+        "lift": 2.381565066496932,
+        "loss": 0.13532048260245327,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2023,
+        "windows": 4097,
+        "positives": 183,
+        "auprc": 0.05222951048820875,
+        "base_rate": 0.0446668293873566,
+        "lift": 1.169313139181373,
+        "loss": 0.19873731760417926,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2024,
+        "windows": 3931,
+        "positives": 135,
+        "auprc": 0.08338365306571481,
+        "base_rate": 0.03434240651233783,
+        "lift": 2.42800844593574,
+        "loss": 0.15085607610014698,
+        "nan_share": 0.0011313175154320989
+      }
+    ],
+    "checkpoint": "S1_finetune_seed1.pt"
+  },
+  {
+    "kind": "random",
+    "rung": "S1",
+    "seed": 1,
+    "params": {
+      "backbone": 1181312,
+      "embeddings": 391168,
+      "total": 1572480,
+      "nominal": 1179648
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 1250,
+      "value": 0.019765458850842528,
+      "base_rate": 0.0195,
+      "loss": 0.09619582752973832
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.0195
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.01801420951265188
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.0195
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.0195
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.0195
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.019622776159225044
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.019765458850842528
+      }
+    ],
+    "seconds": 346.5321320000221,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.10104026699066163,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.013959316442060178,
+        "base_rate": 0.011466666666666667,
+        "lift": 1.2173822478540852,
+        "loss": 0.06530758658815486,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.02376199923961143,
+        "base_rate": 0.024466666666666668,
+        "lift": 0.9711988790031919,
+        "loss": 0.11521190789246784,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [
+      {
+        "source": "care",
+        "windows": 12000,
+        "positives": 16,
+        "auprc": 0.0013646615239314066,
+        "base_rate": 0.0013333333333333333,
+        "lift": 1.023496142948555,
+        "loss": 0.026817517164674957,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "windows": 12000,
+        "positives": 399,
+        "auprc": 0.03270328735035057,
+        "base_rate": 0.03325,
+        "lift": 0.9835575142962578,
+        "loss": 0.14901723375390288,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "windows": 12000,
+        "positives": 438,
+        "auprc": 0.05279421485206644,
+        "base_rate": 0.0365,
+        "lift": 1.4464168452620942,
+        "loss": 0.16113142626557372,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 12000,
+        "positives": 481,
+        "auprc": 0.04641401264528043,
+        "base_rate": 0.04008333333333333,
+        "lift": 1.1579379454124017,
+        "loss": 0.17495315761896063,
+        "nan_share": 0.003326244212962963
+      }
+    ],
+    "test_years": [
+      {
+        "source": "care",
+        "year": 2022,
+        "windows": 5597,
+        "positives": 1,
+        "auprc": 0.00017866714311238162,
+        "base_rate": 0.00017866714311238162,
+        "lift": 1.0,
+        "loss": 0.022391275703802473,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2023,
+        "windows": 6390,
+        "positives": 15,
+        "auprc": 0.0024351580660863167,
+        "base_rate": 0.002347417840375587,
+        "lift": 1.037377336152771,
+        "loss": 0.030703894680630776,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2024,
+        "windows": 13,
+        "positives": 0,
+        "auprc": NaN,
+        "base_rate": 0.0,
+        "lift": NaN,
+        "loss": 0.0221806809758707,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2019,
+        "windows": 5990,
+        "positives": 233,
+        "auprc": 0.03842715508723411,
+        "base_rate": 0.03889816360601002,
+        "lift": 0.9878912402254606,
+        "loss": 0.1706826323758084,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2023,
+        "windows": 6010,
+        "positives": 166,
+        "auprc": 0.02726181619490748,
+        "base_rate": 0.02762063227953411,
+        "lift": 0.9870091285023732,
+        "loss": 0.12742393296434984,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2022,
+        "windows": 3972,
+        "positives": 120,
+        "auprc": 0.05522564121663998,
+        "base_rate": 0.030211480362537766,
+        "lift": 1.8279687242707834,
+        "loss": 0.13716007071816588,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2023,
+        "windows": 4097,
+        "positives": 183,
+        "auprc": 0.05126595421512488,
+        "base_rate": 0.0446668293873566,
+        "lift": 1.1477410624009106,
+        "loss": 0.19249747835931993,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2024,
+        "windows": 3931,
+        "positives": 135,
+        "auprc": 0.06022930776457093,
+        "base_rate": 0.03434240651233783,
+        "lift": 1.7537882135002096,
+        "loss": 0.15266220947753645,
+        "nan_share": 0.0011313175154320989
+      }
+    ],
+    "checkpoint": "S1_random_seed1.pt"
+  },
+  {
+    "kind": "lm",
+    "rung": "S1",
+    "seed": 2,
+    "params": {
+      "backbone": 1181312,
+      "embeddings": 391168,
+      "total": 1572480,
+      "nominal": 1179648
+    },
+    "selection": "validation next-token loss",
+    "best": {
+      "step": 2500,
+      "value": 2.610042179743449
+    },
+    "history": [
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 3.7374191042582194
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 3.096750836690267
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 2.8720792458852133
+      },
+      {
+        "step": 1664,
+        "windows": 53248,
+        "value": 2.732013525009155
+      },
+      {
+        "step": 2080,
+        "windows": 66560,
+        "value": 2.647783555348714
+      },
+      {
+        "step": 2496,
+        "windows": 79872,
+        "value": 2.6134541155497235
+      },
+      {
+        "step": 2500,
+        "windows": 80000,
+        "value": 2.610042179743449
+      }
+    ],
+    "seconds": 649.7175395999802,
+    "windows": 80000,
+    "tokens": 149760000,
+    "train_loss": 2.5269309992790223,
+    "lm_loss": {
+      "kelmarsh": 2.524003542327881,
+      "penmanshiel": 2.7014165815989175
+    },
+    "validation": [],
+    "test": [],
+    "test_years": [],
+    "checkpoint": "S1_lm_seed2.pt"
+  },
+  {
+    "kind": "probe",
+    "rung": "S1",
+    "seed": 2,
+    "params": {
+      "backbone": 1181312,
+      "embeddings": 391168,
+      "total": 1572480,
+      "nominal": 1179648
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 832,
+      "value": 0.0371324285125717,
+      "base_rate": 0.0195,
+      "loss": 0.09411407381290605
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.02825331768250624
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.0340877985369137
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.03261616188354961
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.0371324285125717
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.03439303884774097
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.036026374389025145
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.036142233622325895
+      }
+    ],
+    "seconds": 130.69082040002104,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.10812013214826584,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.01975258731514714,
+        "base_rate": 0.011466666666666667,
+        "lift": 1.722609358879111,
+        "loss": 0.0649143157940253,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.04053264797970342,
+        "base_rate": 0.024466666666666668,
+        "lift": 1.656647737590058,
+        "loss": 0.11312181828257914,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [],
+    "test_years": [],
+    "checkpoint": "S1_probe_seed2.pt"
+  },
+  {
+    "kind": "finetune",
+    "rung": "S1",
+    "seed": 2,
+    "params": {
+      "backbone": 1181312,
+      "embeddings": 391168,
+      "total": 1572480,
+      "nominal": 1179648
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 1248,
+      "value": 0.06214082226595257,
+      "base_rate": 0.0195,
+      "loss": 0.09328988679356061
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.02948995662113408
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.04944507049503067
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.05670918839573734
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.05513513871127948
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.05728070869410028
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.06214082226595257
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.062085857613199985
+      }
+    ],
+    "seconds": 347.3234134000377,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.10484860336780548,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.021307320736444396,
+        "base_rate": 0.011466666666666667,
+        "lift": 1.858196575852709,
+        "loss": 0.06305036502469552,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.053591730512968665,
+        "base_rate": 0.024466666666666668,
+        "lift": 2.1903977048897274,
+        "loss": 0.11346392724233598,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [],
+    "test_years": [],
+    "checkpoint": "S1_finetune_seed2.pt"
+  },
+  {
+    "kind": "random",
+    "rung": "S1",
+    "seed": 2,
+    "params": {
+      "backbone": 1181312,
+      "embeddings": 391168,
+      "total": 1572480,
+      "nominal": 1179648
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 832,
+      "value": 0.022324537382789812,
+      "base_rate": 0.0195,
+      "loss": 0.0966160571105249
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.0195
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.01950650216738913
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.0195
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.022324537382789812
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.0195
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.019739258056821023
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.019736549389432957
+      }
+    ],
+    "seconds": 350.4450789000257,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.10700192153453827,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.012512847165115182,
+        "base_rate": 0.011466666666666667,
+        "lift": 1.091236671376324,
+        "loss": 0.06701877917858759,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.029887390161714204,
+        "base_rate": 0.024466666666666668,
+        "lift": 1.221555456200853,
+        "loss": 0.11491164994492428,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [],
+    "test_years": [],
+    "checkpoint": "S1_random_seed2.pt"
+  },
+  {
+    "kind": "lm",
+    "rung": "S1",
+    "seed": 3,
+    "params": {
+      "backbone": 1181312,
+      "embeddings": 391168,
+      "total": 1572480,
+      "nominal": 1179648
+    },
+    "selection": "validation next-token loss",
+    "best": {
+      "step": 2500,
+      "value": 2.5336162605285644
+    },
+    "history": [
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 3.722594309488932
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 2.9921837151845296
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 2.766436742782593
+      },
+      {
+        "step": 1664,
+        "windows": 53248,
+        "value": 2.637881509145101
+      },
+      {
+        "step": 2080,
+        "windows": 66560,
+        "value": 2.5691490427652997
+      },
+      {
+        "step": 2496,
+        "windows": 79872,
+        "value": 2.5343897037506102
+      },
+      {
+        "step": 2500,
+        "windows": 80000,
+        "value": 2.5336162605285644
+      }
+    ],
+    "seconds": 678.0629410000402,
+    "windows": 80000,
+    "tokens": 149760000,
+    "train_loss": 2.4582700357437135,
+    "lm_loss": {
+      "kelmarsh": 2.4457006165822346,
+      "penmanshiel": 2.626942871348063
+    },
+    "validation": [],
+    "test": [],
+    "test_years": [],
+    "checkpoint": "S1_lm_seed3.pt"
+  },
+  {
+    "kind": "probe",
+    "rung": "S1",
+    "seed": 3,
+    "params": {
+      "backbone": 1181312,
+      "embeddings": 391168,
+      "total": 1572480,
+      "nominal": 1179648
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 1040,
+      "value": 0.042046978539241664,
+      "base_rate": 0.0195,
+      "loss": 0.09350834104906008
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.0268075062829541
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.03734109621745138
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.03547053497380218
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.039672685305364726
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.042046978539241664
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.04034105576264197
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.04028130035143493
+      }
+    ],
+    "seconds": 138.13661230000434,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.09531827968358994,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.01864094611236692,
+        "base_rate": 0.011466666666666667,
+        "lift": 1.625663905148278,
+        "loss": 0.06668554692503817,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.04956806082838255,
+        "base_rate": 0.024466666666666668,
+        "lift": 2.025942540669586,
+        "loss": 0.11238988843793472,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [],
+    "test_years": [],
+    "checkpoint": "S1_probe_seed3.pt"
+  },
+  {
+    "kind": "finetune",
+    "rung": "S1",
+    "seed": 3,
+    "params": {
+      "backbone": 1181312,
+      "embeddings": 391168,
+      "total": 1572480,
+      "nominal": 1179648
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 832,
+      "value": 0.043738406968849786,
+      "base_rate": 0.0195,
+      "loss": 0.09765594762835222
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.03056177508164152
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.036284504486968905
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.03482989971344492
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.043738406968849786
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.038974494243471554
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.039725462184141996
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.04073010096991261
+      }
+    ],
+    "seconds": 359.0827326000435,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.0905302453637123,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.029438172458071066,
+        "base_rate": 0.011466666666666667,
+        "lift": 2.5672824818085234,
+        "loss": 0.07101177298850576,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.04938562301282878,
+        "base_rate": 0.024466666666666668,
+        "lift": 2.018485954202811,
+        "loss": 0.11461569350814181,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [],
+    "test_years": [],
+    "checkpoint": "S1_finetune_seed3.pt"
+  },
+  {
+    "kind": "random",
+    "rung": "S1",
+    "seed": 3,
+    "params": {
+      "backbone": 1181312,
+      "embeddings": 391168,
+      "total": 1572480,
+      "nominal": 1179648
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 1040,
+      "value": 0.027454974408938605,
+      "base_rate": 0.0195,
+      "loss": 0.09668433291301098
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.01957977207977208
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.020507889546351084
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.0195
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.0195130086724483
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.027454974408938605
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.020540774906995643
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.02079816288436978
+      }
+    ],
+    "seconds": 362.134942899982,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.09577338755130768,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.013760294799138607,
+        "base_rate": 0.011466666666666667,
+        "lift": 1.2000257092272042,
+        "loss": 0.06720773799845223,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.031163480545335385,
+        "base_rate": 0.024466666666666668,
+        "lift": 1.2737117389101655,
+        "loss": 0.11491587401870035,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [],
+    "test_years": [],
+    "checkpoint": "S1_random_seed3.pt"
+  },
+  {
+    "kind": "lm",
+    "rung": "S2",
+    "seed": 1,
+    "params": {
+      "backbone": 3542208,
+      "embeddings": 586752,
+      "total": 4128960,
+      "nominal": 3538944
+    },
+    "selection": "validation next-token loss",
+    "best": {
+      "step": 2496,
+      "value": 2.3711604232788086
+    },
+    "history": [
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 3.3339532419840494
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 2.879320421854655
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 2.6628758856455486
+      },
+      {
+        "step": 1664,
+        "windows": 53248,
+        "value": 2.50314404296875
+      },
+      {
+        "step": 2080,
+        "windows": 66560,
+        "value": 2.4158058179219566
+      },
+      {
+        "step": 2496,
+        "windows": 79872,
+        "value": 2.3711604232788086
+      },
+      {
+        "step": 2500,
+        "windows": 80000,
+        "value": 2.3724024607340497
+      }
+    ],
+    "seconds": 1144.7731096000061,
+    "windows": 80000,
+    "tokens": 149760000,
+    "train_loss": 2.3146872086524963,
+    "lm_loss": {
+      "kelmarsh": 2.287550670115153,
+      "penmanshiel": 2.460741088358561
+    },
+    "validation": [],
+    "test": [],
+    "test_years": [],
+    "checkpoint": "S2_lm_seed1.pt"
+  },
+  {
+    "kind": "probe",
+    "rung": "S2",
+    "seed": 1,
+    "params": {
+      "backbone": 3542208,
+      "embeddings": 586752,
+      "total": 4128960,
+      "nominal": 3538944
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 208,
+      "value": 0.04343778499793838,
+      "base_rate": 0.0195,
+      "loss": 0.09697174390570966
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.04343778499793838
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.03912858405022839
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.03806273140120363
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.03947541287510326
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.03775143268776096
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.039914650553077344
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.03997152338571682
+      }
+    ],
+    "seconds": 245.90822939999634,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.09648295998573303,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.019851237552475948,
+        "base_rate": 0.011466666666666667,
+        "lift": 1.7312125772508093,
+        "loss": 0.06913355503116822,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.04127600157654772,
+        "base_rate": 0.024466666666666668,
+        "lift": 1.687030037188599,
+        "loss": 0.11990410634101818,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [
+      {
+        "source": "care",
+        "windows": 12000,
+        "positives": 16,
+        "auprc": 0.0015304961335303713,
+        "base_rate": 0.0013333333333333333,
+        "lift": 1.1478721001477785,
+        "loss": 0.04607697035225329,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "windows": 12000,
+        "positives": 399,
+        "auprc": 0.04625115091174813,
+        "base_rate": 0.03325,
+        "lift": 1.3910120574961844,
+        "loss": 0.16923962726997802,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "windows": 12000,
+        "positives": 438,
+        "auprc": 0.043575715767697185,
+        "base_rate": 0.0365,
+        "lift": 1.1938552265122517,
+        "loss": 0.16857541829454536,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 12000,
+        "positives": 481,
+        "auprc": 0.04989433344857042,
+        "base_rate": 0.04008333333333333,
+        "lift": 1.2447650756400106,
+        "loss": 0.18001738039171858,
+        "nan_share": 0.003326244212962963
+      }
+    ],
+    "test_years": [
+      {
+        "source": "care",
+        "year": 2022,
+        "windows": 5597,
+        "positives": 1,
+        "auprc": 0.00023169601482854495,
+        "base_rate": 0.00017866714311238162,
+        "lift": 1.296802594995366,
+        "loss": 0.04220786682106373,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2023,
+        "windows": 6390,
+        "positives": 15,
+        "auprc": 0.002855020916390092,
+        "base_rate": 0.002347417840375587,
+        "lift": 1.2162389103821791,
+        "loss": 0.049514176556402584,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2024,
+        "windows": 13,
+        "positives": 0,
+        "auprc": NaN,
+        "base_rate": 0.0,
+        "lift": NaN,
+        "loss": 0.022355802625633074,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2019,
+        "windows": 5990,
+        "positives": 233,
+        "auprc": 0.06949202033280989,
+        "base_rate": 0.03889816360601002,
+        "lift": 1.7865115956803914,
+        "loss": 0.19497003548327424,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2023,
+        "windows": 6010,
+        "positives": 166,
+        "auprc": 0.03514481171863637,
+        "base_rate": 0.02762063227953411,
+        "lift": 1.2724115568012324,
+        "loss": 0.14359484437519524,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2022,
+        "windows": 3972,
+        "positives": 120,
+        "auprc": 0.03519426583913029,
+        "base_rate": 0.030211480362537766,
+        "lift": 1.1649301992752126,
+        "loss": 0.14637836677431665,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2023,
+        "windows": 4097,
+        "positives": 183,
+        "auprc": 0.049974527501117784,
+        "base_rate": 0.0446668293873566,
+        "lift": 1.118828629355626,
+        "loss": 0.2039202673556032,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2024,
+        "windows": 3931,
+        "positives": 135,
+        "auprc": 0.049317355494922464,
+        "base_rate": 0.03434240651233783,
+        "lift": 1.4360483292632606,
+        "loss": 0.15416657627856845,
+        "nan_share": 0.0011313175154320989
+      }
+    ],
+    "checkpoint": "S2_probe_seed1.pt"
+  },
+  {
+    "kind": "finetune",
+    "rung": "S2",
+    "seed": 1,
+    "params": {
+      "backbone": 3542208,
+      "embeddings": 586752,
+      "total": 4128960,
+      "nominal": 3538944
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 832,
+      "value": 0.04192804552373913,
+      "base_rate": 0.0195,
+      "loss": 0.09634208002507463
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.0195
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.02339546257345577
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.028196549727290653
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.04192804552373913
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.03868361988847657
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.041661140670818254
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.041418696799524896
+      }
+    ],
+    "seconds": 627.8689277000376,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.09781761276721955,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.019912488844451,
+        "base_rate": 0.011466666666666667,
+        "lift": 1.7365542596904944,
+        "loss": 0.06217115694976005,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.03723516593488685,
+        "base_rate": 0.024466666666666668,
+        "lift": 1.5218732670934678,
+        "loss": 0.11795563519096626,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [
+      {
+        "source": "care",
+        "windows": 12000,
+        "positives": 16,
+        "auprc": 0.0020436234940798643,
+        "base_rate": 0.0013333333333333333,
+        "lift": 1.5327176205598982,
+        "loss": 0.01849358279353125,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "windows": 12000,
+        "positives": 399,
+        "auprc": 0.03157355994899427,
+        "base_rate": 0.03325,
+        "lift": 0.9495807503456923,
+        "loss": 0.15789679311385812,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "windows": 12000,
+        "positives": 438,
+        "auprc": 0.05621257285890649,
+        "base_rate": 0.0365,
+        "lift": 1.5400704892851094,
+        "loss": 0.17056274571852137,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 12000,
+        "positives": 481,
+        "auprc": 0.04648711824450069,
+        "base_rate": 0.04008333333333333,
+        "lift": 1.159761785725589,
+        "loss": 0.185958091945615,
+        "nan_share": 0.003326244212962963
+      }
+    ],
+    "test_years": [
+      {
+        "source": "care",
+        "year": 2022,
+        "windows": 5597,
+        "positives": 1,
+        "auprc": 0.00017866714311238162,
+        "base_rate": 0.00017866714311238162,
+        "lift": 1.0,
+        "loss": 0.013467436703954167,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2023,
+        "windows": 6390,
+        "positives": 15,
+        "auprc": 0.0036810485851589804,
+        "base_rate": 0.002347417840375587,
+        "lift": 1.5681266972777257,
+        "loss": 0.02290733902375972,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2024,
+        "windows": 13,
+        "positives": 0,
+        "auprc": NaN,
+        "base_rate": 0.0,
+        "lift": NaN,
+        "loss": 0.012911840655303366,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2019,
+        "windows": 5990,
+        "positives": 233,
+        "auprc": 0.03515225379696637,
+        "base_rate": 0.03889816360601002,
+        "lift": 0.9036995718619251,
+        "loss": 0.18270876525520163,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2023,
+        "windows": 6010,
+        "positives": 166,
+        "auprc": 0.029262481924665667,
+        "base_rate": 0.02762063227953411,
+        "lift": 1.0594428696821727,
+        "loss": 0.13316738993138766,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2022,
+        "windows": 3972,
+        "positives": 120,
+        "auprc": 0.050201092484352866,
+        "base_rate": 0.030211480362537766,
+        "lift": 1.6616561612320797,
+        "loss": 0.142954576545113,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2023,
+        "windows": 4097,
+        "positives": 183,
+        "auprc": 0.05517660521890595,
+        "base_rate": 0.0446668293873566,
+        "lift": 1.2352926315948507,
+        "loss": 0.20672986269130272,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2024,
+        "windows": 3931,
+        "positives": 135,
+        "auprc": 0.07547381512191986,
+        "base_rate": 0.03434240651233783,
+        "lift": 2.1976856832908664,
+        "loss": 0.16076446785520232,
+        "nan_share": 0.0011313175154320989
+      }
+    ],
+    "checkpoint": "S2_finetune_seed1.pt"
+  },
+  {
+    "kind": "random",
+    "rung": "S2",
+    "seed": 1,
+    "params": {
+      "backbone": 3542208,
+      "embeddings": 586752,
+      "total": 4128960,
+      "nominal": 3538944
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 1248,
+      "value": 0.030407991511150232,
+      "base_rate": 0.0195,
+      "loss": 0.09554705040833086
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.0195
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.021535784635587654
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.01950325054175696
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.0195
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.028835816684204443
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.030407991511150232
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.030191751712394743
+      }
+    ],
+    "seconds": 616.8811066999915,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.09858208465576172,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.021500881443300764,
+        "base_rate": 0.011466666666666667,
+        "lift": 1.875076870055299,
+        "loss": 0.06451358174638876,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.03514325758883867,
+        "base_rate": 0.024466666666666668,
+        "lift": 1.4363729259743325,
+        "loss": 0.11424220543931173,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [
+      {
+        "source": "care",
+        "windows": 12000,
+        "positives": 16,
+        "auprc": 0.0024618651112164507,
+        "base_rate": 0.0013333333333333333,
+        "lift": 1.846398833412338,
+        "loss": 0.026272982899602133,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "windows": 12000,
+        "positives": 399,
+        "auprc": 0.03557011663865804,
+        "base_rate": 0.03325,
+        "lift": 1.0697779440197908,
+        "loss": 0.15013496790213235,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "windows": 12000,
+        "positives": 438,
+        "auprc": 0.06055406403516003,
+        "base_rate": 0.0365,
+        "lift": 1.6590154530180832,
+        "loss": 0.16154635141954035,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 12000,
+        "positives": 481,
+        "auprc": 0.07722658395759013,
+        "base_rate": 0.04008333333333333,
+        "lift": 1.926650743224702,
+        "loss": 0.17248176973044774,
+        "nan_share": 0.003326244212962963
+      }
+    ],
+    "test_years": [
+      {
+        "source": "care",
+        "year": 2022,
+        "windows": 5597,
+        "positives": 1,
+        "auprc": 0.0002231644722160232,
+        "base_rate": 0.00017866714311238162,
+        "lift": 1.249051550993082,
+        "loss": 0.021645250437754275,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2023,
+        "windows": 6390,
+        "positives": 15,
+        "auprc": 0.003936554066070001,
+        "base_rate": 0.002347417840375587,
+        "lift": 1.6769720321458204,
+        "loss": 0.030322118690224765,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2024,
+        "windows": 13,
+        "positives": 0,
+        "auprc": NaN,
+        "base_rate": 0.0,
+        "lift": NaN,
+        "loss": 0.028383820352201154,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2019,
+        "windows": 5990,
+        "positives": 233,
+        "auprc": 0.042382266568710726,
+        "base_rate": 0.03889816360601002,
+        "lift": 1.0895698572814474,
+        "loss": 0.1721269000661421,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2023,
+        "windows": 6010,
+        "positives": 166,
+        "auprc": 0.02972649081319144,
+        "base_rate": 0.02762063227953411,
+        "lift": 1.07624222763422,
+        "loss": 0.12821622020455853,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2022,
+        "windows": 3972,
+        "positives": 120,
+        "auprc": 0.07046780814833936,
+        "base_rate": 0.030211480362537766,
+        "lift": 2.3324844497100328,
+        "loss": 0.13690956597344847,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2023,
+        "windows": 4097,
+        "positives": 183,
+        "auprc": 0.05515887222105041,
+        "base_rate": 0.0446668293873566,
+        "lift": 1.2348956256264674,
+        "loss": 0.19382204225177016,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2024,
+        "windows": 3931,
+        "positives": 135,
+        "auprc": 0.07587079499872675,
+        "base_rate": 0.03434240651233783,
+        "lift": 2.2092451491851466,
+        "loss": 0.15280145354424937,
+        "nan_share": 0.0011313175154320989
+      }
+    ],
+    "checkpoint": "S2_random_seed1.pt"
+  },
+  {
+    "kind": "lm",
+    "rung": "S3",
+    "seed": 1,
+    "params": {
+      "backbone": 9959328,
+      "embeddings": 880128,
+      "total": 10839456,
+      "nominal": 9953280
+    },
+    "selection": "validation next-token loss",
+    "best": {
+      "step": 2500,
+      "value": 2.2424429346720376
+    },
+    "history": [
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 3.1887648086547853
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 2.7462019227345786
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 2.502333034515381
+      },
+      {
+        "step": 1664,
+        "windows": 53248,
+        "value": 2.3761789741516113
+      },
+      {
+        "step": 2080,
+        "windows": 66560,
+        "value": 2.2902030913035074
+      },
+      {
+        "step": 2496,
+        "windows": 79872,
+        "value": 2.2425614058176677
+      },
+      {
+        "step": 2500,
+        "windows": 80000,
+        "value": 2.2424429346720376
+      }
+    ],
+    "seconds": 2261.08810980001,
+    "windows": 80000,
+    "tokens": 149760000,
+    "train_loss": 2.187491326093674,
+    "lm_loss": {
+      "kelmarsh": 2.1614040461222332,
+      "penmanshiel": 2.3296733531951905
+    },
+    "validation": [],
+    "test": [],
+    "test_years": [],
+    "checkpoint": "S3_lm_seed1.pt"
+  },
+  {
+    "kind": "probe",
+    "rung": "S3",
+    "seed": 1,
+    "params": {
+      "backbone": 9959328,
+      "embeddings": 880128,
+      "total": 10839456,
+      "nominal": 9953280
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 1040,
+      "value": 0.048429062481530186,
+      "base_rate": 0.0195,
+      "loss": 0.09239810656761283
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.038504696949106354
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.04262922527215446
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.036522877157765934
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.04666786071661432
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.048429062481530186
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.04596914311164413
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.045877229230603035
+      }
+    ],
+    "seconds": 497.9413651000359,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.09613740414381028,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.026463343513754196,
+        "base_rate": 0.011466666666666667,
+        "lift": 2.307849725036703,
+        "loss": 0.06116574817279584,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.050968656589803166,
+        "base_rate": 0.024466666666666668,
+        "lift": 2.0831875990382764,
+        "loss": 0.11393323999374015,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [
+      {
+        "source": "care",
+        "windows": 12000,
+        "positives": 16,
+        "auprc": 0.0014422137494288576,
+        "base_rate": 0.0013333333333333333,
+        "lift": 1.0816603120716433,
+        "loss": 0.029312053415144645,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "windows": 12000,
+        "positives": 399,
+        "auprc": 0.03638478451719249,
+        "base_rate": 0.03325,
+        "lift": 1.094279233599774,
+        "loss": 0.15342665085043208,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "windows": 12000,
+        "positives": 438,
+        "auprc": 0.05237086184466296,
+        "base_rate": 0.0365,
+        "lift": 1.4348181327304923,
+        "loss": 0.1725865515028937,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 12000,
+        "positives": 481,
+        "auprc": 0.06106895097936584,
+        "base_rate": 0.04008333333333333,
+        "lift": 1.5235497125829316,
+        "loss": 0.18148972953710646,
+        "nan_share": 0.003326244212962963
+      }
+    ],
+    "test_years": [
+      {
+        "source": "care",
+        "year": 2022,
+        "windows": 5597,
+        "positives": 1,
+        "auprc": 0.0002733734281027884,
+        "base_rate": 0.00017866714311238162,
+        "lift": 1.5300710770913069,
+        "loss": 0.024900454235227094,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2023,
+        "windows": 6390,
+        "positives": 15,
+        "auprc": 0.002608015105460415,
+        "base_rate": 0.002347417840375587,
+        "lift": 1.1110144349261368,
+        "loss": 0.03320676967442399,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2024,
+        "windows": 13,
+        "positives": 0,
+        "auprc": NaN,
+        "base_rate": 0.0,
+        "lift": NaN,
+        "loss": 0.014272339046184595,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2019,
+        "windows": 5990,
+        "positives": 233,
+        "auprc": 0.04125002771766712,
+        "base_rate": 0.03889816360601002,
+        "lift": 1.0604620859606269,
+        "loss": 0.17558147228631496,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2023,
+        "windows": 6010,
+        "positives": 166,
+        "auprc": 0.03409876988254584,
+        "base_rate": 0.02762063227953411,
+        "lift": 1.2345398011692803,
+        "loss": 0.13134555594179004,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2022,
+        "windows": 3972,
+        "positives": 120,
+        "auprc": 0.03895696061346168,
+        "base_rate": 0.030211480362537766,
+        "lift": 1.2894753963055816,
+        "loss": 0.14676028780190487,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2023,
+        "windows": 4097,
+        "positives": 183,
+        "auprc": 0.052019122785967285,
+        "base_rate": 0.0446668293873566,
+        "lift": 1.1646029839022294,
+        "loss": 0.21327909970114073,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2024,
+        "windows": 3931,
+        "positives": 135,
+        "auprc": 0.07866782558022044,
+        "base_rate": 0.03434240651233783,
+        "lift": 2.2906905359692336,
+        "loss": 0.1562712499135042,
+        "nan_share": 0.0011313175154320989
+      }
+    ],
+    "checkpoint": "S3_probe_seed1.pt"
+  },
+  {
+    "kind": "finetune",
+    "rung": "S3",
+    "seed": 1,
+    "params": {
+      "backbone": 9959328,
+      "embeddings": 880128,
+      "total": 10839456,
+      "nominal": 9953280
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 1250,
+      "value": 0.04255219684921279,
+      "base_rate": 0.0195,
+      "loss": 0.09390492291538931
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.0195
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.027194829167464844
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.025200278061231207
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.02903067368806613
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.03860644937371527
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.042055334452501855
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.04255219684921279
+      }
+    ],
+    "seconds": 1233.1545234999503,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.09864202928543091,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.016427017600397182,
+        "base_rate": 0.011466666666666667,
+        "lift": 1.4325887442206844,
+        "loss": 0.06400415180466437,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.03397509207908062,
+        "base_rate": 0.024466666666666668,
+        "lift": 1.3886277416517965,
+        "loss": 0.11508043409239996,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [
+      {
+        "source": "care",
+        "windows": 12000,
+        "positives": 16,
+        "auprc": 0.0017160421592244662,
+        "base_rate": 0.0013333333333333333,
+        "lift": 1.2870316194183498,
+        "loss": 0.025933184938768367,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "windows": 12000,
+        "positives": 399,
+        "auprc": 0.03541716563403372,
+        "base_rate": 0.03325,
+        "lift": 1.0651779138055255,
+        "loss": 0.1510217489671159,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "windows": 12000,
+        "positives": 438,
+        "auprc": 0.052188888545857744,
+        "base_rate": 0.0365,
+        "lift": 1.4298325629002122,
+        "loss": 0.1629219321912806,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 12000,
+        "positives": 481,
+        "auprc": 0.06333569563166906,
+        "base_rate": 0.04008333333333333,
+        "lift": 1.5801005147193945,
+        "loss": 0.17376935601060803,
+        "nan_share": 0.003326244212962963
+      }
+    ],
+    "test_years": [
+      {
+        "source": "care",
+        "year": 2022,
+        "windows": 5597,
+        "positives": 1,
+        "auprc": 0.0006459948320413437,
+        "base_rate": 0.00017866714311238162,
+        "lift": 3.615633074935401,
+        "loss": 0.021494715144615942,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2023,
+        "windows": 6390,
+        "positives": 15,
+        "auprc": 0.0030870110264152005,
+        "base_rate": 0.002347417840375587,
+        "lift": 1.3150666972528753,
+        "loss": 0.029819159162095044,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2024,
+        "windows": 13,
+        "positives": 0,
+        "auprc": NaN,
+        "base_rate": 0.0,
+        "lift": NaN,
+        "loss": 0.02675935038597583,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2019,
+        "windows": 5990,
+        "positives": 233,
+        "auprc": 0.03678587257509155,
+        "base_rate": 0.03889816360601002,
+        "lift": 0.9456968958145853,
+        "loss": 0.17380092563049487,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2023,
+        "windows": 6010,
+        "positives": 166,
+        "auprc": 0.03688523260952049,
+        "base_rate": 0.02762063227953411,
+        "lift": 1.335423180621796,
+        "loss": 0.12831837655220082,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2022,
+        "windows": 3972,
+        "positives": 120,
+        "auprc": 0.04302027371008031,
+        "base_rate": 0.030211480362537766,
+        "lift": 1.4239710598036583,
+        "loss": 0.13837640274300148,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2023,
+        "windows": 4097,
+        "positives": 183,
+        "auprc": 0.05197009593044932,
+        "base_rate": 0.0446668293873566,
+        "lift": 1.1635053717325183,
+        "loss": 0.19596388525749825,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2024,
+        "windows": 3931,
+        "positives": 135,
+        "auprc": 0.08478177420496893,
+        "base_rate": 0.03434240651233783,
+        "lift": 2.468719662220243,
+        "loss": 0.15328620623256048,
+        "nan_share": 0.0011313175154320989
+      }
+    ],
+    "checkpoint": "S3_finetune_seed1.pt"
+  },
+  {
+    "kind": "random",
+    "rung": "S3",
+    "seed": 1,
+    "params": {
+      "backbone": 9959328,
+      "embeddings": 880128,
+      "total": 10839456,
+      "nominal": 9953280
+    },
+    "selection": "validation AUPRC",
+    "best": {
+      "step": 1248,
+      "value": 0.02157929461092613,
+      "base_rate": 0.0195,
+      "loss": 0.09617951448905414
+    },
+    "history": [
+      {
+        "step": 208,
+        "windows": 6656,
+        "value": 0.0195
+      },
+      {
+        "step": 416,
+        "windows": 13312,
+        "value": 0.0195
+      },
+      {
+        "step": 624,
+        "windows": 19968,
+        "value": 0.0195
+      },
+      {
+        "step": 832,
+        "windows": 26624,
+        "value": 0.0195
+      },
+      {
+        "step": 1040,
+        "windows": 33280,
+        "value": 0.0195
+      },
+      {
+        "step": 1248,
+        "windows": 39936,
+        "value": 0.02157929461092613
+      },
+      {
+        "step": 1250,
+        "windows": 40000,
+        "value": 0.0195
+      }
+    ],
+    "seconds": 1261.379470999993,
+    "windows": 40000,
+    "tokens": 74880000,
+    "train_loss": 0.10155784487724304,
+    "lm_loss": {},
+    "validation": [
+      {
+        "source": "kelmarsh",
+        "windows": 15000,
+        "positives": 172,
+        "auprc": 0.011427895354648257,
+        "base_rate": 0.011466666666666667,
+        "lift": 0.9966187809286271,
+        "loss": 0.065598316741994,
+        "nan_share": 0.01545841049382716
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 15000,
+        "positives": 367,
+        "auprc": 0.024706160669740514,
+        "base_rate": 0.024466666666666668,
+        "lift": 1.0097885832319011,
+        "loss": 0.1151224715987952,
+        "nan_share": 0.0014790123456790124
+      }
+    ],
+    "test": [
+      {
+        "source": "care",
+        "windows": 12000,
+        "positives": 16,
+        "auprc": 0.001190244817239498,
+        "base_rate": 0.0013333333333333333,
+        "lift": 0.8926836129296236,
+        "loss": 0.02719863520939835,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "windows": 12000,
+        "positives": 399,
+        "auprc": 0.03283834943993365,
+        "base_rate": 0.03325,
+        "lift": 0.9876195320280796,
+        "loss": 0.14860436793768247,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "windows": 12000,
+        "positives": 438,
+        "auprc": 0.03559245971346428,
+        "base_rate": 0.0365,
+        "lift": 0.9751358825606653,
+        "loss": 0.1609943583442078,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "penmanshiel",
+        "windows": 12000,
+        "positives": 481,
+        "auprc": 0.03945958730686892,
+        "base_rate": 0.04008333333333333,
+        "lift": 0.9844387685705345,
+        "loss": 0.17464228281265498,
+        "nan_share": 0.003326244212962963
+      }
+    ],
+    "test_years": [
+      {
+        "source": "care",
+        "year": 2022,
+        "windows": 5597,
+        "positives": 1,
+        "auprc": 0.00017866714311238162,
+        "base_rate": 0.00017866714311238162,
+        "lift": 1.0,
+        "loss": 0.02280765022784019,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2023,
+        "windows": 6390,
+        "positives": 15,
+        "auprc": 0.002161024078714809,
+        "base_rate": 0.002347417840375587,
+        "lift": 0.9205962575325086,
+        "loss": 0.03105488248624465,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "care",
+        "year": 2024,
+        "windows": 13,
+        "positives": 0,
+        "auprc": NaN,
+        "base_rate": 0.0,
+        "lift": NaN,
+        "loss": 0.022192700035024833,
+        "nan_share": 0.2143224826388889
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2019,
+        "windows": 5990,
+        "positives": 233,
+        "auprc": 0.038024696208024816,
+        "base_rate": 0.03889816360601002,
+        "lift": 0.9775447651762602,
+        "loss": 0.17013383904203294,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "hill_of_towie",
+        "year": 2023,
+        "windows": 6010,
+        "positives": 166,
+        "auprc": 0.02763208485343469,
+        "base_rate": 0.02762063227953411,
+        "lift": 1.0004146383683281,
+        "loss": 0.12714654232785566,
+        "nan_share": 4.4801311728395064e-05
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2022,
+        "windows": 3972,
+        "positives": 120,
+        "auprc": 0.029762764966820475,
+        "base_rate": 0.030211480362537766,
+        "lift": 0.9851475204017577,
+        "loss": 0.1370240596937365,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2023,
+        "windows": 4097,
+        "positives": 183,
+        "auprc": 0.04323827717226553,
+        "base_rate": 0.0446668293873566,
+        "lift": 0.968017604233726,
+        "loss": 0.1921209604405548,
+        "nan_share": 0.0011313175154320989
+      },
+      {
+        "source": "kelmarsh",
+        "year": 2024,
+        "windows": 3931,
+        "positives": 135,
+        "auprc": 0.033484606496340094,
+        "base_rate": 0.03434240651233783,
+        "lift": 0.9750221343489844,
+        "loss": 0.1527736352332789,
+        "nan_share": 0.0011313175154320989
+      }
+    ],
+    "checkpoint": "S3_random_seed1.pt"
+  }
+]

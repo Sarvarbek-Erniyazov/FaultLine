@@ -1252,8 +1252,9 @@ between).
 
 It is not a two-site quirk. CARE farms A and C report a negative fine pitch as well
 (p25 -1.700 and -1.503, 50.90% and 52.89% of their values below zero) and farm B does not
-(p25 0.030, 2.49%). Four of the six machine populations in this project report pitch
-against a non-zero datum.
+(p25 0.030, 6.94% of its values exactly zero). Three of the six machine populations in this
+project -- Hill of Towie, CARE farm A and CARE farm C -- report fine pitch against a
+non-zero datum, and the floor is what the other three already publish.
 
 **Why a site-agnostic rule and not a per-site one.** The floor is large at one site and
 negligible at the training sites -- 0.81% of Kelmarsh's values and 0.17% of Penmanshiel's,

@@ -170,12 +170,16 @@ def test_describe_reports_both_sides(vocab: JointVocab) -> None:
     assert "bin tokenizer: bound" in described
 
 
-def test_text_bpe_stub_is_honest_about_being_a_stub() -> None:
-    tokenizer = TextBPETokenizer()
-    for call in (
-        lambda: tokenizer.train(["a"]),
-        lambda: tokenizer.encode("a"),
-        lambda: tokenizer.decode([1]),
-    ):
-        with pytest.raises(NotImplementedError, match="m2"):
-            call()
+def test_a_fitted_text_bpe_tokenizer_satisfies_the_joint_vocab_protocol() -> None:
+    # M0 stubbed TextBPETokenizer and this file exercised only its "not implemented
+    # until M2" honesty; M2 implements it for real (text_bpe.py), and the real
+    # behaviour -- pretokenization, merges, the reference comparison -- is tested in
+    # tests/tokenizers/test_text_bpe.py. What belongs here is only that a fitted
+    # instance is a drop-in for JointVocab's TextTokenizer protocol.
+    tokenizer = TextBPETokenizer.fit(["abc abc abc", "abd abd"], vocab_size=260)
+    layout = VocabLayout.from_sizes(v_text=tokenizer.vocab_size, n_channels=1, n_bins=8)
+    vocab = JointVocab(layout, tokenizer)
+    ids = vocab.encode_text("abc")
+    assert all(vocab.decode(i).kind in ("text", "special") for i in ids)
+    assert vocab.text_tokenizer is not None
+    assert vocab.text_tokenizer.decode(vocab.text_tokenizer.encode("abc")) == "abc"

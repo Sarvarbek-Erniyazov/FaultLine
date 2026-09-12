@@ -51,6 +51,11 @@ dev = [
     "types-requests",
     "types-tqdm",
     "pandas-stubs",
+    # M2c only: the reference implementation `tests/tokenizers/test_text_bpe.py` checks
+    # our from-scratch BPE against. Never imported by the training algorithm itself
+    # (src/faultline/tokenizers/text_bpe.py) -- the M2 brief requires our own code for
+    # that, and this dependency is how the test proves it matches a trusted result.
+    "tokenizers>=0.23.2",
 ]
 
 [project.scripts]

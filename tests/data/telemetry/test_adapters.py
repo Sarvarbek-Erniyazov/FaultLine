@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
+import yaml
 from pydantic import ValidationError
 
 from faultline.data.telemetry.adapters import ADAPTERS, get_adapter
@@ -19,7 +20,7 @@ from faultline.data.telemetry.adapters.base import (
 )
 from faultline.data.telemetry.adapters.hill_of_towie import HillOfTowieAdapter
 from faultline.data.telemetry.adapters.kelmarsh import KelmarshAdapter
-from faultline.download.zenodo import RatedPower, load_sources_config
+from faultline.download.zenodo import RatedPower, SourceSpec, load_sources_config
 
 
 def make_archive(directory: Path, name: str, members: dict[str, str]) -> Path:
@@ -272,3 +273,15 @@ def test_rated_power_of_an_unknown_source_is_none(repo_root: Path) -> None:
 
 def test_rated_power_without_a_source_specification_is_none(tmp_path: Path) -> None:
     assert load_rated_power_kw(tmp_path, "kelmarsh") is None
+
+
+def test_the_two_ratings_cannot_drift_apart(repo_root: Path) -> None:
+    # site.rated_kw is printed on the dataset cards and rated_power_kw is what the
+    # adapters divide by. They are the same fact, and a drift would rescale a site.
+    payload = yaml.safe_load(
+        (repo_root / "configs" / "data" / "sources_telemetry.yaml").read_text(encoding="utf-8")
+    )
+    spec = payload["sources"]["kelmarsh"]
+    spec["rated_power_kw"]["value"] = 2300
+    with pytest.raises(ValidationError, match="disagree"):
+        SourceSpec.model_validate(spec)

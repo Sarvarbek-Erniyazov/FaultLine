@@ -138,6 +138,29 @@ class SourceSpec(StrictModel):
     intended_use: str | None = None
     tiers: dict[int, list[str]] = Field(default_factory=dict)
 
+    @model_validator(mode="after")
+    def _one_rating(self) -> SourceSpec:
+        """Reject a divisor that contradicts the site's descriptive rating.
+
+        Two places record a rating -- ``site.rated_kw``, which the dataset cards print,
+        and ``rated_power_kw``, which the adapters divide by -- and a silent drift
+        between them would rescale a whole site's power without anything failing.
+
+        Raises:
+            ValueError: If both are given and they differ.
+        """
+        stated = self.site.rated_kw
+        if (
+            self.rated_power_kw is not None
+            and stated
+            and float(stated) != self.rated_power_kw.value
+        ):
+            raise ValueError(
+                f"site.rated_kw {stated} and rated_power_kw {self.rated_power_kw.value:g} "
+                "disagree; they are the same fact about the same machine"
+            )
+        return self
+
     def files_for_tier(self, tier: int) -> list[str]:
         """Return the file names in tiers up to and including ``tier``.
 

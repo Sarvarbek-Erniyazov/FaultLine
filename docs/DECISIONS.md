@@ -820,6 +820,49 @@ shows an outage of the same shape, which would make the pattern one that recurs 
 deployment; a training-site gap that is site-wide but unbounded, which the bound would send
 to (c) or demotion; or an M1c result where core-10 beats core-12 at the held-out site.
 
+### Amendment, 2026-09-12 (M1c gate 3) -- the Feb-May control was uninformative
+
+**What this amendment does and does not change.** The Penmanshiel spring-2018 training
+exclusion **stands**, unchanged, on the instrumentation gap alone. The amendment above
+already rests it there -- "the ground is the instrumentation, not the event rate", and the
+block "would be excluded on that ground whatever the event rate showed". What is recorded
+here is that the control reported beside it could not have discriminated an artifact from
+ordinary variation, so it should not be read as evidence either way.
+
+**The tolerance band was narrower than the site's own inter-year spread.** Condition (c)
+clears a channel when the 95% interval contains 1 and lies within [0.5, 2]: "a halving or a
+doubling is the size of difference this project already treats as material". Penmanshiel's
+February-to-May event rate varies by more than that between ordinary years. Taking each year
+of the control table above against the pool of the other three -- the same comparison the
+control makes for 2018, point estimates only, no interval:
+
+| year against the other three | narrow events per turbine-year | the other three pooled | rate ratio | against [0.5, 2] |
+| --- | --- | --- | --- | --- |
+| 2017 | 7.2 | 10.2 | **0.70** | inside |
+| 2018 | 2.8 | 11.6 | **0.24** | fails |
+| 2019 | 5.7 | 10.7 | **0.53** | at the band edge |
+| 2020 | 22.0 | 5.2 | **4.21** | fails |
+
+Three of the four years fail the band or sit on its edge. A band that two ordinary years
+(2019, 2020) cannot stay inside does not separate an instrumentation artifact from a
+year like any other: 2018's 0.24 is the lowest of the four, but 2020's 4.21 is further from
+1 than 2018's is, and nothing was wrong with 2020's instrumentation. The control did not
+discriminate, and this record does not claim it did.
+
+**What follows.** The exclusion keeps its stated ground and its bound: a bounded, site-wide,
+simultaneous outage, measured on the cleaned grid. Condition (c) keeps its band, because
+nothing better is available from four years of one site; what changes is that a (c) verdict
+is now read beside the site's own inter-year spread, and a "does not clear" is not read as
+evidence of a label shortcut where that spread is wider than the band.
+
+**Reports generated with `splits_v0.yaml` or `splits_v1.yaml` are historical and are no
+longer reproducible with the current code**, because both specifications now fail validation:
+they name `wind_direction_deg` in `eval_channels` with a site held out, which the
+leave-site-out rule rejects since the amendment above. The amendment's own sentence -- "every
+report that read them stays regenerable from the commit it landed in" -- is true only of the
+commit each report landed in, with the code as it stood there. It is not true of this tree
+and was not meant to claim otherwise. The files stay as written; they are not edited to load.
+
 ---
 
 ## ADR-0009 Label harmonisation: one event rule for every site

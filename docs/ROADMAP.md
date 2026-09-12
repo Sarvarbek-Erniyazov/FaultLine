@@ -1,12 +1,22 @@
 # Roadmap
 
-Four milestones. Each has explicit "done when" criteria, because the failure mode of
-a solo research project is a milestone that is 80% finished four times over.
+Five milestones in two phases. Each has explicit "done when" criteria, because the
+failure mode of a solo research project is a milestone that is 80% finished four times
+over.
 
 The ordering is deliberate: telemetry first (M1) because it carries the decision
 endpoint and can be evaluated without any language modelling; text second (M2)
 because it runs in lockstep with the author's coursework; joint last (M3) because it
 is only interesting once both halves independently work.
+
+## Sequencing (2026-09-12)
+
+**Phase A — M1c ladder, then M2, then M3, then deployment.** The original scope,
+unchanged, through the final-exam defense. Everything below under M1, M2 and M3 is
+Phase A.
+
+**Phase B — M4, after the defense only.** Paper readiness. None of it starts during
+Phase A, and none of its items appear in an M1, M2 or M3 checklist.
 
 ---
 
@@ -359,6 +369,52 @@ results to phrase them against.
 - [ ] An honest limitations section: where the model fails and what would fix it.
 - [ ] **H3 tested, with the narrative-pretraining ablation actually run** — reported
       whichever way it comes out, and ADR-0007 superseded if it comes out flat.
+
+---
+
+## M4 — paper readiness (**Phase B: after the final-exam defense**)
+
+**This milestone does not start during Phase A.** No item below is begun, scoped or
+prototyped while M1, M2 or M3 are open, and no M4 item is ever added to an M1, M2 or M3
+checklist. Its commits are never mixed into Phase A history: M4 work begins after the
+defense, on its own commits, and a Phase A commit that carries an M4 item is a mistake to
+be split rather than a head start.
+
+**Target and framing.** *Wind Energy Science* (Copernicus), with Wiley *Wind Energy* as
+the fallback, and arXiv on the day of submission rather than before it.
+
+The claim is **the harmonisation protocol and the convention-versus-physics findings**,
+not the model. Datums are conventions and are harmonised across sites; physics is not
+harmonised, and the difference between sites is what the held-out evaluation measures
+(ADR-0012, ADR-0013, ADR-0014, ADR-0015). The pitch datum, the per-unit power scale, the
+one event rule across four record formats, and what each of them did to the held-out
+site's out-of-range shares are the contribution. **The ladder is one row among baselines**,
+and on the M1e evidence it is not the best row; the paper says so.
+
+**Work**
+
+- Classical baselines, each on the same windows, splits and labels as the ladder: a
+  gradient-boosted tree on window statistics, a 1D convolutional network, an LSTM, an
+  autoencoder reconstruction-error detector, and a zero-shot Chronos row.
+- Selective prediction: risk–coverage curves, selective AUPRC at fixed coverage, and
+  coverage degradation from the training sites to Hill of Towie, under a **declared**
+  abstention mechanism — conformal risk control preferred, with a calibration split
+  disjoint from both training and test.
+- The manuscript itself, in the Copernicus template.
+
+**Done when**
+
+- [ ] Every baseline above is run on the same windows, splits and labels as the ladder,
+      and reported in one table with the ladder as a row rather than as the subject.
+- [ ] A risk–coverage curve and a selective AUPRC at fixed coverage for every held-out
+      site, and the coverage degradation from the training sites to Hill of Towie.
+- [ ] The abstention mechanism is declared before the numbers are produced, and its
+      calibration split is disjoint from both training and test.
+- [ ] Every figure and table regenerates from a config hash and a run id in this
+      repository.
+- [ ] A manuscript in the Copernicus template, with the harmonisation protocol and the
+      convention-versus-physics findings as the claim.
+- [ ] arXiv posted on the day of submission, not before.
 
 ---
 

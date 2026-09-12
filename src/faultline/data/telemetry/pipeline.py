@@ -47,6 +47,7 @@ from faultline.data.telemetry import report as telemetry_report
 from faultline.data.telemetry.adapters import ADAPTERS, get_adapter
 from faultline.data.telemetry.adapters.base import FileAccount, RawMember
 from faultline.data.telemetry.clean import BoundSpec, TelemetryCleanConfig, clean_turbine_frame
+from faultline.data.telemetry.datums import DatumSpec, apply_datums
 from faultline.data.telemetry.events import EventConfig, normalize_events
 from faultline.data.telemetry.filter import (
     TelemetryFilterConfig,
@@ -122,6 +123,8 @@ class TelemetryPipelineConfig(StrictModel):
         extended_channels: Every other channel, each with its evidence note.
         bounds: Plausibility bounds per channel.
         bounds_overrides: Per-source bound overrides.
+        harmonise: Per channel, a declared datum harmonisation applied at every source
+            after the bounds (ADR-0012). Empty in a configuration that predates it.
         clean: Cleaning switches.
         filter: Coverage and segmentation thresholds.
         impute: Short-gap imputation settings.
@@ -138,6 +141,7 @@ class TelemetryPipelineConfig(StrictModel):
     extended_channels: dict[str, str] = Field(default_factory=dict)
     bounds: dict[str, BoundSpec] = Field(default_factory=dict)
     bounds_overrides: dict[str, dict[str, BoundSpec]] = Field(default_factory=dict)
+    harmonise: dict[str, DatumSpec] = Field(default_factory=dict)
     clean: TelemetryCleanConfig = Field(default_factory=TelemetryCleanConfig)
     filter: TelemetryFilterConfig = Field(default_factory=TelemetryFilterConfig)
     impute: ImputeConfig = Field(default_factory=ImputeConfig)
@@ -169,6 +173,23 @@ class TelemetryPipelineConfig(StrictModel):
         blank = [name for name, note in notes.items() if not str(note).strip()]
         if blank:
             raise ValueError(f"every tiered channel needs a one-line evidence note: {blank}")
+        return self
+
+    @model_validator(mode="after")
+    def _datums_are_channels_with_evidence(self) -> TelemetryPipelineConfig:
+        """Reject a datum rule on an unknown channel, or one with no evidence.
+
+        Raises:
+            ValueError: If a harmonised channel is not a configured channel, or its
+                reason is blank. A datum rule with no evidence cannot be told apart
+                from a correction fitted to a site (ADR-0012).
+        """
+        stray = [name for name in self.harmonise if name not in self.channels]
+        if stray:
+            raise ValueError(f"harmonise names channels that are not configured: {sorted(stray)}")
+        blank = [name for name, spec in self.harmonise.items() if not spec.reason.strip()]
+        if blank:
+            raise ValueError(f"every harmonised channel needs its evidence in reason: {blank}")
         return self
 
     def bounds_for(self, source: str) -> dict[str, BoundSpec]:
@@ -540,9 +561,15 @@ class CleanStage(TelemetryStage):
                     freq=self.config.freq,
                     timezone=self.config.timezone_default,
                 )
+                # After the bounds, never before: a bound says a value is not a
+                # reading, a datum says a reading is expressed against another zero
+                # (ADR-0012). The rule is per channel and applies at every source.
+                cleaned, moved = apply_datums(cleaned, self.config.harmonise)
                 rows_out += len(cleaned)
                 for key, value in counts.as_counters().items():
                     counters[key] = counters.get(key, 0) + value
+                for channel, value in moved.items():
+                    counters[f"datum:{channel}"] = counters.get(f"datum:{channel}", 0) + value
 
                 coverage = channel_coverage(cleaned, self.config.channels)
                 for name, fraction in coverage.items():

@@ -227,6 +227,22 @@ def clean_report(meta: RunMeta, result: StageResult) -> str:
             drop_reasons_table(bounds, result.rows_in),
         )
     )
+    datums = {
+        key.removeprefix("datum:"): value
+        for key, value in result.counters.items()
+        if key.startswith("datum:")
+    }
+    if datums:
+        parts.append(
+            section(
+                "Datum harmonisation per channel (values raised to the declared floor)",
+                "Values expressed against a different zero by their provider, moved onto "
+                "the common datum declared in the configuration's `harmonise` block and "
+                "applied at every source (ADR-0012). It runs *after* the bounds, so a "
+                "value the bounds already rejected is not rescued.\n\n"
+                + drop_reasons_table(datums, result.rows_in),
+            )
+        )
     parts.append(
         section(
             "Channel coverage after cleaning",

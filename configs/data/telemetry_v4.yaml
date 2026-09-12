@@ -1,0 +1,153 @@
+# Telemetry pipeline configuration, version 4.
+#
+# telemetry_v0.yaml, v1, v2 and v3 are untouched: every report they produced stays
+# reproducible from the commit it landed in. v4 changes two things, and nothing else,
+# both of them gate-3 decisions taken at M1c:
+#
+#   1. THE PITCH DATUM (`harmonise`). pitch_angle_deg is floored at 0.0 at EVERY source.
+#      Senvion reports fine pitch as a hard exact 0.0; Siemens reports a continuous band
+#      centred on -1.0. Same operating state, different datum (ADR-0012). The floor is
+#      applied after the plausibility bound, so a pitch below -5 is NaN and is not
+#      rescued to 0.
+#   2. POWER IN PER UNIT OF RATED POWER (`power_pu`, and its bounds). Decision 2 of the
+#      same gate; written into this file by the commit that made the rename, and
+#      described in the block below it.
+#
+# The core set is v3's: twelve core channels, two extended, wind direction extended.
+# Channel ORDER is unchanged: position is token identity (ADR-0003), and a channel that
+# is renamed keeps its identifier exactly as a demoted one does.
+#
+# The three conditions core is measured against are v3's and are not restated here
+# (ADR-0008, M1b step 10); the evidence notes below carry the same measured shares.
+
+telemetry:
+  freq: "10min"
+  timezone_default: "UTC"
+
+  channels:
+    - wind_speed_ms
+    - power_kw
+    - rotor_speed_rpm
+    - generator_speed_rpm
+    - pitch_angle_deg
+    - nacelle_position_deg
+    - wind_direction_deg
+    - ambient_temp_c
+    - nacelle_temp_c
+    - gearbox_bearing_temp_c
+    - gearbox_oil_temp_c
+    - generator_bearing_temp_c
+    - generator_winding_temp_c
+    - main_bearing_temp_c
+
+  # Twelve, in identifier order. Mapping evidence as in v1; coverage from the cleaned grid.
+  core_channels:
+    wind_speed_ms: "K/P 'Wind speed (m/s)', signal 1; HoT tblSCTurbine.wtc_AcWindSp_mean. Non-null K 98.7%, P 97.4%, H 99.6% (99.7% in 2019, 99.5% in 2023)"
+    power_kw: "K/P 'Power (kW)', signal 5; HoT tblSCTurGrid.wtc_ActPower_mean, kW. Non-null K 98.8%, P 97.5%, H 99.6% (99.7%, 99.5%)"
+    rotor_speed_rpm: "K/P 'Rotor speed (RPM)', signal 54; HoT tblSCTurbine.wtc_MainSRpm_mean. Non-null K 96.0%, P 97.5%, H 99.6% (99.7%, 99.5%)"
+    generator_speed_rpm: "K/P 'Generator RPM (RPM)', signal 86; HoT tblSCTurbine.wtc_GenRpm_mean. Non-null K 95.9%, P 97.5%, H 99.6% (99.7%, 99.5%)"
+    pitch_angle_deg: "K/P blade A pitch, signal 80; HoT tblSCTurbine.wtc_PitcPosA_mean. Non-null K 95.2%, P 70.0% (71.9% outside the training exclusions), H 99.6% (99.7%, 99.5%). P is below 95%: absent from the record's start in June 2016 to spring 2018 at every turbine, an era of non-availability, all of it in train; condition (c), month-matched, clears (rate ratio 0.95, 0.83-1.09)"
+    nacelle_position_deg: "K/P 'Nacelle position', signal 3; HoT tblSCTurbine.wtc_NacelPos_mean. Non-null K 96.0%, P 97.5%, H 99.6% (99.7%, 99.5%)"
+    ambient_temp_c: "K/P 'Nacelle ambient temperature', signal 24; HoT tblSCTurTemp.wtc_AmbieTmp_mean. Non-null K 95.2%, P 94.5% (96.9% outside the training exclusions: the spring-2018 site-wide outage is withheld from training windows, splits_v2.yaml), H 99.6% (99.7%, 99.5%)"
+    nacelle_temp_c: "K/P 'Nacelle temperature', signal 25; HoT tblSCTurTemp.wtc_NacelTmp_mean. Non-null K 95.2%, P 94.5% (96.9% outside the training exclusions, as ambient), H 99.6% (99.7%, 99.5%)"
+    gearbox_oil_temp_c: "K/P 'Gear oil temperature', signal 178; HoT tblSCTurTemp.wtc_GeOilTmp_mean. Non-null K 95.3%, P 70.2% (72.1% outside the training exclusions), H 99.6% (99.7%, 99.5%). P is below 95% on the same steps as pitch, and clears (c) the same way (0.95, 0.83-1.08)"
+    generator_bearing_temp_c: "K/P front bearing, signal 119; HoT tblSCTurTemp.wtc_GenBeRTm_mean, drive end (front taken as drive end, an inference). Non-null K 96.0%, P 97.5%, H 99.6% (99.7%, 99.5%)"
+    generator_winding_temp_c: "K/P 'Stator temperature 1', signal 22; HoT tblSCTurTemp.wtc_Gen1U1Tm_mean. Non-null K 96.0%, P 97.5%, H 99.6% (99.7%, 99.5%)"
+    main_bearing_temp_c: "K/P 'Rotor bearing temp', signal 447; HoT tblSCTurTemp.wtc_MainBTmp_mean. Non-null K 96.0%, P 97.5%, H 99.6% (99.7%, 99.5%)"
+
+  extended_channels:
+    wind_direction_deg: "K/P 'Wind direction', signal 2; HoT tblSCTurbine.wtc_ActualWindDirection_mean. Non-null K 96.0%, P 97.5%, H 49.8%: 0.0% in 2019 (0 of 12 months published) and 99.5% in 2023. Fails condition (a): availability at the held-out site is confounded with its year"
+    gearbox_bearing_temp_c: "verified absent at both Kelmarsh and Penmanshiel (no gearbox bearing in either signal mapping): non-null K 0.0%, P 0.0%; HoT tblSCTurTemp.wtc_HSGenTmp_mean, H 99.6%. Fails the maps and condition (b)"
+
+  # ---------------------------------------------------------------------------
+  # Everything below is v2's, unchanged.
+  # ---------------------------------------------------------------------------
+  bounds:
+    wind_speed_ms: { min: 0.0, max: 40.0 }
+    power_kw: { min: -100.0, max: 2255.0 }
+    rotor_speed_rpm: { min: -1.0, max: 25.0 }
+    generator_speed_rpm: { min: -10.0, max: 2500.0 }
+    pitch_angle_deg: { min: -5.0, max: 100.0 }
+    nacelle_position_deg: { min: 0.0, max: 360.0 }
+    wind_direction_deg: { min: 0.0, max: 360.0 }
+    ambient_temp_c: { min: -30.0, max: 50.0 }
+    nacelle_temp_c: { min: -30.0, max: 70.0 }
+    gearbox_bearing_temp_c: { min: -30.0, max: 120.0 }
+    gearbox_oil_temp_c: { min: -30.0, max: 100.0 }
+    generator_bearing_temp_c: { min: -30.0, max: 120.0 }
+    generator_winding_temp_c: { min: -30.0, max: 180.0 }
+    main_bearing_temp_c: { min: -30.0, max: 100.0 }
+
+  bounds_overrides:
+    hill_of_towie:
+      power_kw: { min: -100.0, max: 2530.0 }
+    care:
+      power_kw: { min: -0.1, max: 1.1 }
+
+  # Datum harmonisation (ADR-0012), applied at every source AFTER the bounds above.
+  # Datums are conventions and are harmonised across sites. Physics is not harmonised;
+  # differences in physics between sites are what the held-out evaluation measures.
+  harmonise:
+    pitch_angle_deg:
+      floor: 0.0
+      reason: >-
+        Fine pitch is reported against a different zero by each control system, measured
+        on the final tables of 2026-09-12. Senvion reports it as a hard exact 0.0
+        (41.30% of Kelmarsh's and 21.12% of Penmanshiel's measured values; minima -0.1175
+        and -0.0870, every negative value within 0.12 deg of zero). Siemens reports a
+        continuous band centred on -1.0 (45.29% of Hill of Towie's 2019 and 32.84% of its
+        2023 values within 0.05 deg of -1.0; floor -1.2732; exactly 0.0 on 0.010% and
+        0.001%). CARE farms A and C report a negative fine pitch too (p25 -1.70 and
+        -1.50). Same operating state, different datum. The floor moves 0.81% of
+        Kelmarsh's values, 0.17% of Penmanshiel's, 72.05% (2019) and 62.30% (2023) of
+        Hill of Towie's, and 50.90% / 2.49% / 52.89% of CARE farms A / B / C. It is not
+        a per-site rule: no document states a Siemens pitch datum, so a per-site offset
+        could only be fitted from held-out data, which the pre-registered protocol
+        forbids.
+
+  clean:
+    duplicate_timestamps: "mean"
+    apply_bounds: true
+    drop_all_nan_rows: false
+    sentinels:
+      kelmarsh:
+        gearbox_oil_temp_c: [323.7]
+      hill_of_towie:
+        gearbox_bearing_temp_c: [200.0, -50.0]
+        generator_bearing_temp_c: [200.0, -50.0]
+      care:
+        ambient_temp_c: [-273.2, -54.9]
+        gearbox_oil_temp_c: [850.0, 0.0]
+        generator_winding_temp_c: [850.0, 205.0, 0.0]
+        generator_bearing_temp_c: [205.0]
+        main_bearing_temp_c: [0.0]
+
+  filter:
+    min_channel_nonnull_frac: 0.50
+    min_turbine_year_nonnull_frac: 0.30
+    segment_break_steps: 6
+    min_segment_steps: 144
+
+  impute:
+    max_impute_steps: 3
+    method: "linear"
+
+  events:
+    horizons_steps: [6, 36, 144]
+    labels_config: "configs/data/events_v2.yaml"
+    lowercase_messages: true
+    collapse_whitespace: true
+    default_is_fault: null
+
+  tokenizer:
+    n_bins: 64
+    sample_rows: 500000
+    seed: 20260909
+
+  final:
+    splits_config: "configs/data/splits_v2.yaml"
+    write_masks: true
+
+  report:
+    top_n_messages: 20
+    percentile_channels: []

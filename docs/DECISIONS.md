@@ -1193,3 +1193,101 @@ bin of generator bearing temperature spans 42.7 degrees C and that of nacelle te
 would be `quantile_bins_v1.yaml`, a new tokenizer and new shards; or an M1c result showing the
 model starved in the tail bins, which would argue for fixed-width tail bins beside the
 quantiles.
+
+---
+
+## ADR-0012 The pitch datum is harmonised: a uniform floor at 0.0 degrees, every site
+
+**Status:** Accepted · **Date:** 2026-09-12
+
+> **The principle, which ADR-0012, ADR-0013 and ADR-0014 all rest on.** Datums are
+> conventions and are harmonised across sites. Physics is not harmonised; differences in
+> physics between sites are what the held-out evaluation measures.
+
+**Decision.** `pitch_angle_deg` is floored at **0.0 degrees at every source**, as a
+declared, config-driven transform: `harmonise.pitch_angle_deg.floor` in
+`configs/data/telemetry_v4.yaml`, applied by
+`faultline.data.telemetry.datums.apply_datums` in the cleaning stage **after** the
+plausibility bounds. A pitch below the -5 degree bound is `NaN` and is not rescued to 0.
+The rule names no site.
+
+**The diagnostic it rests on.** Measured on the final tables of 2026-09-12, before the
+change (every measured, non-imputed value of the channel):
+
+| | Kelmarsh | Penmanshiel | Hill of Towie 2019 | Hill of Towie 2023 |
+| --- | --- | --- | --- | --- |
+| manufacturer | Senvion MM92 | Senvion MM82 | Siemens SWT-2.3-82 | the same |
+| exactly `0.0` | **41.30%** | **21.12%** | 0.010% | 0.001% |
+| within 0.05 deg of -1.0 | 0.00% | 0.00% | **45.29%** | **32.84%** |
+| lowest value | -0.1175 | -0.0870 | -1.2732 | -1.2236 |
+| below 0.0 | 0.81% | 0.17% | 72.05% | 62.30% |
+
+Senvion reports fine pitch as a hard exact zero; Siemens reports a continuous band centred
+on -1.0 and reaches zero essentially never. The two machines are in the same operating
+state. **That difference, and nothing else, is the 71.40% / 61.83% of Hill of Towie pitch
+values that ADR-0011 reported below the training range** (the training range starts at
+-0.087, so the two figures differ from the below-zero shares above by the values in
+between).
+
+It is not a two-site quirk. CARE farms A and C report a negative fine pitch as well
+(p25 -1.700 and -1.503, 50.90% and 52.89% of their values below zero) and farm B does not
+(p25 0.030, 2.49%). Four of the six machine populations in this project report pitch
+against a non-zero datum.
+
+**Why a site-agnostic rule and not a per-site one.** The floor is large at one site and
+negligible at the training sites -- 0.81% of Kelmarsh's values and 0.17% of Penmanshiel's,
+every one of them within 0.12 degrees of zero -- but it is stated once, for every source,
+and the configuration has no place to write a per-source datum. A rule that named
+Hill of Towie would be a parameter chosen by looking at the held-out site.
+
+**Declined: a +1.0 degree offset for Hill of Towie.** It is the better transform on its
+face. It preserves the within-band variation the floor destroys -- Hill of Towie's pitch
+runs p5 -0.9998 to p75 1.978, and while producing it sits in a band roughly -1.00 to -0.90
+that carries real control activity. It is declined because **no document states a Siemens
+pitch datum**: not the record README, not the field descriptions, not the turbine metadata.
+The offset could only be fitted from the held-out site's own distribution, and fitting
+anything to held-out data is what the pre-registered protocol forbids. Recorded as
+declined for that reason, not as wrong. A published Siemens pitch reference would reopen it.
+
+**The cost, stated.** About **72% (2019) and 62% (2023) of Hill of Towie's pitch values
+collapse into the 0.0 point-mass token**, together with 50.9% and 52.9% of CARE farms A
+and C. Everything the held-out site's fine-pitch band contained is gone. That is not a
+loss the training sites can feel the absence of: at 0.0 exactly, Senvion reports *no
+within-band variation at all*, so the model has never seen any, and no representation of
+it exists to map onto. Aligning the held-out site to the vocabulary the training sites
+actually produced is the honest zero-shot treatment; keeping the band would put 72% of the
+held-out site's values in a bin holding 0.07% of training values, which is what ADR-0011
+measured and what this decision answers.
+
+**Not corrected, and named as a source of shift instead.** Hill of Towie feathers at
+**78.0 degrees** exactly -- its maximum, at both staged years, with 2.39% of its values at
+or above 70 and a median of 77.0 among them. Senvion runs higher: Kelmarsh and Penmanshiel
+put 2.54% and 2.51% of their values at or above 70, with a mass at 89.99/90.00, a 95th
+percentile of 92.49 among them, and maxima of 98.83 and 98.64. That is the machine's own
+blade and control design, not a reporting convention, so **it stays**. It has a measured
+consequence: 78.0 falls inside the training range and lands in pitch bin 247, which spans
+[45.06, 80.52] degrees, decodes to 62.8 degrees, and holds **0.235%** of training pitch
+values (7,883 of 3,350,222) -- at the training sites, the transit between the 45-degree
+mass and feather, a mid-pitch transient. Hill of Towie's parked state will read as a
+training site's transient. Hill of Towie also has **no 45-degree mass** (0.00% within 0.01
+degrees of 45, against Kelmarsh's 6.60% and Penmanshiel's 12.89%). Both differences are
+physics and are left for the evaluation to measure.
+
+**Pre-planned analysis, registered here so it is not post-hoc.** An M1 ablation evaluates
+Hill of Towie with pitch masked to `<nan>` (core-11), scoring the same checkpoints both
+ways, to attribute how much of the site-shift penalty is pitch. The mechanism is the one
+modality dropout already uses, so it costs no re-tokenisation (ADR-0008, "core-10 costs
+nothing to revisit").
+
+**Rejected.**
+
+| alternative | why rejected |
+| --- | --- |
+| A +1.0 deg offset at Hill of Towie | No published Siemens datum; the offset could only be fitted from held-out data. Recorded above in full. |
+| The floor in `clean.py`, with the bounds | Cleaning decides whether a value is a reading at all. A datum decides what a reading is measured from. Ordering them the other way would rescue an out-of-bounds pitch to 0 and present an instrument failure as fine pitch; `tests/data/telemetry/test_datums.py` fails if it does. |
+| The floor in the Hill of Towie adapter | It would make a site-agnostic convention look like a per-site correction, and would hide from every other source a rule that in fact moves values at four of six machine populations. |
+| Leaving pitch as published | Measured: 71.40% / 61.83% of the held-out site's values outside the training range, landing in a bin holding 0.07% of training values (ADR-0011). |
+
+**What would change this decision.** A published Siemens pitch datum, which would make the
+offset a documented conversion rather than a fitted one; or an M1c core-11 ablation showing
+the floored channel is worse than no pitch at all at the held-out site.

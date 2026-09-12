@@ -1,0 +1,47 @@
+# Text-only pretraining, version 1 (M2d). Same decoder, same loop, same discipline
+# the telemetry ladder used (configs/train/telemetry_v0.yaml) -- this file plays the
+# same role for the two text-only runs.
+#
+# TWO RUNS ONLY: S2 and S3, one seed each, per the M2 brief. Read from
+# configs/model/ladder_v0.yaml's own rungs list, not re-typed here, so the
+# architecture cannot drift from the telemetry ladder's.
+#
+# BUDGET: one pass over the training corpus, or gpu_hour_budget GPU-hours, whichever
+# is smaller -- measured per rung by a short calibration pass rather than assumed
+# (faultline.evaluation.text_ladder), because context 2048 has no reason to match
+# the telemetry ladder's 144-step context in throughput. Which bound a rung actually
+# hit is recorded in the report.
+#
+# batch_windows/accumulate/learning_rate below are the telemetry ladder's own
+# risk-run values, carried over as a starting point; they are not re-measured for
+# context 2048 and should be revisited once real throughput is known.
+
+version: 1
+shards_config: "configs/tokenizer/text_shards_v1.yaml"
+model_config_path: "configs/model/ladder_v0.yaml"
+rungs: ["S2", "S3"]
+seed: 1
+
+batch_windows: 16
+accumulate: 2
+learning_rate: 6.0e-4
+
+calibration_steps: 20
+gpu_hour_budget: 4.0
+evaluations: 6
+
+train_stride: 1
+eval_stride: 1
+selection_windows: 3000
+validation_windows: 15000
+test_windows: 12000
+eval_seed: 20260913
+dropout: 0.0
+
+optimiser:
+  weight_decay: 0.1
+  beta1: 0.9
+  beta2: 0.95
+  warmup_fraction: 0.02
+  grad_clip: 1.0
+  precision: bf16

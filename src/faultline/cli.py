@@ -716,6 +716,29 @@ def model_ladder(
     typer.echo(f"wrote {report}")
 
 
+@model_app.command(
+    "text-pretrain",
+    help="Pretrain the text-only decoder at S2 and S3 and write the M2d/M2e report.",
+)
+def model_text_pretrain(
+    config: ConfigOption = Path("configs/train/text_v1.yaml"),
+    device: Annotated[
+        str | None,
+        typer.Option("--device", help="Torch device; chosen automatically when omitted."),
+    ] = None,
+) -> None:
+    """Run the text-only pretraining rungs and write their report.
+
+    Args:
+        config: The training configuration, which names the shards and model configs.
+        device: Torch device to run on.
+    """
+    from faultline.evaluation.text_ladder import run_text_ladder
+
+    _json_path, report = run_text_ladder(ProjectPaths.resolve(), config, device)
+    typer.echo(f"wrote {report}")
+
+
 @check_app.command(
     "naming",
     help="Fail if a forbidden string appears in a tracked file (ADR-0002).",

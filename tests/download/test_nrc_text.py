@@ -8,23 +8,29 @@ was never actually served.
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 import requests
 from pydantic import ValidationError
 
+from faultline.data.common.manifest import FileRecord, load_manifest, manifest_shard_dir
 from faultline.download.nrc_text import (
     EventNotificationsSpec,
+    FetchedDocument,
     GenericCommSpec,
     NrcTextClient,
     SourcesTextConfig,
+    event_notification_shard_key,
     extract_events,
     extract_generic_comm_document,
     filter_native_document_links,
+    stage_documents,
     strip_html,
     template_of,
 )
+from faultline.paths import ProjectPaths
 
 
 class _FakeSession(requests.Session):
@@ -103,6 +109,7 @@ class TestExtractEvents:
         # the second event's Event Text div is empty and yields no document
         assert len(documents) == 1
         assert documents[0].doc_id == "20241231en_en57533"
+        assert documents[0].template_era == "modern"
 
     def test_event_text_is_cleaned_and_complete(self, event_day_html: str) -> None:
         [document] = extract_events(event_day_html, ".../2024/20241231en")
@@ -131,6 +138,7 @@ class TestExtractEvents:
         assert documents[0].text.startswith("AGREEMENT STATE REPORT - DOSE MISADMINISTRATION")
         assert "Rep Org" not in documents[0].text
         assert "<" not in documents[0].text and ">" not in documents[0].text
+        assert all(document.template_era == "midera" for document in documents)
 
     def test_midera_template_tolerates_whitespace_and_attribute_variants(
         self, event_day_midera_variant_html: str
@@ -153,6 +161,7 @@ class TestExtractEvents:
         ]
         assert "AGREEMENT STATE REPORT - REPORT OF LOST STATIC ELIMINATOR" in documents[0].text
         assert "<" not in documents[0].text and ">" not in documents[0].text
+        assert all(document.template_era == "midera" for document in documents)
 
     def test_legacy_template_extracts_every_event(self, event_day_legacy_html: str) -> None:
         documents = extract_events(
@@ -173,6 +182,7 @@ class TestExtractEvents:
         for document in documents:
             assert "+--" not in document.text
             assert not document.text.startswith("|")
+            assert document.template_era == "legacy"
 
     def test_modern_template_is_tried_before_the_others(self, event_day_html: str) -> None:
         """A modern page has no `<pre>` and no `<a name="en...">`.
@@ -400,3 +410,90 @@ class TestRobotsGating:
         assert allowed is not None
         assert blocked is None
         assert "https://blocked.org/page" not in session.requested
+
+
+class TestEventNotificationShardKey:
+    def test_groups_by_the_four_digit_report_year(self) -> None:
+        record = FileRecord(
+            filename="20180703en_en53468.txt",
+            relative_path="raw/text/nrc_event_notifications/20180703en_en53468.txt",
+            size_bytes=10,
+            url="https://example.org/x",
+            retrieved_at=datetime(2026, 9, 13, tzinfo=UTC),
+        )
+        assert event_notification_shard_key(record) == "2018"
+
+
+class TestStageDocumentsSharding:
+    def _spec(self) -> EventNotificationsSpec:
+        return EventNotificationsSpec(
+            provider="NRC",
+            license="public-domain",
+            attribution="a",
+            base_url="https://example.org",
+            year_start=2000,
+            year_end=2001,
+            robots_basis="r",
+        )
+
+    def test_sharded_staging_writes_one_shard_per_year_and_a_matching_ledger(
+        self, tmp_paths: ProjectPaths
+    ) -> None:
+        documents = iter(
+            [
+                FetchedDocument(
+                    doc_id="20180703en_en53468",
+                    url="https://example.org/2018/20180703en#en53468",
+                    text="an event in 2018",
+                    template_era="midera",
+                ),
+                FetchedDocument(
+                    doc_id="20240101en_en99999",
+                    url="https://example.org/2024/20240101en#en99999",
+                    text="an event in 2024",
+                    template_era="modern",
+                ),
+            ]
+        )
+
+        manifest = stage_documents(
+            "nrc_event_notifications",
+            self._spec(),
+            documents,
+            tmp_paths,
+            event_notification_shard_key,
+        )
+
+        assert {record.filename for record in manifest.files} == {
+            "20180703en_en53468.txt",
+            "20240101en_en99999.txt",
+        }
+        shard_dir = manifest_shard_dir(tmp_paths.manifests_dir, "nrc_event_notifications")
+        assert sorted(p.name for p in shard_dir.glob("*.jsonl")) == ["2018.jsonl", "2024.jsonl"]
+
+        reloaded = load_manifest(tmp_paths.manifests_dir, "nrc_event_notifications")
+        assert reloaded is not None
+        by_filename = reloaded.by_filename()
+        assert by_filename["20180703en_en53468.txt"].template_era == "midera"
+        assert by_filename["20240101en_en99999.txt"].template_era == "modern"
+
+    def test_unsharded_staging_is_unaffected(self, tmp_paths: ProjectPaths) -> None:
+        documents = iter(
+            [
+                FetchedDocument(
+                    doc_id="in2020004",
+                    url="https://example.org/in2020004",
+                    text="an information notice",
+                )
+            ]
+        )
+
+        manifest = stage_documents(
+            "nrc_info_notices",
+            self._spec(),
+            documents,
+            tmp_paths,
+        )
+
+        assert [record.filename for record in manifest.files] == ["in2020004.txt"]
+        assert not manifest_shard_dir(tmp_paths.manifests_dir, "nrc_info_notices").exists()

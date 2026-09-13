@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -61,6 +62,13 @@ class FileRecord(StrictModel):
             fetched it directly (PHMSA's flagged-incident file, ADR-0016), so the
             manifest states the provenance rather than leaving it implied by every
             other record's silence.
+        template_era: Which HTML template this document was extracted from, for a
+            source whose markup changed shape over the years it spans (NRC Event
+            Notification Reports, ADR-0016) -- ``None`` for every other source, which
+            only ever has one template. Not recoverable after the fact from anything
+            else on the record: `doc_id` and `url` are the same shape regardless of
+            which template produced them, so this is measured once, at extraction
+            time, or not at all.
     """
 
     filename: str
@@ -73,6 +81,7 @@ class FileRecord(StrictModel):
     retrieved_at: datetime
     verified: bool = False
     retrieval_method: str | None = None
+    template_era: str | None = None
 
 
 class SourceManifest(StrictModel):
@@ -182,3 +191,101 @@ def write_manifest(path: Path, manifest: SourceManifest) -> Path:
     payload = manifest.model_dump(mode="json", exclude_none=True)
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     return path
+
+
+def manifest_shard_dir(manifests_dir: Path, source: str) -> Path:
+    """Return the shard directory a source's manifest keeps its file records under.
+
+    Args:
+        manifests_dir: ``data/cards/manifests`` directory.
+        source: Source identifier.
+
+    Returns:
+        Directory holding one compact JSONL file per shard, when the source's
+        manifest is sharded at all (:func:`load_manifest` treats a directory that
+        does not exist as "not sharded", not as an error).
+    """
+    return manifests_dir / source
+
+
+def write_manifest_sharded(
+    manifests_dir: Path,
+    source: str,
+    manifest: SourceManifest,
+    shard_key_of: Callable[[FileRecord], str],
+) -> Path:
+    """Write a manifest whose file records are too many for one indented JSON file.
+
+    A single ``<source>.json``, indented for human review, is the right shape for a
+    source with a handful of files. It stops being the right shape once a source
+    carries tens of thousands of them (``nrc_event_notifications``, ADR-0016): the
+    file crossed the repository's large-file limit twice as this source grew, which
+    is the file's own shape being wrong, not the limit. This instead keeps the
+    manifest's own top-level fields (provider, licence, ...) in that same
+    ``<source>.json`` with ``files`` left empty, a header, and splits the file
+    records themselves across compact, unindented JSONL shards --
+    ``<manifests_dir>/<source>/<shard_key>.jsonl``, one record per line -- grouped
+    by ``shard_key_of`` (a report year, for event notifications). Every shard is
+    rewritten from ``manifest.files`` in full each call, including deleting any
+    shard whose key is no longer present, so a shard directory always matches the
+    manifest passed in; nothing here appends only. :func:`load_manifest` reads this
+    layout back as one ordinary :class:`SourceManifest`.
+
+    Args:
+        manifests_dir: ``data/cards/manifests`` directory.
+        source: Source identifier.
+        manifest: The manifest to write; its ``files`` are what gets sharded.
+        shard_key_of: Assigns one file record to its shard.
+
+    Returns:
+        The shard directory written.
+    """
+    shard_dir = manifest_shard_dir(manifests_dir, source)
+    shard_dir.mkdir(parents=True, exist_ok=True)
+    grouped: dict[str, list[FileRecord]] = {}
+    for record in manifest.files:
+        grouped.setdefault(shard_key_of(record), []).append(record)
+    for shard_key, records in grouped.items():
+        records.sort(key=lambda item: item.filename)
+        lines = [
+            json.dumps(record.model_dump(mode="json", exclude_none=True), separators=(",", ":"))
+            for record in records
+        ]
+        (shard_dir / f"{shard_key}.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    for stray in shard_dir.glob("*.jsonl"):
+        if stray.stem not in grouped:
+            stray.unlink()
+    write_manifest(manifest_path(manifests_dir, source), manifest.model_copy(update={"files": []}))
+    return shard_dir
+
+
+def load_manifest(manifests_dir: Path, source: str) -> SourceManifest | None:
+    """Load a source's manifest, whether it is one file or sharded.
+
+    A caller that only wants "every file record this source has" should not need to
+    know which layout backs it. This reads the ``<source>.json`` header for the
+    manifest's own fields, then -- only if ``<manifests_dir>/<source>/`` exists --
+    replaces its (empty) ``files`` with every record from every ``*.jsonl`` shard
+    there, sorted for a stable read.
+
+    Args:
+        manifests_dir: ``data/cards/manifests`` directory.
+        source: Source identifier.
+
+    Returns:
+        The manifest with every file record present, or ``None`` if the source has
+        no manifest at all yet.
+    """
+    header = read_manifest(manifest_path(manifests_dir, source))
+    if header is None:
+        return None
+    shard_dir = manifest_shard_dir(manifests_dir, source)
+    if not shard_dir.is_dir():
+        return header
+    records: list[FileRecord] = []
+    for shard_file in sorted(shard_dir.glob("*.jsonl")):
+        for line in shard_file.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                records.append(FileRecord.model_validate_json(line))
+    records.sort(key=lambda item: item.filename)
+    return header.model_copy(update={"files": records})

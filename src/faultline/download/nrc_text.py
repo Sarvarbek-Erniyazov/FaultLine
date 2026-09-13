@@ -36,8 +36,8 @@ import html
 import re
 import time
 import urllib.robotparser
-from collections.abc import Iterator
-from dataclasses import dataclass
+from collections.abc import Callable, Iterator
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated, Literal
@@ -54,9 +54,10 @@ from faultline.data.common.manifest import (
     FileRecord,
     SourceManifest,
     hash_file,
+    load_manifest,
     manifest_path,
-    read_manifest,
     write_manifest,
+    write_manifest_sharded,
 )
 from faultline.logging_utils import get_logger
 from faultline.paths import ProjectPaths
@@ -117,12 +118,16 @@ class FetchedDocument:
         url: The URL it was fetched from.
         text: Extracted narrative text.
         title: Short label for the report, when the page carries one.
+        template_era: Which template produced this document, for a source whose
+            markup changed shape over the years it spans (event notifications);
+            empty for every other source, which only ever has one template.
     """
 
     doc_id: str
     url: str
     text: str
     title: str = ""
+    template_era: str = ""
 
 
 # --------------------------------------------------------------------------------------
@@ -594,13 +599,19 @@ def extract_events(html_text: str, day_url: str) -> list[FetchedDocument]:
 
     Returns:
         One document per event block that carries non-empty event text, from whichever
-        template the page turns out to use.
+        template the page turns out to use; each carries that template's name as
+        ``template_era``, the actual extractor that produced it rather than a guess
+        from the page's markup alone.
     """
     day_id = day_url.rstrip("/").rsplit("/", 1)[-1]
-    for extractor in (_extract_events_modern, _extract_events_midera, _extract_events_legacy):
+    for era, extractor in (
+        ("modern", _extract_events_modern),
+        ("midera", _extract_events_midera),
+        ("legacy", _extract_events_legacy),
+    ):
         documents = extractor(html_text, day_id, day_url)
         if documents:
-            return documents
+            return [replace(document, template_era=era) for document in documents]
     return []
 
 
@@ -842,11 +853,24 @@ def build_status_code_book(spec: CodeBookSpec, paths: ProjectPaths) -> list[Fetc
 MANIFEST_FLUSH_EVERY = 25
 
 
+def event_notification_shard_key(record: FileRecord) -> str:
+    """Group an event-notification file record by its report year.
+
+    Args:
+        record: A file record whose ``filename`` is ``{YYYYMMDD}en_en{N}.txt``.
+
+    Returns:
+        The four-digit year, as a string (a valid shard-file stem).
+    """
+    return record.filename[:4]
+
+
 def stage_documents(
     source: str,
     spec: TextSourceSpec,
     documents: Iterator[FetchedDocument],
     paths: ProjectPaths,
+    shard_key_of: Callable[[FileRecord], str] | None = None,
 ) -> SourceManifest:
     """Write documents to raw staging and update the source's manifest.
 
@@ -863,17 +887,29 @@ def stage_documents(
         spec: Source specification (for provider/licence metadata).
         documents: Documents to stage.
         paths: Resolved project paths.
+        shard_key_of: When given, the manifest is written sharded (see
+            :func:`~faultline.data.common.manifest.write_manifest_sharded`) instead
+            of as one file -- only ``nrc_event_notifications`` needs this, the one
+            source whose record count has twice outgrown a single indented JSON
+            file's size limit.
 
     Returns:
         The updated manifest.
     """
     target_dir = paths.source_dir("raw", "text", source)
-    path = manifest_path(paths.manifests_dir, source)
-    manifest = read_manifest(path) or SourceManifest(
+    manifest = load_manifest(paths.manifests_dir, source) or SourceManifest(
         source=source, provider=spec.provider, license=spec.license
     )
     known = manifest.by_filename()
     since_flush = 0
+
+    def flush() -> None:
+        manifest.generated_at = datetime.now(tz=UTC)
+        if shard_key_of is not None:
+            write_manifest_sharded(paths.manifests_dir, source, manifest, shard_key_of)
+        else:
+            write_manifest(manifest_path(paths.manifests_dir, source), manifest)
+
     for document in documents:
         filename = f"{document.doc_id}.txt"
         destination = target_dir / filename
@@ -900,15 +936,14 @@ def stage_documents(
                 # licences across files), so it is not repeated per file
                 retrieved_at=datetime.now(tz=UTC),
                 verified=True,
+                template_era=document.template_era or None,
             )
         )
         since_flush += 1
         if since_flush >= MANIFEST_FLUSH_EVERY:
-            manifest.generated_at = datetime.now(tz=UTC)
-            write_manifest(path, manifest)
+            flush()
             since_flush = 0
-    manifest.generated_at = datetime.now(tz=UTC)
-    write_manifest(path, manifest)
+    flush()
     return manifest
 
 
@@ -969,9 +1004,9 @@ def assemble_corpus(paths: ProjectPaths, sources: list[str], corpus_name: str) -
     count = 0
     with destination.open("w", encoding="utf-8") as handle:
         for source in sources:
-            path = manifest_path(paths.manifests_dir, source)
-            manifest = read_manifest(path)
+            manifest = load_manifest(paths.manifests_dir, source)
             if manifest is None:
+                path = manifest_path(paths.manifests_dir, source)
                 raise FileNotFoundError(f"{source}: no manifest at {path}; stage it first")
             source_dir = paths.source_dir("raw", "text", source)
             for record in sorted(manifest.files, key=lambda item: item.filename):
@@ -979,7 +1014,13 @@ def assemble_corpus(paths: ProjectPaths, sources: list[str], corpus_name: str) -
                 doc_id = record.filename.removesuffix(".txt")
                 handle.write(
                     json.dumps(
-                        {"text": text, "source": source, "doc_id": doc_id, "url": record.url},
+                        {
+                            "text": text,
+                            "source": source,
+                            "doc_id": doc_id,
+                            "url": record.url,
+                            "template_era": record.template_era,
+                        },
                         ensure_ascii=False,
                     )
                     + "\n"

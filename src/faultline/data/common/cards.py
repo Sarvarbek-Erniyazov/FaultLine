@@ -21,7 +21,7 @@ from pathlib import Path
 
 import yaml
 
-from faultline.data.common.manifest import SourceManifest, manifest_path, read_manifest
+from faultline.data.common.manifest import SourceManifest, load_manifest
 from faultline.data.common.report import kv_table, section, table
 from faultline.data.telemetry.channels import parse_channel_map
 from faultline.data.telemetry.inspect import THRESHOLD_PROVENANCE
@@ -192,7 +192,7 @@ def build_card(source: str, spec: SourceSpec, paths: ProjectPaths) -> Path:
     Returns:
         The path of the written card.
     """
-    manifest = read_manifest(manifest_path(paths.manifests_dir, source))
+    manifest = load_manifest(paths.manifests_dir, source)
     inventory = latest_inventory(paths.data_reports_dir, source)
     verdict, rationale = extract_verdict(inventory)
     resolution = latest_resolution(paths.data_reports_dir, source)

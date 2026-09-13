@@ -198,6 +198,63 @@ def download_text(
 
 
 @inspect_app.command(
+    "phmsa",
+    help="Hash, record and read-only-profile a manually retrieved PHMSA archive.",
+)
+def inspect_phmsa(
+    zip_path: Annotated[
+        Path, typer.Option("--file", help="The manually retrieved zip file.")
+    ] = Path("data/raw/text/phmsa/PHMSA_Pipeline_Safety_Flagged_Incidents.zip"),
+    url: Annotated[
+        str,
+        typer.Option("--url", help="URL the file was downloaded from, for the manifest."),
+    ] = (
+        "https://www.phmsa.dot.gov/sites/phmsa.dot.gov/files/data_statistics/pipeline/"
+        "PHMSA_Pipeline_Safety_Flagged_Incidents.zip"
+    ),
+    retrieved_at: Annotated[
+        str | None,
+        typer.Option(
+            "--retrieved-at",
+            help="ISO date/time the human retrieved it (their own record); now, when omitted.",
+        ),
+    ] = None,
+) -> None:
+    """Hash, manifest and read-only-profile a manually retrieved PHMSA archive.
+
+    Does not run any pipeline stage against the file (ADR-0016: staged, not yet used).
+
+    Args:
+        zip_path: The manually retrieved file.
+        url: Its source URL, for the manifest.
+        retrieved_at: When it was retrieved; now (UTC) when omitted.
+
+    Raises:
+        typer.Exit: With code 1 if the file does not exist yet.
+    """
+    from datetime import UTC, datetime
+
+    from faultline.data.text.phmsa_manual import (
+        inspect_archive,
+        record_manual_retrieval,
+        render_report,
+    )
+
+    if not zip_path.is_file():
+        typer.echo(f"{zip_path} does not exist yet; nothing to inspect")
+        raise typer.Exit(code=1)
+    paths = ProjectPaths.resolve()
+    when = datetime.fromisoformat(retrieved_at) if retrieved_at else datetime.now(tz=UTC)
+    manifest = record_manual_retrieval(paths, zip_path, url=url, retrieved_at=when)
+    profiles = inspect_archive(zip_path)
+    report = render_report(zip_path, manifest, profiles)
+    stamp = datetime.now(tz=UTC).strftime("%Y%m%d")
+    destination = paths.data_reports_dir / f"phmsa_manual_{stamp}.md"
+    destination.write_text(report, encoding="utf-8")
+    typer.echo(f"wrote {destination}")
+
+
+@inspect_app.command(
     "telemetry",
     help="Inventory staged archives in place and write raw inventory reports.",
 )

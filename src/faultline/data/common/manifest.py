@@ -48,6 +48,12 @@ class FileRecord(StrictModel):
         license: SPDX-style licence identifier for this file.
         retrieved_at: UTC timestamp of a successful download.
         verified: Whether the local digest matched the published one.
+        retrieval_method: How the file reached this repository -- ``None`` (the
+            default) for this project's own automated, robots.txt-gated downloader;
+            an explicit string such as ``"manual, author, browser"`` when a human
+            fetched it directly (PHMSA's flagged-incident file, ADR-0016), so the
+            manifest states the provenance rather than leaving it implied by every
+            other record's silence.
     """
 
     filename: str
@@ -59,6 +65,7 @@ class FileRecord(StrictModel):
     license: str
     retrieved_at: datetime
     verified: bool = False
+    retrieval_method: str | None = None
 
 
 class SourceManifest(StrictModel):

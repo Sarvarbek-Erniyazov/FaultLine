@@ -775,3 +775,155 @@ references; not reproduced here in full. Summary of its current state:
   in `data/raw/text/phmsa/`.
 
 **Stopping here per instruction, pending review.**
+
+---
+
+## Addendum, 2026-09-13: Gate-6 corrections, re-measured (a) and (d)
+
+The user reviewed this checkpoint and accepted the extraction across all three
+eras. Before the BPE fit, three corrections were required; this addendum
+records them and re-measures (a) and (d) against the corrected corpus. Full
+detail and the decision record are in ADR-0016 (`docs/DECISIONS.md`); this
+section is the numbers.
+
+**What changed.** Two declared rules were added to `configs/data/text_v1.yaml`
+and, for the first time, the full declared pipeline (clean -> filter -> dedup
+-> pii -> final) was run against the real assembled corpus --
+`faultline text run --config configs/data/text_v1.yaml --stage all`, run id
+`20260913-142340_all_text_2a6ec5b7`, reports at
+`reports/data/20260913-142340_all_text_2a6ec5b7/`. Everything in this addendum
+is read from that run's generated reports and from the corrected final corpus
+on disk, not re-derived by hand.
+
+1. **Source-aware (keyed) dedup, `dedup.keyed`** (`src/faultline/data/text/keyed_dedup.py`):
+   for `nrc_event_notifications`, keep one document per event number -- the
+   latest report day. The M2b pre-registered near-duplicate trigger was a
+   random-pair sample; with 21,882 distinct event numbers in the corpus, a
+   random pair landing on two revisions of the same event is a near-impossible
+   draw, so the trigger could not see this pattern -- the wrong instrument for
+   this corpus, the author's own correction to the M2b brief, not an error in
+   how the trigger was run. Measured (in real pipeline order: post-clean,
+   post-filter, post-exact-dedup, 27,662 `nrc_event_notifications` documents
+   reaching this rule): 21,882 distinct event numbers, 3,901 with more than one
+   surviving revision. Confirmation that "keep the latest" is correct, not
+   merely plausible: 40 sampled multi-revision groups, latest never shorter
+   than earliest (40/40); normalized, the earlier document's post-title body
+   is a substring of the later one in 30/40 (the rest differ only in a
+   reworded opening line, not a rewrite). **4,521 documents removed,
+   1,214,427 whitespace tokens** (7,602,753 before this rule -> 6,388,326
+   after, at the point in the pipeline it runs).
+
+2. **Two declared fixed-boilerplate rules, `clean.boilerplate`**
+   (`src/faultline/data/text/boilerplate.py`): the extractor's own
+   `EN Revision Imported Date: .../EN Revision Text:` metadata lines (1,316
+   documents), and the fixed IAEA "Less than Cat 3" source-category
+   explanation, from "THIS MATERIAL EVENT CONTAINS" through the
+   `Pub1227_web.pdf` URL where present (2,616 occurrences) or through the
+   sentence before it where the URL is absent -- the same fixed paragraph,
+   used since at least 2005, found while building this rule and not in the
+   original brief (866 occurrences). **1,316 + 3,482 = 4,798 matches removed,
+   419,746 whitespace tokens** (isolated on the raw corpus, before any other
+   cleaning step: 9,462,805 -> 9,043,059). Three further occurrences carry a
+   source-side URL typo and are not matched (documented, not chased).
+
+   The general check the brief also asked for: every document split into
+   blank-line-delimited paragraphs, normalized, hashed, counting how many
+   *documents* each distinct paragraph appears in (not raw occurrences). Run
+   against the raw corpus, exactly 7 paragraphs recur in more than 100
+   documents:
+
+   | paragraph (first 120 chars) | documents |
+   | --- | --- |
+   | The licensee notified the NRC Resident Inspector. | 442 |
+   | The following text is a portion of a facsimile received from the licensee: | 377 |
+   | The licensee notified the NRC resident inspector. | 360 |
+   | The NRC Resident Inspector was notified. | 257 |
+   | The NRC Resident Inspector was notified of this event by the licensee. | 253 |
+   | The NRC resident inspector has been informed of this event by the licensee. | 108 |
+   | THE LICENSEE INFORMED THE NRC RESIDENT INSPECTOR. | 104 |
+
+   Every one is a short, genuine, formulaic narrative sentence that recurs
+   because many independent incident reports end the same way -- not page
+   furniture. **None are stripped.** Neither declared boilerplate rule above
+   shows up in this list: both are joined to document-specific text by a
+   single newline rather than a blank line, so neither is ever its own
+   paragraph -- a stated limitation of paragraph-level hashing as a
+   *discovery* method; it did not need to find them, since they were already
+   found and matched by direct pattern first.
+
+### (a) re-measured: event notifications by template era
+
+Now measured on the corrected, fully-pipelined final corpus (cleaned,
+filtered, deduped -- exact and keyed --, PII-scrubbed):
+
+| era | documents (was) | documents (now) | whitespace tokens (was) | whitespace tokens (now) |
+| --- | --- | --- | --- | --- |
+| legacy | 6,263 | 4,614 | 1,359,413 | 971,216 |
+| midera | 22,523 | 13,995 | 5,724,541 | 3,286,311 |
+| modern | 3,669 | 3,273 | 861,033 | 681,624 |
+| **total** | **32,455** | **21,882** | **7,944,987** | **4,939,151** |
+
+The drop is almost entirely keyed dedup (revisions collapsed to their latest)
+concentrated in `midera`, which is also the era the original checkpoint
+identified as most affected by the fixed-regex undercount and, separately,
+where most multi-revision event chains live -- consistent, not a new anomaly.
+A small further share in every era is the filter stage running for the first
+time (see below) and boilerplate stripping occasionally shrinking a document
+that was mostly IAEA/header boilerplate.
+
+### (a) re-measured: the four generic-communications sources
+
+| source | documents (was) | documents (now) | whitespace tokens (was) | whitespace tokens (now) |
+| --- | --- | --- | --- | --- |
+| Information Notices | 424 | 422 | 404,615 | 399,881 |
+| Bulletins | 230 | 228 | 273,697 | 270,290 |
+| Generic Letters | 563 | 556 | 747,952 | 686,503 |
+| Regulatory Issue Summaries | 53 | 53 | 91,554 | 91,537 |
+
+These four sources have no event-number revision structure (`dedup.keyed`
+never touches them) and essentially no IAEA/EN-revision boilerplate; their
+small movement is exact dedup and the filter/PII stages running for the first
+time, not the two Gate-6 corrections.
+
+**New this run, for completeness (neither existed as a measurement in the
+original checkpoint, which never ran the pipeline past raw assembly):** the
+filter stage, run for the first time, dropped 253 of 33,725 cleaned documents
+(171 `repeated_lines`, 79 `min_chars`, 3 `max_chars`) -- expected to include a
+handful of documents whose entire content was boilerplate now stripped down
+to nothing, though this was not run before to compare against. The PII stage
+masked 332 emails and 1,490 phone numbers, changing the corpus's whitespace
+token count by a further -964 tokens (placeholders are shorter than what they
+replace).
+
+### (d) re-measured: total yield against the 30M-token floor
+
+| | whitespace tokens (was) | whitespace tokens (now) |
+| --- | --- | --- |
+| Event notifications | 7,944,987 | 4,939,151 |
+| Information Notices | 404,615 | 399,881 |
+| Bulletins | 273,697 | 270,290 |
+| Generic Letters | 747,952 | 686,503 |
+| Regulatory Issue Summaries | 91,554 | 91,537 |
+| **Narrative corpus total** | **9,462,805** | **6,387,362** |
+
+**The corrected corpus measures 6,387,362 whitespace tokens -- about 21.3% of
+the 30M-token floor, down from the original checkpoint's 31.5%.** This is a
+real drop, not a regression to explain away: the original figure counted
+33,725 raw, un-deduplicated-by-revision, boilerplate-laden documents; this one
+counts 23,141 documents that are each a genuine, once-represented incident
+narrative, cleaned of extractor metadata and fixed IAEA text, after the actual
+declared pipeline ran end to end for the first time. ADR-0016's own position
+holds unchanged: with one reachable Tier-1 source, "the pipeline and its
+reports are the gate, not the token count" -- and this number is now the
+pipeline's real output, not raw assembly's.
+
+### PHMSA gate
+
+**`data/raw/text/phmsa/` is still empty as of this addendum (checked
+2026-09-13, after 1-3 above were completed).** `faultline inspect phmsa` is
+built, tested and waiting; it has not run because the file has not appeared.
+Per the standing instruction: the BPE fit does not start until this file is
+staged and folded in, or the author explicitly says to proceed without it.
+
+**Stopping here: corrections 1-3 are complete, and PHMSA has not appeared.
+M2c (BPE fit) onward is not started, pending the author's PHMSA decision.**

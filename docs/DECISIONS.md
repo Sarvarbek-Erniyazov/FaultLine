@@ -1669,7 +1669,8 @@ enough that the headroom stops being an order of magnitude.
 DOE OE-417 re-tested; `NrcTextClient` now checks robots.txt before, not after,
 the first request to a host; the generic-communications yield table corrected
 after a second PDF-hosting path was found undercounting Regulatory Issue
-Summaries) · **Date:** 2026-09-13
+Summaries; Gate-6 corrections below -- source-aware dedup by event number, two
+declared fixed-boilerplate rules) · **Date:** 2026-09-13
 
 **Decision.** The M2 text corpus is drawn from `www.nrc.gov`: Event Notification
 Reports (native HTML, the whole collection) and four "generic communications"
@@ -1823,3 +1824,72 @@ would still be measured thin on the evidence above, corrected access route or
 not). For PHMSA: the manual download named above actually happening, and the
 retrieved file's free-text verdict clearing the same bar every other source in
 this project was profiled against.
+
+**Gate-6 correction, 2026-09-13: source-aware dedup by event number.** The M2b
+pre-registered near-duplicate trigger (`near_duplicates.py`) is a random-pair
+sample; it measured this corpus's near-duplication at 0.0005% and did not fire.
+That measurement is correct on its own terms and was the wrong instrument for
+what this corpus actually does: `nrc_event_notifications` republishes the same
+event, under a stable event number, across later report days as a story
+develops, each later copy holding the earlier text verbatim plus one or more
+appended `"* * * UPDATE FROM ... * * *"` blocks. With 21,882 distinct event
+numbers spread across tens of thousands of documents, a random pair of two
+revisions of the *same* event is a near-impossible draw, so the trigger was
+never structurally able to see this pattern -- not a measurement error, a
+mismatch between the instrument and the question. This is the author's
+correction to the original M2b brief, not a mistake in how the trigger was
+built or run.
+
+The keyed measurement this actually needs (`keyed_dedup.py`, run in real
+pipeline order -- cleaned, filtered, then exact-deduped, 27,662 documents of
+`nrc_event_notifications` reaching this point): 21,882 distinct event numbers,
+3,901 with more than one surviving revision. Sampled evidence that "keep the
+latest" is the right rule, not merely a plausible one: across 40 sampled
+multi-revision groups, the latest revision is never shorter than the earliest
+(40/40), and normalized, the earlier document's post-title body appears as a
+substring of the later one in 30/40 -- the rest differ only in a reworded
+opening line (a title corrected from "STOLEN MOISTURE DENSITY GAUGE" to
+"AGREEMENT STATE REPORT - STOLEN MOISTURE DENSITY GAUGE" is typical), not a
+content rewrite. **Declared rule, `configs/data/text_v1.yaml`
+(`dedup.keyed`):** for `nrc_event_notifications`, keep one document per event
+number -- the latest report day. Applied after exact dedup, implemented in
+`src/faultline/data/text/keyed_dedup.py`, reported by `DedupStage`
+(`reports/data/20260913-142340_all_text_2a6ec5b7/dedup_stats_report.md`):
+4,521 documents removed, 1,214,427 whitespace tokens (7,602,753 before this
+rule, at the point in the pipeline it runs -> 6,388,326 after; see the
+checkpoint report addendum for the token counts in context of every other
+stage).
+
+**Gate-6 correction, 2026-09-13: two declared fixed-boilerplate rules.** Direct
+inspection of modern-era (post-2020) event notifications found the extractor's
+own metadata line pair prepended to 1,316 documents
+(`EN Revision Imported Date: .../EN Revision Text:`) and a fixed IAEA
+source-category explanation NRC appends whenever an event involves a
+"Less than Cat 3" source, in two textually-identical forms distinguished only
+by whether the trailing "Pub1227_web.pdf" URL sentence is present (2,616
+occurrences) or absent (866 occurrences, used since at least 2005 -- found
+while building this rule, not named in the original brief, included because it
+is unambiguously the same fixed paragraph). **Declared rules,
+`configs/data/text_v1.yaml` (`clean.boilerplate`):** strip both, implemented in
+`src/faultline/data/text/boilerplate.py`, reported by `CleanStage`
+(`reports/data/20260913-142340_all_text_2a6ec5b7/clean_stats_report.md`):
+1,316 and 3,482 matches respectively removed, 419,746 whitespace tokens (4.4%
+of the raw corpus) removed by these two rules alone. Three further occurrences
+carry a source-side URL typo (`www.pub.iaea.org` for `www-pub.iaea.org`, or a
+line-wrapped URL) and are not matched -- a documented, measured gap, not chased
+with a broader regex.
+
+A general check followed, as the brief asked: every document was split into
+blank-line-delimited paragraphs, normalized, and hashed, counting how many
+*documents* (not raw occurrences) each distinct paragraph appears in. Run
+against the raw corpus, this finds exactly 7 paragraphs recurring in more than
+100 documents, and every one is a short, genuine, formulaic sentence
+("The licensee notified the NRC Resident Inspector.", "The NRC Resident
+Inspector was notified.", and five near-variants) that recurs because many
+independent incident reports end the same way -- not page furniture. **None
+are stripped;** the full list is in the checkpoint report addendum. Neither of
+the two boilerplate blocks above is found by this sweep: both are joined to
+document-specific text by a single newline rather than a blank line, so
+neither is ever its own paragraph -- a stated limitation of paragraph-level
+hashing as a *discovery* method (it did not need to find them; they were
+already found and matched by direct pattern before this check ran).

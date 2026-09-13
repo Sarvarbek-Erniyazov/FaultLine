@@ -469,8 +469,20 @@ def _extract_events_modern(html_text: str, day_id: str, day_url: str) -> list[Fe
 
 _MIDERA_BLOCK = re.compile(r'<a name="(en\d+)"></a>(.*?)(?=<a name="en\d+"></a>|\Z)', re.S)
 _MIDERA_EVENT_TEXT = re.compile(
-    r'<p><b>Event Text</b></p>\s*<table class="table">\s*<tbody><tr>\s*<td>(.*?)</td>\s*</tr>\s*'
-    r"</tbody></table>",
+    # This collection's own markup is not consistent year to year -- measured
+    # 2026-09-13 across three genuinely different pages: 2018 has no space around
+    # the "Event Text" heading and a class on <table>; 2017 has a space on each
+    # side of the heading and no class; 2019 has neither space nor class; 2020 adds
+    # a scope="row" attribute to <td> that none of the others carry. A regex exact
+    # enough to match one missed the rest silently -- the page fetched fine (200
+    # OK), so nothing about extract_events finding zero events for that day looked
+    # like a failure. Rather than enumerate every attribute combination as it turns
+    # up, every tag below tolerates arbitrary attributes ([^>]*) and every boundary
+    # tolerates arbitrary whitespace (\s*); only the tag names and the nesting are
+    # load-bearing.
+    r"<p[^>]*>\s*<b[^>]*>Event Text</b>\s*</p>\s*<table[^>]*>\s*"
+    r"<tbody[^>]*>\s*<tr[^>]*>\s*<td[^>]*>(.*?)</td>\s*</tr>\s*"
+    r"</tbody>\s*</table>",
     re.S,
 )
 

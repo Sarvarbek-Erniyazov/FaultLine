@@ -66,6 +66,11 @@ def event_day_midera_html(fixtures_dir: Path) -> str:
 
 
 @pytest.fixture
+def event_day_midera_variant_html(fixtures_dir: Path) -> str:
+    return (fixtures_dir / "nrc_text" / "event_day_midera_variant.html").read_text(encoding="utf-8")
+
+
+@pytest.fixture
 def event_day_legacy_html(fixtures_dir: Path) -> str:
     return (fixtures_dir / "nrc_text" / "event_day_legacy.html").read_text(encoding="utf-8")
 
@@ -124,6 +129,28 @@ class TestExtractEvents:
         ]
         assert documents[0].text.startswith("AGREEMENT STATE REPORT - DOSE MISADMINISTRATION")
         assert "Rep Org" not in documents[0].text
+        assert "<" not in documents[0].text and ">" not in documents[0].text
+
+    def test_midera_template_tolerates_whitespace_and_attribute_variants(
+        self, event_day_midera_variant_html: str
+    ) -> None:
+        """Discovered only by re-checking staged counts, not by any warning.
+
+        A regex tight enough to match one year's exact markup silently missed two
+        others -- every one of these pages fetches at 200 OK; only the extraction, a
+        content-shaped failure, was silent. This fixture is the specific page that
+        exposed the third variant (a `scope="row"` attribute on `<td>`, on top of the
+        whitespace and `class` differences the other midera fixture and tests cover).
+        """
+        documents = extract_events(
+            event_day_midera_variant_html,
+            "https://www.nrc.gov/reading-rm/doc-collections/event-status/event/2020/20201015en",
+        )
+        assert [d.doc_id for d in documents] == [
+            "20201015en_en54933",
+            "20201015en_en54936",
+        ]
+        assert "AGREEMENT STATE REPORT - REPORT OF LOST STATIC ELIMINATOR" in documents[0].text
         assert "<" not in documents[0].text and ">" not in documents[0].text
 
     def test_legacy_template_extracts_every_event(self, event_day_legacy_html: str) -> None:

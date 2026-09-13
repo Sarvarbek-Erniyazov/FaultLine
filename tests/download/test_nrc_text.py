@@ -173,7 +173,7 @@ class TestGenericCommDocument:
 
 
 class TestHtmlNativeFiltering:
-    def test_keeps_native_pages_and_drops_docs_pdfs(self, year_index_html: str) -> None:
+    def test_keeps_native_pages_and_drops_pdfs_from_either_path(self, year_index_html: str) -> None:
         kept = filter_native_document_links(year_index_html)
         assert kept == sorted(
             {
@@ -183,6 +183,11 @@ class TestHtmlNativeFiltering:
         )
         # the ADAMS PDF redirect is present on the page and must never be kept
         assert not any("/docs/" in link for link in kept)
+        # nor the /sites/default/files/... PDF path -- a link is excluded by its
+        # .pdf extension, not by which path serves it (this is what /docs/-only
+        # filtering missed: reg-issues 2003-onward documents come through this path)
+        assert not any(link.lower().endswith(".pdf") for link in kept)
+        assert not any("doc_library" in link for link in kept)
 
 
 class TestSourcesTextConfig:

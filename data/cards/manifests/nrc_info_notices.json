@@ -1,0 +1,3824 @@
+{
+  "source": "nrc_info_notices",
+  "provider": "U.S. Nuclear Regulatory Commission",
+  "license": "public domain (17 U.S.C. 105)",
+  "generated_at": "2026-09-13T01:08:06.371866Z",
+  "files": [
+    {
+      "filename": "in00013.txt",
+      "relative_path": "raw/text/nrc_info_notices/in00013.txt",
+      "size_bytes": 39257,
+      "sha256": "a3c810f17b8045465b4f63cddf38fbb96d40b5abfaf5d02e7b89c1473a00e53b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/2000/in00013",
+      "retrieved_at": "2026-09-13T01:07:06.150547Z",
+      "verified": true
+    },
+    {
+      "filename": "in02016.txt",
+      "relative_path": "raw/text/nrc_info_notices/in02016.txt",
+      "size_bytes": 4136,
+      "sha256": "cf05daa27d60d7e3ab8e90e6361cc8d5bcedd11ed43594528b815d39ceb7d63b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/2002/in02016",
+      "retrieved_at": "2026-09-13T01:07:13.588899Z",
+      "verified": true
+    },
+    {
+      "filename": "in79002.txt",
+      "relative_path": "raw/text/nrc_info_notices/in79002.txt",
+      "size_bytes": 3631,
+      "sha256": "2170bb9aee18c88cf537981446de336c9380a0431377aea05256b6b02ab85de5",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1979/in79002",
+      "retrieved_at": "2026-09-13T00:55:57.930742Z",
+      "verified": true
+    },
+    {
+      "filename": "in79010.txt",
+      "relative_path": "raw/text/nrc_info_notices/in79010.txt",
+      "size_bytes": 4207,
+      "sha256": "7c1f961adf83539860ada84d885bad2b2b02b85f129e563e5c42e1feae8cbb5f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1979/in79010",
+      "retrieved_at": "2026-09-13T00:55:59.416906Z",
+      "verified": true
+    },
+    {
+      "filename": "in79011.txt",
+      "relative_path": "raw/text/nrc_info_notices/in79011.txt",
+      "size_bytes": 4149,
+      "sha256": "47a83698f60fd20a3a78eefdfb70a9a476b4f36b0e2d1ddf1632bbc0a36ff1df",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1979/in79011",
+      "retrieved_at": "2026-09-13T00:56:00.926557Z",
+      "verified": true
+    },
+    {
+      "filename": "in79012.txt",
+      "relative_path": "raw/text/nrc_info_notices/in79012.txt",
+      "size_bytes": 4467,
+      "sha256": "46971f8874f4d047af60ed37d7e6d28ff1930f9d40e200709b2bf6d09efae580",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1979/in79012",
+      "retrieved_at": "2026-09-13T00:56:02.478467Z",
+      "verified": true
+    },
+    {
+      "filename": "in79014.txt",
+      "relative_path": "raw/text/nrc_info_notices/in79014.txt",
+      "size_bytes": 4278,
+      "sha256": "17de1292883c829fbec02339bad33f96260228934007d59437271a49ca89ee30",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1979/in79014",
+      "retrieved_at": "2026-09-13T00:56:03.881648Z",
+      "verified": true
+    },
+    {
+      "filename": "in79015.txt",
+      "relative_path": "raw/text/nrc_info_notices/in79015.txt",
+      "size_bytes": 11006,
+      "sha256": "94be961cca382213bb5e2d10b74c86c96176886946d973b54ff16826484eeb9b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1979/in79015",
+      "retrieved_at": "2026-09-13T00:56:05.737214Z",
+      "verified": true
+    },
+    {
+      "filename": "in79016.txt",
+      "relative_path": "raw/text/nrc_info_notices/in79016.txt",
+      "size_bytes": 3121,
+      "sha256": "0db9536fae19db7c4553bb801a6af2e0af997fffd458a8afac5192521547e0ce",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1979/in79016",
+      "retrieved_at": "2026-09-13T00:56:07.309265Z",
+      "verified": true
+    },
+    {
+      "filename": "in79017.txt",
+      "relative_path": "raw/text/nrc_info_notices/in79017.txt",
+      "size_bytes": 5252,
+      "sha256": "65a31fb3cdec8501e56197a8e18ef48737f7d8dc840a9af12e6a40fd61c50b3d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1979/in79017",
+      "retrieved_at": "2026-09-13T00:56:08.415113Z",
+      "verified": true
+    },
+    {
+      "filename": "in79018.txt",
+      "relative_path": "raw/text/nrc_info_notices/in79018.txt",
+      "size_bytes": 3293,
+      "sha256": "7eb5ac1ab7475d7db992218d93103a3d1b317aa6022bc6f36f30a32f4d80604f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1979/in79018",
+      "retrieved_at": "2026-09-13T00:56:10.304327Z",
+      "verified": true
+    },
+    {
+      "filename": "in79023.txt",
+      "relative_path": "raw/text/nrc_info_notices/in79023.txt",
+      "size_bytes": 3703,
+      "sha256": "089f86c9cf38f7c071393da80422f422b62166cc33bd4eb050c586ed615fa39d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1979/in79023",
+      "retrieved_at": "2026-09-13T00:56:11.417226Z",
+      "verified": true
+    },
+    {
+      "filename": "in79027.txt",
+      "relative_path": "raw/text/nrc_info_notices/in79027.txt",
+      "size_bytes": 15829,
+      "sha256": "602d57940e63fa626ef8f3a9b2e07ecf604ca631031c1b74acdd82f72bc27eb0",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1979/in79027",
+      "retrieved_at": "2026-09-13T00:56:12.959908Z",
+      "verified": true
+    },
+    {
+      "filename": "in80001.txt",
+      "relative_path": "raw/text/nrc_info_notices/in80001.txt",
+      "size_bytes": 4153,
+      "sha256": "b210765220ce6d1825818d5814f384e7de01b855d8632dca3400864959301776",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1980/in80001",
+      "retrieved_at": "2026-09-13T00:56:15.932881Z",
+      "verified": true
+    },
+    {
+      "filename": "in80002.txt",
+      "relative_path": "raw/text/nrc_info_notices/in80002.txt",
+      "size_bytes": 3940,
+      "sha256": "058fe21aa998153bca0c37b4df1628be3181d612db7f40391a414071c24dd55a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1980/in80002",
+      "retrieved_at": "2026-09-13T00:56:17.719119Z",
+      "verified": true
+    },
+    {
+      "filename": "in80004.txt",
+      "relative_path": "raw/text/nrc_info_notices/in80004.txt",
+      "size_bytes": 4454,
+      "sha256": "bf77a2ea75e34e5534921f9a3ce51e30adbb0bd8ecea26359378724de6eec567",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1980/in80004",
+      "retrieved_at": "2026-09-13T00:56:18.917005Z",
+      "verified": true
+    },
+    {
+      "filename": "in80017.txt",
+      "relative_path": "raw/text/nrc_info_notices/in80017.txt",
+      "size_bytes": 1924,
+      "sha256": "45b424b11aef2ae2cfcd52e6169fc9c8334d43c09a45b97e71b8362220502919",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1980/in80017",
+      "retrieved_at": "2026-09-13T00:56:20.850209Z",
+      "verified": true
+    },
+    {
+      "filename": "in80018.txt",
+      "relative_path": "raw/text/nrc_info_notices/in80018.txt",
+      "size_bytes": 1542,
+      "sha256": "a494a01bbe2c2ff389d268f5f77a3166834d16c567a9be851a1277d9ce985457",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1980/in80018",
+      "retrieved_at": "2026-09-13T00:56:21.909760Z",
+      "verified": true
+    },
+    {
+      "filename": "in80023.txt",
+      "relative_path": "raw/text/nrc_info_notices/in80023.txt",
+      "size_bytes": 3057,
+      "sha256": "41fe63e4e646e9d0d58aa52cbdf4878e194f5bb98225c0b48d81c338ccfc35d9",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1980/in80023",
+      "retrieved_at": "2026-09-13T00:56:23.449287Z",
+      "verified": true
+    },
+    {
+      "filename": "in80024.txt",
+      "relative_path": "raw/text/nrc_info_notices/in80024.txt",
+      "size_bytes": 2344,
+      "sha256": "f0e9b97534a3f97e6b409725741639ef728098c90307cb27e348ea608bb1284e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1980/in80024",
+      "retrieved_at": "2026-09-13T00:56:24.926860Z",
+      "verified": true
+    },
+    {
+      "filename": "in80028.txt",
+      "relative_path": "raw/text/nrc_info_notices/in80028.txt",
+      "size_bytes": 2059,
+      "sha256": "7fd527cd69a4f4f79b934f69ecff307dbc4a86c063a4648f195abcbb11c1a3e1",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1980/in80028",
+      "retrieved_at": "2026-09-13T00:56:26.443673Z",
+      "verified": true
+    },
+    {
+      "filename": "in80029.txt",
+      "relative_path": "raw/text/nrc_info_notices/in80029.txt",
+      "size_bytes": 2670,
+      "sha256": "2af1fd6011457e29e160b8d769221af1095fdd7abf68411c46cc8e6428ce0bfb",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1980/in80029",
+      "retrieved_at": "2026-09-13T00:56:27.932796Z",
+      "verified": true
+    },
+    {
+      "filename": "in80030.txt",
+      "relative_path": "raw/text/nrc_info_notices/in80030.txt",
+      "size_bytes": 8914,
+      "sha256": "28fc8654ec98a1f82faed4feea4a47b74670d0ad6d70d484dedeafca3faf316b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1980/in80030",
+      "retrieved_at": "2026-09-13T00:56:29.447087Z",
+      "verified": true
+    },
+    {
+      "filename": "in80032.txt",
+      "relative_path": "raw/text/nrc_info_notices/in80032.txt",
+      "size_bytes": 20758,
+      "sha256": "3e86cca219167160d05ceb6df161e9bc945ed4ad62d202197cc121a53aa14926",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1980/in80032",
+      "retrieved_at": "2026-09-13T00:56:30.933175Z",
+      "verified": true
+    },
+    {
+      "filename": "in80032r1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in80032r1.txt",
+      "size_bytes": 5098,
+      "sha256": "5fad60bf42a59531c3317d9a85a78250d3b0788db4fd48d9c5ed23544c1500d4",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1980/in80032r1",
+      "retrieved_at": "2026-09-13T00:56:32.758466Z",
+      "verified": true
+    },
+    {
+      "filename": "in80035.txt",
+      "relative_path": "raw/text/nrc_info_notices/in80035.txt",
+      "size_bytes": 2801,
+      "sha256": "d61b3a4567a541e2650c1ddf12f508b3e6de4526442143748129ede375662d01",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1980/in80035",
+      "retrieved_at": "2026-09-13T00:56:34.233843Z",
+      "verified": true
+    },
+    {
+      "filename": "in80035s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in80035s1.txt",
+      "size_bytes": 4022,
+      "sha256": "da8b4542535827131b815604803119bb0cfcd5a8373cd1dc641c2f17b55a193d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1980/in80035s1",
+      "retrieved_at": "2026-09-13T00:56:35.450258Z",
+      "verified": true
+    },
+    {
+      "filename": "in80036.txt",
+      "relative_path": "raw/text/nrc_info_notices/in80036.txt",
+      "size_bytes": 3482,
+      "sha256": "112047bb90caf7df89e0a522860eac162fededf5c4ff88c77910b0f826b468ec",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1980/in80036",
+      "retrieved_at": "2026-09-13T00:56:36.941239Z",
+      "verified": true
+    },
+    {
+      "filename": "in80044.txt",
+      "relative_path": "raw/text/nrc_info_notices/in80044.txt",
+      "size_bytes": 6403,
+      "sha256": "483a44ff815000d8ee4e8018a8a208b56148faea5cada6fda9a5cb3eff45bde6",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1980/in80044",
+      "retrieved_at": "2026-09-13T00:56:38.742898Z",
+      "verified": true
+    },
+    {
+      "filename": "in80045.txt",
+      "relative_path": "raw/text/nrc_info_notices/in80045.txt",
+      "size_bytes": 3402,
+      "sha256": "fb3637b74d2b6d4874a1051a9131444f12b6e401537b537b0ea6da6f7efd8002",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1980/in80045",
+      "retrieved_at": "2026-09-13T00:56:40.370011Z",
+      "verified": true
+    },
+    {
+      "filename": "in81001.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81001.txt",
+      "size_bytes": 3266,
+      "sha256": "b1c12496d714e53e7a7516d6d96127037e1d13a2ea449dcabd19b33e902a2ff1",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81001",
+      "retrieved_at": "2026-09-13T00:56:43.224108Z",
+      "verified": true
+    },
+    {
+      "filename": "in81002.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81002.txt",
+      "size_bytes": 13064,
+      "sha256": "36bc6d07643db023584fc604691ae0db2acbd116cc0d5ec1045d5b3b91986f1e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81002",
+      "retrieved_at": "2026-09-13T00:56:44.419870Z",
+      "verified": true
+    },
+    {
+      "filename": "in81003.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81003.txt",
+      "size_bytes": 5384,
+      "sha256": "b659c4b87ecd258bfa86b4b90e209bdb4440ea46a0a417a393bc4d7f76d78cf0",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81003",
+      "retrieved_at": "2026-09-13T00:56:46.271491Z",
+      "verified": true
+    },
+    {
+      "filename": "in81004.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81004.txt",
+      "size_bytes": 3322,
+      "sha256": "2c3c7b3ef2534f97611d89271f2e8dd3ce3c6f953cb57e893032e3e1e3b2ff78",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81004",
+      "retrieved_at": "2026-09-13T00:56:47.439820Z",
+      "verified": true
+    },
+    {
+      "filename": "in81005.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81005.txt",
+      "size_bytes": 3967,
+      "sha256": "0b1e2c664fb35b6e33aaf0c1fa5be353c0941b383f9237fb02bae8541a21d1c5",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81005",
+      "retrieved_at": "2026-09-13T00:56:49.303925Z",
+      "verified": true
+    },
+    {
+      "filename": "in81006.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81006.txt",
+      "size_bytes": 2588,
+      "sha256": "3e5993b2dd2dcbaf193d1ae4be8fe394351368e2cbbb67358cac238fb481051b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81006",
+      "retrieved_at": "2026-09-13T00:56:50.432705Z",
+      "verified": true
+    },
+    {
+      "filename": "in81007.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81007.txt",
+      "size_bytes": 3248,
+      "sha256": "3f6835508ccf843778e77d4b8ed6d3da70c8835075cff08958afda58b036611a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81007",
+      "retrieved_at": "2026-09-13T00:56:51.945703Z",
+      "verified": true
+    },
+    {
+      "filename": "in81008.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81008.txt",
+      "size_bytes": 2450,
+      "sha256": "2eff0d0ab04b590a1bcedd6eb47687770d62802fe6fd78a83e36b4e66c0ba05d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81008",
+      "retrieved_at": "2026-09-13T00:56:53.808956Z",
+      "verified": true
+    },
+    {
+      "filename": "in81009.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81009.txt",
+      "size_bytes": 2673,
+      "sha256": "7c2fa03e3cfe0d8ddfc1a21268c2f519f2489555edd5a1f89e805a07765ebb97",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81009",
+      "retrieved_at": "2026-09-13T00:56:54.959667Z",
+      "verified": true
+    },
+    {
+      "filename": "in81010.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81010.txt",
+      "size_bytes": 4741,
+      "sha256": "2e72e80f717fc52ad45d5dfad05c2ae8929b46705c0a5b7a0d4ad9ccc5a7d236",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81010",
+      "retrieved_at": "2026-09-13T00:56:56.733961Z",
+      "verified": true
+    },
+    {
+      "filename": "in81011.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81011.txt",
+      "size_bytes": 4284,
+      "sha256": "69deb99eca43a21042704e136b79daa4aeac5f9466d7e4f61f9895011b51146d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81011",
+      "retrieved_at": "2026-09-13T00:56:57.991681Z",
+      "verified": true
+    },
+    {
+      "filename": "in81012.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81012.txt",
+      "size_bytes": 5211,
+      "sha256": "3d24340e5b70fd1ea73b7987a2cc28d8800facdfdbc93016065f5385676c74bb",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81012",
+      "retrieved_at": "2026-09-13T00:56:59.517337Z",
+      "verified": true
+    },
+    {
+      "filename": "in81013.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81013.txt",
+      "size_bytes": 2942,
+      "sha256": "35d24c0a5f76fcd8de00f67e23b20f205fec3f22fd4035b02b91d28b2b2e58e9",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81013",
+      "retrieved_at": "2026-09-13T00:57:01.335258Z",
+      "verified": true
+    },
+    {
+      "filename": "in81014.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81014.txt",
+      "size_bytes": 3641,
+      "sha256": "8841749b9451ea371f6d57ce5574b8680da4409f094e87c52c0557b702b19ba5",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81014",
+      "retrieved_at": "2026-09-13T00:57:02.418108Z",
+      "verified": true
+    },
+    {
+      "filename": "in81015.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81015.txt",
+      "size_bytes": 3637,
+      "sha256": "ba87e7790f942c4afe3a4c4137c644bc8fde5860050414398637c317473a043a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81015",
+      "retrieved_at": "2026-09-13T00:57:04.309658Z",
+      "verified": true
+    },
+    {
+      "filename": "in81016.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81016.txt",
+      "size_bytes": 7114,
+      "sha256": "0d796a68e2055056a94bfac30f6f042af1caa6c7a90d73551d0e3d4a4215d905",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81016",
+      "retrieved_at": "2026-09-13T00:57:05.453921Z",
+      "verified": true
+    },
+    {
+      "filename": "in81017.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81017.txt",
+      "size_bytes": 437,
+      "sha256": "1ae864305969740bfcdf2d0be48c83ce1e110151534343456eb80317d14b37df",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81017",
+      "retrieved_at": "2026-09-13T00:57:07.294072Z",
+      "verified": true
+    },
+    {
+      "filename": "in81018.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81018.txt",
+      "size_bytes": 3246,
+      "sha256": "7cf8780f6cde7e79faba31dfc0c0866bad2419d6592452994b7a890af606081f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81018",
+      "retrieved_at": "2026-09-13T00:57:08.447090Z",
+      "verified": true
+    },
+    {
+      "filename": "in81019.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81019.txt",
+      "size_bytes": 2974,
+      "sha256": "3d568f2da666f8ad575230eb7a0e2ec6ebd7a6f447f50050744c824258e32b1f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81019",
+      "retrieved_at": "2026-09-13T00:57:09.971908Z",
+      "verified": true
+    },
+    {
+      "filename": "in81020.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81020.txt",
+      "size_bytes": 5883,
+      "sha256": "10a6fca3df55f83e3539c20ef921af09e81192a13d379763a07f7f80cdd95e34",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81020",
+      "retrieved_at": "2026-09-13T00:57:11.449978Z",
+      "verified": true
+    },
+    {
+      "filename": "in81021.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81021.txt",
+      "size_bytes": 8595,
+      "sha256": "40a7e2f13a80dc2acbf40567ab252eed272882ea62f0baef7d7582d7f7282096",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81021",
+      "retrieved_at": "2026-09-13T00:57:13.250985Z",
+      "verified": true
+    },
+    {
+      "filename": "in81022.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81022.txt",
+      "size_bytes": 3868,
+      "sha256": "81e00ca790c49852c37f51ffd73c2d2fc61fe6690a20e15bf35d5a71e86043d9",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81022",
+      "retrieved_at": "2026-09-13T00:57:14.433247Z",
+      "verified": true
+    },
+    {
+      "filename": "in81023.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81023.txt",
+      "size_bytes": 4748,
+      "sha256": "39918f10ff068ae5848ab4594e39d71c37ccb6fda6331a1d994761346160ce58",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81023",
+      "retrieved_at": "2026-09-13T00:57:15.976245Z",
+      "verified": true
+    },
+    {
+      "filename": "in81024.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81024.txt",
+      "size_bytes": 2648,
+      "sha256": "60a7b627a6f8bd9830805cf14259c6e099a020b8f69bb3dd2ec47e5efa05d004",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81024",
+      "retrieved_at": "2026-09-13T00:57:17.481295Z",
+      "verified": true
+    },
+    {
+      "filename": "in81025.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81025.txt",
+      "size_bytes": 5746,
+      "sha256": "0ff67a18bc72a0ae78fed7a317748e813c64ebe3d0611d56a83c3fba4254d920",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81025",
+      "retrieved_at": "2026-09-13T00:57:19.015150Z",
+      "verified": true
+    },
+    {
+      "filename": "in81026.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81026.txt",
+      "size_bytes": 33026,
+      "sha256": "90383fa48020af2f140def1b17b7f962d94e6981b74061c121d3781948d56603",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81026",
+      "retrieved_at": "2026-09-13T00:57:20.460763Z",
+      "verified": true
+    },
+    {
+      "filename": "in81026s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81026s1.txt",
+      "size_bytes": 4014,
+      "sha256": "6f3eb85fdd3d5687938aded59dbf519e382b338b2842b6301f70e647717836eb",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81026s1",
+      "retrieved_at": "2026-09-13T00:57:21.951041Z",
+      "verified": true
+    },
+    {
+      "filename": "in81028.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81028.txt",
+      "size_bytes": 6059,
+      "sha256": "5a890448d84082c2b2b9297574843558a0aa2564bf6578f460a392a6c3ff9a0b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81028",
+      "retrieved_at": "2026-09-13T00:57:23.446217Z",
+      "verified": true
+    },
+    {
+      "filename": "in81029.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81029.txt",
+      "size_bytes": 13982,
+      "sha256": "45db5b35a4257cb434699cbb9bcbc53e3908a2570a31379c6665f63ecd0ca64c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81029",
+      "retrieved_at": "2026-09-13T00:57:24.969260Z",
+      "verified": true
+    },
+    {
+      "filename": "in81030.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81030.txt",
+      "size_bytes": 4045,
+      "sha256": "54a16d4fbf71dc62b60c300cf19a0c1e0b9bbb94f111fe2b70aa3cf0e9fbcdec",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81030",
+      "retrieved_at": "2026-09-13T00:57:26.807643Z",
+      "verified": true
+    },
+    {
+      "filename": "in81035.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81035.txt",
+      "size_bytes": 4720,
+      "sha256": "3e08ef0a8e52ef291e9cc0f6760ef1d847c4a9331e3990b13d3b23a7950a1be3",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81035",
+      "retrieved_at": "2026-09-13T00:57:27.981602Z",
+      "verified": true
+    },
+    {
+      "filename": "in81036.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81036.txt",
+      "size_bytes": 3481,
+      "sha256": "5410ec6934cd4259f7ba203b2619c44b58384cdc7282ded6810313c1b4e69c74",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81036",
+      "retrieved_at": "2026-09-13T00:57:29.838480Z",
+      "verified": true
+    },
+    {
+      "filename": "in81037.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81037.txt",
+      "size_bytes": 6212,
+      "sha256": "0922ceef4bda5e3866c72c45da49c8a0f80d5d84b85fe924f1b8954466946cdd",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81037",
+      "retrieved_at": "2026-09-13T00:57:31.240613Z",
+      "verified": true
+    },
+    {
+      "filename": "in81037r1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81037r1.txt",
+      "size_bytes": 3023,
+      "sha256": "20a11483ed8363b1eb52acf4b0bd710d93c0c91f5b976d42ac1ceb396234801e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81037r1",
+      "retrieved_at": "2026-09-13T00:57:32.799134Z",
+      "verified": true
+    },
+    {
+      "filename": "in81038.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81038.txt",
+      "size_bytes": 4448,
+      "sha256": "797c00e005c847b23f6cab1c5e5bb8af585d570106d46ab3da83d117c8e84304",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81038",
+      "retrieved_at": "2026-09-13T00:57:33.970092Z",
+      "verified": true
+    },
+    {
+      "filename": "in81039.txt",
+      "relative_path": "raw/text/nrc_info_notices/in81039.txt",
+      "size_bytes": 1815,
+      "sha256": "6430bdbfdfe2fbb7654aea04f7a83b6a17bcf92da0b7b72030f9d02b3c36ee29",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1981/in81039",
+      "retrieved_at": "2026-09-13T00:57:35.750244Z",
+      "verified": true
+    },
+    {
+      "filename": "in82001.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82001.txt",
+      "size_bytes": 4444,
+      "sha256": "92b8c9d7acd72ee636df7bee15c3a28ab6123a3c273dc2fa59b05634d8af98a0",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82001",
+      "retrieved_at": "2026-09-13T00:57:38.448690Z",
+      "verified": true
+    },
+    {
+      "filename": "in82002.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82002.txt",
+      "size_bytes": 2871,
+      "sha256": "06dd694f2baa716e1b4c39482b99893be8fb53a34e2f009f3a2b284cd80d9922",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82002",
+      "retrieved_at": "2026-09-13T00:57:40.220418Z",
+      "verified": true
+    },
+    {
+      "filename": "in82003.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82003.txt",
+      "size_bytes": 4283,
+      "sha256": "5d8edce995be474f6ef9b2977f9a09c5e9c8adc63b126ed5939be151474e32c3",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82003",
+      "retrieved_at": "2026-09-13T00:57:41.808564Z",
+      "verified": true
+    },
+    {
+      "filename": "in82004.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82004.txt",
+      "size_bytes": 2870,
+      "sha256": "b2247e0fc92370f688f0021541539f2bbb23405b66a7e8a223b43691bba780fa",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82004",
+      "retrieved_at": "2026-09-13T00:57:43.296382Z",
+      "verified": true
+    },
+    {
+      "filename": "in82005.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82005.txt",
+      "size_bytes": 3408,
+      "sha256": "d6c3fc98bb1f1a41e8521f18fe18fba96f7ea0ddf57638f5d722ec15c01eff87",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82005",
+      "retrieved_at": "2026-09-13T00:57:44.456072Z",
+      "verified": true
+    },
+    {
+      "filename": "in82006.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82006.txt",
+      "size_bytes": 3034,
+      "sha256": "dc4f8d704704a22f3b2598f89f37992b365a6fade2ad04be3faf367ad64c805a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82006",
+      "retrieved_at": "2026-09-13T00:57:45.974209Z",
+      "verified": true
+    },
+    {
+      "filename": "in82007.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82007.txt",
+      "size_bytes": 2963,
+      "sha256": "b863c895e1089b31cbee72a5a600792bbd74aaa1ddcbe9bb924bd3721d5f938e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82007",
+      "retrieved_at": "2026-09-13T00:57:47.776794Z",
+      "verified": true
+    },
+    {
+      "filename": "in82008.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82008.txt",
+      "size_bytes": 5803,
+      "sha256": "58807504c03fb401b4ca76341d2776669dc3ddfe939e80b797d3994e99761d4e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82008",
+      "retrieved_at": "2026-09-13T00:57:48.991408Z",
+      "verified": true
+    },
+    {
+      "filename": "in82009.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82009.txt",
+      "size_bytes": 9099,
+      "sha256": "88fdfb2cc50f8bf994da8303d858bc29d6bc7476abf34e8de41eea73fcd7a9b3",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82009",
+      "retrieved_at": "2026-09-13T00:57:50.859318Z",
+      "verified": true
+    },
+    {
+      "filename": "in82010.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82010.txt",
+      "size_bytes": 5372,
+      "sha256": "6b9ae528336873978fab73629d96822b4e682bc3e320c674441495fa2cc21f58",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82010",
+      "retrieved_at": "2026-09-13T00:57:51.994356Z",
+      "verified": true
+    },
+    {
+      "filename": "in82011.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82011.txt",
+      "size_bytes": 3638,
+      "sha256": "1fa6e6ad206bf57871422567521ae7d5bafdff7089fd5252366b78787b8c9800",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82011",
+      "retrieved_at": "2026-09-13T00:57:53.734736Z",
+      "verified": true
+    },
+    {
+      "filename": "in82012.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82012.txt",
+      "size_bytes": 8846,
+      "sha256": "cfdf0f02268840c2ce1c94fc0af44cfeb9fc3c015498383b62822693a9672293",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82012",
+      "retrieved_at": "2026-09-13T00:57:55.288569Z",
+      "verified": true
+    },
+    {
+      "filename": "in82013.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82013.txt",
+      "size_bytes": 6907,
+      "sha256": "44dce92ca6bf9f824a996b5a5b39714ac23d28266ac55cb41213298242a03a17",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82013",
+      "retrieved_at": "2026-09-13T00:57:56.717433Z",
+      "verified": true
+    },
+    {
+      "filename": "in82014.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82014.txt",
+      "size_bytes": 4061,
+      "sha256": "c14abd951faff4b8e4cdc8e933e3550747d381b14b24cf160aa54a5a782e6c74",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82014",
+      "retrieved_at": "2026-09-13T00:57:57.971325Z",
+      "verified": true
+    },
+    {
+      "filename": "in82015.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82015.txt",
+      "size_bytes": 3248,
+      "sha256": "e52f8f65704a551c0d5cdb7575c9f41cc06afac916306f97a8f98eae10f06e8f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82015",
+      "retrieved_at": "2026-09-13T00:57:59.835222Z",
+      "verified": true
+    },
+    {
+      "filename": "in82016.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82016.txt",
+      "size_bytes": 5787,
+      "sha256": "b4c036c2d82565db9f7b3b13ab3507ef9abf812d56e22f37b63c5e4dcecfc263",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82016",
+      "retrieved_at": "2026-09-13T00:58:01.247030Z",
+      "verified": true
+    },
+    {
+      "filename": "in82017.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82017.txt",
+      "size_bytes": 6029,
+      "sha256": "028ac6b2054ca7708648a3d392f1ff37023feeffaccb5d08cb87589dc77cac23",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82017",
+      "retrieved_at": "2026-09-13T00:58:02.826412Z",
+      "verified": true
+    },
+    {
+      "filename": "in82018.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82018.txt",
+      "size_bytes": 5581,
+      "sha256": "3938bce0e3e8721f2ad3b765a6f79c3b6edd9e9c1c6788075f1e53767dc9e000",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82018",
+      "retrieved_at": "2026-09-13T00:58:04.350521Z",
+      "verified": true
+    },
+    {
+      "filename": "in82019.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82019.txt",
+      "size_bytes": 4767,
+      "sha256": "a6000ed6015d0e2deaf317520940ae75e88eaa73858144370720a9704bba2f2d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82019",
+      "retrieved_at": "2026-09-13T00:58:05.471426Z",
+      "verified": true
+    },
+    {
+      "filename": "in8201r1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in8201r1.txt",
+      "size_bytes": 1455,
+      "sha256": "11ea90c5cbdd3350161aa2cef2edcf73aa6d8578a0ab1e535d1291e8e5c95f8e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in8201r1",
+      "retrieved_at": "2026-09-13T00:58:06.961404Z",
+      "verified": true
+    },
+    {
+      "filename": "in82020.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82020.txt",
+      "size_bytes": 7797,
+      "sha256": "70e5cacb43cd33280aeff658f275bd9a08f19f5bb20f0e3310e983e7eb63bb93",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82020",
+      "retrieved_at": "2026-09-13T00:58:08.485681Z",
+      "verified": true
+    },
+    {
+      "filename": "in82021.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82021.txt",
+      "size_bytes": 3606,
+      "sha256": "79b003f0be23ad6ab8476a45d241fb6d4e260ee4dd505de0e6c35f59509f46ab",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82021",
+      "retrieved_at": "2026-09-13T00:58:09.980373Z",
+      "verified": true
+    },
+    {
+      "filename": "in82022.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82022.txt",
+      "size_bytes": 5092,
+      "sha256": "0cae515596f369bca98f60ae8cc3eeb25cb2f106cd2dcb0d6cfc2f867b4d44b7",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82022",
+      "retrieved_at": "2026-09-13T00:58:11.735139Z",
+      "verified": true
+    },
+    {
+      "filename": "in82023.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82023.txt",
+      "size_bytes": 2855,
+      "sha256": "7fec8da77a1d88e4a70519acca70a8c94517caada8aeb087605344cca0d94b64",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82023",
+      "retrieved_at": "2026-09-13T00:58:13.440198Z",
+      "verified": true
+    },
+    {
+      "filename": "in82024.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82024.txt",
+      "size_bytes": 2827,
+      "sha256": "e055be369bb37a92695376dd078d76b5c272ac7eee414a15404483a1dd6a0220",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82024",
+      "retrieved_at": "2026-09-13T00:58:14.837551Z",
+      "verified": true
+    },
+    {
+      "filename": "in82025.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82025.txt",
+      "size_bytes": 4578,
+      "sha256": "75d8729a53ef89aebf16d78c054b2154bb642ff14cff18ab47ffeb1898ecb389",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82025",
+      "retrieved_at": "2026-09-13T00:58:16.268906Z",
+      "verified": true
+    },
+    {
+      "filename": "in82026.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82026.txt",
+      "size_bytes": 9047,
+      "sha256": "a12106d8cc9ebce2107cb99821ed4286e5bc9535f859bb55ce4b0b794d23c84c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82026",
+      "retrieved_at": "2026-09-13T00:58:17.785250Z",
+      "verified": true
+    },
+    {
+      "filename": "in82027.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82027.txt",
+      "size_bytes": 7742,
+      "sha256": "351c88d172798d82008dd20a7e974e09bd8519eff08b430b1c610798f5bb2345",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82027",
+      "retrieved_at": "2026-09-13T00:58:19.445511Z",
+      "verified": true
+    },
+    {
+      "filename": "in82029.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82029.txt",
+      "size_bytes": 7512,
+      "sha256": "4c4c617c258f4c630cacd080a610cf125c27455ccafad575edd9d873deec1b6c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82029",
+      "retrieved_at": "2026-09-13T00:58:20.515364Z",
+      "verified": true
+    },
+    {
+      "filename": "in82030.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82030.txt",
+      "size_bytes": 5258,
+      "sha256": "6e2361b1822bb7e1b05f47d9de7ed1dd48f0c80ce80d6d2ffb12e2403dc240d0",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82030",
+      "retrieved_at": "2026-09-13T00:58:22.011249Z",
+      "verified": true
+    },
+    {
+      "filename": "in82031.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82031.txt",
+      "size_bytes": 6303,
+      "sha256": "ed26ba90308b147c6c4aa1f209b1b8553cef3ec0600661025a10ea64af69066c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82031",
+      "retrieved_at": "2026-09-13T00:58:23.595167Z",
+      "verified": true
+    },
+    {
+      "filename": "in82032.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82032.txt",
+      "size_bytes": 5723,
+      "sha256": "44adbd259e5d194ddecb36b298c80f1a9ea845564e6a61d7836452c93940b5ed",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82032",
+      "retrieved_at": "2026-09-13T00:58:25.044367Z",
+      "verified": true
+    },
+    {
+      "filename": "in82033.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82033.txt",
+      "size_bytes": 4336,
+      "sha256": "ce36b16d6a82e49c2f47f71ab0914fe37a6f88823d4848373eb2bdb6e6c826cf",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82033",
+      "retrieved_at": "2026-09-13T00:58:26.787119Z",
+      "verified": true
+    },
+    {
+      "filename": "in82034.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82034.txt",
+      "size_bytes": 4145,
+      "sha256": "4257a45a47ac521559a3c99de4dd2eae3d335ef71a857b9596ce9da9661f273b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82034",
+      "retrieved_at": "2026-09-13T00:58:28.329194Z",
+      "verified": true
+    },
+    {
+      "filename": "in82034r1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82034r1.txt",
+      "size_bytes": 4619,
+      "sha256": "4ef2796373764defa636459edb30e61c15c26886e9211139240c7298e5dbe60d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82034r1",
+      "retrieved_at": "2026-09-13T00:58:29.882998Z",
+      "verified": true
+    },
+    {
+      "filename": "in82035.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82035.txt",
+      "size_bytes": 6542,
+      "sha256": "22244ea0e8194fa411f3d2308ebdaa47caadccf8c984c5109e24b6ee84698b65",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82035",
+      "retrieved_at": "2026-09-13T00:58:31.036951Z",
+      "verified": true
+    },
+    {
+      "filename": "in82036.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82036.txt",
+      "size_bytes": 2225,
+      "sha256": "1d1b829f7dff0888871c5f4084c2aa7a790d9f6874af389e19062477acdc46ac",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82036",
+      "retrieved_at": "2026-09-13T00:58:32.516489Z",
+      "verified": true
+    },
+    {
+      "filename": "in82037.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82037.txt",
+      "size_bytes": 4897,
+      "sha256": "556b56bf623854d51694782c3e330d88528b9a0bb7ece0726d92e8043613b6a3",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82037",
+      "retrieved_at": "2026-09-13T00:58:34.050726Z",
+      "verified": true
+    },
+    {
+      "filename": "in82038.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82038.txt",
+      "size_bytes": 2044,
+      "sha256": "c73d5335b52a87133fb7083bdb23d37103392241475a143a5846e9d0e2cd2066",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82038",
+      "retrieved_at": "2026-09-13T00:58:35.537719Z",
+      "verified": true
+    },
+    {
+      "filename": "in82039.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82039.txt",
+      "size_bytes": 6692,
+      "sha256": "ed00d1ce95dc8fc4203a1ef5a22636f96968af60b0533464c7e9a9d1f4a7de47",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82039",
+      "retrieved_at": "2026-09-13T00:58:37.074658Z",
+      "verified": true
+    },
+    {
+      "filename": "in82040.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82040.txt",
+      "size_bytes": 7258,
+      "sha256": "a8a0658ee9046240112169e42fa70917a340ac5bb52f3805b8a7916542bbf2a9",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82040",
+      "retrieved_at": "2026-09-13T00:58:38.937607Z",
+      "verified": true
+    },
+    {
+      "filename": "in82041.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82041.txt",
+      "size_bytes": 6183,
+      "sha256": "755f678c1e9cc553f5471c166d9ac690dc0fd076b3adbd40802b5dfd50e52f19",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82041",
+      "retrieved_at": "2026-09-13T00:58:40.056517Z",
+      "verified": true
+    },
+    {
+      "filename": "in82042.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82042.txt",
+      "size_bytes": 4968,
+      "sha256": "4f27076127ed75cb2ae37fc1b7113e40412194af18fdafc34bb8247e62e0699a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82042",
+      "retrieved_at": "2026-09-13T00:58:41.464172Z",
+      "verified": true
+    },
+    {
+      "filename": "in82043.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82043.txt",
+      "size_bytes": 5451,
+      "sha256": "d266dda2ea6b656c4835445f13e24052c09bfa4fcb948e11326356b8eb68dbc4",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82043",
+      "retrieved_at": "2026-09-13T00:58:43.113589Z",
+      "verified": true
+    },
+    {
+      "filename": "in82044.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82044.txt",
+      "size_bytes": 5461,
+      "sha256": "44a9c02b3bb27b63531638e28120035214229512c9455703e8b93ec0d330e374",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82044",
+      "retrieved_at": "2026-09-13T00:58:44.545577Z",
+      "verified": true
+    },
+    {
+      "filename": "in82045.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82045.txt",
+      "size_bytes": 6536,
+      "sha256": "6b5850756ed334032a40eaf91032f39cd8a02075296ee221bf827ceffb02a5ce",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82045",
+      "retrieved_at": "2026-09-13T00:58:46.755294Z",
+      "verified": true
+    },
+    {
+      "filename": "in82046.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82046.txt",
+      "size_bytes": 5209,
+      "sha256": "b7f932ec56431418e7802f1854b7bcd24da54222ac117a52f51ecadfa1e8eb34",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82046",
+      "retrieved_at": "2026-09-13T00:58:47.814039Z",
+      "verified": true
+    },
+    {
+      "filename": "in82047.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82047.txt",
+      "size_bytes": 13606,
+      "sha256": "41e63c9f27757c48d96dde55843fc2b7a66b925d09a3e2f1e26da47eacf4509c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82047",
+      "retrieved_at": "2026-09-13T00:58:49.103321Z",
+      "verified": true
+    },
+    {
+      "filename": "in82048.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82048.txt",
+      "size_bytes": 5385,
+      "sha256": "cb60cba8445855fdec0a37bec7b574a24d77c9b6b995ec36c405aef123626064",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82048",
+      "retrieved_at": "2026-09-13T00:58:50.958626Z",
+      "verified": true
+    },
+    {
+      "filename": "in82049.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82049.txt",
+      "size_bytes": 8196,
+      "sha256": "6346c1626aa3c33df94d18938d7fe21b4bd23aec6ed7b4d20a61f3aae8c813c9",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82049",
+      "retrieved_at": "2026-09-13T00:58:52.040299Z",
+      "verified": true
+    },
+    {
+      "filename": "in82050.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82050.txt",
+      "size_bytes": 4235,
+      "sha256": "ffc9416e04f52bcc8660c8990669bb9d3b9b7374f2f7057d357cbafc830b5220",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82050",
+      "retrieved_at": "2026-09-13T00:58:53.560033Z",
+      "verified": true
+    },
+    {
+      "filename": "in82051.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82051.txt",
+      "size_bytes": 10955,
+      "sha256": "34e82bab853f1dc393eba36d03810bb921791738c7b379fc913a961af9253b57",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82051",
+      "retrieved_at": "2026-09-13T00:58:55.174100Z",
+      "verified": true
+    },
+    {
+      "filename": "in82052.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82052.txt",
+      "size_bytes": 17931,
+      "sha256": "1ed4fe7cbbc118107b3abfbb0a7657bcfd48977661913daa4d70eaf45790fd4d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82052",
+      "retrieved_at": "2026-09-13T00:58:56.573147Z",
+      "verified": true
+    },
+    {
+      "filename": "in82054.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82054.txt",
+      "size_bytes": 8529,
+      "sha256": "0652257a720e5fab3e238e475413d591fa2eb46fb59a75c762073ca1043a1244",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82054",
+      "retrieved_at": "2026-09-13T00:58:58.048633Z",
+      "verified": true
+    },
+    {
+      "filename": "in82055.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82055.txt",
+      "size_bytes": 6228,
+      "sha256": "1dfd62a5ea64b4e30baf805ebc0976ff4bed9e75ed91163b1be5d2f9b1233ba6",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82055",
+      "retrieved_at": "2026-09-13T00:58:59.966167Z",
+      "verified": true
+    },
+    {
+      "filename": "in82056.txt",
+      "relative_path": "raw/text/nrc_info_notices/in82056.txt",
+      "size_bytes": 6079,
+      "sha256": "590d6a9e3bedae39e07311cea57815f072e59a2058665c8e5a16f0ec6c4114bb",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1982/in82056",
+      "retrieved_at": "2026-09-13T00:59:01.082068Z",
+      "verified": true
+    },
+    {
+      "filename": "in83001.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83001.txt",
+      "size_bytes": 8375,
+      "sha256": "7b436dabf9c6e110b52d320869c0713b34666ec83d1dbb918e8c6bf89e689213",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83001",
+      "retrieved_at": "2026-09-13T00:59:04.094671Z",
+      "verified": true
+    },
+    {
+      "filename": "in83001s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83001s1.txt",
+      "size_bytes": 4348,
+      "sha256": "61353797de2f3fc473926dc43157f12a5d82e6d53750116d493db483085d6d69",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83001s1",
+      "retrieved_at": "2026-09-13T00:59:05.607736Z",
+      "verified": true
+    },
+    {
+      "filename": "in83002.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83002.txt",
+      "size_bytes": 4365,
+      "sha256": "15ac896051298a43c249936b82c148433b36ecf205169edd7f161c215439026b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83002",
+      "retrieved_at": "2026-09-13T00:59:07.412573Z",
+      "verified": true
+    },
+    {
+      "filename": "in83003.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83003.txt",
+      "size_bytes": 4208,
+      "sha256": "c8d5744246c3c52e189c15ac26801d0c908f8e7215cac1a2d009c18b3a040d69",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83003",
+      "retrieved_at": "2026-09-13T00:59:08.688016Z",
+      "verified": true
+    },
+    {
+      "filename": "in83004.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83004.txt",
+      "size_bytes": 5423,
+      "sha256": "148216da85833a4c4e57040ac1422d8a612b2ffe483a4c7c0acdf9df2713509b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83004",
+      "retrieved_at": "2026-09-13T00:59:10.336431Z",
+      "verified": true
+    },
+    {
+      "filename": "in83005.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83005.txt",
+      "size_bytes": 7063,
+      "sha256": "56d02fb9943ab64f9baca21fa03ff06fdebf0b58c272d11a58b32616931faea8",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83005",
+      "retrieved_at": "2026-09-13T00:59:11.538413Z",
+      "verified": true
+    },
+    {
+      "filename": "in83006.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83006.txt",
+      "size_bytes": 4162,
+      "sha256": "0f9f08a5ef5ab5c7879f1eba4a7da293b4b10a48e15e8c8fbffcddc9d33fd647",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83006",
+      "retrieved_at": "2026-09-13T00:59:13.357613Z",
+      "verified": true
+    },
+    {
+      "filename": "in83007.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83007.txt",
+      "size_bytes": 3868,
+      "sha256": "8a9ae22f8b75c8ae75fac8447f730c66e37a5eafb8d55205f155d0c37403fda1",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83007",
+      "retrieved_at": "2026-09-13T00:59:14.872688Z",
+      "verified": true
+    },
+    {
+      "filename": "in83008.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83008.txt",
+      "size_bytes": 5418,
+      "sha256": "803210f4a8ba35f4cd58e0386251af26607679449caa391a8f218d46b5ee8786",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83008",
+      "retrieved_at": "2026-09-13T00:59:16.073150Z",
+      "verified": true
+    },
+    {
+      "filename": "in83009.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83009.txt",
+      "size_bytes": 5274,
+      "sha256": "fb9d8bf4a4d015223e96f4b2f2132122a2e233eeda7369cde5bbe6914e11a80a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83009",
+      "retrieved_at": "2026-09-13T00:59:17.950242Z",
+      "verified": true
+    },
+    {
+      "filename": "in83010.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83010.txt",
+      "size_bytes": 8143,
+      "sha256": "634ffd70867103507fce9ec3e47528d4bb7fb090a2eb8ff0647a5c23434f75f3",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83010",
+      "retrieved_at": "2026-09-13T00:59:19.328891Z",
+      "verified": true
+    },
+    {
+      "filename": "in83011.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83011.txt",
+      "size_bytes": 7943,
+      "sha256": "a810c52eddb7194ae2bb4a651edda4dcfc757880cc23f7f378ba16be1ca0c4ac",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83011",
+      "retrieved_at": "2026-09-13T00:59:20.550088Z",
+      "verified": true
+    },
+    {
+      "filename": "in83012.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83012.txt",
+      "size_bytes": 4437,
+      "sha256": "8b576898f0ba13eb604aeaeb3aed49bccfab2b4b920932fe2ecb38192de8b6fb",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83012",
+      "retrieved_at": "2026-09-13T00:59:22.073906Z",
+      "verified": true
+    },
+    {
+      "filename": "in83013.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83013.txt",
+      "size_bytes": 4148,
+      "sha256": "5d88402618fbdf8780597d8d7943ce9fd9820dc5d9469021678fb727178c2256",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83013",
+      "retrieved_at": "2026-09-13T00:59:23.611324Z",
+      "verified": true
+    },
+    {
+      "filename": "in83014.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83014.txt",
+      "size_bytes": 5967,
+      "sha256": "59eaae2a993cc314aef2c26286c9494fa7a80bee4cdf2fc4fb5a8a1bcfe60eed",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83014",
+      "retrieved_at": "2026-09-13T00:59:25.053714Z",
+      "verified": true
+    },
+    {
+      "filename": "in83015.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83015.txt",
+      "size_bytes": 4549,
+      "sha256": "fe753d136c7e5a9bdc4c4c0ee811b7de4040429151bc0be1b1075aa97cba411f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83015",
+      "retrieved_at": "2026-09-13T00:59:26.545087Z",
+      "verified": true
+    },
+    {
+      "filename": "in83016.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83016.txt",
+      "size_bytes": 4108,
+      "sha256": "e4fddfaf2c9426def4f7ea8dca556e1593be689e2f2c95c7996f98d0bbd380e2",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83016",
+      "retrieved_at": "2026-09-13T00:59:28.432701Z",
+      "verified": true
+    },
+    {
+      "filename": "in83017.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83017.txt",
+      "size_bytes": 5759,
+      "sha256": "88a0764f94b7c901a339ed4f64aec94f45297a95f9f85ca814057d03fa73e038",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83017",
+      "retrieved_at": "2026-09-13T00:59:29.825806Z",
+      "verified": true
+    },
+    {
+      "filename": "in83018.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83018.txt",
+      "size_bytes": 10711,
+      "sha256": "332220243bccecb46b0b27b984f01879c49d27d8c9cc3e72581b40ed6933e174",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83018",
+      "retrieved_at": "2026-09-13T00:59:31.059878Z",
+      "verified": true
+    },
+    {
+      "filename": "in83019.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83019.txt",
+      "size_bytes": 3580,
+      "sha256": "e870067dd89f26b87a371f5ca2a386290f591022f05f9e3e164f3d2b3364005c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83019",
+      "retrieved_at": "2026-09-13T00:59:32.924795Z",
+      "verified": true
+    },
+    {
+      "filename": "in83020.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83020.txt",
+      "size_bytes": 5153,
+      "sha256": "a43167dae5f2331e1d97999478f687b38982b829da66c91cee871a1e5d0fc864",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83020",
+      "retrieved_at": "2026-09-13T00:59:34.076055Z",
+      "verified": true
+    },
+    {
+      "filename": "in83021.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83021.txt",
+      "size_bytes": 4328,
+      "sha256": "58f9fafe6735c4a90711d2dd9f68fa373e73b778ec9cb3a9bc0243d65e401d2d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83021",
+      "retrieved_at": "2026-09-13T00:59:35.570432Z",
+      "verified": true
+    },
+    {
+      "filename": "in83022.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83022.txt",
+      "size_bytes": 3575,
+      "sha256": "4f4a5797f1d34a6e0b688b693ab8bd7a5882517b3dff0709cffd129297693079",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83022",
+      "retrieved_at": "2026-09-13T00:59:37.441681Z",
+      "verified": true
+    },
+    {
+      "filename": "in83023.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83023.txt",
+      "size_bytes": 8027,
+      "sha256": "82bee13c9628ae91a9c14386ffa229e05e124a07ab5874dedf985bea8baba98c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83023",
+      "retrieved_at": "2026-09-13T00:59:38.989230Z",
+      "verified": true
+    },
+    {
+      "filename": "in83024.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83024.txt",
+      "size_bytes": 6606,
+      "sha256": "a7f3927813baa07116e2d60c475a5ec2cd5f1a5264cce51cf486e84e30f5002c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83024",
+      "retrieved_at": "2026-09-13T00:59:40.430159Z",
+      "verified": true
+    },
+    {
+      "filename": "in83025.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83025.txt",
+      "size_bytes": 4384,
+      "sha256": "b1af3e3dcac71f56a5ad750276c23a737d1f07d5e1d4fb61fd25915e7e55373a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83025",
+      "retrieved_at": "2026-09-13T00:59:41.587586Z",
+      "verified": true
+    },
+    {
+      "filename": "in83026.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83026.txt",
+      "size_bytes": 4807,
+      "sha256": "3515137e2d27bfea8b6af248993546919a02ec3a756f1d286c6e36647205ff30",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83026",
+      "retrieved_at": "2026-09-13T00:59:43.095344Z",
+      "verified": true
+    },
+    {
+      "filename": "in83027.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83027.txt",
+      "size_bytes": 4998,
+      "sha256": "c173705e44530a419f421200048dac3b620af777c408237fc6cd664abed918b2",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83027",
+      "retrieved_at": "2026-09-13T00:59:44.597589Z",
+      "verified": true
+    },
+    {
+      "filename": "in83028.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83028.txt",
+      "size_bytes": 3055,
+      "sha256": "13ebbaec964e1b5348f980d7c9e191a4aadf3df766b44390acf749049baef691",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83028",
+      "retrieved_at": "2026-09-13T00:59:46.094165Z",
+      "verified": true
+    },
+    {
+      "filename": "in83029.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83029.txt",
+      "size_bytes": 4581,
+      "sha256": "2784340a198a7e2e25e860e50fb18b03b654f5b4a9f842534a331c2dedd97771",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83029",
+      "retrieved_at": "2026-09-13T00:59:47.586449Z",
+      "verified": true
+    },
+    {
+      "filename": "in83030.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83030.txt",
+      "size_bytes": 3782,
+      "sha256": "ce01b6a51cd8d33b739674da8bb6c75b96163283fe7dd81d0d312bb5d5b31f2b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83030",
+      "retrieved_at": "2026-09-13T00:59:49.364573Z",
+      "verified": true
+    },
+    {
+      "filename": "in83031.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83031.txt",
+      "size_bytes": 3808,
+      "sha256": "1880defacd0e582eeb936babc027a56e40d59d38ee399cd63757e580352be5c4",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83031",
+      "retrieved_at": "2026-09-13T00:59:50.583443Z",
+      "verified": true
+    },
+    {
+      "filename": "in83032.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83032.txt",
+      "size_bytes": 5532,
+      "sha256": "872c3b612db4054e3c4a988660edcb93889620bc430b256d07558980ac45d931",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83032",
+      "retrieved_at": "2026-09-13T00:59:52.409389Z",
+      "verified": true
+    },
+    {
+      "filename": "in83033.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83033.txt",
+      "size_bytes": 4525,
+      "sha256": "47a5a0088c22f11587492f671c7c43f103fea82accefe941d2fbc69f83cc6cdd",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83033",
+      "retrieved_at": "2026-09-13T00:59:53.652652Z",
+      "verified": true
+    },
+    {
+      "filename": "in83034.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83034.txt",
+      "size_bytes": 2243,
+      "sha256": "aab9c6db927ae1f139c0d7d57f71cdcaf9e6b9c5070c0e39601ed2538079115a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83034",
+      "retrieved_at": "2026-09-13T00:59:55.105665Z",
+      "verified": true
+    },
+    {
+      "filename": "in83035.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83035.txt",
+      "size_bytes": 6427,
+      "sha256": "61148a19ac8d69235d2d807021d67e76d0929a21ea8927d99ea9a540e64315ec",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83035",
+      "retrieved_at": "2026-09-13T00:59:56.933001Z",
+      "verified": true
+    },
+    {
+      "filename": "in83036.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83036.txt",
+      "size_bytes": 6714,
+      "sha256": "fc5e2d4c16ac32b1b6e71f0d1204f873d99417b91fa58d1da2232d06fd124716",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83036",
+      "retrieved_at": "2026-09-13T00:59:58.493393Z",
+      "verified": true
+    },
+    {
+      "filename": "in83037.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83037.txt",
+      "size_bytes": 5030,
+      "sha256": "f8c507575a2ffaf4d854a91ac071d2a515dfed7dd5020bffe8b6ce39fa6c8303",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83037",
+      "retrieved_at": "2026-09-13T00:59:59.649633Z",
+      "verified": true
+    },
+    {
+      "filename": "in83038.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83038.txt",
+      "size_bytes": 8547,
+      "sha256": "732678be3508ff691889bdd4b45aabaa644ba57c80816b0b76eaee72660b39d0",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83038",
+      "retrieved_at": "2026-09-13T01:00:01.394286Z",
+      "verified": true
+    },
+    {
+      "filename": "in83039.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83039.txt",
+      "size_bytes": 5092,
+      "sha256": "a1a3e1ec99a1b91a6bcd52b993a78b5ad87496f2c4a457605d644cb74ceb76d3",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83039",
+      "retrieved_at": "2026-09-13T01:00:02.586957Z",
+      "verified": true
+    },
+    {
+      "filename": "in83040.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83040.txt",
+      "size_bytes": 3712,
+      "sha256": "1241ec4bb71b85910e40df37ef8ea93b5c5ff8623acc12fd7f7aca4697790a1f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83040",
+      "retrieved_at": "2026-09-13T01:00:04.147583Z",
+      "verified": true
+    },
+    {
+      "filename": "in83042.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83042.txt",
+      "size_bytes": 6372,
+      "sha256": "4c40840ddb7844d5f26b3ca95065305bf33bcccb8fb723e1fd34a50a787cb131",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83042",
+      "retrieved_at": "2026-09-13T01:00:06.013159Z",
+      "verified": true
+    },
+    {
+      "filename": "in83043.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83043.txt",
+      "size_bytes": 6922,
+      "sha256": "6bc49c505c1f910666c3f974ac7ad75c9c488e841dc8bfec9117aaf71b3c95a0",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83043",
+      "retrieved_at": "2026-09-13T01:00:07.470063Z",
+      "verified": true
+    },
+    {
+      "filename": "in83044.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83044.txt",
+      "size_bytes": 5506,
+      "sha256": "5610ee417ae42539b2e30df74a9df8fe9f8795cd956762e31900a0aeeeae597e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83044",
+      "retrieved_at": "2026-09-13T01:00:09.024792Z",
+      "verified": true
+    },
+    {
+      "filename": "in83044s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83044s1.txt",
+      "size_bytes": 6697,
+      "sha256": "214e0efb324c617fb1cdab40bdebd4f6b6bcc67efb2f37ff9ba2eab1959f65c3",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83044s1",
+      "retrieved_at": "2026-09-13T01:00:10.121298Z",
+      "verified": true
+    },
+    {
+      "filename": "in83045.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83045.txt",
+      "size_bytes": 3476,
+      "sha256": "0df6080fcfd75041802a2fba1a60ab4fea0ff48ee87e2aa4d71a74c0c8f3d96d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83045",
+      "retrieved_at": "2026-09-13T01:00:11.647943Z",
+      "verified": true
+    },
+    {
+      "filename": "in83046.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83046.txt",
+      "size_bytes": 22712,
+      "sha256": "01cdb8a8c56a315319b47d64245550030fed7150625046434939b4f77e3ba589",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83046",
+      "retrieved_at": "2026-09-13T01:00:13.131963Z",
+      "verified": true
+    },
+    {
+      "filename": "in83047.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83047.txt",
+      "size_bytes": 3586,
+      "sha256": "a79301fb25320ebd4732a6c8add4ff66f97275821ecef6cb142198b75478db15",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83047",
+      "retrieved_at": "2026-09-13T01:00:14.910043Z",
+      "verified": true
+    },
+    {
+      "filename": "in83048.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83048.txt",
+      "size_bytes": 4046,
+      "sha256": "16ea9abba878d8c663d4b0d9b3b99356da96db06a365c828eb2e2ff0fb03ffda",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83048",
+      "retrieved_at": "2026-09-13T01:00:16.139806Z",
+      "verified": true
+    },
+    {
+      "filename": "in83049.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83049.txt",
+      "size_bytes": 4987,
+      "sha256": "f991f9578509f7a0cbd65868386c17df8612fe85daab7ad0232564b1ccb39bb9",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83049",
+      "retrieved_at": "2026-09-13T01:00:17.946737Z",
+      "verified": true
+    },
+    {
+      "filename": "in83050.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83050.txt",
+      "size_bytes": 4601,
+      "sha256": "a9b4f106a5572d6284a2087558c77ace6dbeb4ef69dd39e9b5612d371429f23c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83050",
+      "retrieved_at": "2026-09-13T01:00:19.512139Z",
+      "verified": true
+    },
+    {
+      "filename": "in83051.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83051.txt",
+      "size_bytes": 10968,
+      "sha256": "b3e48a7523975b2c31b19cf247583c759f4c5e0b5748cf655a20432dbaf59790",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83051",
+      "retrieved_at": "2026-09-13T01:00:20.963899Z",
+      "verified": true
+    },
+    {
+      "filename": "in83052.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83052.txt",
+      "size_bytes": 13034,
+      "sha256": "ac22b52df6ec525f884fc0f92771cee945af7215e0a486b47c74bbe5b2b2b3b0",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83052",
+      "retrieved_at": "2026-09-13T01:00:22.434278Z",
+      "verified": true
+    },
+    {
+      "filename": "in83053.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83053.txt",
+      "size_bytes": 4198,
+      "sha256": "37356a21010c121f1a683041a44f06d8e28d952eaddef720e99202d44fd312a0",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83053",
+      "retrieved_at": "2026-09-13T01:00:23.612143Z",
+      "verified": true
+    },
+    {
+      "filename": "in83054.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83054.txt",
+      "size_bytes": 5199,
+      "sha256": "c7a89aad39907ad1622382cf06753b3d79414954fe4b0762414ee8603a2c347d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83054",
+      "retrieved_at": "2026-09-13T01:00:25.395338Z",
+      "verified": true
+    },
+    {
+      "filename": "in83055.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83055.txt",
+      "size_bytes": 6284,
+      "sha256": "825fd3e399d3fd9ad14bad23ecddb2b2affced0e7ac1f8b95281c2bb33986422",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83055",
+      "retrieved_at": "2026-09-13T01:00:26.616818Z",
+      "verified": true
+    },
+    {
+      "filename": "in83056.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83056.txt",
+      "size_bytes": 3873,
+      "sha256": "26f11f0c047cf3e294e3bc6820f2a3b6a21812e8c4c5ca751283714f29534828",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83056",
+      "retrieved_at": "2026-09-13T01:00:28.130646Z",
+      "verified": true
+    },
+    {
+      "filename": "in83057.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83057.txt",
+      "size_bytes": 3938,
+      "sha256": "85c07aaf69ad0a59309104fae1d18fc4ddc22f93c3c6dee4e1ead0f9402f51f5",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83057",
+      "retrieved_at": "2026-09-13T01:00:29.931813Z",
+      "verified": true
+    },
+    {
+      "filename": "in83058.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83058.txt",
+      "size_bytes": 4644,
+      "sha256": "9f40e7124db4e18d2b7159ebc285563a5a6559e3037288fc22189adc28722826",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83058",
+      "retrieved_at": "2026-09-13T01:00:31.484130Z",
+      "verified": true
+    },
+    {
+      "filename": "in83059.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83059.txt",
+      "size_bytes": 5308,
+      "sha256": "13230d4b885d5fcae2c2698c54785ac3383b8c3a47726103c6959b5be27e5e66",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83059",
+      "retrieved_at": "2026-09-13T01:00:32.651647Z",
+      "verified": true
+    },
+    {
+      "filename": "in83060.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83060.txt",
+      "size_bytes": 4316,
+      "sha256": "9be4d5a9301d2701fa7bb92acd69d19a1229a5f500b3c2497093677546eb6323",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83060",
+      "retrieved_at": "2026-09-13T01:00:34.159782Z",
+      "verified": true
+    },
+    {
+      "filename": "in83061.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83061.txt",
+      "size_bytes": 3984,
+      "sha256": "55fc60e693f902c18f31437a6cbf39d600e13a986ee896e8c685cf140a9ad7c6",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83061",
+      "retrieved_at": "2026-09-13T01:00:35.624836Z",
+      "verified": true
+    },
+    {
+      "filename": "in83062.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83062.txt",
+      "size_bytes": 4531,
+      "sha256": "a6f26ffd10fee9d029666038545e2eef5b9d6d9408600cd23fb4432f8e32271e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83062",
+      "retrieved_at": "2026-09-13T01:00:37.082762Z",
+      "verified": true
+    },
+    {
+      "filename": "in83063.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83063.txt",
+      "size_bytes": 7737,
+      "sha256": "fb4563fac095cf75fc8c371a7832e1d48c47b447bc2f08245c15e072a19997dc",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83063",
+      "retrieved_at": "2026-09-13T01:00:39.012743Z",
+      "verified": true
+    },
+    {
+      "filename": "in83064.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83064.txt",
+      "size_bytes": 6393,
+      "sha256": "b3708f255381e32e8267aa6eba5ec5b2a74181e84c977c8cc3bfebf5883a3ffe",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83064",
+      "retrieved_at": "2026-09-13T01:00:40.547089Z",
+      "verified": true
+    },
+    {
+      "filename": "in83065.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83065.txt",
+      "size_bytes": 4919,
+      "sha256": "768ea22e5bfbf4db85a259bc1a3856757db7f6e52093e0b3cad159dcd2aa34c0",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83065",
+      "retrieved_at": "2026-09-13T01:00:41.643831Z",
+      "verified": true
+    },
+    {
+      "filename": "in83066.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83066.txt",
+      "size_bytes": 3343,
+      "sha256": "9296dc4533f05622a8a6154a1cffc6073e5b2a39350c96a7bc45e3a3d68b49b9",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83066",
+      "retrieved_at": "2026-09-13T01:00:43.142289Z",
+      "verified": true
+    },
+    {
+      "filename": "in83066s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83066s1.txt",
+      "size_bytes": 7664,
+      "sha256": "c016327ae75e61a8992bbaf4e6b77e3cf6532c245e2a7a067636576829d949b2",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83066s1",
+      "retrieved_at": "2026-09-13T01:00:44.741499Z",
+      "verified": true
+    },
+    {
+      "filename": "in83067.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83067.txt",
+      "size_bytes": 6414,
+      "sha256": "ee4ee6c55949faa64ed2024078845159fda6dd1289a2632fa46ba7179e6ca618",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83067",
+      "retrieved_at": "2026-09-13T01:00:46.147141Z",
+      "verified": true
+    },
+    {
+      "filename": "in83068.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83068.txt",
+      "size_bytes": 4654,
+      "sha256": "360867d8c0ff6c5605d1a0f482cc1f71553d8cf2aa9a176aec8aeaaff7365438",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83068",
+      "retrieved_at": "2026-09-13T01:00:47.692858Z",
+      "verified": true
+    },
+    {
+      "filename": "in83070.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83070.txt",
+      "size_bytes": 6404,
+      "sha256": "8d85edde77f8b8fd60167826a29b2cda1744762fbcd70cbb6ad7de1bea44b3d4",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83070",
+      "retrieved_at": "2026-09-13T01:00:49.458552Z",
+      "verified": true
+    },
+    {
+      "filename": "in83070s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83070s1.txt",
+      "size_bytes": 6411,
+      "sha256": "e95b1315e6ea2fc4896d9fb35f501939d4ceeb02066f37eeedeec765d5595f40",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83070s1",
+      "retrieved_at": "2026-09-13T01:00:50.681382Z",
+      "verified": true
+    },
+    {
+      "filename": "in83071.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83071.txt",
+      "size_bytes": 3567,
+      "sha256": "6e08fd079b67f4684b6b7e13acfc717793b81153012536cccfc67b21869393ce",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83071",
+      "retrieved_at": "2026-09-13T01:00:52.512087Z",
+      "verified": true
+    },
+    {
+      "filename": "in83072.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83072.txt",
+      "size_bytes": 4036,
+      "sha256": "fca590d24a016ae324c556f131b2b44ded5953eb0e3eae8dc968fc4e5484839c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83072",
+      "retrieved_at": "2026-09-13T01:00:54.005809Z",
+      "verified": true
+    },
+    {
+      "filename": "in83073.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83073.txt",
+      "size_bytes": 5391,
+      "sha256": "2b84d02c51c11592e0ab973d274a0cee2963b0b1be949f977e7097e8ae404f6a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83073",
+      "retrieved_at": "2026-09-13T01:00:55.165240Z",
+      "verified": true
+    },
+    {
+      "filename": "in83074.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83074.txt",
+      "size_bytes": 7165,
+      "sha256": "e2799d6df29967e1c0537a2278cbf3f18e926bda1f6bd05583135d12b383fac7",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83074",
+      "retrieved_at": "2026-09-13T01:00:57.042568Z",
+      "verified": true
+    },
+    {
+      "filename": "in83075.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83075.txt",
+      "size_bytes": 4659,
+      "sha256": "f76c2dbbec174f5297432b33c89467327fb2d0d90503d04ba86158f87644ab36",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83075",
+      "retrieved_at": "2026-09-13T01:00:58.207819Z",
+      "verified": true
+    },
+    {
+      "filename": "in83076.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83076.txt",
+      "size_bytes": 4044,
+      "sha256": "ada5c58eeaf26d51c1cad6593e0c53902180a8eba42e4dfa675a876bc934f74e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83076",
+      "retrieved_at": "2026-09-13T01:01:00.037832Z",
+      "verified": true
+    },
+    {
+      "filename": "in83077.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83077.txt",
+      "size_bytes": 6454,
+      "sha256": "5c6db668ce049c6a20ba1c34208908dd26cf4720b37a75993cf113f84ef277c9",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83077",
+      "retrieved_at": "2026-09-13T01:01:01.181205Z",
+      "verified": true
+    },
+    {
+      "filename": "in83078.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83078.txt",
+      "size_bytes": 4863,
+      "sha256": "a56611bc6376534b25f935b943452654fb9eb9516c04ee8ed51ceddc7d76cde1",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83078",
+      "retrieved_at": "2026-09-13T01:01:02.695209Z",
+      "verified": true
+    },
+    {
+      "filename": "in83079.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83079.txt",
+      "size_bytes": 3546,
+      "sha256": "1860dc418a4fb8ca651e41797f9a8c456e767dba8e18251b87343b758fcb7270",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83079",
+      "retrieved_at": "2026-09-13T01:01:04.176837Z",
+      "verified": true
+    },
+    {
+      "filename": "in83080.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83080.txt",
+      "size_bytes": 5810,
+      "sha256": "40bf152e1ee2faf0456f0fbb658a8da280e5c7c4518bc711d1e944e08b6cb94d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83080",
+      "retrieved_at": "2026-09-13T01:01:05.694736Z",
+      "verified": true
+    },
+    {
+      "filename": "in83081.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83081.txt",
+      "size_bytes": 3307,
+      "sha256": "2c1a5dfd2a7d1106b7d085b1773923c13fe9aa827baf540b144944a5f5166e9b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83081",
+      "retrieved_at": "2026-09-13T01:01:07.567695Z",
+      "verified": true
+    },
+    {
+      "filename": "in83082.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83082.txt",
+      "size_bytes": 4072,
+      "sha256": "f5930b4c7d6da59e21af7045d4b781ec2d3752d476d5c1bdbcfeb35e2bf884ca",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83082",
+      "retrieved_at": "2026-09-13T01:01:08.691754Z",
+      "verified": true
+    },
+    {
+      "filename": "in83084.txt",
+      "relative_path": "raw/text/nrc_info_notices/in83084.txt",
+      "size_bytes": 6887,
+      "sha256": "2db0eb8c2a5541c7a2da36255997215b3072ffc3470aabcc49bb3c8190faeb42",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1983/in83084",
+      "retrieved_at": "2026-09-13T01:01:10.253217Z",
+      "verified": true
+    },
+    {
+      "filename": "in84001.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84001.txt",
+      "size_bytes": 3950,
+      "sha256": "846900bf78bb1a3bc097fb3623369a44648ab68bac7abbd465c07128f7f72ee1",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84001",
+      "retrieved_at": "2026-09-13T01:01:13.173628Z",
+      "verified": true
+    },
+    {
+      "filename": "in84002.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84002.txt",
+      "size_bytes": 11165,
+      "sha256": "07a1e62d185d96dd552adb100ac5daea23d363fc9b6b3dcb58640d6bd78bf89d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84002",
+      "retrieved_at": "2026-09-13T01:01:14.691291Z",
+      "verified": true
+    },
+    {
+      "filename": "in84003.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84003.txt",
+      "size_bytes": 3496,
+      "sha256": "b01b36974d705d1792e9f6049da3371b2e8e88bcddee1d8d264fcaf5de0b481d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84003",
+      "retrieved_at": "2026-09-13T01:01:16.184698Z",
+      "verified": true
+    },
+    {
+      "filename": "in84004.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84004.txt",
+      "size_bytes": 4827,
+      "sha256": "7e4496a15f79ec6d9c25126756ce08075b3fe30db95e95fb8810a5a8442d736e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84004",
+      "retrieved_at": "2026-09-13T01:01:17.966813Z",
+      "verified": true
+    },
+    {
+      "filename": "in84005.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84005.txt",
+      "size_bytes": 4482,
+      "sha256": "96058ab5a084ed9e3401265bf413ec6724bc4b81c8bd38808c039a5d257e51c1",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84005",
+      "retrieved_at": "2026-09-13T01:01:19.212896Z",
+      "verified": true
+    },
+    {
+      "filename": "in84005r1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84005r1.txt",
+      "size_bytes": 4899,
+      "sha256": "0fb5dc0ff30e913cf36654350610dee35ee98c7569781219e36720361fd17355",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84005r1",
+      "retrieved_at": "2026-09-13T01:01:20.711672Z",
+      "verified": true
+    },
+    {
+      "filename": "in84006.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84006.txt",
+      "size_bytes": 4598,
+      "sha256": "7594632783651e8d21c2dc98193b5143de6d3d5f4be778960bc2918554da9607",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84006",
+      "retrieved_at": "2026-09-13T01:01:22.523224Z",
+      "verified": true
+    },
+    {
+      "filename": "in84007.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84007.txt",
+      "size_bytes": 3051,
+      "sha256": "026a7ae2d0feba1039ec56cf104c556e6c0bc189a3e332382d79f438cf2df4e0",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84007",
+      "retrieved_at": "2026-09-13T01:01:23.698893Z",
+      "verified": true
+    },
+    {
+      "filename": "in84008.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84008.txt",
+      "size_bytes": 4214,
+      "sha256": "a93b20afe470ff28c08c62fbe4686ee6da2a08d9a9b4f4fb94cb36537a3291c0",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84008",
+      "retrieved_at": "2026-09-13T01:01:25.490759Z",
+      "verified": true
+    },
+    {
+      "filename": "in84010.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84010.txt",
+      "size_bytes": 5589,
+      "sha256": "c316cc888f4c612f5a3331a4d636a889c83382dbb93271068a87164b62c9ee4f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84010",
+      "retrieved_at": "2026-09-13T01:01:26.708683Z",
+      "verified": true
+    },
+    {
+      "filename": "in84011.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84011.txt",
+      "size_bytes": 4067,
+      "sha256": "5fcc9b4c42a4948db298ebef4134ad84ec9218627194de9bd8d4a31d69068ac8",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84011",
+      "retrieved_at": "2026-09-13T01:01:28.226776Z",
+      "verified": true
+    },
+    {
+      "filename": "in84012.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84012.txt",
+      "size_bytes": 10873,
+      "sha256": "0667d12e7e47658b6d8b54b9634e2d1b27c78ee221b07b9b451cd8dd6a3f3b3a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84012",
+      "retrieved_at": "2026-09-13T01:01:29.747901Z",
+      "verified": true
+    },
+    {
+      "filename": "in84013.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84013.txt",
+      "size_bytes": 4597,
+      "sha256": "2a8060607cae2054865c430a2f8f5a16021c4e5fe65546e15050638adf3f0eeb",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84013",
+      "retrieved_at": "2026-09-13T01:01:31.199284Z",
+      "verified": true
+    },
+    {
+      "filename": "in84014.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84014.txt",
+      "size_bytes": 3595,
+      "sha256": "164446177c67f864092ff370d647bfcd7d56e68caca36a990c34a7714166765d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84014",
+      "retrieved_at": "2026-09-13T01:01:32.792732Z",
+      "verified": true
+    },
+    {
+      "filename": "in84015.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84015.txt",
+      "size_bytes": 6631,
+      "sha256": "2cf72a6257410c0636d99d8de8b9fb28c76e10aa9fbc8bc7c3b268d846ca69c5",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84015",
+      "retrieved_at": "2026-09-13T01:01:34.218859Z",
+      "verified": true
+    },
+    {
+      "filename": "in84017.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84017.txt",
+      "size_bytes": 5247,
+      "sha256": "95f9695374799560a9a5e0fb1aac4edcb4c32f0e0ac69b9dbcc602d7c17f99d4",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84017",
+      "retrieved_at": "2026-09-13T01:01:35.704254Z",
+      "verified": true
+    },
+    {
+      "filename": "in84018.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84018.txt",
+      "size_bytes": 7665,
+      "sha256": "81cfb57a0b3143cc198ccf5e6a06dc52fb9395c20cf91dcf66bef0ab26ab805d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84018",
+      "retrieved_at": "2026-09-13T01:01:37.217596Z",
+      "verified": true
+    },
+    {
+      "filename": "in84019.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84019.txt",
+      "size_bytes": 5220,
+      "sha256": "acb3f34bc1b95ea4d2d217d070033e4e24880d4468622d9d36392891cec0d064",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84019",
+      "retrieved_at": "2026-09-13T01:01:38.697623Z",
+      "verified": true
+    },
+    {
+      "filename": "in84020.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84020.txt",
+      "size_bytes": 8732,
+      "sha256": "01b46018648a3c23d22eb2fc23b2a1ebde57846e91f478251d48c18241503487",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84020",
+      "retrieved_at": "2026-09-13T01:01:40.538468Z",
+      "verified": true
+    },
+    {
+      "filename": "in84021.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84021.txt",
+      "size_bytes": 4465,
+      "sha256": "9c4b11ea014f7108b85447f0a57e24bee36a5afb88eeb737cd6b9253c0cf8ca2",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84021",
+      "retrieved_at": "2026-09-13T01:01:41.979679Z",
+      "verified": true
+    },
+    {
+      "filename": "in84022.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84022.txt",
+      "size_bytes": 3201,
+      "sha256": "87584947b96b5ef0ce5b5d0f44e9e9bcaf78320b17a6b79a6737f70a469a38c0",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84022",
+      "retrieved_at": "2026-09-13T01:01:43.230257Z",
+      "verified": true
+    },
+    {
+      "filename": "in84023.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84023.txt",
+      "size_bytes": 6349,
+      "sha256": "cd5c9d288175d3f67b77edef5f578a2b34eb20ef858cc8a48338834964d7c2e1",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84023",
+      "retrieved_at": "2026-09-13T01:01:45.090679Z",
+      "verified": true
+    },
+    {
+      "filename": "in84024.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84024.txt",
+      "size_bytes": 8102,
+      "sha256": "57f5dcc448b544aed6a3a336ec4e4911a7b114c9cf223d18c22656a03f28c0ce",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84024",
+      "retrieved_at": "2026-09-13T01:01:46.274905Z",
+      "verified": true
+    },
+    {
+      "filename": "in84025.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84025.txt",
+      "size_bytes": 5394,
+      "sha256": "8659e83813b88bd1673c25b3fe2b4149847da784d371afc92ff24d57fdee0a7d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84025",
+      "retrieved_at": "2026-09-13T01:01:47.718540Z",
+      "verified": true
+    },
+    {
+      "filename": "in84026.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84026.txt",
+      "size_bytes": 8537,
+      "sha256": "16e99b9bdeba7a030aef7465c8cbb76bd66c82a36ef3b00ddab1a90ca35c77f7",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84026",
+      "retrieved_at": "2026-09-13T01:01:49.712119Z",
+      "verified": true
+    },
+    {
+      "filename": "in84027.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84027.txt",
+      "size_bytes": 8794,
+      "sha256": "108f9a8ec6cf08a213fb440a5d12073c9ac0638098544e97445396b8cff71f56",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84027",
+      "retrieved_at": "2026-09-13T01:01:51.088285Z",
+      "verified": true
+    },
+    {
+      "filename": "in84028.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84028.txt",
+      "size_bytes": 10454,
+      "sha256": "c51be362c62663ab996ff5cbf7ea7222b3c431fe4e58fd56f48f1e5129b745b2",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84028",
+      "retrieved_at": "2026-09-13T01:01:52.253679Z",
+      "verified": true
+    },
+    {
+      "filename": "in84029.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84029.txt",
+      "size_bytes": 5317,
+      "sha256": "f400b4201b3915b736a60b1728b80d73735b54b396cd4ec2ded9e3e1e4cefac2",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84029",
+      "retrieved_at": "2026-09-13T01:01:53.737124Z",
+      "verified": true
+    },
+    {
+      "filename": "in84030.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84030.txt",
+      "size_bytes": 4096,
+      "sha256": "8eb837de2ba968e86bf5f9c2781da6c21f8c017a7d031c5034ea93cbe0379608",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84030",
+      "retrieved_at": "2026-09-13T01:01:55.490439Z",
+      "verified": true
+    },
+    {
+      "filename": "in84031.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84031.txt",
+      "size_bytes": 5793,
+      "sha256": "5ede70374bfcf642617ea40146892b94dc947b3a7377c0d2b76e2d71094f03d6",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84031",
+      "retrieved_at": "2026-09-13T01:01:56.993018Z",
+      "verified": true
+    },
+    {
+      "filename": "in84032.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84032.txt",
+      "size_bytes": 7073,
+      "sha256": "81c55d63f4d60dc4f25825a157cf1ace66df38eb25807ce60a51cab273c5d9b2",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84032",
+      "retrieved_at": "2026-09-13T01:01:58.219983Z",
+      "verified": true
+    },
+    {
+      "filename": "in84033.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84033.txt",
+      "size_bytes": 3789,
+      "sha256": "64a105d1d3114748a5daf05084308e5db341c4d32af5169b1f953d91ee50e881",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84033",
+      "retrieved_at": "2026-09-13T01:01:59.731325Z",
+      "verified": true
+    },
+    {
+      "filename": "in84034.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84034.txt",
+      "size_bytes": 16402,
+      "sha256": "7affa4357962ce9a24021289d5c35166916fb3800355e17a7f4eaf413feb7f8a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84034",
+      "retrieved_at": "2026-09-13T01:02:01.234993Z",
+      "verified": true
+    },
+    {
+      "filename": "in84035.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84035.txt",
+      "size_bytes": 8168,
+      "sha256": "0d7677f7af79ce9495f84c9e1406361a4aa5a324195835c1261517e6d8d57f03",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84035",
+      "retrieved_at": "2026-09-13T01:02:03.147783Z",
+      "verified": true
+    },
+    {
+      "filename": "in84036.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84036.txt",
+      "size_bytes": 5099,
+      "sha256": "029e75a0f3f375828f278d82e39be17e7eaad8e91993af746db8f5a8eeb431e6",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84036",
+      "retrieved_at": "2026-09-13T01:02:04.293900Z",
+      "verified": true
+    },
+    {
+      "filename": "in84036s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84036s1.txt",
+      "size_bytes": 4049,
+      "sha256": "28b396da4ce5aa8ed0049e99c472718e4240638824c38e1f9030aa5c53088455",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84036s1",
+      "retrieved_at": "2026-09-13T01:02:06.074416Z",
+      "verified": true
+    },
+    {
+      "filename": "in84037.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84037.txt",
+      "size_bytes": 7174,
+      "sha256": "fa4fda74f2876599e4ed30417d14b732020fa4df39d9d5dff455add287d2de14",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84037",
+      "retrieved_at": "2026-09-13T01:02:07.242903Z",
+      "verified": true
+    },
+    {
+      "filename": "in84038.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84038.txt",
+      "size_bytes": 7445,
+      "sha256": "5c1f289280448276e54d536396a90aba841758cb639a817ec6aadf74ea010c43",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84038",
+      "retrieved_at": "2026-09-13T01:02:08.712705Z",
+      "verified": true
+    },
+    {
+      "filename": "in84039.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84039.txt",
+      "size_bytes": 11993,
+      "sha256": "e8ec5bf344e43eae7402af532125ebd459f2299a90c920b5a96cdf9edbc3a551",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84039",
+      "retrieved_at": "2026-09-13T01:02:10.233695Z",
+      "verified": true
+    },
+    {
+      "filename": "in84040.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84040.txt",
+      "size_bytes": 4657,
+      "sha256": "7d0edf72e5b129de3de67a6941dc50a3f7c6d28c83997893622d6ae5e81eb3dc",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84040",
+      "retrieved_at": "2026-09-13T01:02:11.716490Z",
+      "verified": true
+    },
+    {
+      "filename": "in84043.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84043.txt",
+      "size_bytes": 4121,
+      "sha256": "dbaf2be8d54fca17da0a219608ac5bdfad194ae5bb9f43c217b2e78266abf58a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84043",
+      "retrieved_at": "2026-09-13T01:02:13.673296Z",
+      "verified": true
+    },
+    {
+      "filename": "in84044.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84044.txt",
+      "size_bytes": 6303,
+      "sha256": "93ce3db5b80ffd2a98c1712e12f195155a61d1cce74d9277af7c6ed979208e06",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84044",
+      "retrieved_at": "2026-09-13T01:02:14.710365Z",
+      "verified": true
+    },
+    {
+      "filename": "in84045.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84045.txt",
+      "size_bytes": 6628,
+      "sha256": "bf80e642e23b516cbccda83d317d02680962d6c5e709cf3ca94944dc81ec6b7f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84045",
+      "retrieved_at": "2026-09-13T01:02:16.508963Z",
+      "verified": true
+    },
+    {
+      "filename": "in84047.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84047.txt",
+      "size_bytes": 10019,
+      "sha256": "a50f1dead9f80da6cd545a2463df52e570ae9f0471a31b3971e09d6b5223a0a5",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84047",
+      "retrieved_at": "2026-09-13T01:02:17.702024Z",
+      "verified": true
+    },
+    {
+      "filename": "in84048.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84048.txt",
+      "size_bytes": 7391,
+      "sha256": "a5c28bcd682410c91a9f3bb7d16f70fab6135b73f33d4425dfb646692fa597dd",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84048",
+      "retrieved_at": "2026-09-13T01:02:19.515407Z",
+      "verified": true
+    },
+    {
+      "filename": "in84048s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84048s1.txt",
+      "size_bytes": 4246,
+      "sha256": "fa4e46b3a7d2a5aa456f1ccb1581ad51f5215f6400541d23c4f4bd8cf09d15cb",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84048s1",
+      "retrieved_at": "2026-09-13T01:02:20.743679Z",
+      "verified": true
+    },
+    {
+      "filename": "in84049.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84049.txt",
+      "size_bytes": 7298,
+      "sha256": "32f9c6df091749762b5efc08430cf6cac12c93a9e1d73d94d13f7e2abc068c88",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84049",
+      "retrieved_at": "2026-09-13T01:02:22.574571Z",
+      "verified": true
+    },
+    {
+      "filename": "in84050.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84050.txt",
+      "size_bytes": 4753,
+      "sha256": "dd3a406a994ff3cf9fa6d9658f4f27c4befae9cf75fc41eef90a643853a87cb2",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84050",
+      "retrieved_at": "2026-09-13T01:02:23.719540Z",
+      "verified": true
+    },
+    {
+      "filename": "in84051.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84051.txt",
+      "size_bytes": 14489,
+      "sha256": "5806ec1745c1008268a5361b4a859a5a1913ba317f11dbf67fbb1f1de61f4cde",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84051",
+      "retrieved_at": "2026-09-13T01:02:25.523578Z",
+      "verified": true
+    },
+    {
+      "filename": "in84052.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84052.txt",
+      "size_bytes": 4345,
+      "sha256": "4d0868d6c374146a03ba7e08ab25c0ae01d260c63c30c6b63b4869c725e69ef5",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84052",
+      "retrieved_at": "2026-09-13T01:02:26.723272Z",
+      "verified": true
+    },
+    {
+      "filename": "in84052s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84052s1.txt",
+      "size_bytes": 5928,
+      "sha256": "aec231807bc085b22717d3394207b305de897598cdf31df561c894fc9936fa70",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84052s1",
+      "retrieved_at": "2026-09-13T01:02:28.261726Z",
+      "verified": true
+    },
+    {
+      "filename": "in84053.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84053.txt",
+      "size_bytes": 4179,
+      "sha256": "546824d4d365c0362a0e76f994b98ea89911b3486bcf072ec8e654c3d4b23d39",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84053",
+      "retrieved_at": "2026-09-13T01:02:30.029350Z",
+      "verified": true
+    },
+    {
+      "filename": "in84054.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84054.txt",
+      "size_bytes": 5648,
+      "sha256": "50fc90d6d0187cc07fcea5480cb86c19f6373758a6347436c9c18daea7ec0f26",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84054",
+      "retrieved_at": "2026-09-13T01:02:31.249962Z",
+      "verified": true
+    },
+    {
+      "filename": "in84055.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84055.txt",
+      "size_bytes": 9308,
+      "sha256": "4d185b87fe8f42137d99ec5aa35301c20f9e2f6c948116105f5ad0173b5ecfe9",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84055",
+      "retrieved_at": "2026-09-13T01:02:33.108933Z",
+      "verified": true
+    },
+    {
+      "filename": "in84055s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84055s1.txt",
+      "size_bytes": 10948,
+      "sha256": "aa872ec99c378ffb57f7b357117a016199468e250c1222cc0246d2463c0bbd63",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84055s1",
+      "retrieved_at": "2026-09-13T01:02:34.256948Z",
+      "verified": true
+    },
+    {
+      "filename": "in84056.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84056.txt",
+      "size_bytes": 2748,
+      "sha256": "f2dad53f1e69bb4205cbd8e3e9af2a7515dc641485a5eba4d4765b5b4a2e896e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84056",
+      "retrieved_at": "2026-09-13T01:02:35.999587Z",
+      "verified": true
+    },
+    {
+      "filename": "in84057.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84057.txt",
+      "size_bytes": 6088,
+      "sha256": "ec72217f4a95cda8139d54f9e2fad25a6d098be894fb0d2ad399b3f5dd403c12",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84057",
+      "retrieved_at": "2026-09-13T01:02:37.303429Z",
+      "verified": true
+    },
+    {
+      "filename": "in84058.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84058.txt",
+      "size_bytes": 9857,
+      "sha256": "e236178669d7ce88f3bef675354f781fb2273cc2588987fa24f89a6a45a5b16b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84058",
+      "retrieved_at": "2026-09-13T01:02:38.737291Z",
+      "verified": true
+    },
+    {
+      "filename": "in84059.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84059.txt",
+      "size_bytes": 9244,
+      "sha256": "854dc8a02423855a63eb6e11b39ae96af78f773aba7ea8fbdb8ad656f043d71a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84059",
+      "retrieved_at": "2026-09-13T01:02:40.271372Z",
+      "verified": true
+    },
+    {
+      "filename": "in84060.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84060.txt",
+      "size_bytes": 8726,
+      "sha256": "9a10cbd1e551a0eeda342c3e959aafef14bca34c2385feca676c4b2d521f0c46",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84060",
+      "retrieved_at": "2026-09-13T01:02:41.746944Z",
+      "verified": true
+    },
+    {
+      "filename": "in84061.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84061.txt",
+      "size_bytes": 11522,
+      "sha256": "74012271c20859ec5830f29738205585199ea3f9d19a2a6228a5f17c127c0c74",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84061",
+      "retrieved_at": "2026-09-13T01:02:43.983332Z",
+      "verified": true
+    },
+    {
+      "filename": "in84062.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84062.txt",
+      "size_bytes": 5610,
+      "sha256": "4be6609987fbc79a7660b911bed9602eb43f24c5e578bfef273a85ddc97bcb2b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84062",
+      "retrieved_at": "2026-09-13T01:02:45.450301Z",
+      "verified": true
+    },
+    {
+      "filename": "in84063.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84063.txt",
+      "size_bytes": 5993,
+      "sha256": "f3ac7bc815d2d64965837c74d0157696dd41e31a2efc6a637bf5dba19304f261",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84063",
+      "retrieved_at": "2026-09-13T01:02:46.614028Z",
+      "verified": true
+    },
+    {
+      "filename": "in84064.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84064.txt",
+      "size_bytes": 5800,
+      "sha256": "f3862e5c642ad28c61985f550c295b55a0a7565f24a010dcaa644e04e4240d6c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84064",
+      "retrieved_at": "2026-09-13T01:02:47.782229Z",
+      "verified": true
+    },
+    {
+      "filename": "in84065.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84065.txt",
+      "size_bytes": 5137,
+      "sha256": "380cb6ee5cdbcea95e9a6bdffea558e29d5c2e72906bee031d0cecf9e2e14967",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84065",
+      "retrieved_at": "2026-09-13T01:02:49.253797Z",
+      "verified": true
+    },
+    {
+      "filename": "in84066.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84066.txt",
+      "size_bytes": 9630,
+      "sha256": "bb6ebc31f4887883ce33da52c8110867dd3e7507e3bc0d0a0f09cbea2163d043",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84066",
+      "retrieved_at": "2026-09-13T01:02:51.041280Z",
+      "verified": true
+    },
+    {
+      "filename": "in84067.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84067.txt",
+      "size_bytes": 10789,
+      "sha256": "f8fcefe0bf04b0a1b1e030f4127348f650de1c102a44b6f2ad1a00e73821616c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84067",
+      "retrieved_at": "2026-09-13T01:02:52.260087Z",
+      "verified": true
+    },
+    {
+      "filename": "in84068.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84068.txt",
+      "size_bytes": 5015,
+      "sha256": "72f09973e6305eafa6ea8e98e26230dad9f0e5cf1dc67903ca03b2db7c245a09",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84068",
+      "retrieved_at": "2026-09-13T01:02:54.129843Z",
+      "verified": true
+    },
+    {
+      "filename": "in84069.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84069.txt",
+      "size_bytes": 6016,
+      "sha256": "dcaa68fd5951a976feec3502c084195d3e2d4419a31a5965d64ee452b633aa8c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84069",
+      "retrieved_at": "2026-09-13T01:02:55.640394Z",
+      "verified": true
+    },
+    {
+      "filename": "in84069s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84069s1.txt",
+      "size_bytes": 5853,
+      "sha256": "e94491ed6c3378834b6d5e2cc386bb28132566be0da8a08ac32c25a4ca964aa3",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84069s1",
+      "retrieved_at": "2026-09-13T01:02:56.786471Z",
+      "verified": true
+    },
+    {
+      "filename": "in84070.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84070.txt",
+      "size_bytes": 5833,
+      "sha256": "322cde3f6daea5ad9680a59c2e5e3edc3439dd28cf3a398275a926f4874b1a4a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84070",
+      "retrieved_at": "2026-09-13T01:02:58.289485Z",
+      "verified": true
+    },
+    {
+      "filename": "in84070s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84070s1.txt",
+      "size_bytes": 7030,
+      "sha256": "4f7b961abc82abf68763b3b7aca0beb26bf10199ecfcf0c307ce7678eafad84c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84070s1",
+      "retrieved_at": "2026-09-13T01:03:00.090063Z",
+      "verified": true
+    },
+    {
+      "filename": "in84071.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84071.txt",
+      "size_bytes": 7348,
+      "sha256": "becad95f1952665ed8168c5a581bb164f37c5a6f64f65b33392109301ee91b22",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84071",
+      "retrieved_at": "2026-09-13T01:03:01.306578Z",
+      "verified": true
+    },
+    {
+      "filename": "in84072.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84072.txt",
+      "size_bytes": 5177,
+      "sha256": "7079dccc53ef0a1d0e0b702b3322ea59e46474acef2bc09897bf53f9e3366a13",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84072",
+      "retrieved_at": "2026-09-13T01:03:02.774663Z",
+      "verified": true
+    },
+    {
+      "filename": "in84073.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84073.txt",
+      "size_bytes": 7537,
+      "sha256": "b512ee1c6e0ddc192ce75dd8f8c795fa34191b4022fb1f540bfbf7432c51a87f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84073",
+      "retrieved_at": "2026-09-13T01:03:04.309588Z",
+      "verified": true
+    },
+    {
+      "filename": "in84074.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84074.txt",
+      "size_bytes": 9839,
+      "sha256": "b634db472b5656c12a0af77f561e91ddb06e1c9fe0e95d0296c40322052a3bd2",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84074",
+      "retrieved_at": "2026-09-13T01:03:05.797196Z",
+      "verified": true
+    },
+    {
+      "filename": "in84075.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84075.txt",
+      "size_bytes": 3425,
+      "sha256": "570fc7b30b14da5328674b214fe5cf98f8dd2a5c45d2e8a74de36c7d1c89cbbb",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84075",
+      "retrieved_at": "2026-09-13T01:03:07.301076Z",
+      "verified": true
+    },
+    {
+      "filename": "in84076.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84076.txt",
+      "size_bytes": 8942,
+      "sha256": "95b3b1a71be773b494b5af92eb7e7a65b7489d3c2a01c118e6ce6cdd3bdd0d71",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84076",
+      "retrieved_at": "2026-09-13T01:03:08.767329Z",
+      "verified": true
+    },
+    {
+      "filename": "in84077.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84077.txt",
+      "size_bytes": 3391,
+      "sha256": "0a6403b719bdb53fb1f493efa87c7a6733cadd5407b2db36df5d1c63cd6dc8bf",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84077",
+      "retrieved_at": "2026-09-13T01:03:10.266349Z",
+      "verified": true
+    },
+    {
+      "filename": "in84078.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84078.txt",
+      "size_bytes": 4165,
+      "sha256": "eca5d0e6b968817d45c5c7ae9d161a99d401b56adfe5c4538c55a125414ef079",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84078",
+      "retrieved_at": "2026-09-13T01:03:11.967896Z",
+      "verified": true
+    },
+    {
+      "filename": "in84079.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84079.txt",
+      "size_bytes": 4377,
+      "sha256": "492bc32d778220b821737c6f3ab92636567c06ef61936ba36558317bdfeae439",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84079",
+      "retrieved_at": "2026-09-13T01:03:13.281981Z",
+      "verified": true
+    },
+    {
+      "filename": "in84080.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84080.txt",
+      "size_bytes": 10234,
+      "sha256": "7958549415220e22a093d14842475875caebd1f5603ca54996eafa0838d76674",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84080",
+      "retrieved_at": "2026-09-13T01:03:14.763804Z",
+      "verified": true
+    },
+    {
+      "filename": "in84081.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84081.txt",
+      "size_bytes": 8782,
+      "sha256": "ba4f5f0b0c093e2e109e7ae710080e2548f21a377e07a9d7588d8730a86d1c64",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84081",
+      "retrieved_at": "2026-09-13T01:03:16.694210Z",
+      "verified": true
+    },
+    {
+      "filename": "in84082.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84082.txt",
+      "size_bytes": 5544,
+      "sha256": "3155dc9469f63211c30acf6961040cb5e2e253d63a05e20bdfbcc0aa9e3ab68d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84082",
+      "retrieved_at": "2026-09-13T01:03:18.119630Z",
+      "verified": true
+    },
+    {
+      "filename": "in84083.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84083.txt",
+      "size_bytes": 6410,
+      "sha256": "12ce63bf1ab38255190a09d3c471b3bfa6bfec26bd8d8292d791ddb0e8d3f317",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84083",
+      "retrieved_at": "2026-09-13T01:03:19.674874Z",
+      "verified": true
+    },
+    {
+      "filename": "in84084.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84084.txt",
+      "size_bytes": 7076,
+      "sha256": "641e29d6fca2321deb5001b05fde92f1df5e5985365631bc01a8a090e8d20d66",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84084",
+      "retrieved_at": "2026-09-13T01:03:21.168146Z",
+      "verified": true
+    },
+    {
+      "filename": "in84084r1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84084r1.txt",
+      "size_bytes": 7962,
+      "sha256": "6a4c06e89aec603f7e19f471bc37f12f7dfd16a42d9eec03d6296b2e05b1a5b1",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84084r1",
+      "retrieved_at": "2026-09-13T01:03:22.269838Z",
+      "verified": true
+    },
+    {
+      "filename": "in84085.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84085.txt",
+      "size_bytes": 3750,
+      "sha256": "9e6591aedb47d5ffeac2d4aa325ddd9b449c788b744b60d94a0fb9d0e77b93c6",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84085",
+      "retrieved_at": "2026-09-13T01:03:23.834814Z",
+      "verified": true
+    },
+    {
+      "filename": "in84086.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84086.txt",
+      "size_bytes": 4924,
+      "sha256": "50d8b157fbb2c55de45c2647fc4f02c251b0c72dd488d2f7be9fbdc1d3bd192a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84086",
+      "retrieved_at": "2026-09-13T01:03:25.552875Z",
+      "verified": true
+    },
+    {
+      "filename": "in84087.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84087.txt",
+      "size_bytes": 6703,
+      "sha256": "c6e52b88c1766673971ef827f6237529fa6396b07f9789d0194656379906ebe7",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84087",
+      "retrieved_at": "2026-09-13T01:03:26.820770Z",
+      "verified": true
+    },
+    {
+      "filename": "in84088.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84088.txt",
+      "size_bytes": 9667,
+      "sha256": "00961ebaf0b9f1a368ad1819c00d5b71a173ea5ca9ee16e9b3bef06c8982849c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84088",
+      "retrieved_at": "2026-09-13T01:03:28.594503Z",
+      "verified": true
+    },
+    {
+      "filename": "in84089.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84089.txt",
+      "size_bytes": 5611,
+      "sha256": "805d7fd440973bc396b124b5ff23b68ff76f787d23d296d8d8fa0f5fb54f4939",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84089",
+      "retrieved_at": "2026-09-13T01:03:30.057639Z",
+      "verified": true
+    },
+    {
+      "filename": "in84090.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84090.txt",
+      "size_bytes": 5077,
+      "sha256": "740a1e34899babcc7e95f2306b43abb72ff98c11c8c17d55d62d3eabb125b432",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84090",
+      "retrieved_at": "2026-09-13T01:03:31.586057Z",
+      "verified": true
+    },
+    {
+      "filename": "in84091.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84091.txt",
+      "size_bytes": 5784,
+      "sha256": "027e87d6c72c8acfdf0063fa9f9205065a909a6e97c9c634a23f91b679224266",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84091",
+      "retrieved_at": "2026-09-13T01:03:33.045481Z",
+      "verified": true
+    },
+    {
+      "filename": "in84093.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84093.txt",
+      "size_bytes": 6617,
+      "sha256": "2a0ba7312ac974f939e36d4f8f974ec86fd5960be7d5de014d93f982ced69eea",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84093",
+      "retrieved_at": "2026-09-13T01:03:34.288342Z",
+      "verified": true
+    },
+    {
+      "filename": "in84094.txt",
+      "relative_path": "raw/text/nrc_info_notices/in84094.txt",
+      "size_bytes": 6609,
+      "sha256": "7c5c7980b65d1aaa653b8ba6f8022949e16695dde28b5dba8ba28163bb485865",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1984/in84094",
+      "retrieved_at": "2026-09-13T01:03:36.183218Z",
+      "verified": true
+    },
+    {
+      "filename": "in85018s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in85018s1.txt",
+      "size_bytes": 10443,
+      "sha256": "abbe7c6415cd27f0b7d87c3078ffe7803397f2ed17ac9af87133bd84c2b137f4",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1985/in85018s1",
+      "retrieved_at": "2026-09-13T01:03:38.795619Z",
+      "verified": true
+    },
+    {
+      "filename": "in85029.txt",
+      "relative_path": "raw/text/nrc_info_notices/in85029.txt",
+      "size_bytes": 3381,
+      "sha256": "c9b61a035e02a3f9dad5a6fffac08382a1cc43184972b9eafbb16df2c99ca067",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1985/in85029",
+      "retrieved_at": "2026-09-13T01:03:40.290439Z",
+      "verified": true
+    },
+    {
+      "filename": "in85035s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in85035s1.txt",
+      "size_bytes": 4885,
+      "sha256": "5ad6ff20308542d58cdc0ea8c3d343eac643196890cdba3b4b95eb22dedfd4fe",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1985/in85035s1",
+      "retrieved_at": "2026-09-13T01:03:41.763149Z",
+      "verified": true
+    },
+    {
+      "filename": "in85036.txt",
+      "relative_path": "raw/text/nrc_info_notices/in85036.txt",
+      "size_bytes": 3419,
+      "sha256": "c37931f99eef1c4fe9c42c65132440112b3cf60309522e4ba7d5348dbfd7a39e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1985/in85036",
+      "retrieved_at": "2026-09-13T01:03:43.270374Z",
+      "verified": true
+    },
+    {
+      "filename": "in85041.txt",
+      "relative_path": "raw/text/nrc_info_notices/in85041.txt",
+      "size_bytes": 2691,
+      "sha256": "6ebc1fe6d69e631952a43fe2977abad519df27391813602680ad37902b0b7480",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1985/in85041",
+      "retrieved_at": "2026-09-13T01:03:44.773752Z",
+      "verified": true
+    },
+    {
+      "filename": "in85042.txt",
+      "relative_path": "raw/text/nrc_info_notices/in85042.txt",
+      "size_bytes": 4366,
+      "sha256": "081ecbf9ceff95394886b379117f8937b8717cfda8d8ce002af44edfcb7795fc",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1985/in85042",
+      "retrieved_at": "2026-09-13T01:03:46.577384Z",
+      "verified": true
+    },
+    {
+      "filename": "in85042r1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in85042r1.txt",
+      "size_bytes": 4741,
+      "sha256": "768053a6c06dbb8315446a0e602c4b45032766369ad49c425c25fecd61749b6b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1985/in85042r1",
+      "retrieved_at": "2026-09-13T01:03:47.798909Z",
+      "verified": true
+    },
+    {
+      "filename": "in85045.txt",
+      "relative_path": "raw/text/nrc_info_notices/in85045.txt",
+      "size_bytes": 4563,
+      "sha256": "fc04635d33b94c80c8b4aa0ac36eb273c843fd2966d09050ce8b2d1498888690",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1985/in85045",
+      "retrieved_at": "2026-09-13T01:03:49.313367Z",
+      "verified": true
+    },
+    {
+      "filename": "in85061.txt",
+      "relative_path": "raw/text/nrc_info_notices/in85061.txt",
+      "size_bytes": 4366,
+      "sha256": "8b6c30aad7ccd71cad9c946b38fc7c60899a152842f1bfda44258c2bf3e6f277",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1985/in85061",
+      "retrieved_at": "2026-09-13T01:03:50.804293Z",
+      "verified": true
+    },
+    {
+      "filename": "in85090.txt",
+      "relative_path": "raw/text/nrc_info_notices/in85090.txt",
+      "size_bytes": 6543,
+      "sha256": "b49908a245bc5646989abbd6e131f1e6bd2af9fedb62caa57cd173ff3bc38c56",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1985/in85090",
+      "retrieved_at": "2026-09-13T01:03:52.597313Z",
+      "verified": true
+    },
+    {
+      "filename": "in85094.txt",
+      "relative_path": "raw/text/nrc_info_notices/in85094.txt",
+      "size_bytes": 11849,
+      "sha256": "c3b1313faeee27e70151192fe25a059260f3c1c335ff86d877f72f9e16f4af14",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1985/in85094",
+      "retrieved_at": "2026-09-13T01:03:53.820468Z",
+      "verified": true
+    },
+    {
+      "filename": "in85095.txt",
+      "relative_path": "raw/text/nrc_info_notices/in85095.txt",
+      "size_bytes": 7946,
+      "sha256": "a0150b89fcd2126afb53502312edc708729fa11ca12e7b7cbc3ccc45ec8228cd",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1985/in85095",
+      "retrieved_at": "2026-09-13T01:03:55.343943Z",
+      "verified": true
+    },
+    {
+      "filename": "in85096.txt",
+      "relative_path": "raw/text/nrc_info_notices/in85096.txt",
+      "size_bytes": 6114,
+      "sha256": "9948cc0e9f3a6d6875cfe20f4a0bd7f5a8137920e6e91afc5fb8bcd492f6e2c6",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1985/in85096",
+      "retrieved_at": "2026-09-13T01:03:57.093242Z",
+      "verified": true
+    },
+    {
+      "filename": "in85098.txt",
+      "relative_path": "raw/text/nrc_info_notices/in85098.txt",
+      "size_bytes": 8027,
+      "sha256": "91135a74f67c11b356b6b20fb9034433227e1fd4da84554922583a1b66761231",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1985/in85098",
+      "retrieved_at": "2026-09-13T01:03:58.577256Z",
+      "verified": true
+    },
+    {
+      "filename": "in85099.txt",
+      "relative_path": "raw/text/nrc_info_notices/in85099.txt",
+      "size_bytes": 8399,
+      "sha256": "ef9962554fa7bc4fa1b0baf579467ad6fe09f6f4decd3915f3336e2d52dfac40",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1985/in85099",
+      "retrieved_at": "2026-09-13T01:03:59.822201Z",
+      "verified": true
+    },
+    {
+      "filename": "in85100.txt",
+      "relative_path": "raw/text/nrc_info_notices/in85100.txt",
+      "size_bytes": 6272,
+      "sha256": "bd7294beb12b890d4dc271a378a5e871c7f835b5405fac21ef36a3fd87ecb91b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1985/in85100",
+      "retrieved_at": "2026-09-13T01:04:01.599733Z",
+      "verified": true
+    },
+    {
+      "filename": "in85101.txt",
+      "relative_path": "raw/text/nrc_info_notices/in85101.txt",
+      "size_bytes": 3217,
+      "sha256": "8a07e0c5a57e0c675efc8b323b8910c78791d419c2f01a98ed06ce4c41f04390",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1985/in85101",
+      "retrieved_at": "2026-09-13T01:04:03.067413Z",
+      "verified": true
+    },
+    {
+      "filename": "in86005s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in86005s1.txt",
+      "size_bytes": 4287,
+      "sha256": "8c60959c13d815839c16590b383ef808dab14f04710adcfdc431534e82f45f5a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1986/in86005s1",
+      "retrieved_at": "2026-09-13T01:04:07.015416Z",
+      "verified": true
+    },
+    {
+      "filename": "in86012.txt",
+      "relative_path": "raw/text/nrc_info_notices/in86012.txt",
+      "size_bytes": 9997,
+      "sha256": "f3e2b59ce1ee3853b411491abc6a834b2305ae5078d4746c94135dc3150767aa",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1986/in86012",
+      "retrieved_at": "2026-09-13T01:04:07.891303Z",
+      "verified": true
+    },
+    {
+      "filename": "in86014s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in86014s1.txt",
+      "size_bytes": 5961,
+      "sha256": "d26aac8bc729ada15923d0301c04523e1ddff8a171e1860c3a86de42cfae5096",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1986/in86014s1",
+      "retrieved_at": "2026-09-13T01:04:09.144437Z",
+      "verified": true
+    },
+    {
+      "filename": "in86021s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in86021s1.txt",
+      "size_bytes": 3255,
+      "sha256": "225fe0fb3ba8e6592ad51ef8d2985f052e5e5219ada253babb7e71ba7137954d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1986/in86021s1",
+      "retrieved_at": "2026-09-13T01:04:10.329966Z",
+      "verified": true
+    },
+    {
+      "filename": "in86025s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in86025s1.txt",
+      "size_bytes": 3883,
+      "sha256": "00402a1e31c06930316ab4fc14f7f9568a27317cb850cbe00d1775c130e65306",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1986/in86025s1",
+      "retrieved_at": "2026-09-13T01:04:11.843764Z",
+      "verified": true
+    },
+    {
+      "filename": "in86064s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in86064s1.txt",
+      "size_bytes": 8420,
+      "sha256": "877d55505615c89b0dfafeafd9782593230aa793b864a5be831678b109b98e35",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1986/in86064s1",
+      "retrieved_at": "2026-09-13T01:04:13.329092Z",
+      "verified": true
+    },
+    {
+      "filename": "in86081s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in86081s1.txt",
+      "size_bytes": 6029,
+      "sha256": "f37c3be059ba553522ea0b796b936c3fdb04c323e4653abc88f03676bc45c2d2",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1986/in86081s1",
+      "retrieved_at": "2026-09-13T01:04:14.822723Z",
+      "verified": true
+    },
+    {
+      "filename": "in86082r1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in86082r1.txt",
+      "size_bytes": 5435,
+      "sha256": "12fbedc60a5bb616021089a2fe7069e73db4911534679c2b07c227578b7e5018",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1986/in86082r1",
+      "retrieved_at": "2026-09-13T01:04:16.344709Z",
+      "verified": true
+    },
+    {
+      "filename": "in87001.txt",
+      "relative_path": "raw/text/nrc_info_notices/in87001.txt",
+      "size_bytes": 5252,
+      "sha256": "a85c3757715e9dec4ead5655fea26e8baf542eefa25a2a238b977ef7e51e97b0",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1987/in87001",
+      "retrieved_at": "2026-09-13T01:04:19.327754Z",
+      "verified": true
+    },
+    {
+      "filename": "in87010s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in87010s1.txt",
+      "size_bytes": 10502,
+      "sha256": "dcdabb1f846289a462076c0bc8c6b93e282ece0e75b2620259a00514dcf1ef28",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1987/in87010s1",
+      "retrieved_at": "2026-09-13T01:04:20.821736Z",
+      "verified": true
+    },
+    {
+      "filename": "in87038.txt",
+      "relative_path": "raw/text/nrc_info_notices/in87038.txt",
+      "size_bytes": 5856,
+      "sha256": "acb28e08aa0668f21a7d5f1523ba0b5bc83275a963c430566a416711e74f73f5",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1987/in87038",
+      "retrieved_at": "2026-09-13T01:04:22.327491Z",
+      "verified": true
+    },
+    {
+      "filename": "in87044.txt",
+      "relative_path": "raw/text/nrc_info_notices/in87044.txt",
+      "size_bytes": 5752,
+      "sha256": "91e3ab73a42676f63b8c4b01925f4dc82921ca9c2b10fdb1cadd3cc13c6d6c28",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1987/in87044",
+      "retrieved_at": "2026-09-13T01:04:24.108611Z",
+      "verified": true
+    },
+    {
+      "filename": "in87047.txt",
+      "relative_path": "raw/text/nrc_info_notices/in87047.txt",
+      "size_bytes": 17124,
+      "sha256": "23ab43453e9e4b609b7aec68e9e95dcf977b64366b673f75f37829fffa42a807",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1987/in87047",
+      "retrieved_at": "2026-09-13T01:04:25.597702Z",
+      "verified": true
+    },
+    {
+      "filename": "in87051.txt",
+      "relative_path": "raw/text/nrc_info_notices/in87051.txt",
+      "size_bytes": 5698,
+      "sha256": "557bd76716d27f1048e252e8a2650a1285e833bf47b21bbdb340523182ecdb4c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1987/in87051",
+      "retrieved_at": "2026-09-13T01:04:27.178790Z",
+      "verified": true
+    },
+    {
+      "filename": "in87052.txt",
+      "relative_path": "raw/text/nrc_info_notices/in87052.txt",
+      "size_bytes": 4717,
+      "sha256": "55e6d171eec9df33493e07dd054883ea2ecf8b5cc6b1913c4f4a327468f98bb3",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1987/in87052",
+      "retrieved_at": "2026-09-13T01:04:28.310513Z",
+      "verified": true
+    },
+    {
+      "filename": "in87053.txt",
+      "relative_path": "raw/text/nrc_info_notices/in87053.txt",
+      "size_bytes": 8108,
+      "sha256": "8b3af9d8da4376f80e1a6255d7f9bf701c8c17eca7bb0f490b006a4d722d1b69",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1987/in87053",
+      "retrieved_at": "2026-09-13T01:04:29.895074Z",
+      "verified": true
+    },
+    {
+      "filename": "in87058.txt",
+      "relative_path": "raw/text/nrc_info_notices/in87058.txt",
+      "size_bytes": 5422,
+      "sha256": "00c7935b79e956494f77739698351f58a49b0e5da5075617211a7df6e894bd2a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1987/in87058",
+      "retrieved_at": "2026-09-13T01:04:31.324594Z",
+      "verified": true
+    },
+    {
+      "filename": "in87059.txt",
+      "relative_path": "raw/text/nrc_info_notices/in87059.txt",
+      "size_bytes": 4519,
+      "sha256": "9820bd3782e8c56e60043de4d940ed7ec4c87326916c03bc4160ee305db87188",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1987/in87059",
+      "retrieved_at": "2026-09-13T01:04:32.817728Z",
+      "verified": true
+    },
+    {
+      "filename": "in87061s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in87061s1.txt",
+      "size_bytes": 6143,
+      "sha256": "301c66798f9a7686399a2c7de76363962b625406892dae63bdd613e52e011038",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1987/in87061s1",
+      "retrieved_at": "2026-09-13T01:04:34.328883Z",
+      "verified": true
+    },
+    {
+      "filename": "in88002.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88002.txt",
+      "size_bytes": 4799,
+      "sha256": "512d1ef84cb59a067377484292ed813fc70130f085b979208dd0ff2357e91cda",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88002",
+      "retrieved_at": "2026-09-13T01:04:37.364698Z",
+      "verified": true
+    },
+    {
+      "filename": "in88010.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88010.txt",
+      "size_bytes": 6995,
+      "sha256": "ee22506889efd38de2ada200b142bc9358404db70964d6047056f7667a19cafe",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88010",
+      "retrieved_at": "2026-09-13T01:04:38.896942Z",
+      "verified": true
+    },
+    {
+      "filename": "in88023s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88023s1.txt",
+      "size_bytes": 6913,
+      "sha256": "31886e96605d97c529fb5cfef4538b3854c13086fca46aab2738411665e7f49d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88023s1",
+      "retrieved_at": "2026-09-13T01:04:40.347626Z",
+      "verified": true
+    },
+    {
+      "filename": "in88023s2.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88023s2.txt",
+      "size_bytes": 5349,
+      "sha256": "9aa63e05b6f6ca752794714dd8235bf47798d44a8915ff3b2dcbe4e947a03fea",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88023s2",
+      "retrieved_at": "2026-09-13T01:04:41.852465Z",
+      "verified": true
+    },
+    {
+      "filename": "in88023s3.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88023s3.txt",
+      "size_bytes": 7421,
+      "sha256": "547631d1ddfedc84a1d67d97ea1c3a2d655304fad4e3c823a83029dc80d93d16",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88023s3",
+      "retrieved_at": "2026-09-13T01:04:43.354134Z",
+      "verified": true
+    },
+    {
+      "filename": "in88023s4.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88023s4.txt",
+      "size_bytes": 8396,
+      "sha256": "40c574fe7eb64970b39e2063e6a2ef13f594119b44fb57801a2fe8f090522de0",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88023s4",
+      "retrieved_at": "2026-09-13T01:04:45.247944Z",
+      "verified": true
+    },
+    {
+      "filename": "in88023s5.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88023s5.txt",
+      "size_bytes": 12747,
+      "sha256": "5b61678cc72560f7451db136bfe388b4be2a1c5032e34b01f0231fe7a23a13be",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88023s5",
+      "retrieved_at": "2026-09-13T01:04:46.662821Z",
+      "verified": true
+    },
+    {
+      "filename": "in88030s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88030s1.txt",
+      "size_bytes": 5999,
+      "sha256": "100d3e71d468be6a2ff40c27d51d5c02dd35413e1c518b286c91eb2143938671",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88030s1",
+      "retrieved_at": "2026-09-13T01:04:47.839841Z",
+      "verified": true
+    },
+    {
+      "filename": "in88035.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88035.txt",
+      "size_bytes": 10546,
+      "sha256": "9ead55c314a236c402909764868ac61eba99f5c65cedafc8d0ab4649fd71f5b5",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88035",
+      "retrieved_at": "2026-09-13T01:04:49.629360Z",
+      "verified": true
+    },
+    {
+      "filename": "in88046s3.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88046s3.txt",
+      "size_bytes": 3933,
+      "sha256": "afde9f9e2b1cff1597e4371b4248e4a467910aff726cd5af9eb4e195fd57e331",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88046s3",
+      "retrieved_at": "2026-09-13T01:04:50.885611Z",
+      "verified": true
+    },
+    {
+      "filename": "in88046s4.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88046s4.txt",
+      "size_bytes": 6609,
+      "sha256": "b8ef1ef8535c4a29f0d4edc5befab145f2ee8b7d89d52a180861408bca7a4f86",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88046s4",
+      "retrieved_at": "2026-09-13T01:04:52.397464Z",
+      "verified": true
+    },
+    {
+      "filename": "in88048.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88048.txt",
+      "size_bytes": 5256,
+      "sha256": "f7f9d9a1bd663a3f2d70f0be3e63449a7ac71e0e3dfd49b4b528c8fbd747544c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88048",
+      "retrieved_at": "2026-09-13T01:04:53.811665Z",
+      "verified": true
+    },
+    {
+      "filename": "in88048s2.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88048s2.txt",
+      "size_bytes": 17141,
+      "sha256": "872af349f3353abb7936a7a6b42923948e0734d50eb117e70520963cf969a91c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88048s2",
+      "retrieved_at": "2026-09-13T01:04:55.379356Z",
+      "verified": true
+    },
+    {
+      "filename": "in88063s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88063s1.txt",
+      "size_bytes": 11366,
+      "sha256": "78f33df6a213308d674bdf39db260e92fa6abdf87c3c2062609b17036532fe34",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88063s1",
+      "retrieved_at": "2026-09-13T01:04:57.364067Z",
+      "verified": true
+    },
+    {
+      "filename": "in88063s2.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88063s2.txt",
+      "size_bytes": 11235,
+      "sha256": "bcbc035e237a157f11dbb07fb7081148ce9fc15de3914615aaf2f47b417e4ba4",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88063s2",
+      "retrieved_at": "2026-09-13T01:04:58.399857Z",
+      "verified": true
+    },
+    {
+      "filename": "in88073s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88073s1.txt",
+      "size_bytes": 4465,
+      "sha256": "b5c70c03e97c4fc5121c727049a7cfd9899db8aa36e27b25c41c584bb606be7f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88073s1",
+      "retrieved_at": "2026-09-13T01:05:00.199400Z",
+      "verified": true
+    },
+    {
+      "filename": "in88075s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88075s1.txt",
+      "size_bytes": 10187,
+      "sha256": "1149037e9f870dce43687eadf1dd684d948f843d60ef4a0a934f24d7936e129c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88075s1",
+      "retrieved_at": "2026-09-13T01:05:01.783027Z",
+      "verified": true
+    },
+    {
+      "filename": "in88079.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88079.txt",
+      "size_bytes": 10599,
+      "sha256": "b85d601293bd64267e84548ef0cc8478cb4ba37f651cef5a484c92913b8a8cf2",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88079",
+      "retrieved_at": "2026-09-13T01:05:02.909609Z",
+      "verified": true
+    },
+    {
+      "filename": "in88080.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88080.txt",
+      "size_bytes": 5047,
+      "sha256": "e99064d09bb0d7ec1f6581afe2c53eeb12bbd921d8c2e98167bf44554db89304",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88080",
+      "retrieved_at": "2026-09-13T01:05:05.182101Z",
+      "verified": true
+    },
+    {
+      "filename": "in88082s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88082s1.txt",
+      "size_bytes": 4840,
+      "sha256": "afbd11052cfc0874850bf33918b9d81a2d36819ee41d2462267b20494be2b948",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88082s1",
+      "retrieved_at": "2026-09-13T01:05:06.171979Z",
+      "verified": true
+    },
+    {
+      "filename": "in88083.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88083.txt",
+      "size_bytes": 5694,
+      "sha256": "617fbd6b03eaae325c38ff3566ae2275f8036c4d8c5f1d377f53c3c5adb3f8ea",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88083",
+      "retrieved_at": "2026-09-13T01:05:07.405994Z",
+      "verified": true
+    },
+    {
+      "filename": "in88086.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88086.txt",
+      "size_bytes": 8798,
+      "sha256": "2b01e64bf8940700d22931fcf5da4e5661a3557bc8757d8fba974b08bb2b2fc5",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88086",
+      "retrieved_at": "2026-09-13T01:05:08.972611Z",
+      "verified": true
+    },
+    {
+      "filename": "in88088s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88088s1.txt",
+      "size_bytes": 4654,
+      "sha256": "47104b7fbcf1911da96641414d7d7b7b2a2a71c77148f532fb2d9c2a2efec15d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88088s1",
+      "retrieved_at": "2026-09-13T01:05:10.706792Z",
+      "verified": true
+    },
+    {
+      "filename": "in88091.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88091.txt",
+      "size_bytes": 7217,
+      "sha256": "ca1ff236fd1861681465219da2be9c04090ff6fc18285904ed4427dbeb0aeed7",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88091",
+      "retrieved_at": "2026-09-13T01:05:11.961478Z",
+      "verified": true
+    },
+    {
+      "filename": "in88092s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88092s1.txt",
+      "size_bytes": 7185,
+      "sha256": "4139ef81ff3533e7bb75acdf6bc0de74e08a4c4ee29ae3058623c2d229fae64c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88092s1",
+      "retrieved_at": "2026-09-13T01:05:13.419569Z",
+      "verified": true
+    },
+    {
+      "filename": "in88097s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in88097s1.txt",
+      "size_bytes": 6519,
+      "sha256": "6367a750442c054fc5f04b7175c84bfff3be188af890790131818f24152f9a48",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1988/in88097s1",
+      "retrieved_at": "2026-09-13T01:05:14.950473Z",
+      "verified": true
+    },
+    {
+      "filename": "in89014.txt",
+      "relative_path": "raw/text/nrc_info_notices/in89014.txt",
+      "size_bytes": 6471,
+      "sha256": "750400938c0a0107d80064ec33da602ada330cf680b03b209a2f6adb9b239e1d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1989/in89014",
+      "retrieved_at": "2026-09-13T01:05:17.945070Z",
+      "verified": true
+    },
+    {
+      "filename": "in89018.txt",
+      "relative_path": "raw/text/nrc_info_notices/in89018.txt",
+      "size_bytes": 7320,
+      "sha256": "a19ee6c73c038660873c3486505b2f68bd2cd8afb7e6970bdb5a9c024b890fdb",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1989/in89018",
+      "retrieved_at": "2026-09-13T01:05:19.774088Z",
+      "verified": true
+    },
+    {
+      "filename": "in89022.txt",
+      "relative_path": "raw/text/nrc_info_notices/in89022.txt",
+      "size_bytes": 7745,
+      "sha256": "aea44d072a302855ad05d0b593a3bafbed2bac1cfa60c920c1d67c53b8bd06fc",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1989/in89022",
+      "retrieved_at": "2026-09-13T01:05:20.921541Z",
+      "verified": true
+    },
+    {
+      "filename": "in89025r1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in89025r1.txt",
+      "size_bytes": 13310,
+      "sha256": "f310afba7d3f120afe8ebfacbae6b113a4755efd75d691ed6990bdf90b86747d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1989/in89025r1",
+      "retrieved_at": "2026-09-13T01:05:22.750606Z",
+      "verified": true
+    },
+    {
+      "filename": "in89032s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in89032s1.txt",
+      "size_bytes": 12054,
+      "sha256": "e9e249ebe95eb389937b0ee64d6e6af91d485a05af9d332da65ad85c286fc4f7",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1989/in89032s1",
+      "retrieved_at": "2026-09-13T01:05:24.023781Z",
+      "verified": true
+    },
+    {
+      "filename": "in89056s2.txt",
+      "relative_path": "raw/text/nrc_info_notices/in89056s2.txt",
+      "size_bytes": 5956,
+      "sha256": "de9b8783af18c3b4aa6c5474b8129663accf6b40c0785da655af21ccbae4147f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1989/in89056s2",
+      "retrieved_at": "2026-09-13T01:05:26.610966Z",
+      "verified": true
+    },
+    {
+      "filename": "in89059s2.txt",
+      "relative_path": "raw/text/nrc_info_notices/in89059s2.txt",
+      "size_bytes": 3828,
+      "sha256": "96956483e79353ae246eabc2d1ec715827cf72dafdeb5f66f1912fa62ef4c602",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1989/in89059s2",
+      "retrieved_at": "2026-09-13T01:05:26.953988Z",
+      "verified": true
+    },
+    {
+      "filename": "in89077s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in89077s1.txt",
+      "size_bytes": 6380,
+      "sha256": "9ef986fa90b47752ff6fbf3a913c40766a37bf321eb354c4ba501848a43b2d03",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1989/in89077s1",
+      "retrieved_at": "2026-09-13T01:05:28.453674Z",
+      "verified": true
+    },
+    {
+      "filename": "in89079s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in89079s1.txt",
+      "size_bytes": 5031,
+      "sha256": "75f34479c5f9af520d42faacae6cc9e9c46f57deea71677ec85d661d41078f12",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1989/in89079s1",
+      "retrieved_at": "2026-09-13T01:05:30.237037Z",
+      "verified": true
+    },
+    {
+      "filename": "in89084.txt",
+      "relative_path": "raw/text/nrc_info_notices/in89084.txt",
+      "size_bytes": 8234,
+      "sha256": "d9d743813df37743eb66b54f69a25971264522f409b8e16c2ab4fda913ed4c6d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1989/in89084",
+      "retrieved_at": "2026-09-13T01:05:31.512745Z",
+      "verified": true
+    },
+    {
+      "filename": "in89090s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in89090s1.txt",
+      "size_bytes": 7228,
+      "sha256": "5b3865f849f52b8737dac6bc2da163b4e1d5525c57e9a574a90c74f4eac26eb6",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1989/in89090s1",
+      "retrieved_at": "2026-09-13T01:05:33.257387Z",
+      "verified": true
+    },
+    {
+      "filename": "in89090s2.txt",
+      "relative_path": "raw/text/nrc_info_notices/in89090s2.txt",
+      "size_bytes": 7604,
+      "sha256": "97c49e0bebdb6fab4f69ee818e15eefcc1035e620b04e9ae0c85872e1fdc9ae0",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1989/in89090s2",
+      "retrieved_at": "2026-09-13T01:05:34.486934Z",
+      "verified": true
+    },
+    {
+      "filename": "in90025s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in90025s1.txt",
+      "size_bytes": 7431,
+      "sha256": "f806a90796233ebc5cf709d8b746801962fe41ef6dc61b2cdfeabeee28adfc64",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1990/in90025s1",
+      "retrieved_at": "2026-09-13T01:05:37.306883Z",
+      "verified": true
+    },
+    {
+      "filename": "in90026.txt",
+      "relative_path": "raw/text/nrc_info_notices/in90026.txt",
+      "size_bytes": 6557,
+      "sha256": "ce2b00cf0999de5de210bd4cab6c26237a52391fe76bb9a51f21efba7528fb48",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1990/in90026",
+      "retrieved_at": "2026-09-13T01:05:38.786681Z",
+      "verified": true
+    },
+    {
+      "filename": "in90027.txt",
+      "relative_path": "raw/text/nrc_info_notices/in90027.txt",
+      "size_bytes": 10380,
+      "sha256": "2f8a402b2b371a1809317090ffffbc20fceb595302b08bf5f93a96fc2af64c84",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1990/in90027",
+      "retrieved_at": "2026-09-13T01:05:40.298585Z",
+      "verified": true
+    },
+    {
+      "filename": "in90032s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in90032s1.txt",
+      "size_bytes": 5010,
+      "sha256": "27cc61ff549903c21a8dd25320e115ae707d44d882aaee6d331b5e0aaffb71bf",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1990/in90032s1",
+      "retrieved_at": "2026-09-13T01:05:42.017178Z",
+      "verified": true
+    },
+    {
+      "filename": "in90036.txt",
+      "relative_path": "raw/text/nrc_info_notices/in90036.txt",
+      "size_bytes": 5502,
+      "sha256": "2a0c0f6d6e29a14e617bcb59c1458b653ff9f3dd5f46122759132f8e41a16152",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1990/in90036",
+      "retrieved_at": "2026-09-13T01:05:43.480298Z",
+      "verified": true
+    },
+    {
+      "filename": "in90043s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in90043s1.txt",
+      "size_bytes": 6420,
+      "sha256": "c5aa1cd2d056e8588daf413424c02996542af9228a7f2dba45605096de4959ce",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1990/in90043s1",
+      "retrieved_at": "2026-09-13T01:05:45.279870Z",
+      "verified": true
+    },
+    {
+      "filename": "in90045.txt",
+      "relative_path": "raw/text/nrc_info_notices/in90045.txt",
+      "size_bytes": 9444,
+      "sha256": "edc6ff270087893be48eed7d62430a2cd2fb0fcea8f840fceac49bffbeede63f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1990/in90045",
+      "retrieved_at": "2026-09-13T01:05:46.518245Z",
+      "verified": true
+    },
+    {
+      "filename": "in90046.txt",
+      "relative_path": "raw/text/nrc_info_notices/in90046.txt",
+      "size_bytes": 4508,
+      "sha256": "227d57cffa752a8e7b83e602187d01260258d050e243c980005339c112e1457b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1990/in90046",
+      "retrieved_at": "2026-09-13T01:05:47.987956Z",
+      "verified": true
+    },
+    {
+      "filename": "in90048.txt",
+      "relative_path": "raw/text/nrc_info_notices/in90048.txt",
+      "size_bytes": 15610,
+      "sha256": "e7dd2821d154f949b5db8468d2a7f67b4d7ad17f6aa4b4f7b22d658e189fef89",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1990/in90048",
+      "retrieved_at": "2026-09-13T01:05:49.802606Z",
+      "verified": true
+    },
+    {
+      "filename": "in90050.txt",
+      "relative_path": "raw/text/nrc_info_notices/in90050.txt",
+      "size_bytes": 10697,
+      "sha256": "875b35cfad9d4b61a610e245c68016d5c93a9a3565e54376c484a51bf7ef0c4a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1990/in90050",
+      "retrieved_at": "2026-09-13T01:05:51.377958Z",
+      "verified": true
+    },
+    {
+      "filename": "in90051.txt",
+      "relative_path": "raw/text/nrc_info_notices/in90051.txt",
+      "size_bytes": 7026,
+      "sha256": "5334700c94b75e557ac4da18bdb740ae8ba79ef438f7676f453075e2dadc6699",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1990/in90051",
+      "retrieved_at": "2026-09-13T01:05:52.529316Z",
+      "verified": true
+    },
+    {
+      "filename": "in90051s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in90051s1.txt",
+      "size_bytes": 5980,
+      "sha256": "6254fc161112ae1dcedd0db00715886feef63e32e04b0c5f767f0923cef38f0b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1990/in90051s1",
+      "retrieved_at": "2026-09-13T01:05:54.006490Z",
+      "verified": true
+    },
+    {
+      "filename": "in90052.txt",
+      "relative_path": "raw/text/nrc_info_notices/in90052.txt",
+      "size_bytes": 3804,
+      "sha256": "badd24177e7b90d946635ef6b173d2215d13f681c02e1200806ab394e105d658",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1990/in90052",
+      "retrieved_at": "2026-09-13T01:05:55.761913Z",
+      "verified": true
+    },
+    {
+      "filename": "in90053.txt",
+      "relative_path": "raw/text/nrc_info_notices/in90053.txt",
+      "size_bytes": 5268,
+      "sha256": "83468b33baf4221c1fb0d69ba86263702100e6ef04cfa5ad915b0429d5d6f826",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1990/in90053",
+      "retrieved_at": "2026-09-13T01:05:57.402162Z",
+      "verified": true
+    },
+    {
+      "filename": "in90054.txt",
+      "relative_path": "raw/text/nrc_info_notices/in90054.txt",
+      "size_bytes": 18328,
+      "sha256": "6b9b47b1d019096a136cf907b8a7be2525a45a0c630d2c2f30c378c363271020",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1990/in90054",
+      "retrieved_at": "2026-09-13T01:05:59.497695Z",
+      "verified": true
+    },
+    {
+      "filename": "in90055.txt",
+      "relative_path": "raw/text/nrc_info_notices/in90055.txt",
+      "size_bytes": 6169,
+      "sha256": "344115fdd3662dfb760bd808f702968f0b1df467f9c9d6660de239bcbe706b82",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1990/in90055",
+      "retrieved_at": "2026-09-13T01:05:59.995204Z",
+      "verified": true
+    },
+    {
+      "filename": "in90057.txt",
+      "relative_path": "raw/text/nrc_info_notices/in90057.txt",
+      "size_bytes": 7503,
+      "sha256": "8cf66803bca1f0b1d8326e3816bf1193b14a7bf23c13879d11dd2cf2a11eb3c9",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1990/in90057",
+      "retrieved_at": "2026-09-13T01:06:01.497476Z",
+      "verified": true
+    },
+    {
+      "filename": "in90057s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in90057s1.txt",
+      "size_bytes": 5791,
+      "sha256": "709735f87c5301adde2bde5e710e8d7fa9569a3bf7f13adee66427927f6d637e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1990/in90057s1",
+      "retrieved_at": "2026-09-13T01:06:03.013845Z",
+      "verified": true
+    },
+    {
+      "filename": "in90068s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in90068s1.txt",
+      "size_bytes": 4841,
+      "sha256": "58ad428847964f1fd24d71b2a19c392bbd4b7425ac8220f5510e82a025daf939",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1990/in90068s1",
+      "retrieved_at": "2026-09-13T01:06:04.512693Z",
+      "verified": true
+    },
+    {
+      "filename": "in90075.txt",
+      "relative_path": "raw/text/nrc_info_notices/in90075.txt",
+      "size_bytes": 3582,
+      "sha256": "4f1a51ead0c4a2bdd7e7d521794dad64275754fcd1da59a8fbc7b50c186bd8e1",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1990/in90075",
+      "retrieved_at": "2026-09-13T01:06:05.990173Z",
+      "verified": true
+    },
+    {
+      "filename": "in90077s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in90077s1.txt",
+      "size_bytes": 8475,
+      "sha256": "95bfc72ccb7049693557ced8f6ab162fe319813eb77357079cfe76ab790922f9",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1990/in90077s1",
+      "retrieved_at": "2026-09-13T01:06:07.529898Z",
+      "verified": true
+    },
+    {
+      "filename": "in91011.txt",
+      "relative_path": "raw/text/nrc_info_notices/in91011.txt",
+      "size_bytes": 7246,
+      "sha256": "b9ed7a3465012d90d729faccb761c640c3ff2d40573842e9dc1e86a8cff80d06",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1991/in91011",
+      "retrieved_at": "2026-09-13T01:06:10.553447Z",
+      "verified": true
+    },
+    {
+      "filename": "in91021s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in91021s1.txt",
+      "size_bytes": 5206,
+      "sha256": "99de63ffba11279d40030dd574503374359565bb741a5745450f9cfc53b28e40",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1991/in91021s1",
+      "retrieved_at": "2026-09-13T01:06:12.025832Z",
+      "verified": true
+    },
+    {
+      "filename": "in91029s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in91029s1.txt",
+      "size_bytes": 14715,
+      "sha256": "1c6a50def055c0bacd9f5637ea30d77a4ca1a408cd1075e22b5fc0e60bcdbc3e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1991/in91029s1",
+      "retrieved_at": "2026-09-13T01:06:13.537501Z",
+      "verified": true
+    },
+    {
+      "filename": "in91029s2.txt",
+      "relative_path": "raw/text/nrc_info_notices/in91029s2.txt",
+      "size_bytes": 5335,
+      "sha256": "10120e0afbded1384a0edc332b860270ee79bfb3171beac2fb8ec738c2d02ccf",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1991/in91029s2",
+      "retrieved_at": "2026-09-13T01:06:15.012802Z",
+      "verified": true
+    },
+    {
+      "filename": "in91029s3.txt",
+      "relative_path": "raw/text/nrc_info_notices/in91029s3.txt",
+      "size_bytes": 15975,
+      "sha256": "2786fc95854723bb48199d4cb44ec65070b645e9061e134571f9cb38c498a0d8",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1991/in91029s3",
+      "retrieved_at": "2026-09-13T01:06:16.935102Z",
+      "verified": true
+    },
+    {
+      "filename": "in91044.txt",
+      "relative_path": "raw/text/nrc_info_notices/in91044.txt",
+      "size_bytes": 6389,
+      "sha256": "fbceaac22fa3b424621871510d52f6ab5f613b7a371636f7588f55bca0eebef8",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1991/in91044",
+      "retrieved_at": "2026-09-13T01:06:18.033198Z",
+      "verified": true
+    },
+    {
+      "filename": "in91045s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in91045s1.txt",
+      "size_bytes": 11522,
+      "sha256": "6c7261cc56b6a22c41a3c854b4831e3aa42760adf2f862864fbe1eba5627ca27",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1991/in91045s1",
+      "retrieved_at": "2026-09-13T01:06:19.534140Z",
+      "verified": true
+    },
+    {
+      "filename": "in91050s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in91050s1.txt",
+      "size_bytes": 13116,
+      "sha256": "22f283b6ec42f8be4920a0f72d9a450f63fb4ea2461272328a17a8f8a13bd8eb",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1991/in91050s1",
+      "retrieved_at": "2026-09-13T01:06:20.992069Z",
+      "verified": true
+    },
+    {
+      "filename": "in91067.txt",
+      "relative_path": "raw/text/nrc_info_notices/in91067.txt",
+      "size_bytes": 9097,
+      "sha256": "52f27ccc48b4769c56dadfc2fdf34857b289c554b0ac5db46ebbd4caa75eedc3",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1991/in91067",
+      "retrieved_at": "2026-09-13T01:06:23.247872Z",
+      "verified": true
+    },
+    {
+      "filename": "in91071.txt",
+      "relative_path": "raw/text/nrc_info_notices/in91071.txt",
+      "size_bytes": 15447,
+      "sha256": "1c3a9c9016cd998f57b5f1c5657556d5b84875938cf5d460046634e135cb2ca5",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1991/in91071",
+      "retrieved_at": "2026-09-13T01:06:24.046546Z",
+      "verified": true
+    },
+    {
+      "filename": "in91075.txt",
+      "relative_path": "raw/text/nrc_info_notices/in91075.txt",
+      "size_bytes": 6646,
+      "sha256": "9dc484e71e728ec81f07645f38d2e896d76629da090adf76b0db27eea3d0adc4",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1991/in91075",
+      "retrieved_at": "2026-09-13T01:06:25.611854Z",
+      "verified": true
+    },
+    {
+      "filename": "in91082.txt",
+      "relative_path": "raw/text/nrc_info_notices/in91082.txt",
+      "size_bytes": 5432,
+      "sha256": "eb40ddff8947040c89c59ff128ff2de22a75694450d55cab54f912da3e1a7b25",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1991/in91082",
+      "retrieved_at": "2026-09-13T01:06:27.327895Z",
+      "verified": true
+    },
+    {
+      "filename": "in91085r1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in91085r1.txt",
+      "size_bytes": 8885,
+      "sha256": "bb2e39ccb8ce93d89bc654c8c8bd047f9b5e12a92e1d2115bab06c488ef3bca9",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1991/in91085r1",
+      "retrieved_at": "2026-09-13T01:06:28.570063Z",
+      "verified": true
+    },
+    {
+      "filename": "in92002s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in92002s1.txt",
+      "size_bytes": 5731,
+      "sha256": "ab8d4578411208bab924546c05dd1b773e62a31920c9385199f1057e29b58a48",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1992/in92002s1",
+      "retrieved_at": "2026-09-13T01:06:31.596617Z",
+      "verified": true
+    },
+    {
+      "filename": "in92016s2.txt",
+      "relative_path": "raw/text/nrc_info_notices/in92016s2.txt",
+      "size_bytes": 7111,
+      "sha256": "14a45e1064884541edcc96ac0f55ff0b6af01db2b8688530812823446c7b3e7b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1992/in92016s2",
+      "retrieved_at": "2026-09-13T01:06:33.052986Z",
+      "verified": true
+    },
+    {
+      "filename": "in92022.txt",
+      "relative_path": "raw/text/nrc_info_notices/in92022.txt",
+      "size_bytes": 5507,
+      "sha256": "a688909e95b6acd2809447cc776acb7adc360e5de4809256586659751604f0fc",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1992/in92022",
+      "retrieved_at": "2026-09-13T01:06:34.877589Z",
+      "verified": true
+    },
+    {
+      "filename": "in92054.txt",
+      "relative_path": "raw/text/nrc_info_notices/in92054.txt",
+      "size_bytes": 7650,
+      "sha256": "461e4222e75862954a52955f7c092b4d6bc23df8253a8e50bcabc45a83c88af1",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1992/in92054",
+      "retrieved_at": "2026-09-13T01:06:36.338096Z",
+      "verified": true
+    },
+    {
+      "filename": "in92056.txt",
+      "relative_path": "raw/text/nrc_info_notices/in92056.txt",
+      "size_bytes": 5405,
+      "sha256": "faf6bfc4ba6384af474bd907893687464f4a34df29b143203ed00f4685461cd5",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1992/in92056",
+      "retrieved_at": "2026-09-13T01:06:37.544147Z",
+      "verified": true
+    },
+    {
+      "filename": "in92070.txt",
+      "relative_path": "raw/text/nrc_info_notices/in92070.txt",
+      "size_bytes": 6610,
+      "sha256": "db4a48a041596b64523da36cdb63d39af999614e0a068caeab9653060723193f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1992/in92070",
+      "retrieved_at": "2026-09-13T01:06:39.363650Z",
+      "verified": true
+    },
+    {
+      "filename": "in93060s1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in93060s1.txt",
+      "size_bytes": 4171,
+      "sha256": "76cbcccbb7be4ee2970cc5e806f3867073254c09e82cbc20e9516aa5c9309bba",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1993/in93060s1",
+      "retrieved_at": "2026-09-13T01:06:42.081379Z",
+      "verified": true
+    },
+    {
+      "filename": "in93085r1.txt",
+      "relative_path": "raw/text/nrc_info_notices/in93085r1.txt",
+      "size_bytes": 23411,
+      "sha256": "44a490b303cdf9f389eccee36dc26dd20fc51794d58fa265d6cda87374604deb",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1993/in93085r1",
+      "retrieved_at": "2026-09-13T01:06:43.882810Z",
+      "verified": true
+    },
+    {
+      "filename": "in94013s2.txt",
+      "relative_path": "raw/text/nrc_info_notices/in94013s2.txt",
+      "size_bytes": 10928,
+      "sha256": "fa9123af7ac712dc13713ba79d81c368dcf963ea5b4523692ce0c23c2b17be60",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1994/in94013s2",
+      "retrieved_at": "2026-09-13T01:06:46.573842Z",
+      "verified": true
+    },
+    {
+      "filename": "in94078.txt",
+      "relative_path": "raw/text/nrc_info_notices/in94078.txt",
+      "size_bytes": 5915,
+      "sha256": "8158acb77dd5a3936d139d9beab344518e505ce21d889757597b9087279ec7b0",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1994/in94078",
+      "retrieved_at": "2026-09-13T01:06:48.062139Z",
+      "verified": true
+    },
+    {
+      "filename": "in98024.txt",
+      "relative_path": "raw/text/nrc_info_notices/in98024.txt",
+      "size_bytes": 7503,
+      "sha256": "d05c75c9dc1701aa1b997b95ac642667f83b38779a4d5f1e347885920d1aac63",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1998/in98024",
+      "retrieved_at": "2026-09-13T01:06:58.609898Z",
+      "verified": true
+    },
+    {
+      "filename": "in98032.txt",
+      "relative_path": "raw/text/nrc_info_notices/in98032.txt",
+      "size_bytes": 566,
+      "sha256": "ebfe0ad85fe664fefa00780b74f18a25b23569f5fb807e5fbff82c285449dff3",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1998/in98032",
+      "retrieved_at": "2026-09-13T01:07:00.101407Z",
+      "verified": true
+    },
+    {
+      "filename": "in99029.txt",
+      "relative_path": "raw/text/nrc_info_notices/in99029.txt",
+      "size_bytes": 4797,
+      "sha256": "18a57a580d69fb11ddf4ee556f11aebaa357ee076d55e7c440db78405ff84380",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/info-notices/1999/in99029",
+      "retrieved_at": "2026-09-13T01:07:03.451477Z",
+      "verified": true
+    }
+  ]
+}

@@ -1,0 +1,2078 @@
+{
+  "source": "nrc_bulletins",
+  "provider": "U.S. Nuclear Regulatory Commission",
+  "license": "public domain (17 U.S.C. 105)",
+  "generated_at": "2026-09-13T01:14:46.473313Z",
+  "files": [
+    {
+      "filename": "bl71001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl71001.txt",
+      "size_bytes": 2299,
+      "sha256": "5d310e13f9a35393974f26e2d0d871a6fad5f21a2af5230b4e829223e7d38d84",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1971/bl71001",
+      "retrieved_at": "2026-09-13T01:08:11.872460Z",
+      "verified": true
+    },
+    {
+      "filename": "bl71002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl71002.txt",
+      "size_bytes": 2523,
+      "sha256": "837feb9cf868b3e538df466bb5e6324b56113a223c90c99a0ef2f8670929f552",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1971/bl71002",
+      "retrieved_at": "2026-09-13T01:08:12.667485Z",
+      "verified": true
+    },
+    {
+      "filename": "bl71003.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl71003.txt",
+      "size_bytes": 3135,
+      "sha256": "63789d80a47e659bc718da0593bea829c14ea1c033a0a0db8bb40d7d846bdfe9",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1971/bl71003",
+      "retrieved_at": "2026-09-13T01:08:13.802539Z",
+      "verified": true
+    },
+    {
+      "filename": "bl72001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl72001.txt",
+      "size_bytes": 5330,
+      "sha256": "29f82be8173f21e7835241c50d033dd942a7715d5d4a0a9cce1aefacb22981b9",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1972/bl72001",
+      "retrieved_at": "2026-09-13T01:08:16.837808Z",
+      "verified": true
+    },
+    {
+      "filename": "bl72002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl72002.txt",
+      "size_bytes": 4569,
+      "sha256": "1a4e119cfbda1fcb06398b8a4ad7c9309912f2fa82f935d13d1b3ad5d1ae230a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1972/bl72002",
+      "retrieved_at": "2026-09-13T01:08:18.328799Z",
+      "verified": true
+    },
+    {
+      "filename": "bl72003.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl72003.txt",
+      "size_bytes": 3307,
+      "sha256": "037a9ea61048cec4c06e5e1f02224d9a1dcf6e0b58645ec4d8d75ea2d516246f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1972/bl72003",
+      "retrieved_at": "2026-09-13T01:08:20.142814Z",
+      "verified": true
+    },
+    {
+      "filename": "bl73001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl73001.txt",
+      "size_bytes": 4781,
+      "sha256": "afcdffbaa91d4fbc566372dbbd229d8ed7c3a87101e56fc7bce5fbb4b7892a51",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1973/bl73001",
+      "retrieved_at": "2026-09-13T01:08:23.134320Z",
+      "verified": true
+    },
+    {
+      "filename": "bl73002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl73002.txt",
+      "size_bytes": 3999,
+      "sha256": "d63a858eacd895d8502620d07c6c35efed4b8de26336dbd1f7969b4670c6a66c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1973/bl73002",
+      "retrieved_at": "2026-09-13T01:08:24.728750Z",
+      "verified": true
+    },
+    {
+      "filename": "bl73003.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl73003.txt",
+      "size_bytes": 4628,
+      "sha256": "2286c8817d129bbd77420f276d2a65a7b9b417ce4172f372141f7ab6f3c19761",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1973/bl73003",
+      "retrieved_at": "2026-09-13T01:08:25.822515Z",
+      "verified": true
+    },
+    {
+      "filename": "bl73004.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl73004.txt",
+      "size_bytes": 4316,
+      "sha256": "af6a55c39b6c0cba95a6b8eab872e88f8c17c05ca7b3b07b77f13fe59867fbed",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1973/bl73004",
+      "retrieved_at": "2026-09-13T01:08:27.295085Z",
+      "verified": true
+    },
+    {
+      "filename": "bl73005.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl73005.txt",
+      "size_bytes": 6656,
+      "sha256": "3477c8b03108c75b8e51902d265b663ee70d82a6eebc418692ceb6e135111288",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1973/bl73005",
+      "retrieved_at": "2026-09-13T01:08:28.834515Z",
+      "verified": true
+    },
+    {
+      "filename": "bl73006.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl73006.txt",
+      "size_bytes": 5212,
+      "sha256": "de8e7491ce5f3e017c0fa2eaaf84e2c9d60b947fb490396c1450f716122a4625",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1973/bl73006",
+      "retrieved_at": "2026-09-13T01:08:30.293444Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74001.txt",
+      "size_bytes": 12819,
+      "sha256": "9fb9e5b0942a51367ab8241e97e700b32f3f21383c92df78dec7ed621474a6be",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74001",
+      "retrieved_at": "2026-09-13T01:08:33.346243Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74001a.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74001a.txt",
+      "size_bytes": 3990,
+      "sha256": "f01f2ee84c55a055dfa27374a4abad90c529bf8a11bae3608cee11347672ae83",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74001a",
+      "retrieved_at": "2026-09-13T01:08:34.822157Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74002.txt",
+      "size_bytes": 3440,
+      "sha256": "fcc35e874d8a48a3c44eaf4335e6d02ad5b23221241e620b80c23cd0eff7df05",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74002",
+      "retrieved_at": "2026-09-13T01:08:36.473092Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74002a.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74002a.txt",
+      "size_bytes": 2963,
+      "sha256": "a46d0add9b641eb251a3ffce9ec62624926f8a57ec2d4baf068729245d31d691",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74002a",
+      "retrieved_at": "2026-09-13T01:08:37.829411Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74003.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74003.txt",
+      "size_bytes": 7016,
+      "sha256": "70dc15c3ffabcb3d1decad530617d97b0d91dff756285ce6631184046dcc7b57",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74003",
+      "retrieved_at": "2026-09-13T01:08:39.316995Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74003a.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74003a.txt",
+      "size_bytes": 3464,
+      "sha256": "ded24dca7f8ce2b8863f4f43c05648f2e8d8ea950fd296bcf9b74c84355038d5",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74003a",
+      "retrieved_at": "2026-09-13T01:08:40.826658Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74004.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74004.txt",
+      "size_bytes": 4926,
+      "sha256": "070fc12e140581730825e1223ac48a8a83b25e78bc500c7528d9149b7f5c2844",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74004",
+      "retrieved_at": "2026-09-13T01:08:42.318640Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74004a.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74004a.txt",
+      "size_bytes": 5141,
+      "sha256": "1417b4155f70dc845b412b21448b7f542b0587f37f789dfe47cd276e4f3b062f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74004a",
+      "retrieved_at": "2026-09-13T01:08:43.803968Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74005.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74005.txt",
+      "size_bytes": 2723,
+      "sha256": "b1dc91b952eddbdb377a6df0eaf5ecc978699f976be60315982a308fa67870a3",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74005",
+      "retrieved_at": "2026-09-13T01:08:45.322223Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74006.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74006.txt",
+      "size_bytes": 6863,
+      "sha256": "0af660986af8569ee94dfd3c07a42baab2036a38e816d7a0b95d32731def7dad",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74006",
+      "retrieved_at": "2026-09-13T01:08:46.852863Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74007.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74007.txt",
+      "size_bytes": 4144,
+      "sha256": "1e2f6ad27cc9cb35b73671505f3e5bc322717be3d30ca7c7023d25a48ae0085c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74007",
+      "retrieved_at": "2026-09-13T01:08:48.300893Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74008.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74008.txt",
+      "size_bytes": 4548,
+      "sha256": "26bc06fa2b002e3dabe2cf1091c84ccf4473153c6d97f79fee8669045d161452",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74008",
+      "retrieved_at": "2026-09-13T01:08:49.855667Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74009.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74009.txt",
+      "size_bytes": 6112,
+      "sha256": "ea90b896481b7bd3951bd9ae25055891b2554d1fe9ca2cf5f4afc949bc1f887c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74009",
+      "retrieved_at": "2026-09-13T01:08:51.375029Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74010.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74010.txt",
+      "size_bytes": 4168,
+      "sha256": "4f9189e11c61969e213f084c7ef2d9249a5f5f7e9e2963fc543d28ac860c2000",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74010",
+      "retrieved_at": "2026-09-13T01:08:52.811485Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74010a.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74010a.txt",
+      "size_bytes": 3869,
+      "sha256": "33760b5491d1271546b9ac656a2aa2b6bc6694a5129f16ea96667fdd5663a577",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74010a",
+      "retrieved_at": "2026-09-13T01:08:54.318520Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74010b.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74010b.txt",
+      "size_bytes": 4901,
+      "sha256": "728fa81c18322f963dcf315fc7ffd9af570e54352bc55ccf81ddb94699b6a38d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74010b",
+      "retrieved_at": "2026-09-13T01:08:55.838997Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74011.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74011.txt",
+      "size_bytes": 6256,
+      "sha256": "c84852881673ffba3e9ff655840daf1c655549cce33c95836d3fd74c86acb33b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74011",
+      "retrieved_at": "2026-09-13T01:08:57.360307Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74012.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74012.txt",
+      "size_bytes": 2556,
+      "sha256": "b2c88188a7190c375f8098ca868c9c156f78e693d1a015ca00cf199a71b3356b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74012",
+      "retrieved_at": "2026-09-13T01:08:58.841927Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74013.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74013.txt",
+      "size_bytes": 1401,
+      "sha256": "7ed43b24d08fc07957094eba8ae3030bc8d29d32c63cb3c2d24867040e159e1e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74013",
+      "retrieved_at": "2026-09-13T01:09:00.333576Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74014.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74014.txt",
+      "size_bytes": 5733,
+      "sha256": "05dfa7fe5c67cd6c93473cd4143eea5b5f88c07cbfcda95d2360d4ad10969ad5",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74014",
+      "retrieved_at": "2026-09-13T01:09:01.902487Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74015.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74015.txt",
+      "size_bytes": 3205,
+      "sha256": "07d756b0c0fef32644f05167e7ac5f9fb0d6f7b0eca595cca10e4fb9b13338e5",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74015",
+      "retrieved_at": "2026-09-13T01:09:03.347977Z",
+      "verified": true
+    },
+    {
+      "filename": "bl74016.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl74016.txt",
+      "size_bytes": 3167,
+      "sha256": "36a7b16d2ed4d3b6ea3cdb2085928527aaf097d59d0e7f44e9053ba4d09d5206",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1974/bl74016",
+      "retrieved_at": "2026-09-13T01:09:04.874342Z",
+      "verified": true
+    },
+    {
+      "filename": "bl75001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl75001.txt",
+      "size_bytes": 6588,
+      "sha256": "9c63bdcc6b9f16baf1c7a4f581bf708d55fc9efb1f7793f03883fe82912666ff",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1975/bl75001",
+      "retrieved_at": "2026-09-13T01:09:08.150455Z",
+      "verified": true
+    },
+    {
+      "filename": "bl75001a.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl75001a.txt",
+      "size_bytes": 4138,
+      "sha256": "f1e1b81474520fa94bd1efe3ba5817c5bfc4a7a592673a44dac93a5ec40e02ee",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1975/bl75001a",
+      "retrieved_at": "2026-09-13T01:09:09.887902Z",
+      "verified": true
+    },
+    {
+      "filename": "bl75002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl75002.txt",
+      "size_bytes": 4859,
+      "sha256": "b5b9877cc2d271e832647d6bb684deded68ce793d43d40346f973d890c467120",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1975/bl75002",
+      "retrieved_at": "2026-09-13T01:09:12.477330Z",
+      "verified": true
+    },
+    {
+      "filename": "bl75003.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl75003.txt",
+      "size_bytes": 2797,
+      "sha256": "0f346cb09d3708793c5b8cdf133d2a9ca5f1a90b3901ede56fa9fe7cce589b50",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1975/bl75003",
+      "retrieved_at": "2026-09-13T01:09:13.203843Z",
+      "verified": true
+    },
+    {
+      "filename": "bl75004.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl75004.txt",
+      "size_bytes": 3986,
+      "sha256": "e7866067194d1b0fdea007b7b7e0b7706e1dd16c407f1d337cded88a0d64c189",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1975/bl75004",
+      "retrieved_at": "2026-09-13T01:09:14.211582Z",
+      "verified": true
+    },
+    {
+      "filename": "bl75004a.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl75004a.txt",
+      "size_bytes": 7729,
+      "sha256": "3f2e90972db98decc551b625a68b20b505d7d95466e4b2c450f143bff798ea70",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1975/bl75004a",
+      "retrieved_at": "2026-09-13T01:09:15.729043Z",
+      "verified": true
+    },
+    {
+      "filename": "bl75004b.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl75004b.txt",
+      "size_bytes": 2626,
+      "sha256": "ffe68545fba5afbd4c3f602ea4b94839832b433ba05144801840de083cf03eae",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1975/bl75004b",
+      "retrieved_at": "2026-09-13T01:09:17.231517Z",
+      "verified": true
+    },
+    {
+      "filename": "bl75005.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl75005.txt",
+      "size_bytes": 5478,
+      "sha256": "8995d0cf7fb57bf77be3d54fa166e586f688d0c7c8c9d639f7ce1252656813ed",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1975/bl75005",
+      "retrieved_at": "2026-09-13T01:09:18.708759Z",
+      "verified": true
+    },
+    {
+      "filename": "bl75006.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl75006.txt",
+      "size_bytes": 2754,
+      "sha256": "7a3d4bebf5594c23563cc42151e18efe1c29e72ae61dbf033396393296908eeb",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1975/bl75006",
+      "retrieved_at": "2026-09-13T01:09:20.259629Z",
+      "verified": true
+    },
+    {
+      "filename": "bl75007.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl75007.txt",
+      "size_bytes": 3191,
+      "sha256": "57fd4a01bf39884eb89b75de2f65217ba13abbee504092965603ca844083c99c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1975/bl75007",
+      "retrieved_at": "2026-09-13T01:09:21.991176Z",
+      "verified": true
+    },
+    {
+      "filename": "bl75008.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl75008.txt",
+      "size_bytes": 1726,
+      "sha256": "77adff92229ca9125b3e746570b8230f3b86ad97b48144d06a782e299de4454b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1975/bl75008",
+      "retrieved_at": "2026-09-13T01:09:23.479310Z",
+      "verified": true
+    },
+    {
+      "filename": "bl76001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl76001.txt",
+      "size_bytes": 3829,
+      "sha256": "e3cbcf650c6701aabee4fabbf00fd11d535b098841b984a4e2e93824d72649e6",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1976/bl76001",
+      "retrieved_at": "2026-09-13T01:09:26.521385Z",
+      "verified": true
+    },
+    {
+      "filename": "bl76002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl76002.txt",
+      "size_bytes": 6402,
+      "sha256": "1003320cd385579e919f3fc29e2ecabef559d7a89862cc1455f5453717728c4f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1976/bl76002",
+      "retrieved_at": "2026-09-13T01:09:27.731705Z",
+      "verified": true
+    },
+    {
+      "filename": "bl76003.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl76003.txt",
+      "size_bytes": 3206,
+      "sha256": "a0d647d0db11c55038091ac7d1322dedf895f014c638a8aecaf9373d853a537a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1976/bl76003",
+      "retrieved_at": "2026-09-13T01:09:29.310143Z",
+      "verified": true
+    },
+    {
+      "filename": "bl76004.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl76004.txt",
+      "size_bytes": 3930,
+      "sha256": "4deedafd9f0db38bbb4dbd85402e584924fe495c29759223f80caa67a29d0ab9",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1976/bl76004",
+      "retrieved_at": "2026-09-13T01:09:30.807487Z",
+      "verified": true
+    },
+    {
+      "filename": "bl76005.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl76005.txt",
+      "size_bytes": 7290,
+      "sha256": "02455d88764868712893417bdb997c2fc8577f1677bcbcc77b31f1f83e2b452b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1976/bl76005",
+      "retrieved_at": "2026-09-13T01:09:32.253162Z",
+      "verified": true
+    },
+    {
+      "filename": "bl76006.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl76006.txt",
+      "size_bytes": 4244,
+      "sha256": "0e104a204d5b9bf040ceed2f20f254d22f7b7b266f48fa08d9d87fd867188f47",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1976/bl76006",
+      "retrieved_at": "2026-09-13T01:09:33.830999Z",
+      "verified": true
+    },
+    {
+      "filename": "bl76007.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl76007.txt",
+      "size_bytes": 3907,
+      "sha256": "448dee4de82d5af6e5e7427a7347b19deddd244c644b6bd15294d1821ccd5640",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1976/bl76007",
+      "retrieved_at": "2026-09-13T01:09:35.328286Z",
+      "verified": true
+    },
+    {
+      "filename": "bl76008.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl76008.txt",
+      "size_bytes": 5377,
+      "sha256": "a43e904c17e13d2fbc3a1578aeae81306656b45258ff416761f65bbb515068ac",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1976/bl76008",
+      "retrieved_at": "2026-09-13T01:09:36.756753Z",
+      "verified": true
+    },
+    {
+      "filename": "bl77001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl77001.txt",
+      "size_bytes": 4648,
+      "sha256": "1036edd8a917d0ad8094cce518f6ad2b0f25a8ec398fa2dbaee8002742a5d751",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1977/bl77001",
+      "retrieved_at": "2026-09-13T01:09:39.829299Z",
+      "verified": true
+    },
+    {
+      "filename": "bl77002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl77002.txt",
+      "size_bytes": 3821,
+      "sha256": "35c575dffb035386bafbca27b21cc2a5cde0e8b99ab404d8151ee1c7d08b1268",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1977/bl77002",
+      "retrieved_at": "2026-09-13T01:09:41.307250Z",
+      "verified": true
+    },
+    {
+      "filename": "bl77003.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl77003.txt",
+      "size_bytes": 2987,
+      "sha256": "1fec23f765c782d64d29a72fa1a849a23a3f618d0e9de4dc8dc196830f847d16",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1977/bl77003",
+      "retrieved_at": "2026-09-13T01:09:43.051227Z",
+      "verified": true
+    },
+    {
+      "filename": "bl77004.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl77004.txt",
+      "size_bytes": 4442,
+      "sha256": "d1f6508da371e614b9e9e4e011d3fb454ad87e57cfd63ca17723374a3e54a65b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1977/bl77004",
+      "retrieved_at": "2026-09-13T01:09:44.301842Z",
+      "verified": true
+    },
+    {
+      "filename": "bl77005.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl77005.txt",
+      "size_bytes": 8526,
+      "sha256": "86eb30e3d7a3fa75371e2ed2c89ca262c72650e1ccfcc6b1cb64c3c3a7309bf8",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1977/bl77005",
+      "retrieved_at": "2026-09-13T01:09:45.818368Z",
+      "verified": true
+    },
+    {
+      "filename": "bl77005a.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl77005a.txt",
+      "size_bytes": 2251,
+      "sha256": "ea6d3b2ff13a0dc85afa84c9f5bfe9b6362df86ebb6a045898dee04c38a6a73d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1977/bl77005a",
+      "retrieved_at": "2026-09-13T01:09:47.297278Z",
+      "verified": true
+    },
+    {
+      "filename": "bl77006.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl77006.txt",
+      "size_bytes": 6409,
+      "sha256": "b14df5015d4d7839290129cc8c3e521491293b573d357a0078d49c62c8eca3c4",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1977/bl77006",
+      "retrieved_at": "2026-09-13T01:09:48.812633Z",
+      "verified": true
+    },
+    {
+      "filename": "bl77007.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl77007.txt",
+      "size_bytes": 6356,
+      "sha256": "1f19256b7be6b700cb2b17c05c0d0445459088b75c85de6395969b9b2ba4a3a0",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1977/bl77007",
+      "retrieved_at": "2026-09-13T01:09:50.658294Z",
+      "verified": true
+    },
+    {
+      "filename": "bl77008.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl77008.txt",
+      "size_bytes": 8041,
+      "sha256": "ee5d3165aab57838e60dadc22bd57793219a7b042a56cf427fe486aa4cd63116",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1977/bl77008",
+      "retrieved_at": "2026-09-13T01:09:51.834036Z",
+      "verified": true
+    },
+    {
+      "filename": "bl78001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl78001.txt",
+      "size_bytes": 6311,
+      "sha256": "2e62dc5cbf96452c789f8c82ecec23aa1122c45b523cd8a226a7ffb5962ca270",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1978/bl78001",
+      "retrieved_at": "2026-09-13T01:09:55.184153Z",
+      "verified": true
+    },
+    {
+      "filename": "bl78002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl78002.txt",
+      "size_bytes": 5053,
+      "sha256": "434a3ad385fba047d3fb25260624201b4dc5086a435ce5ae8d7c8d6e78b189c9",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1978/bl78002",
+      "retrieved_at": "2026-09-13T01:09:56.608645Z",
+      "verified": true
+    },
+    {
+      "filename": "bl78003.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl78003.txt",
+      "size_bytes": 5765,
+      "sha256": "fb8df1cb7ced704d28a04586c8484697ba4598195b6afb666b706efbc95315ce",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1978/bl78003",
+      "retrieved_at": "2026-09-13T01:09:57.818388Z",
+      "verified": true
+    },
+    {
+      "filename": "bl78004.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl78004.txt",
+      "size_bytes": 4875,
+      "sha256": "72161cd7d6c8cad8d1158c5d766f9bbe1ab2b85184983d5061fa744d75fc5917",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1978/bl78004",
+      "retrieved_at": "2026-09-13T01:09:59.712316Z",
+      "verified": true
+    },
+    {
+      "filename": "bl78005.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl78005.txt",
+      "size_bytes": 3925,
+      "sha256": "f8ea9079279f7f3d84a876a32c2028118543e58a29889f9cba99b5be217f1c54",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1978/bl78005",
+      "retrieved_at": "2026-09-13T01:10:01.106367Z",
+      "verified": true
+    },
+    {
+      "filename": "bl78006.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl78006.txt",
+      "size_bytes": 5947,
+      "sha256": "f654b79a933aa687885267195da0a34d1ecf450894113279e03c6fb0154c88af",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1978/bl78006",
+      "retrieved_at": "2026-09-13T01:10:02.659870Z",
+      "verified": true
+    },
+    {
+      "filename": "bl78007.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl78007.txt",
+      "size_bytes": 5683,
+      "sha256": "35071f387a7182b3e4cfda799349fb4dd6fee7a3f545610d6f44b3613e5b7db1",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1978/bl78007",
+      "retrieved_at": "2026-09-13T01:10:03.904122Z",
+      "verified": true
+    },
+    {
+      "filename": "bl78008.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl78008.txt",
+      "size_bytes": 4819,
+      "sha256": "32864f7cbafcf84e1e5f3441b32d6f3f4b03d8f74147106e5228ac336181835e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1978/bl78008",
+      "retrieved_at": "2026-09-13T01:10:05.323537Z",
+      "verified": true
+    },
+    {
+      "filename": "bl78009.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl78009.txt",
+      "size_bytes": 5045,
+      "sha256": "d9614c9b486394d2d59bd81120bca1e458d0892c1b38e8bf17e8dbbc2fbf2768",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1978/bl78009",
+      "retrieved_at": "2026-09-13T01:10:07.861180Z",
+      "verified": true
+    },
+    {
+      "filename": "bl78010.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl78010.txt",
+      "size_bytes": 5429,
+      "sha256": "4a64d1b8be4431a232f87d02893e14ad0fb1b071c9a13bbe1cf6eabfd8d163ee",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1978/bl78010",
+      "retrieved_at": "2026-09-13T01:10:08.938294Z",
+      "verified": true
+    },
+    {
+      "filename": "bl78011.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl78011.txt",
+      "size_bytes": 5776,
+      "sha256": "84ee4f92042e3551bef9a123caaa42a9ae293e542773194ea4fd2d39458940f8",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1978/bl78011",
+      "retrieved_at": "2026-09-13T01:10:10.242715Z",
+      "verified": true
+    },
+    {
+      "filename": "bl78012.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl78012.txt",
+      "size_bytes": 6498,
+      "sha256": "484adc353ede20fe22224002e215f3a662f6db65f3ca06627c8d47b6304c79a1",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1978/bl78012",
+      "retrieved_at": "2026-09-13T01:10:11.753143Z",
+      "verified": true
+    },
+    {
+      "filename": "bl78012a.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl78012a.txt",
+      "size_bytes": 3748,
+      "sha256": "266b153fb9064ecaf58148b4ba1a3179b6d6cc96ae22fa9ae9e619d42424eda6",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1978/bl78012a",
+      "retrieved_at": "2026-09-13T01:10:12.853583Z",
+      "verified": true
+    },
+    {
+      "filename": "bl78012b.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl78012b.txt",
+      "size_bytes": 2441,
+      "sha256": "179447ceb18ef5507ae5473a8f25ecb27df36850d6594e8ad784c3d203fc9231",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1978/bl78012b",
+      "retrieved_at": "2026-09-13T01:10:14.894793Z",
+      "verified": true
+    },
+    {
+      "filename": "bl78013.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl78013.txt",
+      "size_bytes": 5094,
+      "sha256": "019beb015bcb1ad3456116d4f7446f5edbbdb4fd6378446eb03bfba7c188371f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1978/bl78013",
+      "retrieved_at": "2026-09-13T01:10:15.863672Z",
+      "verified": true
+    },
+    {
+      "filename": "bl78014.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl78014.txt",
+      "size_bytes": 5782,
+      "sha256": "305315a97702d45414795f963742ef26afdb44b865e0b1cfef555db7bacba04d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1978/bl78014",
+      "retrieved_at": "2026-09-13T01:10:17.322937Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79001.txt",
+      "size_bytes": 5995,
+      "sha256": "72f48bf27ad3e5f4fa48035ca99bdb7efc2773b8fe8eb06c27018d887462ce6b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79001",
+      "retrieved_at": "2026-09-13T01:10:20.355254Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79001a.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79001a.txt",
+      "size_bytes": 6969,
+      "sha256": "fa1a4ac045fc728564660928c1178fdfa66026dbd64ac35a6b34fc4dbcfd339e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79001a",
+      "retrieved_at": "2026-09-13T01:10:21.864945Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79001b.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79001b.txt",
+      "size_bytes": 8512,
+      "sha256": "3a2ee24c04b948316264501baefc37601d8c42cc9e60a4b4d5021f74f7160060",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79001b",
+      "retrieved_at": "2026-09-13T01:10:23.344476Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79001bs1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79001bs1.txt",
+      "size_bytes": 9999,
+      "sha256": "b2cf93ac9e4285c5975b24e60e5e80401c429ccecfd6cc004c7b04f65e974fec",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79001bs1",
+      "retrieved_at": "2026-09-13T01:10:25.187696Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79001bs2.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79001bs2.txt",
+      "size_bytes": 31534,
+      "sha256": "f7543c1745f1efb8139fa4c53c2f8a3860150275559d1c68cc729e83c4a55c4b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79001bs2",
+      "retrieved_at": "2026-09-13T01:10:26.367928Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79001bs3.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79001bs3.txt",
+      "size_bytes": 3936,
+      "sha256": "39e48bb25f02f2ade66e26dcecc2911739114ec1fa231656cb737fb8a8de38e8",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79001bs3",
+      "retrieved_at": "2026-09-13T01:10:27.920219Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79001r1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79001r1.txt",
+      "size_bytes": 1098,
+      "sha256": "3bdd1c7be30b6d07600594b446a2874de0ac31d6ac77b338e4e7fb643c2b24e8",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79001r1",
+      "retrieved_at": "2026-09-13T01:10:29.384168Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79002.txt",
+      "size_bytes": 7374,
+      "sha256": "dc25216efe6e18b7a5d7b24479b26e11100114d48ee4617fb3fad53ac0de55ef",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79002",
+      "retrieved_at": "2026-09-13T01:10:30.934237Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79002r1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79002r1.txt",
+      "size_bytes": 15485,
+      "sha256": "97d74a930e0788822621868274ce3595e119e2324dd64a2bc7d30b46c3c50622",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79002r1",
+      "retrieved_at": "2026-09-13T01:10:32.364509Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79002r1s1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79002r1s1.txt",
+      "size_bytes": 4287,
+      "sha256": "ec057456d11f25e8af33bc1d8082f1b82020e8cf1ddf0b0dacc5b4d8644e167e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79002r1s1",
+      "retrieved_at": "2026-09-13T01:10:34.380745Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79002r2.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79002r2.txt",
+      "size_bytes": 20783,
+      "sha256": "906be757b02f80fa272a795d5d53f0b33ca12ef6e13b22f178b432146fe53330",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79002r2",
+      "retrieved_at": "2026-09-13T01:10:35.794132Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79003.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79003.txt",
+      "size_bytes": 6657,
+      "sha256": "5104efd7f643a62de1e122f50a9a9fb9ca4d1fd3967f4ce3a4d4924ab4c98182",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79003",
+      "retrieved_at": "2026-09-13T01:10:36.910794Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79003a.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79003a.txt",
+      "size_bytes": 6943,
+      "sha256": "804a688bc4fb465d9f865e164145862d5cca7e198854d8227a4d994f56e51bd7",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79003a",
+      "retrieved_at": "2026-09-13T01:10:38.392102Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79004.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79004.txt",
+      "size_bytes": 5200,
+      "sha256": "4a9a7aecfe947df7c86bb6032be9b5d1cad957ea149c1c3bd3deae88bcfd4818",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79004",
+      "retrieved_at": "2026-09-13T01:10:39.887394Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79005.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79005.txt",
+      "size_bytes": 4876,
+      "sha256": "2c409894bd82706647b599e223b9d19ae28e43e7c4e81af0fe23bf90db3c3052",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79005",
+      "retrieved_at": "2026-09-13T01:10:41.378650Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79005a.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79005a.txt",
+      "size_bytes": 14444,
+      "sha256": "9b1ad33d1b0e45b2bd4a676c0ad2f41f70e6f24e1c105de9d8f92ff7b09e03ee",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79005a",
+      "retrieved_at": "2026-09-13T01:10:42.927837Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79005b.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79005b.txt",
+      "size_bytes": 14190,
+      "sha256": "2eb8a737da644ee8977fecace5e288102e12440684f969b78805321c7aaf04e9",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79005b",
+      "retrieved_at": "2026-09-13T01:10:44.420470Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79005c.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79005c.txt",
+      "size_bytes": 6232,
+      "sha256": "622402b606a36a9edddbf3132385f9610056c742c807bddb124be10da292931d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79005c",
+      "retrieved_at": "2026-09-13T01:10:45.917547Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79006.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79006.txt",
+      "size_bytes": 8437,
+      "sha256": "70d9ae886e1327071a2f58e51145a8a02af74cbddcbda1f968222f1d8531be8a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79006",
+      "retrieved_at": "2026-09-13T01:10:47.407497Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79006a.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79006a.txt",
+      "size_bytes": 10891,
+      "sha256": "da7050d4d0b730cf31ab1b8f00dccb2d808e07750e4093eef358e8419ea88a18",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79006a",
+      "retrieved_at": "2026-09-13T01:10:48.976417Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79006ar1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79006ar1.txt",
+      "size_bytes": 4429,
+      "sha256": "b5137fb93d3fa58d4897a9842e0ba838ce6fd8e3b4b692d8534ef21b57682d2a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79006ar1",
+      "retrieved_at": "2026-09-13T01:10:50.431115Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79006b.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79006b.txt",
+      "size_bytes": 10242,
+      "sha256": "ba440ce492f4926b671bb887ee17e1341a51f72d4fe41cc8b84f750843a81950",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79006b",
+      "retrieved_at": "2026-09-13T01:10:52.302720Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79006c.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79006c.txt",
+      "size_bytes": 6232,
+      "sha256": "f1c29bde83b5713dd75f9ea00f337938210df57bfb5c301c3dd217cf867dedf0",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79006c",
+      "retrieved_at": "2026-09-13T01:10:53.423027Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79007.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79007.txt",
+      "size_bytes": 6647,
+      "sha256": "4a3e630965211ebca76f3c5b4e0b7f690135dcd80357b8c65314175a35b6b0ba",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79007",
+      "retrieved_at": "2026-09-13T01:10:54.918775Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79008.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79008.txt",
+      "size_bytes": 7599,
+      "sha256": "b6e591621054c32b2d94ed2c24642f5ea8e9810f5cf61b1971a93ba06259703a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79008",
+      "retrieved_at": "2026-09-13T01:10:56.444172Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79009.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79009.txt",
+      "size_bytes": 9589,
+      "sha256": "ba51b5bd8aff813c047594c030a698d21083ee685c3fc8fc06526c99ba9d006a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79009",
+      "retrieved_at": "2026-09-13T01:10:57.964374Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79010.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79010.txt",
+      "size_bytes": 4075,
+      "sha256": "0996717a5d4cf4e412dc900e14d7947efc8aa0afa1154e28cd7a59ee51a76ce8",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79010",
+      "retrieved_at": "2026-09-13T01:10:59.458151Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79011.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79011.txt",
+      "size_bytes": 6051,
+      "sha256": "e03352317a6c84449896be88e2144a80afe19f0dfbbbeba95a1f9efca08b6599",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79011",
+      "retrieved_at": "2026-09-13T01:11:00.943715Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79012.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79012.txt",
+      "size_bytes": 5828,
+      "sha256": "7058ff03dd2ed5e328fbf30a8c2b8a5ed02b6de8d6d04130ddf7570d331431c3",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79012",
+      "retrieved_at": "2026-09-13T01:11:02.438269Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79013.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79013.txt",
+      "size_bytes": 9714,
+      "sha256": "c0d079b4e49462aa0d3b75cc1bdf672c4433912417b6c66309fc0ac5f02bdd86",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79013",
+      "retrieved_at": "2026-09-13T01:11:03.952404Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79013r1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79013r1.txt",
+      "size_bytes": 10187,
+      "sha256": "1ec2349d76264fa1af15323f1e7909fae9b01f0cf2f25de72ce428b8034187a8",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79013r1",
+      "retrieved_at": "2026-09-13T01:11:05.523933Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79013r2.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79013r2.txt",
+      "size_bytes": 12768,
+      "sha256": "be588a7e4a81e7c90bbc588b1cd1a0e6f6def9fac6dc0c644388ee8da7e4e17b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79013r2",
+      "retrieved_at": "2026-09-13T01:11:06.962495Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79014.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79014.txt",
+      "size_bytes": 8248,
+      "sha256": "30b0308cdd67835e1982662614d396b768f9497fe2a3fc65e84ecc8773ff763b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79014",
+      "retrieved_at": "2026-09-13T01:11:08.780153Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79014r1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79014r1.txt",
+      "size_bytes": 8627,
+      "sha256": "bc9889a107ce0ca3c8409f2f95faae08e3feb2e586f5802741b58da46d609185",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79014r1",
+      "retrieved_at": "2026-09-13T01:11:09.880936Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79014r1s1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79014r1s1.txt",
+      "size_bytes": 5080,
+      "sha256": "b5afa085316bd9212542346362e9f6da52657e158a7a0c044a4e7c0358038aa5",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79014r1s1",
+      "retrieved_at": "2026-09-13T01:11:11.493800Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79014r1s2.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79014r1s2.txt",
+      "size_bytes": 4957,
+      "sha256": "933521cdfd7e34a763e6c6b905153a912ff95b24e5442cb42ecf3fc1a67a75a9",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79014r1s2",
+      "retrieved_at": "2026-09-13T01:11:13.337487Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79015.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79015.txt",
+      "size_bytes": 6448,
+      "sha256": "baae7f10896ef141873c65d3a63bd149d28df7d5c80e975f14c8fc266d9a3d32",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79015",
+      "retrieved_at": "2026-09-13T01:11:14.468099Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79015s1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79015s1.txt",
+      "size_bytes": 1053,
+      "sha256": "43664a7e1ef0e90f12bc13d0bf9e0ab7094229ebb46f915a045cc890eb4f5648",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79015s1",
+      "retrieved_at": "2026-09-13T01:11:15.959593Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79016.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79016.txt",
+      "size_bytes": 9508,
+      "sha256": "28a36b595c533d4da90f1a2cf6c87cc43fbb58523d84a14ce74705894bbb776d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79016",
+      "retrieved_at": "2026-09-13T01:11:17.483757Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79017.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79017.txt",
+      "size_bytes": 10047,
+      "sha256": "edb15da3038e2933ee84a4b6f111f0e6f4396cf19adb8f0e349cd9a674fb955f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79017",
+      "retrieved_at": "2026-09-13T01:11:18.975408Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79017r1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79017r1.txt",
+      "size_bytes": 15137,
+      "sha256": "1cb91e0863035b0d095cea824e84bd2252814c8e1a85571176eae55bb97e2c45",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79017r1",
+      "retrieved_at": "2026-09-13T01:11:20.800985Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79018.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79018.txt",
+      "size_bytes": 4372,
+      "sha256": "ce0f5c7fe3b1cc54e0ac34cf15d9b3a226a2b4add67deb6b9d377151683d7669",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79018",
+      "retrieved_at": "2026-09-13T01:11:21.977211Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79019.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79019.txt",
+      "size_bytes": 8183,
+      "sha256": "60a6c112940be2cf68d7bbb75713a41e7021dc8fe1af493095bf74fd5ff26df8",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79019",
+      "retrieved_at": "2026-09-13T01:11:23.731176Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79020.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79020.txt",
+      "size_bytes": 7011,
+      "sha256": "619cb77548135f0e1a589bfadceb63824946b955911cdaf2ce3f6ace5cc263f7",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79020",
+      "retrieved_at": "2026-09-13T01:11:25.006262Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79021.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79021.txt",
+      "size_bytes": 4542,
+      "sha256": "7b5274c351204498bd97f735144a092f7afd0babbe9aeca0221bac85eae2cf2a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79021",
+      "retrieved_at": "2026-09-13T01:11:26.485593Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79022.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79022.txt",
+      "size_bytes": 3630,
+      "sha256": "dc44969b1c17d249423c7ccf4dc4afa4a22924a7e095a7d3855cdc7b16e242e2",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79022",
+      "retrieved_at": "2026-09-13T01:11:28.284971Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79023.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79023.txt",
+      "size_bytes": 5176,
+      "sha256": "59fd45cbc45e2689f2c5093dff104c7dca9b7d5a7125f5fceaf451af3997db7f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79023",
+      "retrieved_at": "2026-09-13T01:11:29.762873Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79024.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79024.txt",
+      "size_bytes": 4798,
+      "sha256": "9b849afb5299af09982a0cf47f784bf05d368632a7b1e026b0051cab252f92c7",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79024",
+      "retrieved_at": "2026-09-13T01:11:30.992137Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79025.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79025.txt",
+      "size_bytes": 11709,
+      "sha256": "c1fc76a7151eb1b4bd704988eeef3d5ae879ed4dd302e9c0a36e15465acf044d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79025",
+      "retrieved_at": "2026-09-13T01:11:32.558933Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79026.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79026.txt",
+      "size_bytes": 8944,
+      "sha256": "f1a255f387b583ed594ba5a6cff3c50162c308a8cd77360ae0ad37eb8c92a3f3",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79026",
+      "retrieved_at": "2026-09-13T01:11:33.987343Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79026r1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79026r1.txt",
+      "size_bytes": 9116,
+      "sha256": "4300fdab6c23041c57cfee0510d70f407e4c23fcb64325b1eea39a41125d6fe2",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79026r1",
+      "retrieved_at": "2026-09-13T01:11:35.779718Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79027.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79027.txt",
+      "size_bytes": 5987,
+      "sha256": "c95d8ee4a6ed1ac4542bb71984e5074bcbd1277f6acb8ebb04b36d2e24b74bdb",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79027",
+      "retrieved_at": "2026-09-13T01:11:36.985641Z",
+      "verified": true
+    },
+    {
+      "filename": "bl79028.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl79028.txt",
+      "size_bytes": 4406,
+      "sha256": "c3e6affbc31a01cfbb85562e911c72d41198dd171e49d24058cae3b2dddd3fe0",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1979/bl79028",
+      "retrieved_at": "2026-09-13T01:11:38.467403Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80001.txt",
+      "size_bytes": 3751,
+      "sha256": "bcd0c63213258e4658c3ef180eee45f9d3b4b63ee804d4338e56e926b20377f1",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80001",
+      "retrieved_at": "2026-09-13T01:11:41.491407Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80002.txt",
+      "size_bytes": 3374,
+      "sha256": "f1f5d4a34cd461a005df3ab4a920e3807bfeadfc18098d1e4cc1f8dcfa669f8e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80002",
+      "retrieved_at": "2026-09-13T01:11:42.967085Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80003.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80003.txt",
+      "size_bytes": 5387,
+      "sha256": "bfd9e0d1aefabd319a000acf081dba1d6d86c35d6c133f3fbf2c4e53a612479e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80003",
+      "retrieved_at": "2026-09-13T01:11:44.491931Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80004.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80004.txt",
+      "size_bytes": 6611,
+      "sha256": "9d6cf26b8187682c8907809e7f8f8491714c7129b6779c098c7305a77872acac",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80004",
+      "retrieved_at": "2026-09-13T01:11:45.990776Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80005.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80005.txt",
+      "size_bytes": 5235,
+      "sha256": "84270070732fa0a420b964c068f66a516be1268d9c6300f4b7cdd1d31c0bc89b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80005",
+      "retrieved_at": "2026-09-13T01:11:47.476253Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80006.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80006.txt",
+      "size_bytes": 6471,
+      "sha256": "243192b5c05b236c1b0accbc71b1580deada66e0a7f473a701b1910a7d16405f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80006",
+      "retrieved_at": "2026-09-13T01:11:49.025009Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80007.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80007.txt",
+      "size_bytes": 8435,
+      "sha256": "3435283df3768313b40380dd62179db03d0745a805acd91935e080021724475d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80007",
+      "retrieved_at": "2026-09-13T01:11:50.511664Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80007s1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80007s1.txt",
+      "size_bytes": 1362,
+      "sha256": "bd08545dab941ff9f344f2bb8d98cb1a9e3d29050784c4b98b3c71f0e2a71ff5",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80007s1",
+      "retrieved_at": "2026-09-13T01:11:51.990499Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80008.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80008.txt",
+      "size_bytes": 5052,
+      "sha256": "c51bcb9324578388ca36406a746f2017e8af2527d7943b0fcc642c2d9901d3bf",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80008",
+      "retrieved_at": "2026-09-13T01:11:53.745859Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80009.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80009.txt",
+      "size_bytes": 5600,
+      "sha256": "ae736079f1d6f4f213a88627ea1b1f7c80e3c76fe6427c397fa65e68d9229d24",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80009",
+      "retrieved_at": "2026-09-13T01:11:54.957904Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80010.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80010.txt",
+      "size_bytes": 6410,
+      "sha256": "bb1b3faa8838e06f33b083abc046c7bc81340e266f4eb55662896650c2fcd4d2",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80010",
+      "retrieved_at": "2026-09-13T01:11:56.475051Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80011.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80011.txt",
+      "size_bytes": 10531,
+      "sha256": "45b09b78f29b9e3999586e35844ba6de5b05ad87ff46d2526b09a43793783d46",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80011",
+      "retrieved_at": "2026-09-13T01:11:58.062482Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80012.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80012.txt",
+      "size_bytes": 6054,
+      "sha256": "b1995dbd243262df33c484f1211b0eb166e16d053df5d3cc45f4dbe6d6e4edef",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80012",
+      "retrieved_at": "2026-09-13T01:11:59.770551Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80013.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80013.txt",
+      "size_bytes": 8269,
+      "sha256": "bf0183252bfab1b620f9e9258ef5a4ecfe901d0cb4b196e715c5b657b87fa48b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80013",
+      "retrieved_at": "2026-09-13T01:12:00.998301Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80014.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80014.txt",
+      "size_bytes": 5672,
+      "sha256": "9ad1d53939053e23751fd17540c81d8679c84ef4b67a12970e617f31f03525fd",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80014",
+      "retrieved_at": "2026-09-13T01:12:02.541375Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80015.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80015.txt",
+      "size_bytes": 5758,
+      "sha256": "580d3096eb478dafd3a6502ac81c003854f8b0aa78ca17d1a11fa135f9da8292",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80015",
+      "retrieved_at": "2026-09-13T01:12:04.257349Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80016.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80016.txt",
+      "size_bytes": 11562,
+      "sha256": "a5dce59ab7b84ea3c59d19cfaa0ed40691eafefefc999ea5088f90df6a1a9e3f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80016",
+      "retrieved_at": "2026-09-13T01:12:05.747406Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80017.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80017.txt",
+      "size_bytes": 8793,
+      "sha256": "a814bc73c6182d5cd1196bab5b514bff0ba1cb8f712749ac1baf29a40a6bcc33",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80017",
+      "retrieved_at": "2026-09-13T01:12:07.000988Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80017s1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80017s1.txt",
+      "size_bytes": 7484,
+      "sha256": "531a5992f71380998c5aed8fc2af85c4498864a1b6dbc7a15e4b62af78cc3cd7",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80017s1",
+      "retrieved_at": "2026-09-13T01:12:08.849865Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80017s2.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80017s2.txt",
+      "size_bytes": 5943,
+      "sha256": "6678298e70b4cd8e888ff7388ce9b1ebd503898055b1ec556aec8cd5f39c6e72",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80017s2",
+      "retrieved_at": "2026-09-13T01:12:10.002005Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80017s3.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80017s3.txt",
+      "size_bytes": 4176,
+      "sha256": "c92ba65e0351e4868fee7d8bf50a8165370ce5c2601cb8347c4830bff8cb4cd6",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80017s3",
+      "retrieved_at": "2026-09-13T01:12:11.492305Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80017s4.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80017s4.txt",
+      "size_bytes": 9936,
+      "sha256": "8b9083a7efcc14eb2edd3cb8a48ea0f6b6fef239f47b4925c954f997e406599c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80017s4",
+      "retrieved_at": "2026-09-13T01:12:13.018029Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80017s5.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80017s5.txt",
+      "size_bytes": 1960,
+      "sha256": "80bc00c59c490b6b9be12c0d15f68d1d0813c101a58c53d873b82fef7882b5ec",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80017s5",
+      "retrieved_at": "2026-09-13T01:12:14.882344Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80018.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80018.txt",
+      "size_bytes": 6630,
+      "sha256": "26251348389acbe07909c0f09a44e39018136fd1cd987f66ef2d9280cf5347ea",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80018",
+      "retrieved_at": "2026-09-13T01:12:16.068687Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80019.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80019.txt",
+      "size_bytes": 5809,
+      "sha256": "9727718720713c86af4d33dcf25843a34c243069d06ca13143e498a60fcfa498",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80019",
+      "retrieved_at": "2026-09-13T01:12:17.496889Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80019r1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80019r1.txt",
+      "size_bytes": 6122,
+      "sha256": "bafe2a0a0fd860983c822da6e31f1cd94c233fcdf33da414678d25f3bd0bc870",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80019r1",
+      "retrieved_at": "2026-09-13T01:12:19.288410Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80020.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80020.txt",
+      "size_bytes": 5436,
+      "sha256": "fcb81974f358f21616874fd598c2dca7d1778304b5c545abafe3b680dd143a02",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80020",
+      "retrieved_at": "2026-09-13T01:12:20.529852Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80021.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80021.txt",
+      "size_bytes": 5759,
+      "sha256": "bd55a093de7078f828cf7f24188daf9e2b83daad4f8ac14c7b30b61b6e58b924",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80021",
+      "retrieved_at": "2026-09-13T01:12:22.314757Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80022.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80022.txt",
+      "size_bytes": 5479,
+      "sha256": "6a947afd2ff680b407bb304ae85fae1ed113f6e95d9ccb8c3bbf48307ab4ce31",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80022",
+      "retrieved_at": "2026-09-13T01:12:23.529250Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80023.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80023.txt",
+      "size_bytes": 8864,
+      "sha256": "bb3798a548788ba1474273e75fe2e49cf3f325281024da8062e350cb853b31da",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80023",
+      "retrieved_at": "2026-09-13T01:12:25.083569Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80024.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80024.txt",
+      "size_bytes": 8042,
+      "sha256": "c09685eef8d778292fa35a2e4b1cb35eb31e244ffcafc9fed0143e41c1328e3c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80024",
+      "retrieved_at": "2026-09-13T01:12:26.841258Z",
+      "verified": true
+    },
+    {
+      "filename": "bl80025.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl80025.txt",
+      "size_bytes": 7947,
+      "sha256": "b60fad664ede8d406775cf9fe7b8be70009d30d7e773ee44369d0b92ea631581",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1980/bl80025",
+      "retrieved_at": "2026-09-13T01:12:28.022613Z",
+      "verified": true
+    },
+    {
+      "filename": "bl81001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl81001.txt",
+      "size_bytes": 16661,
+      "sha256": "1c6550a5d1f172b1f45e0fec83dc26a28c190c0a3b2520aa364bc12b7884d095",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1981/bl81001",
+      "retrieved_at": "2026-09-13T01:12:31.081293Z",
+      "verified": true
+    },
+    {
+      "filename": "bl81001r1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl81001r1.txt",
+      "size_bytes": 17088,
+      "sha256": "e841f61865aa188b06cfc47f429a8daab2870f9f41ddeb287611bb6f1e12feda",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1981/bl81001r1",
+      "retrieved_at": "2026-09-13T01:12:32.554708Z",
+      "verified": true
+    },
+    {
+      "filename": "bl81002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl81002.txt",
+      "size_bytes": 13952,
+      "sha256": "06c00161e8a9ce4671e241c47ab84096059d84aeff50a2db3e3e67356a09a2e6",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1981/bl81002",
+      "retrieved_at": "2026-09-13T01:12:34.073536Z",
+      "verified": true
+    },
+    {
+      "filename": "bl81002s1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl81002s1.txt",
+      "size_bytes": 7840,
+      "sha256": "a4c4a4b81544a7e8086ffe06fde02f4ba4ab317d3bd93d8026449f1f672776db",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1981/bl81002s1",
+      "retrieved_at": "2026-09-13T01:12:35.537344Z",
+      "verified": true
+    },
+    {
+      "filename": "bl81003.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl81003.txt",
+      "size_bytes": 14645,
+      "sha256": "d4b07a32aeb2e71c093f7ad9fee3ae8da35cf7e8dc1f5fe345a6e1fc17887c40",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1981/bl81003",
+      "retrieved_at": "2026-09-13T01:12:36.997789Z",
+      "verified": true
+    },
+    {
+      "filename": "bl82001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl82001.txt",
+      "size_bytes": 7699,
+      "sha256": "ef5ad38f42bff7217592e759861ff4f0e49f76abd79e7368b5d833547fc06115",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1982/bl82001",
+      "retrieved_at": "2026-09-13T01:12:40.049049Z",
+      "verified": true
+    },
+    {
+      "filename": "bl82001r1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl82001r1.txt",
+      "size_bytes": 9450,
+      "sha256": "5273d627c91ecc8d56a1ad7e42f5a132d13d98f191a629f636a288db938dd68f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1982/bl82001r1",
+      "retrieved_at": "2026-09-13T01:12:41.898577Z",
+      "verified": true
+    },
+    {
+      "filename": "bl82001r1s1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl82001r1s1.txt",
+      "size_bytes": 8405,
+      "sha256": "b21e7e1b07f5cda70bb3e3a532b9d6d1f468479aceaabc9edf6706072a57224f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1982/bl82001r1s1",
+      "retrieved_at": "2026-09-13T01:12:43.064737Z",
+      "verified": true
+    },
+    {
+      "filename": "bl82002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl82002.txt",
+      "size_bytes": 14938,
+      "sha256": "987df0ba6c9cd00c4b95ad91c45eb5393ac41ad81138b307355cbb05e3e5f87e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1982/bl82002",
+      "retrieved_at": "2026-09-13T01:12:44.598560Z",
+      "verified": true
+    },
+    {
+      "filename": "bl82003.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl82003.txt",
+      "size_bytes": 11526,
+      "sha256": "42719fd2155c1c62a44fae5105e9e4551eb0fca4319c0081c2136173a09c26df",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1982/bl82003",
+      "retrieved_at": "2026-09-13T01:12:46.395930Z",
+      "verified": true
+    },
+    {
+      "filename": "bl82003r1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl82003r1.txt",
+      "size_bytes": 11875,
+      "sha256": "e363befec7155dc00909828f5dd12aa349b3cbe56916777892de586341485e78",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1982/bl82003r1",
+      "retrieved_at": "2026-09-13T01:12:47.613566Z",
+      "verified": true
+    },
+    {
+      "filename": "bl82004.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl82004.txt",
+      "size_bytes": 14432,
+      "sha256": "f2fbe1365e9191affd2bba084e02d4081ed49b1a1eb1251e18f6fc5fbccac509",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1982/bl82004",
+      "retrieved_at": "2026-09-13T01:12:49.074427Z",
+      "verified": true
+    },
+    {
+      "filename": "bl83001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl83001.txt",
+      "size_bytes": 10781,
+      "sha256": "94854ce8a4f962992266f596a947030f32301bc449ef242be649b0435900dea8",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1983/bl83001",
+      "retrieved_at": "2026-09-13T01:12:52.073069Z",
+      "verified": true
+    },
+    {
+      "filename": "bl83002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl83002.txt",
+      "size_bytes": 15579,
+      "sha256": "ddadc69d57e27f76dc13f6e9008e21e7a606796b9e4a87faf595437acb035e8d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1983/bl83002",
+      "retrieved_at": "2026-09-13T01:12:53.577974Z",
+      "verified": true
+    },
+    {
+      "filename": "bl83003.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl83003.txt",
+      "size_bytes": 14643,
+      "sha256": "1245b090ddfcad5bdbbe089695848c97ce5d3bfffcffebc878e08973a8be2ac7",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1983/bl83003",
+      "retrieved_at": "2026-09-13T01:12:55.147624Z",
+      "verified": true
+    },
+    {
+      "filename": "bl83004.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl83004.txt",
+      "size_bytes": 7346,
+      "sha256": "2a9187acdb53aa1668dad5dd26479613cabaa11302e584ffe0824e835008a40e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1983/bl83004",
+      "retrieved_at": "2026-09-13T01:12:56.591429Z",
+      "verified": true
+    },
+    {
+      "filename": "bl83005.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl83005.txt",
+      "size_bytes": 11088,
+      "sha256": "1d40bcd9e98a88fc616187506c8ca9ee9c92e50a61eb2481c79dd21f7cf93e30",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1983/bl83005",
+      "retrieved_at": "2026-09-13T01:12:58.083352Z",
+      "verified": true
+    },
+    {
+      "filename": "bl83006.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl83006.txt",
+      "size_bytes": 16045,
+      "sha256": "fb3dcae45c2960fd9009dfe9ca57d33c8e56684308fb40efdaebdef3dd3679ae",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1983/bl83006",
+      "retrieved_at": "2026-09-13T01:13:00.168139Z",
+      "verified": true
+    },
+    {
+      "filename": "bl83007.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl83007.txt",
+      "size_bytes": 15707,
+      "sha256": "f7d9363b4f9e78cf29e60aadcd92e9f3f6ac98c43d244bb179adc47cca03759b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1983/bl83007",
+      "retrieved_at": "2026-09-13T01:13:01.105521Z",
+      "verified": true
+    },
+    {
+      "filename": "bl83007s1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl83007s1.txt",
+      "size_bytes": 3312,
+      "sha256": "ce3e436ee2aa07ca684c63094e4067ee17abf618156cff23d5c0eff142a02b8c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1983/bl83007s1",
+      "retrieved_at": "2026-09-13T01:13:02.628070Z",
+      "verified": true
+    },
+    {
+      "filename": "bl83007s2.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl83007s2.txt",
+      "size_bytes": 2787,
+      "sha256": "8ce10fb43b3b2d6d25ef84887844546559e4ec9a85b3b2f3c427290486d063c3",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1983/bl83007s2",
+      "retrieved_at": "2026-09-13T01:13:04.123922Z",
+      "verified": true
+    },
+    {
+      "filename": "bl83008.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl83008.txt",
+      "size_bytes": 12570,
+      "sha256": "9a729c81d41931e22de4eb0c8823b1334a177529e9273edc8bde1aaf83eca5ed",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1983/bl83008",
+      "retrieved_at": "2026-09-13T01:13:05.909542Z",
+      "verified": true
+    },
+    {
+      "filename": "bl84001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl84001.txt",
+      "size_bytes": 3845,
+      "sha256": "85f8bf216964860f25358cb05eb8c9ed8a6a25e5b230e3661e9ec5ef3a462070",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1984/bl84001",
+      "retrieved_at": "2026-09-13T01:13:08.633361Z",
+      "verified": true
+    },
+    {
+      "filename": "bl84002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl84002.txt",
+      "size_bytes": 14157,
+      "sha256": "f90312c31a6d759994fa91c3c3dfb5dd873538d12cc93a2774366dedb668649d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1984/bl84002",
+      "retrieved_at": "2026-09-13T01:13:10.142129Z",
+      "verified": true
+    },
+    {
+      "filename": "bl84003.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl84003.txt",
+      "size_bytes": 4249,
+      "sha256": "f2cb5128bbd5a6fa9e59d1d5813cbc8e23b022ef0c74dd5d174c410b7cbe199f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1984/bl84003",
+      "retrieved_at": "2026-09-13T01:13:11.624122Z",
+      "verified": true
+    },
+    {
+      "filename": "bl85001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl85001.txt",
+      "size_bytes": 8559,
+      "sha256": "39e57990d1556627775826f0cd57f46ec731fa6641bfc5f0e4c32aaadcf8bbfb",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1985/bl85001",
+      "retrieved_at": "2026-09-13T01:13:14.938622Z",
+      "verified": true
+    },
+    {
+      "filename": "bl85002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl85002.txt",
+      "size_bytes": 11509,
+      "sha256": "343e1b75b298409c45d5d70a80b663cf4856bb2790460625257cb39050a3ecbe",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1985/bl85002",
+      "retrieved_at": "2026-09-13T01:13:16.168978Z",
+      "verified": true
+    },
+    {
+      "filename": "bl85003.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl85003.txt",
+      "size_bytes": 18985,
+      "sha256": "46b9d40005b7ec0e625e36296bb692277e971398320470fcc3f094311d4c3cd3",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1985/bl85003",
+      "retrieved_at": "2026-09-13T01:13:17.656461Z",
+      "verified": true
+    },
+    {
+      "filename": "bl85003s1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl85003s1.txt",
+      "size_bytes": 10056,
+      "sha256": "e4c7775ee8a0c1d495fb7b31c684d36429265b2e6bf7e925f6de9fb5a2ea8775",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1985/bl85003s1",
+      "retrieved_at": "2026-09-13T01:13:19.157771Z",
+      "verified": true
+    },
+    {
+      "filename": "bl86001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl86001.txt",
+      "size_bytes": 7747,
+      "sha256": "d90a157eb55dae3aeff5068b7072662b6014c22c9ee4d9b075abe27da7c16906",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1986/bl86001",
+      "retrieved_at": "2026-09-13T01:13:22.117641Z",
+      "verified": true
+    },
+    {
+      "filename": "bl86002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl86002.txt",
+      "size_bytes": 28224,
+      "sha256": "5f0b3aed50ed8a8c979e1de40ac14bfb26898f0bbaf1d95fc2e1c1d214ba794f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1986/bl86002",
+      "retrieved_at": "2026-09-13T01:13:23.699100Z",
+      "verified": true
+    },
+    {
+      "filename": "bl86003.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl86003.txt",
+      "size_bytes": 8256,
+      "sha256": "648b42f71402dbc61017e035a4404e0ba42e07df6d47c48cb958373f6f957e01",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1986/bl86003",
+      "retrieved_at": "2026-09-13T01:13:25.088913Z",
+      "verified": true
+    },
+    {
+      "filename": "bl86004.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl86004.txt",
+      "size_bytes": 7633,
+      "sha256": "30396eeed44ea39a5525be0eebb4733a1d3b07cca24577a425888a66a93f6215",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1986/bl86004",
+      "retrieved_at": "2026-09-13T01:13:26.654916Z",
+      "verified": true
+    },
+    {
+      "filename": "bl87001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl87001.txt",
+      "size_bytes": 7751,
+      "sha256": "56eed0654dc9ea25c8d9388c1c22b8453a938c501a9b84698814e65e2fe27961",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1987/bl87001",
+      "retrieved_at": "2026-09-13T01:13:29.904520Z",
+      "verified": true
+    },
+    {
+      "filename": "bl87002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl87002.txt",
+      "size_bytes": 8089,
+      "sha256": "606e7f2bd5f0fea959ecd93e2566ed12f521e2262440ca774d31f6e37de0630a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1987/bl87002",
+      "retrieved_at": "2026-09-13T01:13:31.406882Z",
+      "verified": true
+    },
+    {
+      "filename": "bl87002s1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl87002s1.txt",
+      "size_bytes": 3894,
+      "sha256": "81b91fec56092798fbfb24bdcb1eebd0c147bc10df56ddce8b006fd3aa956861",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1987/bl87002s1",
+      "retrieved_at": "2026-09-13T01:13:32.667032Z",
+      "verified": true
+    },
+    {
+      "filename": "bl87002s2.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl87002s2.txt",
+      "size_bytes": 4464,
+      "sha256": "1644d11bf27b90d8e96884aa5bd18740ddb438ab43099a1a370fd42a8fb36087",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1987/bl87002s2",
+      "retrieved_at": "2026-09-13T01:13:34.152969Z",
+      "verified": true
+    },
+    {
+      "filename": "bl88001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl88001.txt",
+      "size_bytes": 14416,
+      "sha256": "46c841cb9bfd2d14212c9faba06b4ae597ae6fd1290ac106757c2bb050479deb",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1988/bl88001",
+      "retrieved_at": "2026-09-13T01:13:36.941845Z",
+      "verified": true
+    },
+    {
+      "filename": "bl88002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl88002.txt",
+      "size_bytes": 13635,
+      "sha256": "ca5e36e8e6b2f217403644c3a53eb1439b63be93f5910fb57fb4f7b62dd071a0",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1988/bl88002",
+      "retrieved_at": "2026-09-13T01:13:38.438900Z",
+      "verified": true
+    },
+    {
+      "filename": "bl88003.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl88003.txt",
+      "size_bytes": 8001,
+      "sha256": "48dd972f5778f086b70647e4debf9affd640a1336c7c1370c7af2a00a5f481d5",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1988/bl88003",
+      "retrieved_at": "2026-09-13T01:13:39.940778Z",
+      "verified": true
+    },
+    {
+      "filename": "bl88004.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl88004.txt",
+      "size_bytes": 9681,
+      "sha256": "a9c3ea0cf6a23768930bcef95c3fcedf2b5ee7d8b0f6d31a0ca510a96dc661a8",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1988/bl88004",
+      "retrieved_at": "2026-09-13T01:13:41.560320Z",
+      "verified": true
+    },
+    {
+      "filename": "bl88005.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl88005.txt",
+      "size_bytes": 12337,
+      "sha256": "4a704fd7bc9b4447b5057c89e8977af6251f1bcce108a7e225290707f7c0cedb",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1988/bl88005",
+      "retrieved_at": "2026-09-13T01:13:43.129766Z",
+      "verified": true
+    },
+    {
+      "filename": "bl88005s1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl88005s1.txt",
+      "size_bytes": 7837,
+      "sha256": "546d5a47af0cc8f6ae219967080179875aba5bf513b92a4710511765495998ad",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1988/bl88005s1",
+      "retrieved_at": "2026-09-13T01:13:45.129417Z",
+      "verified": true
+    },
+    {
+      "filename": "bl88005s2.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl88005s2.txt",
+      "size_bytes": 8616,
+      "sha256": "c46f2cb666009df83e0fa77ce88146a9f7122e5cd56f87f69b743165c9d330f2",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1988/bl88005s2",
+      "retrieved_at": "2026-09-13T01:13:46.579472Z",
+      "verified": true
+    },
+    {
+      "filename": "bl88006.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl88006.txt",
+      "size_bytes": 4188,
+      "sha256": "c93823255aeeb80b9ceb678936d8f756638ea9d52cd9359c942830691bbc6c44",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1988/bl88006",
+      "retrieved_at": "2026-09-13T01:13:47.650064Z",
+      "verified": true
+    },
+    {
+      "filename": "bl88007.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl88007.txt",
+      "size_bytes": 7044,
+      "sha256": "e8a3af1f67e393dda40dabffd12b9cfca15245640cea622073411c353391657f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1988/bl88007",
+      "retrieved_at": "2026-09-13T01:13:49.122518Z",
+      "verified": true
+    },
+    {
+      "filename": "bl88007s1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl88007s1.txt",
+      "size_bytes": 8860,
+      "sha256": "8b39fe72ef13748e5210cca106875fec0e5c474801ed61942d5d1ca74210f036",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1988/bl88007s1",
+      "retrieved_at": "2026-09-13T01:13:51.033121Z",
+      "verified": true
+    },
+    {
+      "filename": "bl88008.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl88008.txt",
+      "size_bytes": 9518,
+      "sha256": "12dd4acf616fe87f99931e822e63ad93930dccf2731d874dd0fb8414af5ae5df",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1988/bl88008",
+      "retrieved_at": "2026-09-13T01:13:52.202854Z",
+      "verified": true
+    },
+    {
+      "filename": "bl88008s1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl88008s1.txt",
+      "size_bytes": 3767,
+      "sha256": "a66f846825544f0b32eba131905af844170183ebc48075a9749d3338b8f4e7f6",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1988/bl88008s1",
+      "retrieved_at": "2026-09-13T01:13:53.654246Z",
+      "verified": true
+    },
+    {
+      "filename": "bl88008s2.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl88008s2.txt",
+      "size_bytes": 4954,
+      "sha256": "61027b8b09bbe68b7d56e2acb0c8d730476446ba71aed26b1378a71a12ad5d82",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1988/bl88008s2",
+      "retrieved_at": "2026-09-13T01:13:55.529927Z",
+      "verified": true
+    },
+    {
+      "filename": "bl88008s3.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl88008s3.txt",
+      "size_bytes": 8815,
+      "sha256": "701a10cd28b95027ab41f44d592f5537d272eaddbd12ac3c85e153a0b07fb4f8",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1988/bl88008s3",
+      "retrieved_at": "2026-09-13T01:13:56.696661Z",
+      "verified": true
+    },
+    {
+      "filename": "bl88009.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl88009.txt",
+      "size_bytes": 10107,
+      "sha256": "8387c0fed011363ad97c35e89f054149f47dc6f9720aae96ce474dc751d65dbe",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1988/bl88009",
+      "retrieved_at": "2026-09-13T01:13:58.411418Z",
+      "verified": true
+    },
+    {
+      "filename": "bl88010.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl88010.txt",
+      "size_bytes": 27409,
+      "sha256": "65d98fb0ac424e833ea5bf32299d8ebe5f4e83618ede983c87a91fb5d3524d63",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1988/bl88010",
+      "retrieved_at": "2026-09-13T01:13:59.679618Z",
+      "verified": true
+    },
+    {
+      "filename": "bl88010s1.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl88010s1.txt",
+      "size_bytes": 8633,
+      "sha256": "e7aeba95d0210ccd2d84b5f0a749c41fcedd1b23ccedc1deaca2cc14c4c92632",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1988/bl88010s1",
+      "retrieved_at": "2026-09-13T01:14:01.446232Z",
+      "verified": true
+    },
+    {
+      "filename": "bl88011.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl88011.txt",
+      "size_bytes": 14332,
+      "sha256": "05a38d04720f5a3e41963fd5b9950922fdb36387ad635e81c2f67e35d7a00546",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1988/bl88011",
+      "retrieved_at": "2026-09-13T01:14:02.503787Z",
+      "verified": true
+    },
+    {
+      "filename": "bl93001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl93001.txt",
+      "size_bytes": 13862,
+      "sha256": "43d5ddabb0cd50ea31a5bd02c3cfb74c64c284c3a98b85960b54e9d6a139609b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1993/bl93001",
+      "retrieved_at": "2026-09-13T01:14:11.664131Z",
+      "verified": true
+    },
+    {
+      "filename": "bl93002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl93002.txt",
+      "size_bytes": 11686,
+      "sha256": "75f25b8b3553b27585002b929b4f7a069c9e8b14eadc45c65fff72779a1df165",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1993/bl93002",
+      "retrieved_at": "2026-09-13T01:14:13.147935Z",
+      "verified": true
+    },
+    {
+      "filename": "bl93003.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl93003.txt",
+      "size_bytes": 15947,
+      "sha256": "7d8ff9b8bea2b72e155fe32703fcb2b1e37385d7f83a1e622040b12be88ab18b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1993/bl93003",
+      "retrieved_at": "2026-09-13T01:14:14.645418Z",
+      "verified": true
+    },
+    {
+      "filename": "bl94001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl94001.txt",
+      "size_bytes": 13606,
+      "sha256": "2279c2b7e4d880d77b1b699b9fdd4fd853cfaa43728056ea555678b28bc1b7d8",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1994/bl94001",
+      "retrieved_at": "2026-09-13T01:14:17.611175Z",
+      "verified": true
+    },
+    {
+      "filename": "bl94002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl94002.txt",
+      "size_bytes": 6556,
+      "sha256": "f25e1ce3a22593eceb63d2c0137672f694fd4cb19e8035a5446083cfcadbc304",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1994/bl94002",
+      "retrieved_at": "2026-09-13T01:14:19.656774Z",
+      "verified": true
+    },
+    {
+      "filename": "bl95001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl95001.txt",
+      "size_bytes": 16402,
+      "sha256": "13eb9658e96475ef14d7a6d0e6978d0849e906a08b2a8cb64a552c9b717cca2b",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1995/bl95001",
+      "retrieved_at": "2026-09-13T01:14:22.257443Z",
+      "verified": true
+    },
+    {
+      "filename": "bl95002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl95002.txt",
+      "size_bytes": 19272,
+      "sha256": "ee7ad7f1b2225f07b15ad6070bbe6d164dc51de3213dec01cb70373ad4f60e49",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1995/bl95002",
+      "retrieved_at": "2026-09-13T01:14:23.822364Z",
+      "verified": true
+    },
+    {
+      "filename": "bl96001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl96001.txt",
+      "size_bytes": 15170,
+      "sha256": "cf540e84140605c88d4e575eda5eb9d36d9a2d6bf390a8a697e8ece09d953070",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1996/bl96001",
+      "retrieved_at": "2026-09-13T01:14:26.743460Z",
+      "verified": true
+    },
+    {
+      "filename": "bl96003.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl96003.txt",
+      "size_bytes": 32985,
+      "sha256": "f35d4c65a9a481963bbc12d1fbb9102ec7cf4b38ed5f3242545d2ad1c436b400",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1996/bl96003",
+      "retrieved_at": "2026-09-13T01:14:28.256424Z",
+      "verified": true
+    },
+    {
+      "filename": "bl96004.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl96004.txt",
+      "size_bytes": 21818,
+      "sha256": "2b3e5deb6a05cdfffabb4b83e2a143a5522371ccb1a366e9c6cd5bf27a0145ff",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1996/bl96004",
+      "retrieved_at": "2026-09-13T01:14:29.665268Z",
+      "verified": true
+    },
+    {
+      "filename": "bl97001.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl97001.txt",
+      "size_bytes": 18369,
+      "sha256": "4b51e43b0d2c46d8c50609e10b6bdbca0e32614d5a3900ded838d94f1a5ecdc1",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1997/bl97001",
+      "retrieved_at": "2026-09-13T01:14:33.005363Z",
+      "verified": true
+    },
+    {
+      "filename": "bl97002.txt",
+      "relative_path": "raw/text/nrc_bulletins/bl97002.txt",
+      "size_bytes": 9701,
+      "sha256": "34fee4b7a97b942f0c5edf087ff267b9e393e1a8d7f2828c317063b04abdc37f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/bulletins/1997/bl97002",
+      "retrieved_at": "2026-09-13T01:14:34.632168Z",
+      "verified": true
+    }
+  ]
+}

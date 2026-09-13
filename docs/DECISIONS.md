@@ -1667,7 +1667,9 @@ enough that the headroom stops being an order of magnitude.
 
 **Status:** Accepted, corrected 2026-09-13 (Tier-1 table restructured; PHMSA and
 DOE OE-417 re-tested; `NrcTextClient` now checks robots.txt before, not after,
-the first request to a host) · **Date:** 2026-09-13
+the first request to a host; the generic-communications yield table corrected
+after a second PDF-hosting path was found undercounting Regulatory Issue
+Summaries) · **Date:** 2026-09-13
 
 **Decision.** The M2 text corpus is drawn from `www.nrc.gov`: Event Notification
 Reports (native HTML, the whole collection) and four "generic communications"
@@ -1756,16 +1758,39 @@ above, this module does not attempt to work around either kind of block: it
 follows only links that stay on `nrc.gov` outside `/docs/`, measured per
 collection before anything was staged.
 
-**What the `/docs/` exclusion costs, measured 2026-09-13** (`html` = native pages
-kept, `pdf` = `/docs/` links found and not fetched):
+**What the PDF exclusion costs, corrected 2026-09-13** (`html` = native pages kept,
+`pdf (/docs/)` = ADAMS accessions, blocked at the edge, `pdf (other path)` = a
+second PDF-hosting path, `/sites/default/files/doc_library/...`, discovered only
+because it under-collected Regulatory Issue Summaries -- see the correction below):
 
-| collection | years checked | html docs | pdf docs (not fetched) |
-| --- | --- | --- | --- |
-| Information Notices | 1979-2026 | 439 | 1,814 |
-| Bulletins | 1971-2026 | 230 | 28 |
-| Generic Letters | 1977-2026 | 574 | 13 |
-| Regulatory Issue Summaries | 1999-2026 | 180 | 267 |
-| Preliminary Notification Reports | 2003-2025 | **0** | 118 |
+| collection | years checked | html docs | pdf docs, /docs/ | pdf docs, other path |
+| --- | --- | --- | --- | --- |
+| Information Notices | 1979-2026 | 424 | 1,818 | 15 |
+| Bulletins | 1971-2026 | 230 | 28 | 0 |
+| Generic Letters | 1977-2026 | 563 | 14 | 11 |
+| Regulatory Issue Summaries | 1999-2026 | **53** | 269 | **127** |
+| Preliminary Notification Reports | 2003-2025 | **0** | 118 | 0 |
+
+**This table's first version, published a few hours earlier the same day, was
+itself wrong for Regulatory Issue Summaries: it reported 180 "html docs" where the
+true figure is 53.** The original `filter_native_document_links` excluded a link
+only by checking for `/docs/` in its path, which is where every *other* collection's
+PDFs turned out to live, but not where Regulatory Issue Summaries' 2003-onward
+documents do -- those are served from `/sites/default/files/doc_library/...`, answer
+`200 OK` (not blocked, just a different PDF), and were counted as native HTML by a
+check that only knew about one PDF path. Every one of those 127 misclassified links
+was then fetched, found to carry no `field--name-field-body` (because it is not
+an HTML page at all), and silently dropped by `extract_generic_comm_document` --
+with no warning logged, because the *request* succeeded; only the *extraction*
+failed, silently, the way a content-shaped failure does. The crawl's actual staged
+count for this collection, 53, was correct throughout; the reconnaissance number
+this ADR published for it was not. `filter_native_document_links` now excludes any
+link ending in `.pdf`, regardless of which path serves it, and a fixture built from
+the real `/sites/default/files/...` URL that exposed this is a permanent regression
+test (`tests/download/test_nrc_text.py`). Information Notices' and Generic
+Letters' small differences from their own first-published figures (439 to 424,
+574 to 563) are the same correction, measured smaller because fewer of their
+documents happen to route through the second PDF path.
 
 Preliminary Notification Reports is disabled in `sources_text.yaml` rather than
 staged empty: every one of its 118 measured document links across all 20

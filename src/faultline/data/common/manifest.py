@@ -45,7 +45,14 @@ class FileRecord(StrictModel):
         md5: MD5 digest as published by the provider and recomputed locally.
         sha256: Optional SHA-256 digest computed locally.
         url: Download URL used.
-        license: SPDX-style licence identifier for this file.
+        license: SPDX-style licence identifier for this file, when it can differ
+            from the source's own (a Zenodo record can mix licences across files).
+            ``None`` means "the same as the manifest's own `license`" -- every file
+            of a single-licence source (an NRC text collection, one licence for
+            every document) should leave this unset rather than repeat an identical
+            string thousands of times; a manifest with many small files is exactly
+            where that repetition first became large enough to matter
+            (`nrc_event_notifications.json`, ADR-0016).
         retrieved_at: UTC timestamp of a successful download.
         verified: Whether the local digest matched the published one.
         retrieval_method: How the file reached this repository -- ``None`` (the
@@ -62,7 +69,7 @@ class FileRecord(StrictModel):
     md5: str | None = None
     sha256: str | None = None
     url: str
-    license: str
+    license: str | None = None
     retrieved_at: datetime
     verified: bool = False
     retrieval_method: str | None = None
@@ -155,6 +162,15 @@ def read_manifest(path: Path) -> SourceManifest | None:
 def write_manifest(path: Path, manifest: SourceManifest) -> Path:
     """Write a manifest as indented JSON.
 
+    An unset optional field (``md5``, per-file ``license``, ``retrieval_method``) is
+    omitted rather than written as ``null``: harmless for the handful of files a
+    telemetry source manifest carries, and the difference between a manifest that
+    fits comfortably under the large-file hook's limit and one that does not once a
+    source carries thousands of small files (``nrc_event_notifications.json``, over
+    ten thousand records). :func:`read_manifest` restores the same default either
+    way, since Pydantic fills in an omitted optional field exactly as it would a
+    ``null`` one.
+
     Args:
         path: Destination file.
         manifest: Manifest to serialize.
@@ -163,6 +179,6 @@ def write_manifest(path: Path, manifest: SourceManifest) -> Path:
         The path written.
     """
     path.parent.mkdir(parents=True, exist_ok=True)
-    payload = manifest.model_dump(mode="json")
+    payload = manifest.model_dump(mode="json", exclude_none=True)
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     return path

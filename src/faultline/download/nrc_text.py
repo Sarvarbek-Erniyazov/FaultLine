@@ -9,14 +9,19 @@ the United States federal government carry no domestic copyright), both permitte
   collection began.
 * **Generic communications** (Information Notices, Bulletins, Generic Letters,
   Regulatory Issue Summaries, Preliminary Notifications) -- a per-document page per
-  year. Older documents are native HTML pages on ``nrc.gov`` itself; from roughly the
-  early 2000s on, the collection instead links to a PDF under ``/docs/`` (an ADAMS
-  accession), and that path returns ``403 Access Denied`` from the edge to a plain
-  HTTP client -- measured directly, not inferred from robots.txt, which does not
-  disallow it for a generic user agent. This module never fetches a ``/docs/`` link:
-  it enumerates every document on a year page and keeps only the ones whose href
-  stays on ``nrc.gov`` outside ``/docs/``. What that excludes is recorded per source in
-  ``configs/data/sources_text.yaml`` and in ADR-0016, not silently dropped.
+  year. Older documents are native HTML pages on ``nrc.gov`` itself; newer ones link
+  to a PDF instead, served from two different paths depending on collection and
+  year: ``/docs/`` (an ADAMS accession, which returns ``403 Access Denied`` from the
+  edge to a plain HTTP client -- measured directly, not inferred from robots.txt,
+  which does not disallow it for a generic user agent) and
+  ``/sites/default/files/doc_library/...`` (a different hosting path entirely,
+  which answers ``200`` but is still a PDF -- found only because Regulatory Issue
+  Summaries' 2003-onward documents come through it, and a ``/docs/``-only filter
+  silently miscounted every one of them as native HTML). This module keeps a link
+  only when it points at a same-collection document page and does **not** end in
+  ``.pdf`` -- the file extension decides, not which path serves it. What either PDF
+  route excludes is recorded per source in ``configs/data/sources_text.yaml`` and in
+  ADR-0016, not silently dropped.
 
 Politeness is structural, not a courtesy comment: every request through
 :class:`NrcTextClient` waits for a minimum interval since the last one, in addition to
@@ -640,12 +645,20 @@ def generic_comm_year_urls(client: NrcTextClient, spec: GenericCommSpec) -> list
 
 
 def filter_native_document_links(html_text: str) -> list[str]:
-    """Pick out the document links on a year page that are native HTML, not ADAMS PDFs.
+    """Pick out the document links on a year page that are native HTML, not a PDF.
 
     A ``/docs/*.pdf`` link is an ADAMS accession; this module does not follow it (see
-    the module docstring). Everything else pointing at a same-collection document page
-    is native HTML and is kept. Pure and network-free, so it is testable directly
-    against a captured page.
+    the module docstring). **A link is excluded by its file extension, not by which
+    path it sits under** -- measured 2026-09-13, after ``/docs/``-only filtering
+    silently mis-scored Regulatory Issue Summaries' 2003-onward documents as native:
+    those are ``.pdf`` files served from ``/sites/default/files/doc_library/...``, an
+    entirely different path than ADAMS, so a check that only excluded ``/docs/``
+    counted them as native HTML and every one of them then failed extraction
+    silently (200 OK, no ``field--name-field-body`` to find, no warning logged --
+    the failure mode a bare "did the request succeed" check cannot see). Any link
+    ending in ``.pdf``, wherever it is hosted, is excluded here; everything else
+    pointing at a same-collection document page is native HTML and is kept. Pure and
+    network-free, so it is testable directly against a captured page.
 
     Args:
         html_text: One collection year's index page.
@@ -655,7 +668,7 @@ def filter_native_document_links(html_text: str) -> list[str]:
     """
     kept = []
     for href in _DOC_LINK.findall(html_text):
-        if "/docs/" in href or "index" in href:
+        if "index" in href or href.lower().endswith(".pdf"):
             continue
         if not re.search(r"/(19|20)\d\d/[a-zA-Z0-9_.-]+$", href):
             continue
@@ -837,7 +850,9 @@ def stage_documents(
                 size_bytes=destination.stat().st_size,
                 sha256=digest,
                 url=document.url,
-                license=spec.license,
+                # license omitted: every document of one of these sources shares the
+                # manifest's own license (unlike a Zenodo record, which can mix
+                # licences across files), so it is not repeated per file
                 retrieved_at=datetime.now(tz=UTC),
                 verified=True,
             )

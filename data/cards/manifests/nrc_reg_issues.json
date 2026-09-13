@@ -1,0 +1,485 @@
+{
+  "source": "nrc_reg_issues",
+  "provider": "U.S. Nuclear Regulatory Commission",
+  "license": "public domain (17 U.S.C. 105)",
+  "generated_at": "2026-09-13T01:43:40.344509Z",
+  "files": [
+    {
+      "filename": "ri00001.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00001.txt",
+      "size_bytes": 4388,
+      "sha256": "f3f420cbbaa8f6c3df47cd6b9a40bd6f05de4ba7d2b223ac087e68f96e0b1baa",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00001",
+      "retrieved_at": "2026-09-13T01:38:41.014562Z",
+      "verified": true
+    },
+    {
+      "filename": "ri00002.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00002.txt",
+      "size_bytes": 8377,
+      "sha256": "1c8efb26b24b422d83b1ae4fe5c12343ba69bea2b968c1695986b9536e2033d7",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00002",
+      "retrieved_at": "2026-09-13T01:38:42.522694Z",
+      "verified": true
+    },
+    {
+      "filename": "ri00003.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00003.txt",
+      "size_bytes": 15015,
+      "sha256": "afe99f1ef176cc565154b6dbf877a4cf93e3c9b76452e1270a4b0ec4af340618",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00003",
+      "retrieved_at": "2026-09-13T01:38:44.023935Z",
+      "verified": true
+    },
+    {
+      "filename": "ri00005.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00005.txt",
+      "size_bytes": 6298,
+      "sha256": "e93c04ba2800d09674f8bd4c38b389170257972df8280c6ade339ca1f88ed0ca",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00005",
+      "retrieved_at": "2026-09-13T01:38:45.529973Z",
+      "verified": true
+    },
+    {
+      "filename": "ri00006.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00006.txt",
+      "size_bytes": 10201,
+      "sha256": "796cfc79755127c69f4b136a820c74788ff1bd6694593f728de51690aa31bc5e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00006",
+      "retrieved_at": "2026-09-13T01:38:47.034624Z",
+      "verified": true
+    },
+    {
+      "filename": "ri00007.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00007.txt",
+      "size_bytes": 11923,
+      "sha256": "3a9c58487e0390f2e4d686b26594c1a7f59cdd7dec3b8111a21c0dd45b0157ad",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00007",
+      "retrieved_at": "2026-09-13T01:38:48.535904Z",
+      "verified": true
+    },
+    {
+      "filename": "ri00009.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00009.txt",
+      "size_bytes": 19012,
+      "sha256": "aa709941b274c232b0bc6ef7d44b93665d8f476481fc85617db38875c7cfa411",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00009",
+      "retrieved_at": "2026-09-13T01:38:50.044142Z",
+      "verified": true
+    },
+    {
+      "filename": "ri00010.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00010.txt",
+      "size_bytes": 5704,
+      "sha256": "6056aec20fc2fbd15068f330748dfa2de5b09683051dfc81ff7714dcfd4697cc",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00010",
+      "retrieved_at": "2026-09-13T01:38:51.537589Z",
+      "verified": true
+    },
+    {
+      "filename": "ri00010er.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00010er.txt",
+      "size_bytes": 1737,
+      "sha256": "bbccc0a8a59ecdba56779fc115bc157aa5f2ec0e1c6461ae0fb48c1d5e976475",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00010er",
+      "retrieved_at": "2026-09-13T01:38:53.017151Z",
+      "verified": true
+    },
+    {
+      "filename": "ri00011.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00011.txt",
+      "size_bytes": 22953,
+      "sha256": "79b8271388208bab7154b71f81a5d8eca7c3be52aa56b0da91e9d1450c7e8c30",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00011",
+      "retrieved_at": "2026-09-13T01:38:54.548410Z",
+      "verified": true
+    },
+    {
+      "filename": "ri00011s1.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00011s1.txt",
+      "size_bytes": 3512,
+      "sha256": "f8f01ce4d863fbed7baba9b94e3f06ca82d401f614e87a969c7b8942cfd59868",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00011s1",
+      "retrieved_at": "2026-09-13T01:38:56.202511Z",
+      "verified": true
+    },
+    {
+      "filename": "ri00012.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00012.txt",
+      "size_bytes": 6522,
+      "sha256": "fbf17caa7c9e3203c791be002cb869fdc0d63796c4f9b03690fc55c1e5a394e3",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00012",
+      "retrieved_at": "2026-09-13T01:38:57.690840Z",
+      "verified": true
+    },
+    {
+      "filename": "ri00013.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00013.txt",
+      "size_bytes": 6362,
+      "sha256": "a6f140db6a1b7f7f7454126380366a7178992cec290f330cd83c958935d887f2",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00013",
+      "retrieved_at": "2026-09-13T01:38:59.187630Z",
+      "verified": true
+    },
+    {
+      "filename": "ri00015.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00015.txt",
+      "size_bytes": 8265,
+      "sha256": "58c0f30b76514abeb20a4787557702e484510ad27a1828e4b7e8db0e4aa90ad7",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00015",
+      "retrieved_at": "2026-09-13T01:39:00.661815Z",
+      "verified": true
+    },
+    {
+      "filename": "ri00016.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00016.txt",
+      "size_bytes": 6537,
+      "sha256": "9eb9cd616f947cde6aa9fe6c44fb0e783650356de058a2e921dfbf7a11c53272",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00016",
+      "retrieved_at": "2026-09-13T01:39:02.202347Z",
+      "verified": true
+    },
+    {
+      "filename": "ri00017.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00017.txt",
+      "size_bytes": 7444,
+      "sha256": "f5eef228035fd842d6260ca29d47cb1d637aa24d77566b92e2862c74f62d8db3",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00017",
+      "retrieved_at": "2026-09-13T01:39:03.704414Z",
+      "verified": true
+    },
+    {
+      "filename": "ri00018.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00018.txt",
+      "size_bytes": 16135,
+      "sha256": "6f3c2ef57abb0bdf4d94b25d4624798ab38868ab0b6355d44472a9a2bbd190d5",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00018",
+      "retrieved_at": "2026-09-13T01:39:05.201245Z",
+      "verified": true
+    },
+    {
+      "filename": "ri00019.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00019.txt",
+      "size_bytes": 10685,
+      "sha256": "2e77dbba0db8b85f89a9f2656d578a160b95d8c154324de59771ad4bd88cd8b1",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00019",
+      "retrieved_at": "2026-09-13T01:39:06.674297Z",
+      "verified": true
+    },
+    {
+      "filename": "ri00021.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00021.txt",
+      "size_bytes": 19369,
+      "sha256": "bfb88f5222d11bdf84c1689e98784e47d67c1766bb797121ca3427afa7b25954",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00021",
+      "retrieved_at": "2026-09-13T01:39:08.194896Z",
+      "verified": true
+    },
+    {
+      "filename": "ri00022.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00022.txt",
+      "size_bytes": 29209,
+      "sha256": "f26fd59a622bca045ca03e168340538dea4ec6ec59b1dc34cc237f2702b357be",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00022",
+      "retrieved_at": "2026-09-13T01:39:09.729345Z",
+      "verified": true
+    },
+    {
+      "filename": "ri00023.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00023.txt",
+      "size_bytes": 27485,
+      "sha256": "512c490e1d55a2fefd995a515c613abedb4078527692a42fed144310c2211320",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00023",
+      "retrieved_at": "2026-09-13T01:39:11.172801Z",
+      "verified": true
+    },
+    {
+      "filename": "ri00025.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri00025.txt",
+      "size_bytes": 10526,
+      "sha256": "97a76fcfed1c035361b4c65cd41607fb9e8a088dbccedf846e75949c3e138a3a",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2000/ri00025",
+      "retrieved_at": "2026-09-13T01:39:12.695079Z",
+      "verified": true
+    },
+    {
+      "filename": "ri01001.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri01001.txt",
+      "size_bytes": 11186,
+      "sha256": "f5572b822fd7225b0f2776db74b3aba597a71ec8cf3e1742f4df34f18c55150e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2001/ri01001",
+      "retrieved_at": "2026-09-13T01:39:15.676728Z",
+      "verified": true
+    },
+    {
+      "filename": "ri01002.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri01002.txt",
+      "size_bytes": 20425,
+      "sha256": "a765983f84f1462747b4863af488411bab0e99f1d398a01528756603464fa6b2",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2001/ri01002",
+      "retrieved_at": "2026-09-13T01:39:17.179745Z",
+      "verified": true
+    },
+    {
+      "filename": "ri01003.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri01003.txt",
+      "size_bytes": 16384,
+      "sha256": "0c33e64f4892bef23bf5a3736123fcb123985569b3312cff33c5762c039750c9",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2001/ri01003",
+      "retrieved_at": "2026-09-13T01:39:18.672995Z",
+      "verified": true
+    },
+    {
+      "filename": "ri01004.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri01004.txt",
+      "size_bytes": 6964,
+      "sha256": "bd425442cbdfe59261a5eab32c4ec26658d174e5a87f96eb89ff8be494e991f0",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2001/ri01004",
+      "retrieved_at": "2026-09-13T01:39:20.177223Z",
+      "verified": true
+    },
+    {
+      "filename": "ri01005.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri01005.txt",
+      "size_bytes": 9538,
+      "sha256": "4cb335ec571416b2a403673f663f82c1ee386c553bba4d094fe73b754f0fc2b3",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2001/ri01005",
+      "retrieved_at": "2026-09-13T01:39:21.712497Z",
+      "verified": true
+    },
+    {
+      "filename": "ri01006.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri01006.txt",
+      "size_bytes": 13207,
+      "sha256": "1a373d64a201207b738160650863f2834bfd8f04f17ea93ebea877bf4be9cf68",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2001/ri01006",
+      "retrieved_at": "2026-09-13T01:39:23.207833Z",
+      "verified": true
+    },
+    {
+      "filename": "ri01007.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri01007.txt",
+      "size_bytes": 5388,
+      "sha256": "82361a0f0d827996a0d692793876886934ed9ec89bdb43b3c3a5e3a00575a605",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2001/ri01007",
+      "retrieved_at": "2026-09-13T01:39:24.725367Z",
+      "verified": true
+    },
+    {
+      "filename": "ri01009.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri01009.txt",
+      "size_bytes": 18874,
+      "sha256": "8ba12e3e6e0f2f6618fd1175568775fcee90462e91f30762aaa2e2757461fa23",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2001/ri01009",
+      "retrieved_at": "2026-09-13T01:39:26.212121Z",
+      "verified": true
+    },
+    {
+      "filename": "ri01010.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri01010.txt",
+      "size_bytes": 10797,
+      "sha256": "d0aba8191b6c5271e60d0f043d2543cb163403feb640afd0370dbb25d8bbf029",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2001/ri01010",
+      "retrieved_at": "2026-09-13T01:39:27.738842Z",
+      "verified": true
+    },
+    {
+      "filename": "ri01011.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri01011.txt",
+      "size_bytes": 6398,
+      "sha256": "4e06cbc6f7252f3c5ab4d6d2d23b5863708c1198f8ee2c6cb78f2bb85b63b97d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2001/ri01011",
+      "retrieved_at": "2026-09-13T01:39:29.236877Z",
+      "verified": true
+    },
+    {
+      "filename": "ri01012.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri01012.txt",
+      "size_bytes": 4581,
+      "sha256": "6f31b6ccf5d3761fa187d6d0f2b24e27507970eb9b60764289a87f37d226326f",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2001/ri01012",
+      "retrieved_at": "2026-09-13T01:39:30.812157Z",
+      "verified": true
+    },
+    {
+      "filename": "ri01013.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri01013.txt",
+      "size_bytes": 4942,
+      "sha256": "b0a473d73ff5675312f490eab1e21c8239d4bed9211e22d99dd011f264456ccc",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2001/ri01013",
+      "retrieved_at": "2026-09-13T01:39:32.252159Z",
+      "verified": true
+    },
+    {
+      "filename": "ri01014.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri01014.txt",
+      "size_bytes": 7612,
+      "sha256": "46d4ed594c55be7d068d462efb588129a1de1b48cd3402cd36a5384f6e75cb52",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2001/ri01014",
+      "retrieved_at": "2026-09-13T01:39:33.770376Z",
+      "verified": true
+    },
+    {
+      "filename": "ri01015.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri01015.txt",
+      "size_bytes": 10909,
+      "sha256": "4a3f1c0085e050284daf6f2a96ac86d1d84f1b957ebd3ccfaa814bbee462ef58",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2001/ri01015",
+      "retrieved_at": "2026-09-13T01:39:35.259654Z",
+      "verified": true
+    },
+    {
+      "filename": "ri01016.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri01016.txt",
+      "size_bytes": 4298,
+      "sha256": "e0abf1fce716a75d2b403ec5adb97b7613ef715aaaf3f07c847bac3d556926ef",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2001/ri01016",
+      "retrieved_at": "2026-09-13T01:39:36.764456Z",
+      "verified": true
+    },
+    {
+      "filename": "ri01018.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri01018.txt",
+      "size_bytes": 6503,
+      "sha256": "7bca722afbec2ec714c7820f424e56858387b5a6f98cbdc29e1a3b965408d655",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2001/ri01018",
+      "retrieved_at": "2026-09-13T01:39:38.266906Z",
+      "verified": true
+    },
+    {
+      "filename": "ri01019.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri01019.txt",
+      "size_bytes": 22689,
+      "sha256": "35e9ff873e01678aa0a81adf53ff7bb06bbc7fead3bfe01d76c1cf9a127e298c",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2001/ri01019",
+      "retrieved_at": "2026-09-13T01:39:39.796871Z",
+      "verified": true
+    },
+    {
+      "filename": "ri01020.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri01020.txt",
+      "size_bytes": 4734,
+      "sha256": "5045ca26719a61215b6730ea5f789df8c1129b6821bc54b3858e3e961c601002",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2001/ri01020",
+      "retrieved_at": "2026-09-13T01:39:41.311861Z",
+      "verified": true
+    },
+    {
+      "filename": "ri01022.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri01022.txt",
+      "size_bytes": 13252,
+      "sha256": "dac6b9dd7c6c3d17ea85ed878190e4a427b4d77f715c053159c2351278532ac1",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2001/ri01022",
+      "retrieved_at": "2026-09-13T01:39:42.792793Z",
+      "verified": true
+    },
+    {
+      "filename": "ri01023.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri01023.txt",
+      "size_bytes": 9543,
+      "sha256": "63856bb77b3113ed0492241941d8f8553ac1dd6eb212688d8e62e02460b81c8e",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2001/ri01023",
+      "retrieved_at": "2026-09-13T01:39:44.269895Z",
+      "verified": true
+    },
+    {
+      "filename": "ri01025.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri01025.txt",
+      "size_bytes": 6634,
+      "sha256": "017713ac87b1949bccb8beb974f6cad2b2bbbe726db7eacf0659025877329c1d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2001/ri01025",
+      "retrieved_at": "2026-09-13T01:39:45.801598Z",
+      "verified": true
+    },
+    {
+      "filename": "ri02001.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri02001.txt",
+      "size_bytes": 6016,
+      "sha256": "e6f13dded040e897e4c39fd0ba47371761aba2b89198f56b159af9866ee58a88",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2002/ri02001",
+      "retrieved_at": "2026-09-13T01:39:48.837137Z",
+      "verified": true
+    },
+    {
+      "filename": "ri02002.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri02002.txt",
+      "size_bytes": 48084,
+      "sha256": "e1d8496463df100fe0a121f6fa254f7e626cfa274d85bf94be3bf32efae4b469",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2002/ri02002",
+      "retrieved_at": "2026-09-13T01:39:50.334744Z",
+      "verified": true
+    },
+    {
+      "filename": "ri02003.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri02003.txt",
+      "size_bytes": 8786,
+      "sha256": "e82781c63df41d3f7f50f5b1151e893728dd7f6b0a34218a906313cd20849c10",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2002/ri02003",
+      "retrieved_at": "2026-09-13T01:39:51.803332Z",
+      "verified": true
+    },
+    {
+      "filename": "ri02004.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri02004.txt",
+      "size_bytes": 11949,
+      "sha256": "87d7d21df0cc5cde662c214ddbb3bb337f0027c459907599cfe6b0161ad26477",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/2002/ri02004",
+      "retrieved_at": "2026-09-13T01:39:53.295382Z",
+      "verified": true
+    },
+    {
+      "filename": "ri99001.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri99001.txt",
+      "size_bytes": 15630,
+      "sha256": "20146b31fa98701e3a9b979fb036b5cfb506d706d3ee65599e50b84f787bba9d",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/1999/ri99001",
+      "retrieved_at": "2026-09-13T01:38:30.688079Z",
+      "verified": true
+    },
+    {
+      "filename": "ri99002.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri99002.txt",
+      "size_bytes": 8732,
+      "sha256": "956306981785cafc8424e7961d1ec6c02837ff77174ea4e8c724a9088aa28a96",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/1999/ri99002",
+      "retrieved_at": "2026-09-13T01:38:32.113605Z",
+      "verified": true
+    },
+    {
+      "filename": "ri99003.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri99003.txt",
+      "size_bytes": 15032,
+      "sha256": "2d01f2a376224e3c0b850c37f9e382c04bf0ce2faecf895e0ae0e14e313c7446",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/1999/ri99003",
+      "retrieved_at": "2026-09-13T01:38:33.630745Z",
+      "verified": true
+    },
+    {
+      "filename": "ri99004.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri99004.txt",
+      "size_bytes": 11833,
+      "sha256": "048e3af1725c467daa4f0fb70dfb10c75ad6bd3190011bd89952421d537644a9",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/1999/ri99004",
+      "retrieved_at": "2026-09-13T01:38:35.130896Z",
+      "verified": true
+    },
+    {
+      "filename": "ri99005.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri99005.txt",
+      "size_bytes": 10386,
+      "sha256": "73f13773fcb1d09aa11b02c22b10d10ce3d7e3b86f5235fb439d2e1c2a2d55b1",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/1999/ri99005",
+      "retrieved_at": "2026-09-13T01:38:36.694796Z",
+      "verified": true
+    },
+    {
+      "filename": "ri99006.txt",
+      "relative_path": "raw/text/nrc_reg_issues/ri99006.txt",
+      "size_bytes": 8052,
+      "sha256": "4a0c92e2aa0c868faedd6ea47259212d040ff7b000f30594f19b66e6f65c31c5",
+      "url": "https://www.nrc.gov/reading-rm/doc-collections/gen-comm/reg-issues/1999/ri99006",
+      "retrieved_at": "2026-09-13T01:38:38.206357Z",
+      "verified": true
+    }
+  ]
+}

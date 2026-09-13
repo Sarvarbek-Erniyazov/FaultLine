@@ -11,17 +11,48 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+import requests
 from pydantic import ValidationError
 
 from faultline.download.nrc_text import (
     EventNotificationsSpec,
     GenericCommSpec,
+    NrcTextClient,
     SourcesTextConfig,
     extract_events,
     extract_generic_comm_document,
     filter_native_document_links,
     strip_html,
 )
+
+
+class _FakeSession(requests.Session):
+    """A session standing in for the transport layer.
+
+    Lets a test see exactly which URLs reached it -- and, for the robots.txt gate,
+    prove that a disallowed one never does.
+
+    Attributes:
+        responses: Canned ``(status_code, text)`` per URL; a URL not listed raises,
+            the same way a real connection failure would.
+        requested: Every URL actually passed to :meth:`get`, in order.
+    """
+
+    def __init__(self, responses: dict[str, tuple[int, str]]) -> None:
+        super().__init__()
+        self.responses = responses
+        self.requested: list[str] = []
+
+    def get(self, url: str, *args: object, **kwargs: object) -> requests.Response:
+        self.requested.append(url)
+        if url not in self.responses:
+            raise requests.ConnectionError(f"no canned response for {url}")
+        status, text = self.responses[url]
+        response = requests.Response()
+        response.status_code = status
+        response._content = text.encode("utf-8")
+        response.url = url
+        return response
 
 
 @pytest.fixture
@@ -201,3 +232,113 @@ class TestSourcesTextConfig:
                 robots_basis="r",
                 unknown_field=True,  # type: ignore[call-arg]
             )
+
+
+class TestRobotsGating:
+    """Every request checks its host's robots.txt before it is made.
+
+    ADR-0016's corrected record of the two ORNL /api/ queries that went out before
+    anyone had checked. These tests exercise the mechanism against a fake transport,
+    so a disallowed URL provably never reaches it, rather than trusting that it would
+    not.
+    """
+
+    def test_a_disallowed_path_is_refused_and_never_requested(self) -> None:
+        session = _FakeSession(
+            {
+                "https://example.org/robots.txt": (
+                    200,
+                    "User-agent: *\nDisallow: /private/\n",
+                )
+            }
+        )
+        client = NrcTextClient(min_interval=0, session=session)
+
+        result = client.get("https://example.org/private/secret")
+
+        assert result is None
+        assert session.requested == ["https://example.org/robots.txt"]
+
+    def test_an_allowed_path_is_requested_after_the_robots_check(self) -> None:
+        session = _FakeSession(
+            {
+                "https://example.org/robots.txt": (200, "User-agent: *\nDisallow: /private/\n"),
+                "https://example.org/public/page": (200, "hello"),
+            }
+        )
+        client = NrcTextClient(min_interval=0, session=session)
+
+        result = client.get("https://example.org/public/page")
+
+        assert result is not None
+        assert result.text == "hello"
+        assert session.requested == [
+            "https://example.org/robots.txt",
+            "https://example.org/public/page",
+        ]
+
+    def test_robots_txt_is_fetched_once_per_host_and_cached(self) -> None:
+        session = _FakeSession(
+            {
+                "https://example.org/robots.txt": (200, "User-agent: *\nAllow: /\n"),
+                "https://example.org/a": (200, "a"),
+                "https://example.org/b": (200, "b"),
+            }
+        )
+        client = NrcTextClient(min_interval=0, session=session)
+
+        client.get("https://example.org/a")
+        client.get("https://example.org/b")
+
+        assert session.requested.count("https://example.org/robots.txt") == 1
+
+    def test_a_403_on_robots_txt_itself_disallows_the_whole_host(self) -> None:
+        session = _FakeSession({"https://example.org/robots.txt": (403, "")})
+        client = NrcTextClient(min_interval=0, session=session)
+
+        result = client.get("https://example.org/anything")
+
+        assert result is None
+        assert session.requested == ["https://example.org/robots.txt"]
+
+    def test_a_missing_robots_txt_allows_everything(self) -> None:
+        session = _FakeSession(
+            {
+                "https://example.org/robots.txt": (404, ""),
+                "https://example.org/page": (200, "content"),
+            }
+        )
+        client = NrcTextClient(min_interval=0, session=session)
+
+        result = client.get("https://example.org/page")
+
+        assert result is not None
+        assert result.text == "content"
+
+    def test_an_unreachable_robots_txt_allows_everything(self) -> None:
+        # no canned response at all -> the fake session raises, matching a real
+        # connection failure
+        session = _FakeSession({"https://example.org/page": (200, "content")})
+        client = NrcTextClient(min_interval=0, session=session)
+
+        result = client.get("https://example.org/page")
+
+        assert result is not None
+        assert result.text == "content"
+
+    def test_different_hosts_are_checked_independently(self) -> None:
+        session = _FakeSession(
+            {
+                "https://allowed.org/robots.txt": (200, "User-agent: *\nAllow: /\n"),
+                "https://allowed.org/page": (200, "ok"),
+                "https://blocked.org/robots.txt": (200, "User-agent: *\nDisallow: /\n"),
+            }
+        )
+        client = NrcTextClient(min_interval=0, session=session)
+
+        allowed = client.get("https://allowed.org/page")
+        blocked = client.get("https://blocked.org/page")
+
+        assert allowed is not None
+        assert blocked is None
+        assert "https://blocked.org/page" not in session.requested

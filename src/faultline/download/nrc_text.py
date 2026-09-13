@@ -30,11 +30,13 @@ from __future__ import annotations
 import html
 import re
 import time
+import urllib.robotparser
 from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated, Literal
+from urllib.parse import urlsplit
 
 import requests
 from pydantic import Field
@@ -267,14 +269,28 @@ def load_sources_text_config(path: Path) -> SourcesTextConfig:
 
 
 class NrcTextClient:
-    """A paced, retrying HTTP client for ``nrc.gov``.
+    """A paced, retrying, robots.txt-gated HTTP client.
+
+    **Every request checks its host's robots.txt before it is made, not after the
+    fact.** Two queries against ``openenergyhub.ornl.gov``'s ``/api/`` path -- one in
+    the original M2a reconnaissance, one in the 2026-09-13 correction of it -- went out
+    before anyone had read that this project's user agent falls under a ``Disallow:
+    /api/`` rule (ADR-0016). This client exists so that mistake has to be structural to
+    happen again: the policy is fetched and parsed once per host, cached, and consulted
+    before the transport layer ever sees the URL. A disallowed path returns ``None``
+    with a logged reason and is never requested.
 
     Attributes:
         session: Underlying requests session carrying the project identification.
         min_interval: Minimum seconds enforced between requests.
     """
 
-    def __init__(self, min_interval: float = MIN_REQUEST_INTERVAL, retries: int = 4) -> None:
+    def __init__(
+        self,
+        min_interval: float = MIN_REQUEST_INTERVAL,
+        retries: int = 4,
+        session: requests.Session | None = None,
+    ) -> None:
         """Create the client.
 
         Args:
@@ -285,26 +301,73 @@ class NrcTextClient:
                 on the ADAMS ``/docs/`` path, a structural block this module must not
                 work around (see the module docstring). Either way, retrying it
                 blindly risks looking like exactly the burst that caused it.
+            session: An injected session, for tests that must observe (or forbid)
+                exactly which URLs reach the transport layer. A real session, with the
+                retry policy below mounted, when omitted.
         """
-        self.session = requests.Session()
-        self.session.headers.update({"User-Agent": USER_AGENT})
-        policy = Retry(
-            total=retries,
-            connect=retries,
-            read=retries,
-            status=retries,
-            backoff_factor=2.0,
-            backoff_max=120.0,
-            status_forcelist=(429, 500, 502, 503, 504),
-            allowed_methods=frozenset({"GET", "HEAD"}),
-            respect_retry_after_header=True,
-            raise_on_status=False,
-        )
-        adapter = HTTPAdapter(max_retries=policy)
-        self.session.mount("https://", adapter)
-        self.session.mount("http://", adapter)
+        self.session = session or requests.Session()
+        self.session.headers.setdefault("User-Agent", USER_AGENT)
+        if session is None:
+            policy = Retry(
+                total=retries,
+                connect=retries,
+                read=retries,
+                status=retries,
+                backoff_factor=2.0,
+                backoff_max=120.0,
+                status_forcelist=(429, 500, 502, 503, 504),
+                allowed_methods=frozenset({"GET", "HEAD"}),
+                respect_retry_after_header=True,
+                raise_on_status=False,
+            )
+            adapter = HTTPAdapter(max_retries=policy)
+            self.session.mount("https://", adapter)
+            self.session.mount("http://", adapter)
         self.min_interval = min_interval
         self._last_request = 0.0
+        self._robots: dict[str, urllib.robotparser.RobotFileParser] = {}
+
+    def _robots_for(self, url: str) -> urllib.robotparser.RobotFileParser:
+        """Fetch and parse one host's robots.txt, once, caching the result.
+
+        Follows the same convention :mod:`urllib.robotparser` itself uses when it
+        fetches its own robots.txt (its ``read()`` method), reimplemented here so the
+        fetch goes through this client's own paced session rather than a bare
+        ``urllib.request`` call: a ``401``/``403`` on robots.txt itself means "assume
+        the whole host is closed", anything else unreadable (a ``404``, a connection
+        failure) means "no policy was stated, assume open" -- the standard reading of
+        an absent robots.txt, not this project's own invention.
+
+        Args:
+            url: A URL on the host whose policy is needed.
+
+        Returns:
+            The parsed policy for that host.
+        """
+        host = urlsplit(url)
+        key = f"{host.scheme}://{host.netloc}"
+        if key in self._robots:
+            return self._robots[key]
+        parser = urllib.robotparser.RobotFileParser()
+        robots_url = f"{key}/robots.txt"
+        parser.set_url(robots_url)
+        wait = self.min_interval - (time.monotonic() - self._last_request)
+        if wait > 0:
+            time.sleep(wait)
+        self._last_request = time.monotonic()
+        try:
+            response = self.session.get(robots_url, timeout=40)
+        except requests.RequestException:
+            parser.allow_all = True  # type: ignore[attr-defined]  # real attribute; see read() above
+        else:
+            if response.status_code == 200:
+                parser.parse(response.text.splitlines())
+            elif response.status_code in (401, 403):
+                parser.disallow_all = True  # type: ignore[attr-defined]
+            else:
+                parser.allow_all = True  # type: ignore[attr-defined]
+        self._robots[key] = parser
+        return parser
 
     def get(self, url: str, timeout: int = 40) -> requests.Response | None:
         """Fetch a URL, enforcing the minimum interval, tolerating one failure.
@@ -314,8 +377,14 @@ class NrcTextClient:
             timeout: Per-request timeout in seconds.
 
         Returns:
-            The response if it came back ``200``, otherwise ``None`` (logged).
+            The response if it came back ``200``, otherwise ``None`` (logged). Also
+            ``None``, and never sent, if the host's robots.txt disallows this path for
+            this project's user agent.
         """
+        robots = self._robots_for(url)
+        if not robots.can_fetch(USER_AGENT, url):
+            logger.warning("%s: disallowed by robots.txt for this user agent; not requested", url)
+            return None
         wait = self.min_interval - (time.monotonic() - self._last_request)
         if wait > 0:
             time.sleep(wait)

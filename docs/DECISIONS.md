@@ -1666,7 +1666,8 @@ enough that the headroom stops being an order of magnitude.
 ## ADR-0016 The M2 text corpus is NRC operator-narrative documents, not the four-source Tier-1/Tier-2 list as scoped
 
 **Status:** Accepted, corrected 2026-09-13 (Tier-1 table restructured; PHMSA and
-DOE OE-417 re-tested) · **Date:** 2026-09-13
+DOE OE-417 re-tested; `NrcTextClient` now checks robots.txt before, not after,
+the first request to a host) · **Date:** 2026-09-13
 
 **Decision.** The M2 text corpus is drawn from `www.nrc.gov`: Event Notification
 Reports (native HTML, the whole collection) and four "generic communications"
@@ -1708,6 +1709,21 @@ alone, and two of the three have an explicit public-domain statement on record.
 Two are genuinely blocked by every route checked; the third (PHMSA) has an open
 manual route this ADR names a file for, which the original version did not
 distinguish from the other two.
+
+**The ORNL `/api/` error is why `NrcTextClient` now checks robots.txt before the
+first request to a host, not after the fact.** Both queries against
+`openenergyhub.ornl.gov`'s `/api/explore/...` endpoint -- the original
+reconnaissance and the 2026-09-13 recheck above -- went out before its
+`robots.txt` had been read as carefully as `nrc.gov`'s was; a `Disallow: /api/`
+for the general user agent sat there both times, unnoticed until this
+correction. `src/faultline/download/nrc_text.py`'s `NrcTextClient` now fetches
+and parses a host's `robots.txt` once, before its first request to that host,
+and refuses any path it disallows for this project's user agent, with a
+logged reason; `tests/download/test_nrc_text.py::TestRobotsGating` asserts
+against a fake transport that a disallowed URL is never passed to it. This
+does not change anything already reported above -- the ORNL data was already
+flagged as improperly fetched and not relied on further -- it changes whether
+the same mistake can happen again undetected.
 
 **The user's decision, 2026-09-13, on being shown the original evidence.**
 Expand within the one source family that is actually reachable by an automated,

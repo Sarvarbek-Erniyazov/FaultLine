@@ -604,6 +604,39 @@ def extract_events(html_text: str, day_url: str) -> list[FetchedDocument]:
     return []
 
 
+_MODERN_MARKER = re.compile(r'<div class="grid border"')
+_MIDERA_MARKER = re.compile(r'<a name="en\d+"></a>')
+_LEGACY_MARKER = re.compile(r"<pre>")
+
+TemplateEra = Literal["modern", "midera", "legacy", "unrecognised"]
+
+
+def template_of(html_text: str) -> TemplateEra:
+    """Identify which of the three report-day templates a page uses.
+
+    Independent of :func:`extract_events`: this looks for each template's own
+    structural marker rather than trying to extract text, so it still names a page's
+    era when that day happens to report zero events (a legitimate ``EVENT TEXT``-free
+    day is not "unrecognised"). Checked in the same precedence order extraction
+    uses, since a page can carry more than one marker (the modern template's block
+    still contains an ``<a name=`` from residual markup on some captured pages).
+
+    Args:
+        html_text: The page's HTML.
+
+    Returns:
+        Which era the page's markup belongs to, or ``"unrecognised"`` if none of the
+        three markers appear at all.
+    """
+    if _MODERN_MARKER.search(html_text):
+        return "modern"
+    if _MIDERA_MARKER.search(html_text):
+        return "midera"
+    if _LEGACY_MARKER.search(html_text):
+        return "legacy"
+    return "unrecognised"
+
+
 def fetch_event_notifications(
     client: NrcTextClient, spec: EventNotificationsSpec
 ) -> Iterator[FetchedDocument]:

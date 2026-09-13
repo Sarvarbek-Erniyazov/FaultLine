@@ -23,6 +23,7 @@ from faultline.download.nrc_text import (
     extract_generic_comm_document,
     filter_native_document_links,
     strip_html,
+    template_of,
 )
 
 
@@ -181,6 +182,31 @@ class TestExtractEvents:
         """
         documents = extract_events(event_day_html, ".../2024/20241231en")
         assert len(documents) == 1  # unchanged from the modern-only test above
+
+
+class TestTemplateOf:
+    """Which era a report-day page's markup belongs to -- independent of extraction.
+
+    Needed because neither a document's id nor its URL encodes which of the three
+    templates produced it (all three build the same `{day_id}_enNNNNN` shape), so a
+    page's era can only be recovered by looking at its markup again, not by anything
+    already stored alongside the extracted text.
+    """
+
+    def test_modern_page_is_modern(self, event_day_html: str) -> None:
+        assert template_of(event_day_html) == "modern"
+
+    def test_midera_page_is_midera(self, event_day_midera_html: str) -> None:
+        assert template_of(event_day_midera_html) == "midera"
+
+    def test_midera_variant_page_is_midera(self, event_day_midera_variant_html: str) -> None:
+        assert template_of(event_day_midera_variant_html) == "midera"
+
+    def test_legacy_page_is_legacy(self, event_day_legacy_html: str) -> None:
+        assert template_of(event_day_legacy_html) == "legacy"
+
+    def test_no_marker_is_unrecognised(self) -> None:
+        assert template_of("<p>no events today</p>") == "unrecognised"
 
 
 class TestGenericCommDocument:

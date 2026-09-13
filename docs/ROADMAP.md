@@ -65,6 +65,14 @@ reports under `reports/data/`; where the two disagree, the generated record is r
       above passed, and is applied to the commit that closes this list; the tag itself
       is the evidence for this line.*
 
+      *2026-09-13: `nrc_event_notifications.json` (M2a) outgrew this limit twice as
+      the source's real size became known (10,867, then 32,455 documents) -- the
+      manifest's own shape was wrong for a source this size, not the limit. It is now
+      sharded per report year as compact JSONL under
+      `data/cards/manifests/nrc_event_notifications/`, each shard well under 5 MB;
+      the limit itself stays at 5 MB rather than being raised
+      (`faultline.data.common.manifest.write_manifest_sharded`/`load_manifest`).*
+
 **Beyond the original M0 scope, because the evidence allowed it.** All of the
 following was scheduled for M1 and was brought forward once the staged Kelmarsh
 archives made it answerable:

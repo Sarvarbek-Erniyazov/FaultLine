@@ -36,7 +36,8 @@
 
 text:
   io:
-    corpus_name: "fixture_smoke" # the committed synthetic fixture; real corpora arrive at M2
+    corpus_name: "nrc_operator_narratives" # the assembled 5-source NRC corpus (M2 checkpoint,
+      # reports/data/m2_checkpoint_20260913.md)
     input_path: null # null = <data_root>/raw/text/<corpus_name>.jsonl
     text_field: "text" # course default
 
@@ -51,6 +52,16 @@ text:
     remove_control_chars: true # course default (keeps newline and tab)
     normalize_whitespace: true # course default
     drop_empty: true # course default (notebook cell 17 counted these as empty_removed)
+    boilerplate: # Gate-6 correction #2 (2026-09-13): two fixed modern-era artifacts, declared
+      # and measured against the real corpus before being enabled here. See
+      # src/faultline/data/text/boilerplate.py and ADR-0016.
+      strip_en_revision_header: true # "EN Revision Imported Date: .../EN Revision Text:"
+        # metadata lines the extractor left in the narrative text; matches all
+        # 1,316 documents that carry the marker.
+      strip_iaea_less_than_cat3: true # the fixed IAEA "Less than Cat 3" source-category
+        # explanation, matched in both its modern (URL-terminated) and older
+        # form; 3,482 occurrences measured, 3 known source-side URL typos not
+        # matched (documented gap, not chased further).
 
   # ---------------------------------------------------------------------------
   # quality filtering (notebook cell 21, FILTER_CONFIG)
@@ -65,11 +76,22 @@ text:
   # deduplication (notebook cells 27-28)
   # ---------------------------------------------------------------------------
   dedup:
-    strategy: "exact" # course default. TODO(m2): "minhash" for near-duplicates, which the
-      # operator-narrative corpus will need -- the same incident is
-      # republished with small edits across sources
+    strategy: "exact" # course default. The M2b pre-registered random-pair trigger measured
+      # near-zero near-duplication (near_duplicates.py) -- correctly, but it was
+      # the wrong instrument for THIS corpus's actual near-duplication, which is
+      # keyed on event number, not random pairs (see dedup.keyed below and
+      # keyed_dedup.py). MinHash/LSH stays unimplemented; not needed here.
     lowercase: true # course default (document_hash lowercased before hashing)
     strip: true # course default
+    keyed: # Gate-6 correction #1 (2026-09-13): source-aware dedup by event number, applied
+      # after exact dedup. Measured on the real corpus (post exact-dedup,
+      # 27,903 documents): 22,029 distinct event numbers, 3,963 with more than
+      # one surviving revision, 4,604 documents removable this way. See
+      # keyed_dedup.py and reports/data/m2_dedup_stats_20260913.md.
+      enabled: true
+      source: "nrc_event_notifications" # the only source with this republish-with-updates
+        # pattern; every other source's doc_id shape never matches the key
+        # pattern even if this were left enabled for it
 
   # ---------------------------------------------------------------------------
   # PII scrubbing (notebook cells 32-34)

@@ -77,6 +77,14 @@ def clean_report(meta: RunMeta, result: StageResult) -> str:
             percentile_summary(result.details.get("lengths", []), "length"),
         )
     )
+    boilerplate_hits = result.details.get("boilerplate_hits", {})
+    if boilerplate_hits:
+        parts.append(
+            section(
+                "Declared fixed-boilerplate rules (Gate-6 correction)",
+                kv_table(boilerplate_hits, key_header="rule", value_header="matches removed"),
+            )
+        )
     parts.append(
         _samples_section(
             result.details,
@@ -183,6 +191,25 @@ def dedup_report(meta: RunMeta, result: StageResult) -> str:
             "Random sample of documents removed as exact duplicates.",
         )
     )
+    keyed_settings = result.details.get("settings", {}).get("keyed", {})
+    if keyed_settings.get("enabled"):
+        groups_seen = result.details.get("keyed_groups_seen", 0)
+        groups_multi = result.details.get("keyed_groups_with_multiple", 0)
+        parts.append(
+            section(
+                "Source-aware (keyed) deduplication",
+                kv_table(
+                    {
+                        "applies to source": keyed_settings.get("source"),
+                        "distinct keys seen": groups_seen,
+                        "keys with >1 surviving revision": groups_multi,
+                        "documents superseded (kept latest only)": result.counters.get(
+                            "keyed_superseded", 0
+                        ),
+                    }
+                ),
+            )
+        )
     return "".join(parts)
 
 

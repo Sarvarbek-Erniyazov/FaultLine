@@ -13,7 +13,10 @@ from __future__ import annotations
 
 import hashlib
 
+from pydantic import Field
+
 from faultline.config import StrictModel
+from faultline.data.text.keyed_dedup import KeyedDedupConfig
 
 
 class DedupConfig(StrictModel):
@@ -24,11 +27,15 @@ class DedupConfig(StrictModel):
             reserved for M2 and is rejected until it is implemented.
         lowercase: Lowercase the document before hashing.
         strip: Strip leading and trailing whitespace before hashing.
+        keyed: Source-aware keep-latest-revision rule, applied after exact
+            dedup. Off by default; ``nrc_event_notifications`` is the source it
+            was built for (see ``keyed_dedup.py`` and ADR-0016).
     """
 
     strategy: str = "exact"
     lowercase: bool = True
     strip: bool = True
+    keyed: KeyedDedupConfig = Field(default_factory=KeyedDedupConfig)
 
 
 def normalize_for_hash(text: str, config: DedupConfig | None = None) -> str:

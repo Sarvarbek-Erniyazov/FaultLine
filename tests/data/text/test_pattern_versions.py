@@ -238,7 +238,12 @@ def test_v0_config_still_selects_the_ported_regexes(repo_root: Path) -> None:
     assert config.pii.phone_pattern == "v0"
 
 
-def test_v1_config_differs_from_v0_in_exactly_two_keys(repo_root: Path) -> None:
+def test_v1_config_differs_from_v0_only_in_declared_keys(repo_root: Path) -> None:
+    # The two pattern-version departures (ADR-0005, ADR-0007), the real corpus name
+    # (io.corpus_name, replacing the committed fixture), and the two Gate-6 corrections
+    # (clean.boilerplate, dedup.keyed) -- every one documented in text_v1.yaml itself and
+    # in ADR-0016. Nothing else may move: a threshold drifting in silently is exactly what
+    # this test exists to catch.
     configs = repo_root / "configs" / "data"
     v0 = load_config(configs / "text_v0.yaml", TextConfigFile).text.model_dump()
     v1 = load_config(configs / "text_v1.yaml", TextConfigFile).text.model_dump()
@@ -249,9 +254,15 @@ def test_v1_config_differs_from_v0_in_exactly_two_keys(repo_root: Path) -> None:
         for key in v0[block]
         if v0[block][key] != v1[block][key]
     }
-    assert differing == {"clean.html_tag_pattern", "pii.phone_pattern"}
-    # and nothing outside those two blocks moved
-    assert {b for b in v0 if v0[b] != v1[b]} == {"clean", "pii"}
+    assert differing == {
+        "io.corpus_name",
+        "clean.html_tag_pattern",
+        "clean.boilerplate",
+        "pii.phone_pattern",
+        "dedup.keyed",
+    }
+    # and nothing outside those blocks moved
+    assert {b for b in v0 if v0[b] != v1[b]} == {"io", "clean", "pii", "dedup"}
 
 
 def test_the_defaults_are_the_ported_behaviour() -> None:

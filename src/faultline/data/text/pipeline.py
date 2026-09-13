@@ -27,6 +27,7 @@ from pydantic import Field, model_validator
 from faultline.config import RunMeta, StrictModel, load_config
 from faultline.data.common.stage import Stage, StageResult
 from faultline.data.text import report as text_report
+from faultline.data.text.boilerplate import boilerplate_counts
 from faultline.data.text.clean import CleanConfig, clean_text
 from faultline.data.text.dedup import DedupConfig, ExactDeduplicator
 from faultline.data.text.filter import (
@@ -35,6 +36,7 @@ from faultline.data.text.filter import (
     filter_reason,
     repeated_line_ratio,
 )
+from faultline.data.text.keyed_dedup import KeyedDeduplicator
 from faultline.data.text.pii import PII_KINDS, PIIConfig, scrub_pii
 from faultline.logging_utils import get_logger
 from faultline.paths import Modality, ProjectPaths
@@ -449,6 +451,7 @@ class CleanStage(TextStage):
         chars_out = 0
         empty_removed = 0
         lengths: list[int] = []
+        boilerplate_hits: dict[str, int] = {}
         samples = Reservoir(self.config.report.sample_size, self.config.report.sample_seed)
 
         def records() -> Iterator[dict[str, Any]]:
@@ -457,6 +460,9 @@ class CleanStage(TextStage):
                 rows_in += 1
                 original = str(record.get(field_name, ""))
                 chars_in += len(original)
+                hits = boilerplate_counts(original, self.config.clean.boilerplate)
+                for rule, count in hits.items():
+                    boilerplate_hits[rule] = boilerplate_hits.get(rule, 0) + count
                 cleaned = clean_text(original, self.config.clean)
                 if not cleaned and self.config.clean.drop_empty:
                     empty_removed += 1
@@ -478,6 +484,7 @@ class CleanStage(TextStage):
                 "chars_out": chars_out,
                 "lengths": lengths,
                 "samples": samples.items,
+                "boilerplate_hits": boilerplate_hits,
             },
             outputs=[self.layout.cleaned],
         )
@@ -557,10 +564,11 @@ class DedupStage(TextStage):
         self._meta = ctx.meta
         field_name = self.config.io.text_field
         deduper = ExactDeduplicator(self.config.dedup)
+        keyed = KeyedDeduplicator(self.config.dedup.keyed)
         rows_in = 0
         duplicates = Reservoir(self.config.report.sample_size, self.config.report.sample_seed)
 
-        def records() -> Iterator[dict[str, Any]]:
+        def exact_survivors() -> Iterator[dict[str, Any]]:
             nonlocal rows_in
             for record in read_jsonl(self.layout.filtered):
                 rows_in += 1
@@ -570,16 +578,27 @@ class DedupStage(TextStage):
                     continue
                 yield record
 
-        rows_out = write_jsonl(self.layout.deduped, records())
-        logger.info("dedup: %d -> %d documents", rows_in, rows_out)
+        rows_out = write_jsonl(self.layout.deduped, keyed.run(exact_survivors()))
+        logger.info(
+            "dedup: %d -> %d documents (%d exact, %d keyed-superseded)",
+            rows_in,
+            rows_out,
+            deduper.duplicates,
+            keyed.documents_removed,
+        )
         return StageResult(
             name=self.name,
             rows_in=rows_in,
             rows_out=rows_out,
-            counters={"duplicate": deduper.duplicates},
+            counters={
+                "duplicate": deduper.duplicates,
+                "keyed_superseded": keyed.documents_removed,
+            },
             details={
                 "settings": self.config.dedup.model_dump(),
                 "duplicate_samples": duplicates.items,
+                "keyed_groups_seen": keyed.groups_seen,
+                "keyed_groups_with_multiple": keyed.groups_with_multiple,
             },
             outputs=[self.layout.deduped],
         )

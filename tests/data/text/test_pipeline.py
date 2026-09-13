@@ -202,3 +202,56 @@ def test_unknown_stage_is_rejected(config_path: Path, tmp_paths: ProjectPaths) -
     layout = TextLayout.build(config, tmp_paths)
     with pytest.raises(ValueError, match="unknown stage"):
         build_stages(config, layout, "polish")
+
+
+def test_keyed_dedup_keeps_only_the_latest_revision_end_to_end(
+    config_path: Path, tmp_path: Path, tmp_paths: ProjectPaths
+) -> None:
+    """DedupStage applies keyed dedup, after exact dedup, when a config enables it."""
+    narrative = "A reportable event occurred at the facility. " * 10  # clears min_chars
+    corpus = tmp_path / "revisions.jsonl"
+    records = [
+        {"doc_id": "20030425en_en39780", "source": "nrc_event_notifications", "text": narrative},
+        {
+            "doc_id": "20030428en_en39780",
+            "source": "nrc_event_notifications",
+            "text": narrative + "* * * UPDATE FROM A TO B * * * Corrective action complete.",
+        },
+        {
+            "doc_id": "20030101en_en40000",
+            "source": "nrc_event_notifications",
+            "text": "A different, unrelated event occurred elsewhere. " * 10,
+        },
+        {
+            "doc_id": "in00013",
+            "source": "nrc_info_notices",
+            "text": "An information notice with its own distinct content. " * 10,
+        },
+    ]
+    corpus.write_text("\n".join(json.dumps(r) for r in records), encoding="utf-8")
+
+    config = load_text_config(config_path)
+    config = config.model_copy(
+        update={
+            "io": config.io.model_copy(update={"input_path": str(corpus)}),
+            "dedup": config.dedup.model_copy(
+                update={"keyed": config.dedup.keyed.model_copy(update={"enabled": True})}
+            ),
+        }
+    )
+    layout = TextLayout.build(config, tmp_paths)
+    with start_run(config_path, config, "all", "text", tmp_paths) as ctx:
+        results = run_pipeline(build_stages(config, layout, "all"), ctx)
+
+    by_name = {result.name: result for result in results}
+    dedup = by_name["dedup"]
+    assert dedup.rows_in == 4
+    assert dedup.rows_out == 3  # the earlier en39780 revision is superseded
+    assert dedup.counters["keyed_superseded"] == 1
+    assert dedup.details["keyed_groups_seen"] == 2
+    assert dedup.details["keyed_groups_with_multiple"] == 1
+
+    final = by_name["final"]
+    shards = list(Path(final.details["directory"]).glob("*.jsonl"))
+    kept_ids = {record["doc_id"] for shard in shards for record in read_jsonl(shard)}
+    assert kept_ids == {"20030428en_en39780", "20030101en_en40000", "in00013"}

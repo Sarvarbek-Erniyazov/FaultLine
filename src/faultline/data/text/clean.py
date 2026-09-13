@@ -20,7 +20,10 @@ import re
 import unicodedata
 from typing import Literal
 
+from pydantic import Field
+
 from faultline.config import StrictModel
+from faultline.data.text.boilerplate import BoilerplateConfig, strip_declared_boilerplate
 from faultline.data.text.patterns import HTML_TAG_PATTERNS, PatternVersion
 
 _INLINE_WHITESPACE = re.compile(r"[ \t]+")
@@ -48,6 +51,8 @@ class CleanConfig(StrictModel):
             newline and tab.
         normalize_whitespace: Collapse runs of spaces and blank lines, then strip.
         drop_empty: Discard documents that clean to an empty string.
+        boilerplate: Declared fixed-boilerplate rules (Gate-6 correction #2;
+            see ``boilerplate.py``), applied before every other step.
     """
 
     unescape_html_entities: bool = True
@@ -57,6 +62,7 @@ class CleanConfig(StrictModel):
     remove_control_chars: bool = True
     normalize_whitespace: bool = True
     drop_empty: bool = True
+    boilerplate: BoilerplateConfig = Field(default_factory=BoilerplateConfig)
 
 
 def remove_html(text: str, version: PatternVersion = "v0") -> str:
@@ -128,6 +134,7 @@ def clean_text(text: str, config: CleanConfig | None = None) -> str:
         The cleaned document, possibly empty.
     """
     cfg = config or CleanConfig()
+    text, _ = strip_declared_boilerplate(text, cfg.boilerplate)
     if cfg.unescape_html_entities:
         text = html.unescape(text)
     if cfg.remove_html_tags:

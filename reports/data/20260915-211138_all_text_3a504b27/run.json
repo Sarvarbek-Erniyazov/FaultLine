@@ -1,0 +1,101 @@
+{
+  "run_id": "20260915-211138_all_text_3a504b27",
+  "status": "ok",
+  "error": null,
+  "config_path": "configs/data/text_v2.yaml",
+  "config_hash": "3a504b27",
+  "git_sha": "dfbd7023363b79a871e5feea6746d476a3150cf8",
+  "python": "3.12.10",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "started_at": "2026-09-15T21:11:38.114954+00:00",
+  "ended_at": "2026-09-15T21:11:56.604751+00:00",
+  "elapsed_seconds": 18.334,
+  "stages": [
+    {
+      "name": "clean",
+      "rows_in": 43758,
+      "rows_out": 43758,
+      "dropped": 0,
+      "extra": {
+        "counters": {
+          "empty_after_cleaning": 0
+        },
+        "outputs": [
+          "operator_narratives.jsonl"
+        ]
+      },
+      "report_path": "clean_stats_report.md"
+    },
+    {
+      "name": "filter",
+      "rows_in": 43758,
+      "rows_out": 43137,
+      "dropped": 621,
+      "extra": {
+        "counters": {
+          "repeated_lines": 171,
+          "min_chars": 447,
+          "max_chars": 3
+        },
+        "outputs": [
+          "operator_narratives.jsonl"
+        ]
+      },
+      "report_path": "filter_stats_report.md"
+    },
+    {
+      "name": "dedup",
+      "rows_in": 43137,
+      "rows_out": 32800,
+      "dropped": 10337,
+      "extra": {
+        "counters": {
+          "duplicate": 5816,
+          "keyed_superseded": 4521
+        },
+        "outputs": [
+          "operator_narratives.dedup.jsonl"
+        ]
+      },
+      "report_path": "dedup_stats_report.md"
+    },
+    {
+      "name": "pii",
+      "rows_in": 32800,
+      "rows_out": 32800,
+      "dropped": 0,
+      "extra": {
+        "counters": {
+          "email": 344,
+          "phone": 1554,
+          "digits": 0
+        },
+        "outputs": [
+          "operator_narratives.pii.jsonl"
+        ]
+      },
+      "report_path": "pii_stats_report.md"
+    },
+    {
+      "name": "final",
+      "rows_in": 32800,
+      "rows_out": 32800,
+      "dropped": 0,
+      "extra": {
+        "counters": {},
+        "outputs": [
+          "train-00000.jsonl",
+          "train-00001.jsonl",
+          "train-00002.jsonl",
+          "train-00003.jsonl",
+          "train-00004.jsonl",
+          "train-00005.jsonl",
+          "train-00006.jsonl",
+          "test-00000.jsonl",
+          "val-00000.jsonl"
+        ]
+      },
+      "report_path": "final_stats_report.md"
+    }
+  ]
+}

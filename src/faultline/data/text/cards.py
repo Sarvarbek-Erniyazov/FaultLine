@@ -43,6 +43,9 @@ UNVERIFIED = "UNVERIFIED"
 #: The template's open-ended-text threshold: more than this many distinct strings.
 OPEN_TEXT_DISTINCT = 500
 
+#: The template's line between short and full written descriptions, mean characters.
+WRITTEN_DESCRIPTION_CHARS = 200
+
 #: Title marker of an NRC event notification reported by an Agreement State.
 AGREEMENT_STATE = "AGREEMENT STATE"
 
@@ -194,13 +197,16 @@ def build_text_card(
         distinct = Counter(everything)
         once = sum(1 for count in distinct.values() if count == 1)
         mean_chars = sum(len(t) for t in everything) / len(everything)
-        verdict = (
-            "VERIFIED yes"
-            if len(distinct) > OPEN_TEXT_DISTINCT
-            else (
-                "VERIFIED short written descriptions" if once > len(distinct) / 2 else "VERIFIED no"
+        if len(distinct) > OPEN_TEXT_DISTINCT:
+            verdict = "VERIFIED yes"
+        elif once > len(distinct) / 2:
+            verdict = (
+                "VERIFIED written descriptions"
+                if mean_chars > WRITTEN_DESCRIPTION_CHARS
+                else "VERIFIED short written descriptions"
             )
-        )
+        else:
+            verdict = "VERIFIED no"
         split_rows = [
             (
                 split,

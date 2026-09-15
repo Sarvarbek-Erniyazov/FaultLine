@@ -103,3 +103,18 @@ def test_the_code_book_is_refused(tmp_paths: ProjectPaths, text_config: Path) ->
     spec = CodeBookSpec(provider="p", license="l", attribution="a", telemetry_sources=["k"])
     with pytest.raises(ValueError, match="not a narrative source"):
         build_text_card("status_code_book", spec, tmp_paths, text_config)
+
+
+def test_a_small_set_of_long_unique_documents_is_written_descriptions(
+    tmp_paths: ProjectPaths, text_config: Path
+) -> None:
+    final_dir = tmp_paths.stage_dir("final", "text") / CORPUS
+    final_dir.mkdir(parents=True, exist_ok=True)
+    with (final_dir / "train-00000.jsonl").open("w", encoding="utf-8") as handle:
+        for index in range(3):
+            text = f"summary {index} " + "regulatory guidance on inspection " * 10
+            handle.write(json.dumps({"text": text, "source": "nrc_bulletins"}) + "\n")
+    card = build_text_card("nrc_bulletins", _spec(), tmp_paths, text_config).read_text(
+        encoding="utf-8"
+    )
+    assert "Free-text verdict: VERIFIED written descriptions" in card

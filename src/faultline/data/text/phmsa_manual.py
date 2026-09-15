@@ -20,13 +20,15 @@ this reports both the raw member name and the classification guessed from it, so
 wrong guess is visible instead of silently trusted.
 
 **Narrative columns are found two ways, not one guess.** A column whose name contains
-a narrative-shaped hint (``narrative``, ``description``, ``summary``, ``cause``,
-``comment``, ``remark``, ``additional_info``, ``detail``) is one candidate; any
-string-typed column whose values average longer than
-:data:`MEAN_LENGTH_NARRATIVE_THRESHOLD` characters is another, independent of its
-name. Both are reported, because a name-only search would miss a narrative field
-PHMSA happens to call something else, and a length-only search would miss a short but
-genuinely free-text field.
+a narrative-shaped hint (``narrative``, ``description``, ``summary``, ``comment``,
+``remark``, ``additional_info``, ``detail``) is one candidate; any string-typed column
+whose values average longer than :data:`MEAN_LENGTH_NARRATIVE_THRESHOLD` characters
+**and** whose distinct-value ratio exceeds :data:`DISTINCT_RATIO_THRESHOLD` is
+another, independent of its name. Both are reported, because a name-only search would
+miss a narrative field PHMSA happens to call something else, and a length-only search
+would miss a short but genuinely free-text field. The ratio guard is the OE-417 lesson
+(ADR-0016): a long coded field -- a closed set of category sentences repeated across
+rows -- passes on mean length alone, and is a code book, not narrative.
 """
 
 from __future__ import annotations
@@ -74,6 +76,11 @@ NARRATIVE_HINTS: tuple[str, ...] = (
 #: A string column whose values average longer than this many characters is a
 #: narrative candidate regardless of its name.
 MEAN_LENGTH_NARRATIVE_THRESHOLD = 80
+
+#: ...and whose distinct non-null values exceed this share of its non-null values.
+#: Pre-registered in ADR-0016's 2026-09-16 PHMSA decision rule, before any PHMSA file
+#: was read.
+DISTINCT_RATIO_THRESHOLD = 0.5
 
 #: Member suffixes this module knows how to read as tabular data.
 TABULAR_SUFFIXES: tuple[str, ...] = (".csv", ".txt", ".xlsx", ".xls")
@@ -140,7 +147,8 @@ class MemberProfile:
         classification: Best-effort pipeline-type / form-generation guess.
         rows: Rows read.
         columns: Column names as read.
-        narrative_columns: Columns flagged as narrative, by name hint or mean length.
+        narrative_columns: Columns flagged as narrative, by name hint, or by mean length
+            together with distinct-value ratio.
         narrative_tokens: Whitespace-delimited tokens summed across narrative columns.
         samples: A few sample values from the first narrative column found, verbatim.
     """
@@ -214,7 +222,11 @@ def profile_member(name: str, raw: bytes) -> MemberProfile | None:
             frame[column]
         ):
             values = frame[column].dropna().astype(str)
-            if len(values) and values.str.len().mean() > MEAN_LENGTH_NARRATIVE_THRESHOLD:
+            if (
+                len(values)
+                and values.str.len().mean() > MEAN_LENGTH_NARRATIVE_THRESHOLD
+                and values.nunique() / len(values) > DISTINCT_RATIO_THRESHOLD
+            ):
                 narrative_columns.append(column)
     tokens = sum(_whitespace_tokens(frame[column]) for column in narrative_columns)
     samples: list[str] = []

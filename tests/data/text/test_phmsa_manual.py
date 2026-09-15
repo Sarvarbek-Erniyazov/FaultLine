@@ -86,6 +86,18 @@ def test_profile_member_finds_a_long_column_even_without_a_narrative_name() -> N
     assert "FREEFORM_FIELD" in profile.narrative_columns
 
 
+def test_a_long_but_repeated_coded_column_is_not_narrative() -> None:
+    # the OE-417 shape: a few long category sentences repeated across many rows
+    categories = [
+        "Loss of electric service to more than 50,000 customers for one hour or more",
+        "Complete loss of electric power to the transmission system for one hour or more",
+    ]
+    rows = [f'{i},"{categories[i % 2]}"' for i in range(20)]
+    profile = profile_member("x.csv", _csv_bytes("ID,ALERT_CRITERIA", rows))
+    assert profile is not None
+    assert profile.narrative_columns == []
+
+
 def test_profile_member_finds_no_narrative_column_in_purely_categorical_data() -> None:
     raw = _csv_bytes("ID,CODE,COMMODITY", ["1,04,CRUDE OIL", "2,07,REFINED PRODUCT"])
     profile = profile_member("x.csv", raw)

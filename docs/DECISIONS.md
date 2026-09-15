@@ -1670,7 +1670,8 @@ DOE OE-417 re-tested; `NrcTextClient` now checks robots.txt before, not after,
 the first request to a host; the generic-communications yield table corrected
 after a second PDF-hosting path was found undercounting Regulatory Issue
 Summaries; Gate-6 corrections below -- source-aware dedup by event number, two
-declared fixed-boilerplate rules) · **Date:** 2026-09-13
+declared fixed-boilerplate rules; **corrected 2026-09-16: PHMSA route and target
+re-read, decision rule pre-registered, see the last section**) · **Date:** 2026-09-13
 
 **Decision.** The M2 text corpus is drawn from `www.nrc.gov`: Event Notification
 Reports (native HTML, the whole collection) and four "generic communications"
@@ -1704,7 +1705,7 @@ both routes for each source, separately.
 | source | automated route | manual route | estimated narrative yield | decision |
 | --- | --- | --- | --- | --- |
 | NRC Licensee Event Reports | **Blocked.** `lersearch.inl.gov/robots.txt`: `User-agent: *` / `Disallow: /`, commented "Don't index this site" -- a direct instruction, honoured rather than tested around. ADAMS' own public interface moved from `adams.nrc.gov/wba` (now NXDOMAIN) to `adams-search.nrc.gov`, a single-page app with no documented public API. data.gov's catalogue entry for this dataset names the LERSearch UI as its sole resource -- no bulk export. | **Not open, and nothing to name.** LERSearch is a case-by-case search form, not a bulk listing, so there is no "exact file" a human could fetch the way PHMSA's can be named below. | Likely substantial -- LERs are the NRC's longest-form technical narrative filings, longer than an Event Notification -- but unmeasured: no route, automated or manual-bulk, is open to measure it from. | **Excluded.** Route forward: a written bulk-export request to NRC, recorded as such if it is ever made; not something this session can action. |
-| PHMSA pipeline incidents | **Blocked, tested from a second, independent angle this time.** `data.transportation.gov` (DOT's Socrata portal) is a different host from `phmsa.dot.gov`'s Akamai front, with its own `robots.txt` (permits `/resource/*` and `/api/views/*` for a generic agent). Queried directly: the named dataset ("Pipeline Incident Flagged Files", `qdme-9bbm`) is a metadata-only record (`"assetType": "href"`) -- Socrata never hosted the rows, only a pointer. Its `additionalAccessPoints.zip` field, and a sibling dataset's (`27nc-rsge`) access point, both resolve to files still served from `phmsa.dot.gov` -- the same host already found to 403 every non-browser client. Confirmed independently: Claude's own `WebFetch` tool (a different client, different network path) also received `403 Forbidden` fetching the PHMSA landing page. Two different automated tools, two networks, the same result: there is no independently-hosted export for this data, only a catalogue pointer back to the blocked host. | **Open.** An edge rule built against non-browser traffic does not block a human browser session, and downloading a stated-public-domain file and recording its URL, date and hash is ordinary provenance. **Exact file, named via `data.transportation.gov`'s own structured metadata:** `https://www.phmsa.dot.gov/sites/phmsa.dot.gov/files/data_statistics/pipeline/PHMSA_Pipeline_Safety_Flagged_Incidents.zip` ("Flagged Files (zip file)", the `qdme-9bbm` record's access point). The broader per-year accident/incident files live under `https://www.phmsa.dot.gov/data-and-statistics/pipeline/distribution-transmission-gathering-lng-and-liquid-accident-and-incident-data`, which this project cannot enumerate (both `requests` and `WebFetch` are blocked there) but a browser reaches normally. | Unmeasured pending the file. PHMSA's own dataset description names "significant incidents," "reported incidents" and cause information among the underlying fields -- exactly what a downloaded file needs to be profiled against (`faultline inspect telemetry`'s free-text-verdict method, `docs/DATASET_CARD_TEMPLATE.md`) before any yield number is reported. | **Not staged, not excluded.** Awaiting a manual download at the file named above; this project will profile it and report the free-text verdict once it exists. Licence already confirmed clean: `27nc-rsge`'s Socrata metadata states `License: http://www.usa.gov/publicdomain/label/1.0/`, consistent with 17 U.S.C. 105. |
+| PHMSA pipeline incidents | **Blocked, tested from a second, independent angle this time.** `data.transportation.gov` (DOT's Socrata portal) is a different host from `phmsa.dot.gov`'s Akamai front, with its own `robots.txt` (permits `/resource/*` and `/api/views/*` for a generic agent). Queried directly: the named dataset ("Pipeline Incident Flagged Files", `qdme-9bbm`) is a metadata-only record (`"assetType": "href"`) -- Socrata never hosted the rows, only a pointer. Its `additionalAccessPoints.zip` field, and a sibling dataset's (`27nc-rsge`) access point, both resolve to files still served from `phmsa.dot.gov` -- the same host already found to 403 every non-browser client. Confirmed independently: Claude's own `WebFetch` tool (a different client, different network path) also received `403 Forbidden` fetching the PHMSA landing page. Two different automated tools, two networks, the same result: there is no independently-hosted export for this data, only a catalogue pointer back to the blocked host. **[Corrected 2026-09-16: false. `27nc-rsge` hosts 15 incident-data zips on `data.transportation.gov` itself; this check read `accessPoints` and never `metadata.attachments`. See the last section of this ADR.]** | **Open.** An edge rule built against non-browser traffic does not block a human browser session, and downloading a stated-public-domain file and recording its URL, date and hash is ordinary provenance. **Exact file, named via `data.transportation.gov`'s own structured metadata:** `https://www.phmsa.dot.gov/sites/phmsa.dot.gov/files/data_statistics/pipeline/PHMSA_Pipeline_Safety_Flagged_Incidents.zip` ("Flagged Files (zip file)", the `qdme-9bbm` record's access point). The broader per-year accident/incident files live under `https://www.phmsa.dot.gov/data-and-statistics/pipeline/distribution-transmission-gathering-lng-and-liquid-accident-and-incident-data`, which this project cannot enumerate (both `requests` and `WebFetch` are blocked there) but a browser reaches normally. | Unmeasured pending the file. PHMSA's own dataset description names "significant incidents," "reported incidents" and cause information among the underlying fields -- exactly what a downloaded file needs to be profiled against (`faultline inspect telemetry`'s free-text-verdict method, `docs/DATASET_CARD_TEMPLATE.md`) before any yield number is reported. | **Not staged, not excluded.** Awaiting a manual download at the file named above; this project will profile it and report the free-text verdict once it exists. Licence already confirmed clean: `27nc-rsge`'s Socrata metadata states `License: http://www.usa.gov/publicdomain/label/1.0/`, consistent with 17 U.S.C. 105. |
 | DOE OE-417 disturbance reports | The publishing host, `www.oe.netl.doe.gov`, resolves IPv6-only from this network and is genuinely unreachable -- that part stands. **The original exclusion reason is corrected here**: it said "unreachable," true of that one host and false of the source as a whole, conflating the two. The ORNL OpenEnergyHub mirror (`openenergyhub.ornl.gov`) *is* reachable and was queried, in the original reconnaissance and again for this correction, via its `/api/explore/...` REST endpoint -- **which its own `robots.txt` disallows for a generic `User-agent: *`** (`Disallow: /api/`, with `Allow: /api/` carved out for `Googlebot` only). That is a compliance error in this project's own prior action, caught rereading the same file rather than by anyone else, and it is corrected here: the mirror's API is not an open automated route, on the same standard this ADR applies to every other source. | Not tested, given the measured thinness below. If this source is wanted later, the mirror's human-facing dataset page (`/explore/dataset/oe-417-annual-summaries/`, not disallowed) or a written request to DOE/ORNL are the routes to check first. | **Measured** (the data already retrieved is kept as evidence of thinness, not relied on as an ongoing route -- see the correction above): 341 rows total, covering 2023 only -- the mirror's own description states it captures "annual summary... for 2023 only for data discovery purposes," not a multi-year archive. Its one text-bearing field (`alert_criteria`) holds **27 distinct values across all 341 rows**: a closed set of regulatory reporting categories, not free narrative -- the same code-book-versus-narrative distinction ADR-0001 draws for the telemetry sources. Every text field combined (`area_affected`, `alert_criteria`, `event_type`) totals **9,614 whitespace-delimited tokens** for the entire dataset. | **Excluded -- for thinness, not unreachability.** A public-domain source (confirmed) with a 2023-only sample of a few hundred rows and a 27-entry code book where a narrative field would be; profiled the way the telemetry sources are, it would not clear `docs/DATASET_CARD_TEMPLATE.md`'s `VERIFIED no` threshold. |
 
 None of the three is a licence problem -- all three would be admissible on terms
@@ -1893,3 +1894,92 @@ document-specific text by a single newline rather than a blank line, so
 neither is ever its own paragraph -- a stated limitation of paragraph-level
 hashing as a *discovery* method (it did not need to find them; they were
 already found and matched by direct pattern before this check ran).
+
+**Correction, 2026-09-16: PHMSA has a permitted automated route, and the flagged file
+was the wrong target.** Source: `reports/data/phmsa_gate_brief_20260915.md`, a
+read-only investigation, and the author's ruling on it.
+
+*The false claim.* The PHMSA row above, and `configs/data/sources_text.yaml`'s
+`phmsa_pipeline_incidents` evidence, said "there is no independently-hosted export for
+this data". That is wrong. The 2026-09-13 check read `27nc-rsge`'s `accessPoints`,
+which do point back to `phmsa.dot.gov`, and never read its `metadata.attachments`.
+That field lists 15 zip files hosted on `data.transportation.gov` itself, each served
+from `https://data.transportation.gov/api/views/27nc-rsge/files/<assetId>?download=true&filename=<filename>`.
+`data.transportation.gov/robots.txt` disallows no rule matching `/api/views/`, and it
+states `Crawl-delay: 1`. Each file answered `200 OK`, `application/octet-stream` to one
+headers-only request on 2026-09-15 (brief, section 2b). Licence: `27nc-rsge`'s Socrata
+metadata, `Common Core` `License: http://www.usa.gov/publicdomain/label/1.0/`,
+consistent with 17 U.S.C. 105.
+
+| attachment | assetId | bytes |
+| --- | --- | --- |
+| Gas Distribution Incident Data - January 2010 to present.zip | `fba42a19-f78d-44c9-9a76-4bacfc15fba0` | 1,566,027 |
+| Gas Distribution Incident Data - March 2004 to December 2009.zip | `ef2727e4-bb70-4544-b292-9429027a9b14` | 1,076,055 |
+| Gas Distribution Incident Data - mid 1984 to February 2004.zip | `7ccf83c5-a778-4c51-ba2d-a9a84e221c7b` | 676,906 |
+| Gas Distribution Incident Data - 1970 to mid 1984.zip | `3087a9da-c2f1-4bcd-9951-fa524e08aca7` | 1,079,036 |
+| Hazardous Liquid Accident Data - January 2010 to present.zip | `1d547e17-2be1-4a32-9958-a1d5a946ade9` | 4,597,548 |
+| Hazardous Liquid Accident Data - January 2002 to December 2009.zip | `928038f8-523b-4003-aeff-79675b193086` | 1,892,458 |
+| Hazardous Liquid Accident Data 1986 to January 2002.zip | `2cb38c7d-9a3e-4074-b175-05a5cd0c44a6` | 958,446 |
+| Hazardous Liquid Accident Data - Pre 1986.zip | `94be9da7-e996-4ac4-8154-079995bc0326` | 275,191 |
+| Gas Transmission & Gathering Incident Data - January 2010 to present.zip | `2b05c2d8-d14a-4c56-ac1c-7d23a4bc31c8` | 2,241,740 |
+| Gas Transmission & Gathering Incident Data - 2002 to December 2009.zip | `3f48859a-5658-4f64-acf0-e33e632af625` | 1,240,023 |
+| Gas Transmission & Gathering Incident Data - mid 1984 to 2001.zip | `bea0164f-672a-475e-986b-8e45e9634dbf` | 329,445 |
+| Gas Transmission & Gathering Incident Data - 1970 to mid 1984.zip | `9f62744f-3372-46f6-aa5b-15cf60261a93` | 548,513 |
+| Liquefied Natural Gas (LNG) Incident Data - January 2011 to present.zip | `875819a6-d388-4fa9-9962-2f0b53ffac21` | 459,113 |
+| Hazardous Liquid Gravity & Reporting-Regulated-Only Jul 2020_present.zip | `28f0a80f-a155-4294-8d1e-1d46f1237896` | 560,015 |
+| Type R Reporting-Regulated Gas Gathering May 2022 to Present.zip | `021f4773-ebc0-4abc-8628-9321af069f69` | 490,509 |
+
+Asset ids were read from `GET /api/views/27nc-rsge.json` through `NrcTextClient` on
+2026-09-15 20:41 UTC (server `Date`). The files carry no `Last-Modified`, so how current
+they are is unmeasured.
+
+*The flagged file, reclassified.* `PHMSA_Pipeline_Safety_Flagged_Incidents.zip` is
+**blocked from a third independent client and network** (curl/8.15.0, the author's
+home network, 2026-09-15 20:16-20:18 UTC). The response was `403 Forbidden`,
+`Server: AkamaiGHost`, a 519-byte `text/html` "Access Denied" page, with no redirect,
+Akamai error reference `#18.ce354317.1789503390.8406901` (`errors.edgesuite.net`).
+**No copy exists on the author's machine.** `~/Downloads`, `~/Desktop`, `~/Documents`
+and `~/OneDrive` were searched and nothing matched, not even an error page saved under
+the name. **It is also the wrong target.** `qdme-9bbm` describes it as an analytical
+derivative: PHMSA "add data that are routinely used during data analysis and when
+presenting certain 20-year trends", covering serious and significant incidents.
+`27nc-rsge` holds the raw per-type incident reports, which is where an incident
+narrative would live. `manual_pending` on the flagged file is withdrawn.
+
+*Considered and not taken: automating the author's real Chrome.* Driving the author's
+own browser session against the Akamai edge was considered. That means an agent over
+CDP, or Playwright attached to the real profile. It reads against this ADR's own line.
+"The user's decision" above separates a **human** downloading a file from "any other
+automated presentation of this project's client as something it is not". An agent
+borrowing a real browser session is the automated case, and it would work for the same
+reason UA spoofing would. It is also moot, since a permitted automated route now
+exists.
+
+*Pre-registered decision rule.* Recorded and committed before the file below is
+fetched or read, verbatim:
+
+> Target: 27nc-rsge attachment "Hazardous Liquid - Jan 2010 to present"
+> (4,597,548 bytes), fetched through the robots-gated client.
+> Free-text test: a column qualifies if its name matches the narrative pattern,
+> OR mean length > 80 chars AND distinct-value ratio > 0.5. (The ratio guard is
+> the OE-417 lesson — mean length alone can be passed by a long coded field.
+> Add this guard to phmsa_manual.py's detector as part of this step.)
+> Rule:
+>   - no column passes -> EXCLUDE for thinness, same disposition and wording
+>     pattern as OE-417; gate closes permanently.
+>   - passes but < 250,000 whitespace tokens in this file -> EXCLUDE for
+>     thinness (<4% of corpus; not worth a card, licence row, split, eval row).
+>   - passes and >= 250,000 tokens -> stage all 2010-onward files, fold into
+>     the corpus, fit once with them included.
+> Either outcome: M2c starts in this same session.
+
+How it is implemented: the "narrative pattern" is `phmsa_manual.NARRATIVE_HINTS`, a
+case-insensitive substring match on the column name (`narrative`, `description`,
+`summary`, `comment`, `remark`, `additional_info`, `detail`). "Distinct-value ratio" is
+distinct non-null values over non-null values (`DISTINCT_RATIO_THRESHOLD = 0.5`). "In
+this file" means the sum over every narrative column of every tabular member. The
+target attachment's full name is "Hazardous Liquid Accident Data - January 2010 to
+present.zip", assetId `1d547e17-2be1-4a32-9958-a1d5a946ade9`. The robots gate that
+fetches it is `download/robots.py`, not `urllib.robotparser`. The stdlib parser reads
+`data.transportation.gov`'s file as allow-all, because blank lines separate its
+`Disallow` rules from `User-agent: *` (commit `ebfa946`).

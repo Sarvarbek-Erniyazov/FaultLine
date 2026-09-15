@@ -168,37 +168,36 @@ excluded_candidates:
       NRC, not something this session can action.
 
   phmsa_pipeline_incidents:
-    status: manual_pending
+    status: pending_measurement
     reason: >-
-      the automated route is blocked from two independent hosts and two independent
-      client tools; a human browser download of a named, public-domain file is an
-      open route this project has not yet asked the user to take
+      a permitted automated route exists (corrected 2026-09-16); the free-text verdict
+      is decided by the rule ADR-0016 pre-registers, measured on one 2010-onward file
     evidence: >-
       www.phmsa.dot.gov/robots.txt -> HTTP 403 (fetched 2026-09-13, from two separate
-      networks), so even the crawl policy cannot be read; the flagged-incident-file
-      download returns the same. Re-tested 2026-09-13 via data.transportation.gov
-      (DOT's Socrata portal, a different host, permissive robots.txt for /resource/*
-      and /api/views/*): the catalogued dataset "Pipeline Incident Flagged Files"
-      (qdme-9bbm) is metadata-only ("assetType": "href") and its access point
-      resolves back to the same phmsa.dot.gov URL; a sibling dataset (27nc-rsge,
-      "Gas Distribution, Gas Transmission & Gathering, LNG incidents and Hazardous
-      Liquid Accident and Incident Data") does the same. Claude's own WebFetch tool
-      (a distinct client, distinct network path) also received 403 fetching the
-      PHMSA landing page. No independently-hosted export exists for this data at
-      any host checked.
+      networks), and the flagged-incident-file download returns 403 from a third
+      client and network (curl/8.15.0, 2026-09-15, AkamaiGHost "Access Denied",
+      reference #18.ce354317.1789503390.8406901); no copy exists on the author's
+      machine. That file is also the wrong target: qdme-9bbm describes it as an
+      analytical derivative ("20-year trends", serious/significant incidents).
+      CORRECTED 2026-09-16: the earlier record here said no independently-hosted
+      export exists; that was false, because the check read 27nc-rsge's accessPoints
+      (which point back to phmsa.dot.gov) and never its metadata.attachments. 27nc-rsge
+      ("Gas Distribution, Gas Transmission & Gathering, LNG incidents and Hazardous
+      Liquid Accident and Incident Data") carries 15 incident-data zips, 17,991,025
+      bytes in total, hosted on data.transportation.gov itself under
+      /api/views/27nc-rsge/files/<assetId>. No robots.txt rule there matches
+      /api/views/ (Crawl-delay: 1); each file answered 200 to a headers-only request
+      on 2026-09-15. Full list with asset ids and sizes in ADR-0016's 2026-09-16
+      correction.
     manual_route: >-
-      A human browser session is not blocked by an edge rule built against
-      non-browser traffic. Exact file, read from data.transportation.gov's own
-      structured metadata (qdme-9bbm's additionalAccessPoints.zip):
-      https://www.phmsa.dot.gov/sites/phmsa.dot.gov/files/data_statistics/pipeline/PHMSA_Pipeline_Safety_Flagged_Incidents.zip
-      ("Flagged Files (zip file)"). The broader per-year accident/incident files are
-      linked from
-      https://www.phmsa.dot.gov/data-and-statistics/pipeline/distribution-transmission-gathering-lng-and-liquid-accident-and-incident-data,
-      which this project cannot enumerate (blocked for both requests and WebFetch)
-      but which a browser reaches normally. Licence: usa.gov public-domain label
-      (http://www.usa.gov/publicdomain/label/1.0/), stated in 27nc-rsge's Socrata
-      metadata, consistent with 17 U.S.C. 105. Not staged until downloaded and
-      profiled for its free-text verdict, per docs/DATASET_CARD_TEMPLATE.md.
+      None needed. The automated route is
+      https://data.transportation.gov/api/views/27nc-rsge/files/<assetId>?download=true&filename=<filename>,
+      fetched through NrcTextClient's robots gate. Measurement target, pre-registered:
+      "Hazardous Liquid Accident Data - January 2010 to present.zip" (assetId
+      1d547e17-2be1-4a32-9958-a1d5a946ade9, 4,597,548 bytes). Licence: usa.gov
+      public-domain label (http://www.usa.gov/publicdomain/label/1.0/), stated in
+      27nc-rsge's Socrata metadata, consistent with 17 U.S.C. 105. Driving the author's
+      real browser against the blocked host was considered and not taken (ADR-0016).
 
   doe_oe417_disturbance_reports:
     status: excluded

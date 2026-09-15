@@ -230,10 +230,12 @@ class ExcludedCandidate(StrictModel):
             terms not clearly permissive per ADR-0004's default, or measured
             thinness) or ``manual_pending`` (the automated route is blocked, but a
             human downloading a named public-domain file is an open, ordinary
-            route, not attempted yet). ``manual_pending`` is not a synonym for
-            ``blocked``: conflating "this project's automated client cannot fetch
-            it" with "no permitted route exists" is exactly the distinction
-            ADR-0016 was corrected to draw.
+            route, not attempted yet) or ``pending_measurement`` (a permitted route
+            is open and the stage-or-exclude verdict waits on a pre-registered
+            measurement). ``manual_pending`` is not a synonym for ``blocked``:
+            conflating "this project's automated client cannot fetch it" with "no
+            permitted route exists" is exactly the distinction ADR-0016 was
+            corrected to draw.
         reason: One-line reason.
         evidence: What was actually observed -- a status code, a robots.txt line, a
             DNS failure -- not a paraphrase of it.
@@ -241,7 +243,7 @@ class ExcludedCandidate(StrictModel):
             download, and where that URL was read from.
     """
 
-    status: Literal["blocked", "excluded", "manual_pending"]
+    status: Literal["blocked", "excluded", "manual_pending", "pending_measurement"]
     reason: str
     evidence: str
     manual_route: str | None = None

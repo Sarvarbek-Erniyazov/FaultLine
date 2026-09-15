@@ -257,7 +257,8 @@ class TextRunRecord:
         seconds: Wall-clock seconds spent training (measurement included).
         budget_bound: Which bound the run's window budget hit: ``"one_pass"`` or
             ``"gpu_hours"``.
-        one_pass_windows: The training split's size in windows, measured.
+        one_pass_windows: Windows spending one pass over the training tokens
+            (:func:`one_pass_windows`).
         gpu_hour_windows: The wall-clock cap's equivalent window count, measured from
             this rung's own calibrated throughput.
     """
@@ -280,13 +281,49 @@ class TextRunRecord:
     gpu_hour_windows: int
 
 
+def stream_tokens(shards: ShardSet, split: str) -> dict[str, int]:
+    """Tokens in each source's stream for one split, ``<sep>`` included.
+
+    Args:
+        shards: The text shard set.
+        split: ``train``, ``val`` or ``test``.
+
+    Returns:
+        Per source, the token count its shard file holds.
+    """
+    files = shards.files()
+    return {key.rsplit("__", 1)[0]: int(files[key]["tokens_count"]) for key in shards.keys(split)}
+
+
+def one_pass_windows(shards: ShardSet) -> int:
+    """The window count that spends one pass over the training tokens.
+
+    Windows are drawn at stride 1, so the admissible-window count overlaps in all but one
+    token and is about ``context`` times the corpus: spending it would be thousands of
+    passes, not one. One pass is the training token count over the context length.
+
+    Args:
+        shards: The text shard set.
+
+    Returns:
+        ``ceil(training tokens / context tokens)``.
+    """
+    return math.ceil(sum(stream_tokens(shards, "train").values()) / shards.context_tokens)
+
+
 def _bits_per_byte(nats_per_token: float, tokens: int, byte_count: int) -> float:
     """Convert a mean next-token loss in nats to bits per byte.
 
+    The mean loss is measured on a sample of windows and taken as the per-token rate of
+    the whole stream, so ``tokens`` and ``byte_count`` must describe the same text: one
+    source's full stream for the split and that same text's UTF-8 bytes. ``<sep>``
+    tokens are in the count and decode to no bytes, so the figure slightly overstates
+    bits per byte (one token per document).
+
     Args:
         nats_per_token: Mean cross entropy per predicted token, in nats.
-        tokens: Predicted tokens the loss was averaged over.
-        byte_count: UTF-8 bytes those tokens decode to.
+        tokens: Tokens in the stream the rate applies to.
+        byte_count: UTF-8 bytes of the text that stream encodes.
 
     Returns:
         Bits per byte, or ``nan`` if there are no bytes to divide by.
@@ -381,16 +418,16 @@ def run_rung(
         calibration_windows / calibration_seconds if calibration_seconds > 0 else 1.0
     )
 
-    one_pass_windows = train_sampler.windows
+    one_pass = one_pass_windows(shards)
     gpu_hour_windows = int(windows_per_second * config.gpu_hour_budget * 3600)
-    budget_windows = min(one_pass_windows, gpu_hour_windows)
-    budget_bound = "one_pass" if one_pass_windows <= gpu_hour_windows else "gpu_hours"
+    budget_windows = min(one_pass, gpu_hour_windows)
+    budget_bound = "one_pass" if one_pass <= gpu_hour_windows else "gpu_hours"
     logger.info(
         "%s: calibrated %.1f windows/s; one pass = %d windows, %.1f GPU-hours = %d windows; "
         "spending %d (%s bound)",
         rung.name,
         windows_per_second,
-        one_pass_windows,
+        one_pass,
         config.gpu_hour_budget,
         gpu_hour_windows,
         budget_windows,
@@ -446,11 +483,12 @@ def run_rung(
     )
     val_bytes = _bytes_per_source(paths, corpus_name, "val")
     test_bytes = _bytes_per_source(paths, corpus_name, "test")
-    tokens_per_window = shards.context_tokens - 1
 
-    def to_bpb(losses: dict[str, float], byte_totals: dict[str, int]) -> dict[str, float]:
+    def to_bpb(
+        losses: dict[str, float], token_totals: dict[str, int], byte_totals: dict[str, int]
+    ) -> dict[str, float]:
         return {
-            source: _bits_per_byte(loss, tokens_per_window, byte_totals.get(source, 0))
+            source: _bits_per_byte(loss, token_totals.get(source, 0), byte_totals.get(source, 0))
             for source, loss in losses.items()
         }
 
@@ -463,13 +501,13 @@ def run_rung(
         history=result.history,
         validation_loss=validation_loss,
         test_loss=test_loss,
-        validation_bpb=to_bpb(validation_loss, val_bytes),
-        test_bpb=to_bpb(test_loss, test_bytes),
+        validation_bpb=to_bpb(validation_loss, stream_tokens(shards, "val"), val_bytes),
+        test_bpb=to_bpb(test_loss, stream_tokens(shards, "test"), test_bytes),
         windows=result.windows,
         tokens=result.tokens,
         seconds=result.seconds,
         budget_bound=budget_bound,
-        one_pass_windows=one_pass_windows,
+        one_pass_windows=one_pass,
         gpu_hour_windows=gpu_hour_windows,
     )
 

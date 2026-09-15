@@ -132,6 +132,33 @@ def test_bits_per_byte_arithmetic() -> None:
     assert math.isnan(_bits_per_byte(1.0, 0, 400))
 
 
+def test_bits_per_byte_uses_one_streams_tokens_and_bytes() -> None:
+    import math
+
+    # 1 nat/token over a 1,000-token stream encoding 4,000 bytes: 0.25 nats/byte
+    assert math.isclose(_bits_per_byte(1.0, 1000, 4000), 0.25 / math.log(2))
+
+
+def test_one_pass_is_training_tokens_over_context_not_the_window_count(
+    tmp_paths: ProjectPaths, pretrain_config_path: Path
+) -> None:
+    import math
+
+    from faultline.evaluation.text_ladder import (
+        _load_shards,
+        one_pass_windows,
+        stream_tokens,
+    )
+
+    shards, _corpus = _load_shards(tmp_paths, load_text_pretrain_config(pretrain_config_path))
+    train_tokens = sum(stream_tokens(shards, "train").values())
+    assert one_pass_windows(shards) == math.ceil(train_tokens / shards.context_tokens)
+    admissible = sum(
+        max(0, n - shards.context_tokens + 1) for n in stream_tokens(shards, "train").values()
+    )
+    assert one_pass_windows(shards) < admissible
+
+
 def test_run_text_ladder_end_to_end(tmp_paths: ProjectPaths, pretrain_config_path: Path) -> None:
     json_path, report_path = run_text_ladder(tmp_paths, pretrain_config_path)
     assert json_path.is_file()

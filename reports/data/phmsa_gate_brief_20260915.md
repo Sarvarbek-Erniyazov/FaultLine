@@ -78,7 +78,7 @@ other automated presentation of this project's client as something it is not". I
 the first "a different act from that, not a smaller version of it".
 
 **My reading: contrary to the ADR's line.** The ADR's test is about who performs the
-act, not only which software sends the bytes. An agent driving the author's Chrome
+act, not only which software sends the bytes. An automated process driving the author's Chrome
 (CDP, Playwright attached to the real profile, or similar) is an automated client. It
 presents itself as a human-operated browser session, which it is not, to an edge rule
 whose evident purpose is to separate automated traffic from human traffic. Borrowing a
@@ -94,7 +94,7 @@ the file is public domain, and PHMSA publishes no policy saying otherwise: its
 robots.txt itself returns 403, so no `Disallow` is being crossed. On that reading, an
 author-initiated, supervised, single-file download through their own browser is the
 manual route with the clicking delegated. Provenance can still be written plainly:
-"retrieved via the author's Chrome session, agent-driven, supervised."
+"retrieved via the author's Chrome session, automation-driven, supervised."
 
 **Why this may be moot:** see 2b. A permitted automated route to the underlying incident
 data appears to exist, so the question only matters if the specific *flagged* file is

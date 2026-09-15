@@ -1947,7 +1947,7 @@ presenting certain 20-year trends", covering serious and significant incidents.
 narrative would live. `manual_pending` on the flagged file is withdrawn.
 
 *Considered and not taken: automating the author's real Chrome.* Driving the author's
-own browser session against the Akamai edge was considered. That means an agent over
+own browser session against the Akamai edge was considered. That means automation over
 CDP, or Playwright attached to the real profile. It reads against this ADR's own line.
 "The user's decision" above separates a **human** downloading a file from "any other
 automated presentation of this project's client as something it is not". An agent

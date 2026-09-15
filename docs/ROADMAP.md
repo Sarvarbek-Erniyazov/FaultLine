@@ -373,6 +373,15 @@ together: **larger** held-out-site advantage on event types whose status strings
 vocabulary with the narrative corpus than on those that do not. A flat difference
 falsifies H3 and supersedes ADR-0007.
 
+*Pre-M3 measurement, 2026-09-16 (full record under H3 in ADR-0007).* Against the NRC-only
+training split, 31 code-book word types are absent from the narrative corpus
+(`yaw, nacelle, anemometer, drivetrain, winddirection, bladeangle, …`), and only 76 of
+the 264 status strings have every word seen at least 100 times. The gap is
+wind-specific, not generic. The corpus is nuclear, and since 2026-09-16 nuclear plus
+pipeline. A flat H3 result has to be read against this gap before it is attributed to
+the text pathway. The split is re-measured against the M2c training corpus in the
+Gate 6 report.
+
 H1 and H2 are reserved for the two claims the project already carries — that the joint
 model beats both single-modality baselines, and that calibrated abstention degrades
 gracefully under modality shift. They are stated as milestone criteria below rather

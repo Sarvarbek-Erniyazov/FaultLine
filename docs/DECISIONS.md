@@ -43,6 +43,18 @@ a categorical code book, not language. The text side is therefore anchored by a
 separate public-domain operator-narrative corpus (M2), and the SCADA event logs
 serve as a label and structure source.
 
+*Note, 2026-09-16: what the narrative corpus turned out to be.* Measured on the corrected
+M2 corpus (run `20260913-142340_all_text_2a6ec5b7`, ADR-0016), it was **single-agency**:
+every document came from the U.S. Nuclear Regulatory Commission. **About 23% of it is not
+operator narrative:** the four generic-communications collections, which are
+regulator-authored guidance, hold 1,448,211 of 6,387,362 whitespace tokens (22.7%). Among
+the event notifications, 6,024 of 21,882 (27.5%) are Agreement State reports from
+radioactive-materials licensees, not plant events. The framing above still holds, since
+it asks for a public-domain narrative corpus and not a multi-agency one, and the change
+trigger below has not fired. On the same date PHMSA's 2010-onward pipeline incident
+narratives, which are operator-written, were added under ADR-0016's pre-registered rule.
+From then on the corpus is two-agency, and this note records the state before that.
+
 **This is the central risk of the project and it is checked, not assumed.**
 `faultline inspect telemetry` profiles every status, alarm and event table found in
 the staged archives — unique messages, mean message length, share of rows with
@@ -561,6 +573,26 @@ with the narrative corpus than for event types whose strings do not. If the
 advantage is flat across that split, the text pathway is carrying site identity
 rather than meaning, H3 is false, and this record is superseded rather than the
 result being reported as support for it.
+
+*Pre-M3 measurement, 2026-09-16: the wind vocabulary gap H3 will be tested against.*
+Recorded before M3, so that a flat H3 result is not blamed on the text pathway alone.
+The status code book (`data/raw/text/status_code_book.jsonl`: 264 strings, 297 word
+types, 883 word tokens) was compared with the **NRC-only** training split of run
+`20260913-142340_all_text_2a6ec5b7`. **191 of 297 word types (64.3%) occur at least 100
+times, covering 70.2% of code-book word tokens; 266 (89.6%) occur at least once. Only
+76 of the 264 status strings have every word seen at least 100 times.** 31 word types
+are absent entirely: `adaption, anemometer, asymmetry, autounwind, bladeangle, conv, dev,
+drivetrain, earthed, electr, err, freq, implausible, login, mains, mconfig, nacelle, nat,
+obstacle, overfrequency, parameterized, parkmaster, pmu, rotorbearing, sntp,
+synchronisation, thermistor, transf, twistangle, winddirection, yaw`. Seen only 1-99
+times, among others: `pitch, rotor, gearbox, converter, icing, gust, stator, vane, rpm,
+brake, lubrication, curtailment`. The corpus supplies the generic electrical and
+mechanical vocabulary (generator, turbine, breaker, transformer, pump, battery). What it
+lacks is the wind-specific vocabulary. The "shares vocabulary with the narrative corpus"
+split above is therefore drawn against a nuclear, and since 2026-09-16 nuclear plus
+pipeline, corpus. PHMSA is not expected to close the wind-specific gap; that
+expectation is not yet measured, and the split is re-measured against the corpus the
+M2c fit actually uses (Gate 6 report).
 
 The ablation is the test, not the joint-versus-telemetry comparison on its own: a
 joint model can beat a telemetry-only model by having more parameters.
@@ -1950,7 +1982,7 @@ narrative would live. `manual_pending` on the flagged file is withdrawn.
 own browser session against the Akamai edge was considered. That means automation over
 CDP, or Playwright attached to the real profile. It reads against this ADR's own line.
 "The user's decision" above separates a **human** downloading a file from "any other
-automated presentation of this project's client as something it is not". An agent
+automated presentation of this project's client as something it is not". Automation
 borrowing a real browser session is the automated case, and it would work for the same
 reason UA spoofing would. It is also moot, since a permitted automated route now
 exists.

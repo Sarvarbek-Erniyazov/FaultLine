@@ -2,8 +2,11 @@
 
 FaultLine is a from-scratch joint telemetry–text sequence model for risk-calibrated event
 modeling in cyber-physical (wind-energy) systems. One decoder-only transformer is pretrained
-over a **joint vocabulary**: byte-level BPE tokens from an English operator-narrative corpus
-(public-domain incident and event reports about power and process plants), per-channel
+over a **joint vocabulary**: byte-level BPE tokens from an English incident-narrative corpus
+(public-domain reports published by two U.S. federal regulators: the Nuclear Regulatory
+Commission's event notifications and generic communications, which cover nuclear power
+plants and radioactive-materials licensees, and PHMSA's pipeline incident narratives),
+per-channel
 **quantile-bin tokens** for wind-turbine SCADA telemetry, and structural tokens (modality
 delimiters, channel identifiers, a missing-value token). The endpoint is decision-theoretic
 rather than a forecast error: **the risk of a fault or shutdown event within a horizon, with
@@ -11,15 +14,18 @@ calibrated abstention, evaluated under shift.**
 
 ## Status
 
-**M0 — skeleton, pipelines and data staging. No model has been trained. Nothing here is a
-result yet.** This line is updated at each milestone.
+**M2 — text tokenizer and text-only pretraining, in progress (2026-09-16).** M0 is done
+(tagged `m0`). M1 trained a telemetry-only model ladder, but its risk result is **not** a
+positive finding: H1 is UNTESTED and the pretraining ablation INCONCLUSIVE, with the reasons
+recorded in [docs/ROADMAP.md](docs/ROADMAP.md). No number here yet supports the joint model.
+This line is updated at each milestone.
 
-What exists today: the repository skeleton and tooling, the text pipeline ported from a
-course reference notebook into a tested package, the telemetry pipeline (canonical schemas,
-per-source archive readers, cleaning/filtering/imputation/event stages) exercised on
-synthetic fixtures, the joint vocabulary layout and the quantile-bin tokenizer, a
-checksum-verifying downloader, and dataset cards plus checksum manifests for four public
-SCADA sources. What does not exist: any model, any training loop, any evaluation number.
+What exists today: the repository tooling; the telemetry pipeline over four staged SCADA
+sources, its quantile-bin tokenizer, shards and the M1 model ladder with its risk
+evaluation; the text pipeline, ported from a course reference notebook into a tested
+package and run on the real text corpus; a robots.txt-gated text downloader; and dataset
+cards plus checksum manifests. What does not exist yet: the text tokenizer fit, text-only
+pretraining, and anything joint.
 
 **Tier 1 is staged for all four sources**: 37 files, 17.44 GB, every one md5-verified
 against its record and re-hashed on 2026-09-10 — Kelmarsh 11 files (3.69 GB), Penmanshiel
@@ -75,10 +81,21 @@ Attribution strings, share-alike propagation and the sources deliberately exclud
 [docs/DATA_LICENSES.md](docs/DATA_LICENSES.md). Per-source cards are in
 [data/cards/](data/cards/), checksums in [data/cards/manifests/](data/cards/manifests/).
 
-**Text (planned, M2).** Public-domain operator-narrative sources — incident and event reports
-from public safety and regulatory bodies. They are specified with `enabled: false` in
-[configs/data/sources_text.yaml](configs/data/sources_text.yaml) and nothing is downloaded
-until their terms are verified in writing (ADR-0004).
+**Text (M2, staged).** Public-domain (17 U.S.C. 105) reports from two U.S. federal
+regulators, staged by a robots.txt-gated downloader and specified in
+[configs/data/sources_text.yaml](configs/data/sources_text.yaml):
+
+- U.S. Nuclear Regulatory Commission (nrc.gov): Event Notification Reports, and four
+  generic-communications collections (Information Notices, Bulletins, Generic Letters,
+  Regulatory Issue Summaries). The event notifications are licensee-reported, and 27.5% of
+  them are Agreement State reports from radioactive-materials licensees (medical, gauges,
+  radiography) rather than plant events. The generic communications are regulator-authored
+  guidance, 22.7% of the NRC corpus's tokens.
+- Pipeline and Hazardous Materials Safety Administration (via data.transportation.gov):
+  operator-written incident narratives from the 2010-onward hazardous-liquid, gas
+  distribution, gas transmission and gathering, and LNG report files, 10,033 reports.
+
+What was considered and excluded, and why, is recorded in ADR-0016.
 
 ## Repository layout
 

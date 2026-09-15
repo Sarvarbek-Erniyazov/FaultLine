@@ -127,6 +127,7 @@ def build_text_shards(paths: ProjectPaths, config_path: Path) -> tuple[Path, Pat
 
     Raises:
         FileNotFoundError: If the tokenizer the configuration names was never fitted.
+        ValueError: If any source's split is shorter than one context window.
     """
     config = load_text_shards_config(config_path)
     bpe_config_path = paths.repo_root / config.tokenizer_config
@@ -167,12 +168,10 @@ def build_text_shards(paths: ProjectPaths, config_path: Path) -> tuple[Path, Pat
             n = int(array.shape[0])
             window_count = max(0, n - config.context_steps + 1)
             if window_count == 0:
-                logger.warning(
-                    "%s/%s: %d tokens does not reach the %d-token context; no admissible window",
-                    source,
-                    split,
-                    n,
-                    config.context_steps,
+                # an empty window index would train or evaluate on nothing, silently
+                raise ValueError(
+                    f"{source}/{split}: {n} tokens does not reach the "
+                    f"{config.context_steps}-token context; no admissible window"
                 )
             starts = np.arange(window_count, dtype=np.int64)
             index = pa.table(

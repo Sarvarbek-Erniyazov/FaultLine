@@ -10,3 +10,4 @@
 # would make them differ from what the provider published, and the README beside them
 # claims they are verbatim -- so the claim has to stay true on every checkout.
 tests/fixtures/telemetry/** -text
+tests/fixtures/robots/** -text

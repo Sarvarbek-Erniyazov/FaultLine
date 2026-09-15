@@ -7,9 +7,13 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
+from typer.testing import CliRunner
 
+from faultline import cli
+from faultline.data.common.manifest import manifest_path
 from faultline.data.text.phmsa_manual import (
     RETRIEVAL_METHOD,
+    ArchiveParseError,
     classify_member,
     inspect_archive,
     profile_member,
@@ -144,3 +148,48 @@ def test_render_report_shows_classification_totals_and_samples(
     assert "hazardous liquid / pre-2010 form" in report
     assert "NARRATIVE" in report
     assert "valve failed during routine operation" in report  # a verbatim sample
+
+
+#: Shaped like the body Akamai served for the blocked flagged zip (PHMSA gate brief,
+#: section 1b): what a browser "save as" of a denied download would leave behind.
+ACCESS_DENIED_HTML = (
+    b"<HTML><HEAD>\n<TITLE>Access Denied</TITLE>\n</HEAD><BODY>\n<H1>Access Denied</H1>\n"
+    b"You don't have permission to access this resource.</BODY></HTML>\n"
+)
+
+
+def test_inspect_archive_raises_on_an_error_page_saved_as_zip(tmp_path: Path) -> None:
+    fake = tmp_path / "PHMSA_Pipeline_Safety_Flagged_Incidents.zip"
+    fake.write_bytes(ACCESS_DENIED_HTML)
+    with pytest.raises(ArchiveParseError, match="not a readable zip"):
+        inspect_archive(fake)
+
+
+def test_inspect_archive_raises_when_a_tabular_member_does_not_parse(tmp_path: Path) -> None:
+    broken = tmp_path / "broken.zip"
+    with zipfile.ZipFile(broken, "w") as archive:
+        archive.writestr("incidents.xlsx", b"this is not an xlsx workbook")
+    with pytest.raises(ArchiveParseError, match="incidents.xlsx"):
+        inspect_archive(broken)
+
+
+def test_inspect_archive_raises_when_no_member_is_tabular(tmp_path: Path) -> None:
+    empty = tmp_path / "no_tables.zip"
+    with zipfile.ZipFile(empty, "w") as archive:
+        archive.writestr("readme.pdf", b"%PDF-1.4")
+    with pytest.raises(ArchiveParseError, match="no tabular member"):
+        inspect_archive(empty)
+
+
+def test_cli_writes_nothing_and_exits_non_zero_for_a_malformed_archive(
+    tmp_paths: ProjectPaths, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    fake = tmp_path / "PHMSA_Pipeline_Safety_Flagged_Incidents.zip"
+    fake.write_bytes(ACCESS_DENIED_HTML)
+    monkeypatch.setattr(cli.ProjectPaths, "resolve", classmethod(lambda _cls: tmp_paths))
+
+    result = CliRunner().invoke(cli.app, ["inspect", "phmsa", "--file", str(fake)])
+
+    assert result.exit_code != 0
+    assert not manifest_path(tmp_paths.manifests_dir, "phmsa").exists()
+    assert not list(tmp_paths.data_reports_dir.glob("phmsa_manual_*.md"))

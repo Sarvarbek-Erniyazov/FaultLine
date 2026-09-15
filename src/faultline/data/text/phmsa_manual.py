@@ -154,15 +154,27 @@ class MemberProfile:
     samples: list[str] = field(default_factory=list)
 
 
+class ArchiveParseError(ValueError):
+    """The archive, or a tabular member inside it, could not be read.
+
+    Raised rather than logged: a file that does not parse is not verified data, and the
+    manifest record that says ``verified=True`` must never be written for one (an HTML
+    error page saved under a ``.zip`` name was the concrete case).
+    """
+
+
 def _read_member(name: str, raw: bytes) -> pd.DataFrame | None:
-    """Read one archive member as a table, or ``None`` if it is not one.
+    """Read one archive member as a table, or ``None`` if it is not a tabular member.
 
     Args:
         name: Member path inside the archive.
         raw: The member's raw bytes.
 
     Returns:
-        The parsed table, or ``None`` for an unreadable or non-tabular member.
+        The parsed table, or ``None`` for a member whose suffix is not tabular.
+
+    Raises:
+        ArchiveParseError: If a member with a tabular suffix does not parse.
     """
     suffix = Path(name).suffix.lower()
     if suffix not in TABULAR_SUFFIXES:
@@ -172,8 +184,7 @@ def _read_member(name: str, raw: bytes) -> pd.DataFrame | None:
             return pd.read_csv(io.BytesIO(raw), low_memory=False, on_bad_lines="skip")
         return pd.read_excel(io.BytesIO(raw))
     except (ValueError, UnicodeDecodeError, pd.errors.ParserError) as exc:
-        logger.warning("%s: could not parse as tabular data: %s", name, exc)
-        return None
+        raise ArchiveParseError(f"{name}: could not parse as tabular data: {exc}") from exc
 
 
 def profile_member(name: str, raw: bytes) -> MemberProfile | None:
@@ -184,7 +195,10 @@ def profile_member(name: str, raw: bytes) -> MemberProfile | None:
         raw: The member's raw bytes.
 
     Returns:
-        The profile, or ``None`` if the member is not readable tabular data.
+        The profile, or ``None`` if the member's suffix is not tabular.
+
+    Raises:
+        ArchiveParseError: If a member with a tabular suffix does not parse.
     """
     frame = _read_member(name, raw)
     if frame is None:
@@ -225,21 +239,28 @@ def inspect_archive(zip_path: Path) -> list[MemberProfile]:
         zip_path: The retrieved zip file.
 
     Returns:
-        One profile per readable tabular member, in archive order.
+        One profile per tabular member, in archive order.
+
+    Raises:
+        ArchiveParseError: If the file is not a readable zip, a tabular member does not
+            parse, or no member is tabular at all.
     """
     profiles = []
-    with zipfile.ZipFile(zip_path) as archive:
-        for info in archive.infolist():
-            if info.is_dir():
-                continue
-            raw = archive.read(info.filename)
-            profile = profile_member(info.filename, raw)
-            if profile is not None:
-                profiles.append(profile)
-            else:
-                logger.info(
-                    "%s: not read as tabular data (unsupported or unparseable)", info.filename
-                )
+    try:
+        with zipfile.ZipFile(zip_path) as archive:
+            for info in archive.infolist():
+                if info.is_dir():
+                    continue
+                raw = archive.read(info.filename)
+                profile = profile_member(info.filename, raw)
+                if profile is not None:
+                    profiles.append(profile)
+                else:
+                    logger.info("%s: not a tabular member; skipped", info.filename)
+    except (zipfile.BadZipFile, zipfile.LargeZipFile, OSError) as exc:
+        raise ArchiveParseError(f"{zip_path}: not a readable zip archive: {exc}") from exc
+    if not profiles:
+        raise ArchiveParseError(f"{zip_path}: no tabular member ({', '.join(TABULAR_SUFFIXES)})")
     return profiles
 
 

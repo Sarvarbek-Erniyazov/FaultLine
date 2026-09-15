@@ -116,9 +116,7 @@ def test_windows_are_never_empty_and_a_sampler_can_draw_batches(
     assert which.shape[0] <= 4
 
 
-def test_a_source_shorter_than_context_yields_no_window(
-    tmp_paths: ProjectPaths, tmp_path: Path
-) -> None:
+def test_a_source_shorter_than_context_raises(tmp_paths: ProjectPaths, tmp_path: Path) -> None:
     _write_shard(tmp_paths, "train", [{"text": "short", "source": "tiny", "doc_id": "0"}])
     bpe_path = tmp_path / "text_bpe_v1.yaml"
     bpe_path.write_text(
@@ -132,7 +130,6 @@ def test_a_source_shorter_than_context_yields_no_window(
         f"version: 1\ntokenizer_config: {bpe_path.as_posix()}\ncontext_steps: 2048\n",
         encoding="utf-8",
     )
-    manifest_path, _ = build_text_shards(tmp_paths, shards_path)
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    tiny_entry = manifest["files"]["tiny__train"]
-    assert tiny_entry["steps"] < 2048
+    # a split with no admissible window would evaluate silently empty; it must not build
+    with pytest.raises(ValueError, match="tiny/train"):
+        build_text_shards(tmp_paths, shards_path)

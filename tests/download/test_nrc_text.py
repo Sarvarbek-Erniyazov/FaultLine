@@ -411,6 +411,20 @@ class TestRobotsGating:
         assert blocked is None
         assert "https://blocked.org/page" not in session.requested
 
+    def test_blank_line_separated_rules_still_gate_the_transport(self, fixtures_dir: Path) -> None:
+        # the real data.transportation.gov file, which urllib.robotparser read as allow-all
+        robots = (fixtures_dir / "robots" / "data_transportation_gov.txt").read_bytes()
+        session = _FakeSession(
+            {"https://data.transportation.gov/robots.txt": (200, robots.decode("utf-8"))}
+        )
+        client = NrcTextClient(min_interval=0, session=session)
+        # the fixture's Crawl-delay: 1 applies on top of min_interval=0; skip the sleeps
+        client._pace = lambda interval: None  # type: ignore[method-assign]
+
+        assert client.get("https://data.transportation.gov/api/odata/x") is None
+        assert client.get("https://data.transportation.gov/login") is None
+        assert session.requested == ["https://data.transportation.gov/robots.txt"]
+
 
 class TestEventNotificationShardKey:
     def test_groups_by_the_four_digit_report_year(self) -> None:

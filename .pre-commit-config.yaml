@@ -20,11 +20,11 @@ repos:
       - id: end-of-file-fixer
         # Verbatim third-party data excerpts must not be rewritten; see
         # tests/fixtures/telemetry/kelmarsh/README.md.
-        exclude: ^tests/fixtures/telemetry/
+        exclude: ^tests/fixtures/(telemetry|robots)/
       - id: trailing-whitespace
         # Same reason, and this hook would strip the CR from the provider's CRLF
         # line endings, quietly making the excerpt non-verbatim.
-        exclude: ^tests/fixtures/telemetry/
+        exclude: ^tests/fixtures/(telemetry|robots)/
       - id: check-yaml
       - id: detect-private-key
 

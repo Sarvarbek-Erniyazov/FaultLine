@@ -35,7 +35,6 @@ from __future__ import annotations
 import html
 import re
 import time
-import urllib.robotparser
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
@@ -59,6 +58,7 @@ from faultline.data.common.manifest import (
     write_manifest,
     write_manifest_sharded,
 )
+from faultline.download.robots import RobotsPolicy
 from faultline.logging_utils import get_logger
 from faultline.paths import ProjectPaths
 
@@ -335,18 +335,26 @@ class NrcTextClient:
             self.session.mount("http://", adapter)
         self.min_interval = min_interval
         self._last_request = 0.0
-        self._robots: dict[str, urllib.robotparser.RobotFileParser] = {}
+        self._robots: dict[str, RobotsPolicy] = {}
 
-    def _robots_for(self, url: str) -> urllib.robotparser.RobotFileParser:
+    def _pace(self, interval: float) -> None:
+        """Sleep until ``interval`` seconds have passed since the last request."""
+        wait = interval - (time.monotonic() - self._last_request)
+        if wait > 0:
+            time.sleep(wait)
+        self._last_request = time.monotonic()
+
+    def _robots_for(self, url: str) -> RobotsPolicy:
         """Fetch and parse one host's robots.txt, once, caching the result.
 
-        Follows the same convention :mod:`urllib.robotparser` itself uses when it
-        fetches its own robots.txt (its ``read()`` method), reimplemented here so the
-        fetch goes through this client's own paced session rather than a bare
-        ``urllib.request`` call: a ``401``/``403`` on robots.txt itself means "assume
-        the whole host is closed", anything else unreadable (a ``404``, a connection
-        failure) means "no policy was stated, assume open" -- the standard reading of
-        an absent robots.txt, not this project's own invention.
+        Follows the convention :mod:`urllib.robotparser`'s ``read()`` uses for an
+        unreadable file, through this client's own paced session: a ``401``/``403`` on
+        robots.txt itself means "assume the whole host is closed", anything else
+        unreadable (a ``404``, a connection failure) means "no policy was stated,
+        assume open" -- the standard reading of an absent robots.txt, not this
+        project's own invention. Parsing is :class:`~faultline.download.robots.RobotsPolicy`,
+        not the stdlib parser, which silently drops rules on files this project
+        actually reads (see that module's docstring).
 
         Args:
             url: A URL on the host whose policy is needed.
@@ -358,29 +366,27 @@ class NrcTextClient:
         key = f"{host.scheme}://{host.netloc}"
         if key in self._robots:
             return self._robots[key]
-        parser = urllib.robotparser.RobotFileParser()
         robots_url = f"{key}/robots.txt"
-        parser.set_url(robots_url)
-        wait = self.min_interval - (time.monotonic() - self._last_request)
-        if wait > 0:
-            time.sleep(wait)
-        self._last_request = time.monotonic()
+        self._pace(self.min_interval)
         try:
             response = self.session.get(robots_url, timeout=40)
         except requests.RequestException:
-            parser.allow_all = True  # type: ignore[attr-defined]  # real attribute; see read() above
+            policy = RobotsPolicy(allow_all=True)
         else:
             if response.status_code == 200:
-                parser.parse(response.text.splitlines())
+                policy = RobotsPolicy.parse(response.text, host.netloc)
             elif response.status_code in (401, 403):
-                parser.disallow_all = True  # type: ignore[attr-defined]
+                policy = RobotsPolicy(disallow_all=True)
             else:
-                parser.allow_all = True  # type: ignore[attr-defined]
-        self._robots[key] = parser
-        return parser
+                policy = RobotsPolicy(allow_all=True)
+        self._robots[key] = policy
+        return policy
 
     def get(self, url: str, timeout: int = 40) -> requests.Response | None:
         """Fetch a URL, enforcing the minimum interval, tolerating one failure.
+
+        The interval is the longer of this client's own ``min_interval`` and the
+        host's stated ``Crawl-delay`` for this user agent.
 
         Args:
             url: URL to fetch.
@@ -395,10 +401,7 @@ class NrcTextClient:
         if not robots.can_fetch(USER_AGENT, url):
             logger.warning("%s: disallowed by robots.txt for this user agent; not requested", url)
             return None
-        wait = self.min_interval - (time.monotonic() - self._last_request)
-        if wait > 0:
-            time.sleep(wait)
-        self._last_request = time.monotonic()
+        self._pace(max(self.min_interval, robots.crawl_delay(USER_AGENT) or 0.0))
         try:
             response = self.session.get(url, timeout=timeout)
         except requests.RequestException as exc:

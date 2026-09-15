@@ -234,11 +234,13 @@ def inspect_phmsa(
         retrieved_at: When it was retrieved; now (UTC) when omitted.
 
     Raises:
-        typer.Exit: With code 1 if the file does not exist yet.
+        typer.Exit: With code 1 if the file does not exist yet, code 2 if it does not
+            parse (nothing is written to the manifest in either case).
     """
     from datetime import UTC, datetime
 
     from faultline.data.text.phmsa_manual import (
+        ArchiveParseError,
         inspect_archive,
         record_manual_retrieval,
         render_report,
@@ -249,8 +251,13 @@ def inspect_phmsa(
         raise typer.Exit(code=1)
     paths = ProjectPaths.resolve()
     when = datetime.fromisoformat(retrieved_at) if retrieved_at else datetime.now(tz=UTC)
+    # parse first: the manifest records verified=True, which only a parsed file earns
+    try:
+        profiles = inspect_archive(zip_path)
+    except ArchiveParseError as exc:
+        typer.echo(f"{exc}; nothing recorded", err=True)
+        raise typer.Exit(code=2) from exc
     manifest = record_manual_retrieval(paths, zip_path, url=url, retrieved_at=when)
-    profiles = inspect_archive(zip_path)
     report = render_report(zip_path, manifest, profiles)
     stamp = datetime.now(tz=UTC).strftime("%Y%m%d")
     destination = paths.data_reports_dir / f"phmsa_manual_{stamp}.md"

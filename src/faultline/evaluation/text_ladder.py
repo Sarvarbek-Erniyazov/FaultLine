@@ -261,6 +261,9 @@ class TextRunRecord:
             (:func:`one_pass_windows`).
         gpu_hour_windows: The wall-clock cap's equivalent window count, measured from
             this rung's own calibrated throughput.
+        checkpoint: The selected parameters' file, relative to the checkpoints directory
+            (``text/<rung>_text_seed<seed>.pt``), the weights M3's narrative-pretraining
+            arm starts from.
     """
 
     rung: str
@@ -279,6 +282,7 @@ class TextRunRecord:
     budget_bound: str
     one_pass_windows: int
     gpu_hour_windows: int
+    checkpoint: str = ""
 
 
 def stream_tokens(shards: ShardSet, split: str) -> dict[str, int]:
@@ -455,6 +459,13 @@ def run_rung(
     )
     module.load_state_dict({k: v.to(device) for k, v in result.state.items()})
     module.eval()
+    checkpoint_dir = paths.checkpoints_dir / "text"
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+    checkpoint = checkpoint_dir / f"{rung.name}_text_seed{config.seed}.pt"
+    torch.save(
+        {"spec": spec.__dict__, "kind": "text", "seed": config.seed, "state": result.state},
+        checkpoint,
+    )
 
     test_sources = sorted({key.rsplit("__", 1)[0] for key in shards.keys("test")})
     validation_loss = _per_source_loss(
@@ -509,6 +520,7 @@ def run_rung(
         budget_bound=budget_bound,
         one_pass_windows=one_pass,
         gpu_hour_windows=gpu_hour_windows,
+        checkpoint=checkpoint.relative_to(paths.checkpoints_dir).as_posix(),
     )
 
 
@@ -588,6 +600,7 @@ def _render_report(
             r.windows,
             r.budget_bound,
             f"{r.seconds / 60:.1f}",
+            f"checkpoints/{r.checkpoint}",
         )
         for r in records
     ]
@@ -604,6 +617,7 @@ def _render_report(
                 "windows spent",
                 "bound hit",
                 "wall clock (min)",
+                "selected checkpoint (not committed)",
             ],
             budget_rows,
         ),
@@ -708,6 +722,7 @@ def run_text_ladder(
                     "budget_bound": r.budget_bound,
                     "one_pass_windows": r.one_pass_windows,
                     "gpu_hour_windows": r.gpu_hour_windows,
+                    "checkpoint": r.checkpoint,
                 }
                 for r in records
             ],

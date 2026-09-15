@@ -170,6 +170,7 @@ def test_run_text_ladder_end_to_end(tmp_paths: ProjectPaths, pretrain_config_pat
     assert record["rung"] == "Stest"
     assert record["budget_bound"] in ("one_pass", "gpu_hours")
     assert record["windows"] > 0
+    assert (tmp_paths.checkpoints_dir / record["checkpoint"]).is_file()
     assert set(record["validation_loss"]) <= {"a", "b"}
     assert set(record["test_loss"]) <= {"a", "b"}
     # every reported loss is a finite non-negative nats figure

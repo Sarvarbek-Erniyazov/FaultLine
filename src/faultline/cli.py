@@ -621,6 +621,46 @@ def cards_build(
         typer.echo(f"{name}: wrote {card}")
 
 
+@cards_app.command(
+    "text",
+    help="Render text-source dataset cards from manifests and a finished text corpus.",
+)
+def cards_text(
+    config: ConfigOption = Path("configs/data/sources_text.yaml"),
+    text_config: Annotated[
+        Path, typer.Option("--text-config", help="Text pipeline config whose corpus is read.")
+    ] = Path("configs/data/text_v2.yaml"),
+    source: Annotated[
+        str | None, typer.Option("--source", help="Source id; every enabled narrative source.")
+    ] = None,
+) -> None:
+    """Render one card per enabled narrative text source.
+
+    Args:
+        config: Text source specification file.
+        text_config: The text pipeline configuration naming the finished corpus.
+        source: Restrict rendering to one source.
+
+    Raises:
+        typer.Exit: With code 1 if the source id is unknown.
+    """
+    from faultline.data.text.cards import build_text_card
+    from faultline.download.nrc_text import CodeBookSpec, load_sources_text_config
+
+    paths = ProjectPaths.resolve()
+    spec = load_sources_text_config(config)
+    if source and source not in spec.sources:
+        typer.echo(f"unknown source {source!r}; configured: {', '.join(spec.sources)}")
+        raise typer.Exit(code=1)
+    names = [source] if source else list(spec.sources)
+    for name in names:
+        source_spec = spec.sources[name]
+        if not source_spec.enabled or isinstance(source_spec, CodeBookSpec):
+            continue
+        card = build_text_card(name, source_spec, paths, text_config)
+        typer.echo(f"{name}: wrote {card}")
+
+
 @text_app.command(
     "corpus",
     help="Combine staged per-source raw text into one JSONL corpus for `text run`.",

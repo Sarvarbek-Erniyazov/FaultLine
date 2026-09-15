@@ -40,12 +40,23 @@ reproducible; it is not required to be the same tie-break another implementation
 Ascending ``(left_id, right_id)`` is what is used, and the reference-comparison test
 asserts the fixture it runs on never reaches one, so the fixture's result does not
 depend on this choice.
+
+**Fitting is incremental.** The first version recounted every pair over every distinct
+chunk after each merge: correct, and quadratic in practice -- 32,512 merges over the M2
+corpus's few hundred thousand distinct chunks is on the order of 10^10 Python
+operations. :meth:`TextBPETokenizer.fit` now keeps the pair counts, an index from each
+pair to the chunks holding it, and a heap of ``(-count, pair)`` entries invalidated
+lazily; after a merge only the chunks that held the merged pair are recounted. The
+selection rule is unchanged -- highest count, ascending pair on a tie -- and
+``tests/tokenizers/test_text_bpe.py`` asserts the merge sequence is identical to the
+original full-recount loop, kept there as the reference.
 """
 
 from __future__ import annotations
 
+import heapq
 import json
-from collections import Counter
+from collections import Counter, defaultdict
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
@@ -56,6 +67,11 @@ logger = get_logger(__name__)
 
 #: Base alphabet: one token per byte value. Merges start at this id.
 BASE_VOCAB_SIZE = 256
+
+#: Distinct chunks :meth:`TextBPETokenizer.encode` remembers the encoding of. A chunk's
+#: encoding depends only on the chunk and the merges, so the cache changes speed, never
+#: output; the bound keeps memory flat on an unbounded stream of novel chunks.
+CHUNK_CACHE_LIMIT = 1_000_000
 
 #: GPT-2's contraction suffixes, checked at every chunk boundary before the general
 #: character-class rules. Order does not matter for correctness here: none is a
@@ -224,6 +240,7 @@ class TextBPETokenizer:
             pair: BASE_VOCAB_SIZE + index for index, pair in enumerate(self.merges)
         }
         self._bytes_of: dict[int, bytes] = self._resolve_byte_sequences()
+        self._chunk_cache: dict[str, list[int]] = {}
 
     @property
     def is_fitted(self) -> bool:
@@ -261,24 +278,51 @@ class TextBPETokenizer:
         for text in texts:
             chunk_freq.update(pretokenize(text))
 
-        symbol_chunks: list[tuple[list[int], int]] = [
-            (list(chunk.encode("utf-8")), freq) for chunk, freq in chunk_freq.items()
-        ]
+        words: list[list[int]] = [list(chunk.encode("utf-8")) for chunk in chunk_freq]
+        freqs: list[int] = list(chunk_freq.values())
+        counts: dict[Pair, int] = defaultdict(int)
+        where: dict[Pair, set[int]] = defaultdict(set)
+        for index, (symbols, freq) in enumerate(zip(words, freqs, strict=True)):
+            for pair in zip(symbols, symbols[1:], strict=False):
+                counts[pair] += freq
+                where[pair].add(index)
+        # (-count, pair): the heap's minimum is the highest count, ties to the smallest
+        # pair -- the same rule as min(counts, key=(-count, pair)) over a full recount
+        heap: list[tuple[int, Pair]] = [(-count, pair) for pair, count in counts.items()]
+        heapq.heapify(heap)
 
         merges: list[Pair] = []
         target_merges = vocab_size - BASE_VOCAB_SIZE
         while len(merges) < target_merges:
-            counts = _pair_counts(symbol_chunks)
-            if not counts:
+            best: Pair | None = None
+            while heap:
+                negative, pair = heapq.heappop(heap)
+                if counts.get(pair, 0) > 0 and -negative == counts[pair]:
+                    best = pair
+                    break
+            if best is None:
                 break
-            # Highest frequency wins; among ties, the smallest (left, right) pair --
-            # stated in the module docstring, not asserted to match any reference.
-            pair, _count = min(counts.items(), key=lambda item: (-item[1], item[0]))
             new_id = BASE_VOCAB_SIZE + len(merges)
-            merges.append(pair)
-            symbol_chunks = [
-                (_apply_merge(symbols, pair, new_id), freq) for symbols, freq in symbol_chunks
-            ]
+            merges.append(best)
+            changed: set[Pair] = set()
+            for index in where.pop(best, set()):
+                symbols, freq = words[index], freqs[index]
+                for pair in zip(symbols, symbols[1:], strict=False):
+                    counts[pair] -= freq
+                    changed.add(pair)
+                merged = _apply_merge(symbols, best, new_id)
+                for pair in zip(merged, merged[1:], strict=False):
+                    counts[pair] += freq
+                    where[pair].add(index)
+                    changed.add(pair)
+                words[index] = merged
+            counts.pop(best, None)
+            for pair in changed:
+                count = counts.get(pair, 0)
+                if count > 0:
+                    heapq.heappush(heap, (-count, pair))
+                else:
+                    counts.pop(pair, None)
 
         actual_size = BASE_VOCAB_SIZE + len(merges)
         if actual_size < vocab_size:
@@ -303,8 +347,14 @@ class TextBPETokenizer:
             Local identifiers in ``[0, vocab_size)``.
         """
         ids: list[int] = []
+        cache = self._chunk_cache
         for chunk in pretokenize(text):
-            ids.extend(self._encode_chunk(list(chunk.encode("utf-8"))))
+            encoded = cache.get(chunk)
+            if encoded is None:
+                encoded = self._encode_chunk(list(chunk.encode("utf-8")))
+                if len(cache) < CHUNK_CACHE_LIMIT:
+                    cache[chunk] = encoded
+            ids.extend(encoded)
         return ids
 
     def _encode_chunk(self, symbols: list[int]) -> list[int]:

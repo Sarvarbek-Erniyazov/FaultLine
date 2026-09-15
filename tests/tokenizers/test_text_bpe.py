@@ -177,3 +177,55 @@ def test_encode_matches_the_reference_on_held_out_sentences(corpus: list[str]) -
         ref_ids = ref.encode(sentence, add_special_tokens=False).ids  # type: ignore[attr-defined]
         assert ours.decode(ours_ids) == sentence
         assert len(ours_ids) == len(ref_ids), (sentence, ours_ids, ref_ids)
+
+
+def _full_recount_merges(texts: list[str], vocab_size: int) -> list[tuple[int, int]]:
+    """The original fit loop, verbatim in behaviour: recount every pair after each merge."""
+    from collections import Counter
+
+    chunk_freq: Counter[str] = Counter()
+    for text in texts:
+        chunk_freq.update(pretokenize(text))
+    symbol_chunks = [(list(chunk.encode("utf-8")), freq) for chunk, freq in chunk_freq.items()]
+    merges: list[tuple[int, int]] = []
+    while len(merges) < vocab_size - BASE_VOCAB_SIZE:
+        counts = _pair_counts(symbol_chunks)
+        if not counts:
+            break
+        pair, _count = min(counts.items(), key=lambda item: (-item[1], item[0]))
+        new_id = BASE_VOCAB_SIZE + len(merges)
+        merges.append(pair)
+        symbol_chunks = [
+            (_apply_merge(symbols, pair, new_id), freq) for symbols, freq in symbol_chunks
+        ]
+    return merges
+
+
+def test_incremental_fit_matches_the_full_recount_on_real_text(corpus: list[str]) -> None:
+    # 1,000 merges on the 67 KB fixture: well past its first frequency tie (merge 38)
+    fitted = TextBPETokenizer.fit(corpus, BASE_VOCAB_SIZE + 1000)
+    assert fitted.merges == _full_recount_merges(corpus, BASE_VOCAB_SIZE + 1000)
+
+
+@pytest.mark.parametrize(
+    "texts",
+    [
+        ["aaaa aaaa aaa", "abab abab", "zzzz"],  # overlapping pairs and exact ties
+        ["ba ab ba ab", "cd dc cd dc"],  # every count tied, order decided by the pair
+        ["x" * 50, "xy" * 20],  # long runs merging into themselves
+    ],
+)
+def test_incremental_fit_matches_the_full_recount_on_ties(texts: list[str]) -> None:
+    fitted = TextBPETokenizer.fit(texts, BASE_VOCAB_SIZE + 40)
+    assert fitted.merges == _full_recount_merges(texts, BASE_VOCAB_SIZE + 40)
+
+
+def test_encode_cache_does_not_change_output(corpus: list[str]) -> None:
+    tokenizer = TextBPETokenizer.fit(corpus, BASE_VOCAB_SIZE + 300)
+    first = [tokenizer.encode(text) for text in corpus]
+    second = [tokenizer.encode(text) for text in corpus]  # now served from the cache
+    uncached = [
+        [i for chunk in pretokenize(text) for i in tokenizer._encode_chunk(list(chunk.encode()))]
+        for text in corpus
+    ]
+    assert first == second == uncached

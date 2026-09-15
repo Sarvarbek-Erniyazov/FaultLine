@@ -21,6 +21,22 @@ CARE has an accompanying publication that should be cited alongside the data:
 Gück, Bruns, Dupont (2024), *CARE to Compare*, Data 9(12):138,
 [doi:10.3390/data9120138](https://doi.org/10.3390/data9120138).
 
+### Text sources (M2)
+
+Works of the United States federal government carry no domestic copyright (17 U.S.C. 105).
+There is no version-pinned record: these are live government publications, pinned instead
+by each document's sha256 and retrieval time in its manifest. Admission evidence, access
+route and robots.txt reading: ADR-0016. Cards: `faultline cards text`.
+
+| source | provider | licence | route (manifest) | attribution string |
+| --- | --- | --- | --- | --- |
+| NRC Event Notification Reports | U.S. Nuclear Regulatory Commission | public domain (17 U.S.C. 105) | www.nrc.gov event-status pages (`nrc_event_notifications/`, sharded by year) | U.S. Nuclear Regulatory Commission, Event Notification Reports, nrc.gov (public domain, 17 U.S.C. 105) |
+| NRC Information Notices | U.S. Nuclear Regulatory Commission | public domain (17 U.S.C. 105) | www.nrc.gov generic communications, native HTML only (`nrc_info_notices.json`) | as configured in `configs/data/sources_text.yaml` |
+| NRC Bulletins | U.S. Nuclear Regulatory Commission | public domain (17 U.S.C. 105) | as above (`nrc_bulletins.json`) | as configured |
+| NRC Generic Letters | U.S. Nuclear Regulatory Commission | public domain (17 U.S.C. 105) | as above (`nrc_gen_letters.json`) | as configured |
+| NRC Regulatory Issue Summaries | U.S. Nuclear Regulatory Commission | public domain (17 U.S.C. 105) | as above (`nrc_reg_issues.json`) | as configured |
+| PHMSA pipeline incident narratives, 2010 onward | Pipeline and Hazardous Materials Safety Administration, U.S. DOT | public domain (17 U.S.C. 105); usa.gov public-domain label stated in data.transportation.gov record 27nc-rsge | six 27nc-rsge attachments on data.transportation.gov (`phmsa.json` for the zips, `phmsa_incident_narratives/` for documents) | PHMSA, pipeline incident and accident flat files (2010 to present), via data.transportation.gov dataset 27nc-rsge (public domain) |
+
 ## Provenance chains of republished data
 
 ADR-0004, as amended on 2026-09-10, treats two cases differently. Data used directly from
@@ -90,6 +106,7 @@ rather than after it.
 | source | status | reason |
 | --- | --- | --- |
 | EDP Open Data (Wind Farm 1/2), **direct use** | **Excluded** | Terms of use are not clearly specified as an open licence. ADR-0004 excludes unspecified terms; the dataset is widely used in the literature, which is not a substitute for a licence. Revisit only if the publisher states terms in writing. EDP-derived data reaches this project by one route only: CARE farm A, as republished by Fraunhofer IEE under CC BY-SA 4.0 (see "Provenance chains" above). It is never fetched from EDP's platform or joined back to it. |
+| NRC Licensee Event Reports, DOE OE-417, NERC Lessons Learned, ISO/RTO notices, NREL/OSTI reports | **Excluded** | Text candidates considered at M2a; each reason is measured and recorded in `configs/data/sources_text.yaml` (`excluded_candidates`) and ADR-0016. None is a licence problem except NERC (an express ai-train=no reservation) and the ISO/RTOs (no licence stated). |
 | Any scraped web corpus | **Excluded** | No verifiable licence, and scraping against a site's terms is out of scope regardless of what it would add. |
 | Operational data from any partner, employer or funded project | **Excluded permanently** | `docs/PROVENANCE.md`. Not a licensing question — an independence one. |
 

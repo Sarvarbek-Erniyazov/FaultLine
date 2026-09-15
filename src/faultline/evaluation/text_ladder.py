@@ -337,6 +337,12 @@ def _bits_per_byte(nats_per_token: float, tokens: int, byte_count: int) -> float
     return nats_per_token * tokens / (byte_count * math.log(2))
 
 
+def _unmeasured(model: nn.Module) -> Measurement:
+    """A measurement that scores nothing, for the throughput calibration pass."""
+    del model
+    return Measurement(step=0, windows=0, value=math.nan)
+
+
 def run_rung(
     rung: Rung,
     config: TextPretrainConfig,
@@ -412,7 +418,9 @@ def run_rung(
         optimiser=config.optimiser,
         device=device,
         loss_fn=loss_fn,
-        measure=measure,
+        # timed for training throughput only: a real measurement here scores the whole
+        # selection set and would be counted as training time, shrinking the GPU-hour bound
+        measure=_unmeasured,
         higher_is_better=False,
         tokens_per_window=shards.context_tokens,
         label=f"{rung.name}/calibrate",

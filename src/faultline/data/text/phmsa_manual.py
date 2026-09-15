@@ -33,13 +33,16 @@ rows -- passes on mean length alone, and is a code book, not narrative.
 
 from __future__ import annotations
 
+import csv
 import io
 import zipfile
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
+from urllib.parse import quote
 
 import pandas as pd
+import requests
 
 from faultline.data.common.manifest import (
     FileRecord,
@@ -50,6 +53,7 @@ from faultline.data.common.manifest import (
     write_manifest,
 )
 from faultline.data.common.report import kv_table, section, table
+from faultline.download.nrc_text import NrcTextClient
 from faultline.logging_utils import get_logger
 from faultline.paths import ProjectPaths
 
@@ -57,6 +61,14 @@ logger = get_logger(__name__)
 
 SOURCE = "phmsa"
 RETRIEVAL_METHOD = "manual, author, browser"
+
+#: DOT's Socrata attachment route for the ``27nc-rsge`` incident-data record
+#: (ADR-0016, 2026-09-16 correction): not disallowed by
+#: ``data.transportation.gov/robots.txt``, fetched through the robots-gated client.
+SOCRATA_ATTACHMENT_URL = (
+    "https://data.transportation.gov/api/views/{view}/files/{asset_id}"
+    "?download=true&filename={filename}"
+)
 
 #: Column-name substrings that plausibly hold free-text narrative content, most
 #: specific first. Deliberately excludes "cause": PHMSA's incident data typically
@@ -138,6 +150,27 @@ def _whitespace_tokens(series: pd.Series) -> int:
     return int(text.map(lambda value: len(value.split())).sum())
 
 
+@dataclass(frozen=True)
+class ColumnVerdict:
+    """Why one column qualified as free text, with the numbers the rule reads.
+
+    Attributes:
+        column: Column name.
+        test: ``"name"`` (a narrative hint in the name) or ``"length+ratio"``.
+        non_null: Non-null values.
+        mean_length: Mean character length of the non-null values.
+        distinct_ratio: Distinct non-null values over non-null values.
+        tokens: Whitespace-delimited tokens across the non-null values.
+    """
+
+    column: str
+    test: str
+    non_null: int
+    mean_length: float
+    distinct_ratio: float
+    tokens: int
+
+
 @dataclass
 class MemberProfile:
     """One archive member's profile.
@@ -150,7 +183,12 @@ class MemberProfile:
         narrative_columns: Columns flagged as narrative, by name hint, or by mean length
             together with distinct-value ratio.
         narrative_tokens: Whitespace-delimited tokens summed across narrative columns.
-        samples: A few sample values from the first narrative column found, verbatim.
+        samples: A few sample values from the narrative column holding the most tokens.
+        verdicts: Per qualifying column, the numbers behind its qualification.
+        encoding: Text encoding the member decoded under (``""`` for Excel).
+        delimiter: Field delimiter used (``""`` for Excel).
+        physical_rows: Data lines in the member (non-blank lines after the header), so
+            rows a parser skipped are visible beside ``rows`` (``-1`` for Excel).
     """
 
     name: str
@@ -160,6 +198,10 @@ class MemberProfile:
     narrative_columns: list[str]
     narrative_tokens: int
     samples: list[str] = field(default_factory=list)
+    verdicts: list[ColumnVerdict] = field(default_factory=list)
+    encoding: str = ""
+    delimiter: str = ""
+    physical_rows: int = -1
 
 
 class ArchiveParseError(ValueError):
@@ -171,15 +213,45 @@ class ArchiveParseError(ValueError):
     """
 
 
-def _read_member(name: str, raw: bytes) -> pd.DataFrame | None:
+#: Encodings tried, in order, for a delimited-text member. PHMSA's 2010-onward
+#: hazardous-liquid flat file is Windows-1252 (a section sign as byte 0xA7, curly
+#: quotes as 0x93/0x94), not UTF-8.
+TEXT_ENCODINGS: tuple[str, ...] = ("utf-8", "cp1252")
+
+
+@dataclass(frozen=True)
+class _ReadMember:
+    frame: pd.DataFrame
+    encoding: str
+    delimiter: str
+    physical_rows: int
+
+
+def _decode(name: str, raw: bytes) -> tuple[str, str]:
+    """Decode under the first of :data:`TEXT_ENCODINGS` that succeeds."""
+    for encoding in TEXT_ENCODINGS:
+        try:
+            return raw.decode(encoding), encoding
+        except UnicodeDecodeError:
+            continue
+    raise ArchiveParseError(f"{name}: not decodable as any of {TEXT_ENCODINGS}")
+
+
+def _read_member(name: str, raw: bytes) -> _ReadMember | None:
     """Read one archive member as a table, or ``None`` if it is not a tabular member.
+
+    Delimited text is decoded under the first of :data:`TEXT_ENCODINGS` that succeeds,
+    and split on a tab when the header line holds more tabs than commas (PHMSA's flat
+    files are tab-delimited despite a ``.txt`` suffix). A tab-delimited file is read
+    with quoting off: a free-text field holding a lone ``"`` would otherwise swallow
+    the following lines into one cell.
 
     Args:
         name: Member path inside the archive.
         raw: The member's raw bytes.
 
     Returns:
-        The parsed table, or ``None`` for a member whose suffix is not tabular.
+        The parsed table with how it was read, or ``None`` for a non-tabular suffix.
 
     Raises:
         ArchiveParseError: If a member with a tabular suffix does not parse.
@@ -187,12 +259,27 @@ def _read_member(name: str, raw: bytes) -> pd.DataFrame | None:
     suffix = Path(name).suffix.lower()
     if suffix not in TABULAR_SUFFIXES:
         return None
+    if suffix not in (".csv", ".txt"):
+        try:
+            return _ReadMember(pd.read_excel(io.BytesIO(raw)), "", "", -1)
+        except ValueError as exc:
+            raise ArchiveParseError(f"{name}: could not parse as tabular data: {exc}") from exc
+    text, encoding = _decode(name, raw)
+    lines = text.splitlines()
+    header = lines[0] if lines else ""
+    delimiter = "\t" if header.count("\t") > header.count(",") else ","
     try:
-        if suffix in (".csv", ".txt"):
-            return pd.read_csv(io.BytesIO(raw), low_memory=False, on_bad_lines="skip")
-        return pd.read_excel(io.BytesIO(raw))
-    except (ValueError, UnicodeDecodeError, pd.errors.ParserError) as exc:
+        frame = pd.read_csv(
+            io.StringIO(text),
+            sep=delimiter,
+            low_memory=False,
+            on_bad_lines="skip",
+            quoting=csv.QUOTE_NONE if delimiter == "\t" else csv.QUOTE_MINIMAL,
+        )
+    except (ValueError, pd.errors.ParserError) as exc:
         raise ArchiveParseError(f"{name}: could not parse as tabular data: {exc}") from exc
+    physical = sum(1 for line in lines[1:] if line.strip())
+    return _ReadMember(frame, encoding, delimiter, physical)
 
 
 def profile_member(name: str, raw: bytes) -> MemberProfile | None:
@@ -208,30 +295,46 @@ def profile_member(name: str, raw: bytes) -> MemberProfile | None:
     Raises:
         ArchiveParseError: If a member with a tabular suffix does not parse.
     """
-    frame = _read_member(name, raw)
-    if frame is None:
+    read = _read_member(name, raw)
+    if read is None:
         return None
+    frame = read.frame
     columns = [str(c) for c in frame.columns]
     narrative_columns: list[str] = []
+    verdicts: list[ColumnVerdict] = []
     for column in columns:
-        lower = column.lower()
-        if any(hint in lower for hint in NARRATIVE_HINTS):
-            narrative_columns.append(column)
-            continue
-        if pd.api.types.is_string_dtype(frame[column]) or pd.api.types.is_object_dtype(
+        values = frame[column].dropna().astype(str)
+        mean_length = float(values.str.len().mean()) if len(values) else 0.0
+        ratio = values.nunique() / len(values) if len(values) else 0.0
+        textual = pd.api.types.is_string_dtype(frame[column]) or pd.api.types.is_object_dtype(
             frame[column]
+        )
+        test = ""
+        if any(hint in column.lower() for hint in NARRATIVE_HINTS):
+            test = "name"
+        elif (
+            textual
+            and mean_length > MEAN_LENGTH_NARRATIVE_THRESHOLD
+            and ratio > DISTINCT_RATIO_THRESHOLD
         ):
-            values = frame[column].dropna().astype(str)
-            if (
-                len(values)
-                and values.str.len().mean() > MEAN_LENGTH_NARRATIVE_THRESHOLD
-                and values.nunique() / len(values) > DISTINCT_RATIO_THRESHOLD
-            ):
-                narrative_columns.append(column)
-    tokens = sum(_whitespace_tokens(frame[column]) for column in narrative_columns)
+            test = "length+ratio"
+        if test:
+            narrative_columns.append(column)
+            verdicts.append(
+                ColumnVerdict(
+                    column=column,
+                    test=test,
+                    non_null=len(values),
+                    mean_length=mean_length,
+                    distinct_ratio=ratio,
+                    tokens=_whitespace_tokens(frame[column]),
+                )
+            )
+    tokens = sum(verdict.tokens for verdict in verdicts)
     samples: list[str] = []
     if narrative_columns:
-        values = frame[narrative_columns[0]].dropna().astype(str)
+        richest = max(verdicts, key=lambda verdict: verdict.tokens).column
+        values = frame[richest].dropna().astype(str)
         samples = values.head(3).tolist()
     return MemberProfile(
         name=name,
@@ -241,6 +344,10 @@ def profile_member(name: str, raw: bytes) -> MemberProfile | None:
         narrative_columns=narrative_columns,
         narrative_tokens=tokens,
         samples=samples,
+        verdicts=verdicts,
+        encoding=read.encoding,
+        delimiter={"\t": "tab", ",": "comma"}.get(read.delimiter, ""),
+        physical_rows=read.physical_rows,
     )
 
 
@@ -276,23 +383,55 @@ def inspect_archive(zip_path: Path) -> list[MemberProfile]:
     return profiles
 
 
+def fetch_socrata_attachment(
+    client: NrcTextClient, paths: ProjectPaths, view: str, asset_id: str, filename: str
+) -> tuple[Path, str]:
+    """Download one Socrata attachment through the robots-gated client.
+
+    Args:
+        client: The paced, robots.txt-gated client.
+        paths: Resolved project paths.
+        view: The Socrata view id (``27nc-rsge``).
+        asset_id: The attachment's ``assetId`` from the view's ``metadata.attachments``.
+        filename: The attachment's ``filename``, as the file is saved.
+
+    Returns:
+        The saved file and the URL it was fetched from.
+
+    Raises:
+        requests.HTTPError: If the client refused the URL (robots.txt) or the server
+            did not answer ``200``; nothing is written.
+    """
+    url = SOCRATA_ATTACHMENT_URL.format(view=view, asset_id=asset_id, filename=quote(filename))
+    response = client.get(url, timeout=300)
+    if response is None:
+        raise requests.HTTPError(f"{url}: refused by robots.txt or not 200; nothing written")
+    destination = paths.stage_dir("raw", "text") / SOURCE / filename
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_bytes(response.content)
+    return destination, url
+
+
 def record_manual_retrieval(
     paths: ProjectPaths,
     zip_path: Path,
     url: str,
     retrieved_at: datetime,
     license: str = "public domain (17 U.S.C. 105); usa.gov public-domain label",
+    retrieval_method: str | None = RETRIEVAL_METHOD,
 ) -> SourceManifest:
-    """Hash the manually retrieved file and record it in the source's manifest.
+    """Hash a retrieved, already-parsed file and record it in the source's manifest.
 
     Args:
         paths: Resolved project paths.
         zip_path: The retrieved file.
         url: The URL it was downloaded from.
-        retrieved_at: When the human retrieved it (their own record, not this
-            process's clock -- a manual download did not happen when this function
-            ran).
+        retrieved_at: When it was retrieved (for a manual download, the human's own
+            record, not this process's clock).
         license: Licence statement for the manifest.
+        retrieval_method: ``"manual, author, browser"`` for a human download;
+            ``None`` for this project's own robots-gated client, per
+            :class:`~faultline.data.common.manifest.FileRecord`.
 
     Returns:
         The updated manifest.
@@ -314,7 +453,7 @@ def record_manual_retrieval(
             license=license,
             retrieved_at=retrieved_at,
             verified=True,
-            retrieval_method=RETRIEVAL_METHOD,
+            retrieval_method=retrieval_method,
         )
     )
     manifest.generated_at = datetime.now(tz=UTC)
@@ -340,21 +479,59 @@ def render_report(zip_path: Path, manifest: SourceManifest, profiles: list[Membe
             "size (MB)": f"{record.size_bytes / 1e6:.1f}",
             "sha256": record.sha256 or "",
             "url": record.url,
-            "retrieval method": record.retrieval_method or "",
+            "retrieval method": record.retrieval_method or "automated, robots.txt-gated client",
             "retrieved (recorded)": record.retrieved_at.isoformat(),
             "licence": record.license,
         }
     )
     member_rows = [
-        (p.name, p.classification, p.rows, len(p.columns), ", ".join(p.narrative_columns) or "none")
+        (
+            p.name,
+            p.classification,
+            f"{p.encoding or '-'} / {p.delimiter or '-'}",
+            p.rows,
+            p.physical_rows if p.physical_rows >= 0 else "-",
+            len(p.columns),
+            ", ".join(p.narrative_columns) or "none",
+        )
         for p in profiles
     ]
     members_section = section(
         "Members, by pipeline type and form generation (best-effort, from filenames)",
         table(
-            ["member", "classification (guessed)", "rows", "columns", "narrative column(s)"],
+            [
+                "member",
+                "classification (guessed)",
+                "encoding / delimiter",
+                "rows read",
+                "data lines",
+                "columns",
+                "narrative column(s)",
+            ],
             member_rows,
         ),
+    )
+    verdict_rows = [
+        (
+            p.name,
+            v.column,
+            v.test,
+            v.non_null,
+            f"{v.mean_length:.1f}",
+            f"{v.distinct_ratio:.3f}",
+            v.tokens,
+        )
+        for p in profiles
+        for v in sorted(p.verdicts, key=lambda v: -v.tokens)
+    ]
+    verdicts_section = section(
+        "Qualifying columns: which free-text test each passed, and its numbers",
+        table(
+            ["member", "column", "test", "non-null", "mean chars", "distinct ratio", "tokens"],
+            verdict_rows,
+        )
+        if verdict_rows
+        else "_(no column passes either test)_\n",
     )
     total_rows = sum(p.rows for p in profiles)
     total_tokens = sum(p.narrative_tokens for p in profiles)
@@ -381,10 +558,11 @@ def render_report(zip_path: Path, manifest: SourceManifest, profiles: list[Membe
         else "_(no narrative column found)_\n",
     )
     return (
-        "# PHMSA flagged-incidents file: read-only inspection\n\n"
+        "# PHMSA incident file: read-only inspection\n\n"
         + header
         + "\n"
         + members_section
+        + verdicts_section
         + totals_section
         + samples_section
     )

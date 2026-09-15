@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
+import requests
 from typer.testing import CliRunner
 
 from faultline import cli
@@ -15,11 +16,13 @@ from faultline.data.text.phmsa_manual import (
     RETRIEVAL_METHOD,
     ArchiveParseError,
     classify_member,
+    fetch_socrata_attachment,
     inspect_archive,
     profile_member,
     record_manual_retrieval,
     render_report,
 )
+from faultline.download.nrc_text import NrcTextClient
 from faultline.paths import ProjectPaths
 
 
@@ -205,3 +208,80 @@ def test_cli_writes_nothing_and_exits_non_zero_for_a_malformed_archive(
     assert result.exit_code != 0
     assert not manifest_path(tmp_paths.manifests_dir, "phmsa").exists()
     assert not list(tmp_paths.data_reports_dir.glob("phmsa_manual_*.md"))
+
+
+class _RecordingSession(requests.Session):
+    """Canned responses per URL; records every URL that reached the transport."""
+
+    def __init__(self, responses: dict[str, tuple[int, bytes]]) -> None:
+        super().__init__()
+        self.responses = responses
+        self.requested: list[str] = []
+
+    def get(self, url: str, *args: object, **kwargs: object) -> requests.Response:
+        self.requested.append(url)
+        status, body = self.responses[url]
+        response = requests.Response()
+        response.status_code = status
+        response._content = body
+        response.url = url
+        return response
+
+
+def _robots_client(fixtures_dir: Path, extra: dict[str, tuple[int, bytes]]) -> NrcTextClient:
+    robots = (fixtures_dir / "robots" / "data_transportation_gov.txt").read_bytes()
+    robots_url = "https://data.transportation.gov/robots.txt"
+    session = _RecordingSession({robots_url: (200, robots), **extra})
+    client = NrcTextClient(min_interval=0, session=session)
+    client._pace = lambda interval: None  # type: ignore[method-assign]
+    return client
+
+
+def test_fetch_socrata_attachment_saves_an_allowed_file(
+    tmp_paths: ProjectPaths, fixtures_dir: Path
+) -> None:
+    url = (
+        "https://data.transportation.gov/api/views/27nc-rsge/files/abc"
+        "?download=true&filename=Hazardous%20Liquid%20x.zip"
+    )
+    client = _robots_client(fixtures_dir, {url: (200, b"PK\x03\x04zip-bytes")})
+
+    path, fetched = fetch_socrata_attachment(
+        client, tmp_paths, view="27nc-rsge", asset_id="abc", filename="Hazardous Liquid x.zip"
+    )
+
+    assert fetched == url
+    assert path.read_bytes() == b"PK\x03\x04zip-bytes"
+    assert path.parent.name == "phmsa"
+
+
+def test_fetch_socrata_attachment_writes_nothing_on_a_non_200(
+    tmp_paths: ProjectPaths, fixtures_dir: Path
+) -> None:
+    url = (
+        "https://data.transportation.gov/api/views/27nc-rsge/files/abc?download=true&filename=x.zip"
+    )
+    client = _robots_client(fixtures_dir, {url: (403, b"Access Denied")})
+    with pytest.raises(requests.HTTPError):
+        fetch_socrata_attachment(
+            client, tmp_paths, view="27nc-rsge", asset_id="abc", filename="x.zip"
+        )
+    assert not (tmp_paths.stage_dir("raw", "text") / "phmsa" / "x.zip").exists()
+
+
+def test_a_tab_delimited_cp1252_member_reads_every_row() -> None:
+    # the shape of PHMSA's 2010-onward flat file: tabs, Windows-1252, a lone quote in text
+    header = "REPORT_NUMBER\tCOMMODITY_DETAILS\tNARRATIVE\r\n"
+    rows = [
+        '1\tCRUDE\tOperator found a 6" crack per \xa7195.402 and isolated the segment.\r\n',
+        "2\tCRUDE\tA “weep” was found at the flange during a routine walk of the line.\r\n",
+        "3\tDIESEL\tThe tank overfilled when the level alarm failed to actuate on time.\r\n",
+    ]
+    raw = (header + "".join(rows)).encode("cp1252")
+    profile = profile_member("accident_hazardous_liquid_jan2010_present.txt", raw)
+    assert profile is not None
+    assert (profile.encoding, profile.delimiter) == ("cp1252", "tab")
+    assert profile.rows == profile.physical_rows == 3
+    assert profile.narrative_columns == ["COMMODITY_DETAILS", "NARRATIVE"]
+    by_column = {v.column: v for v in profile.verdicts}
+    assert by_column["NARRATIVE"].test == "name"

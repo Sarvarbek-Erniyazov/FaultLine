@@ -1,0 +1,18 @@
+{
+  "source": "phmsa",
+  "provider": "Pipeline and Hazardous Materials Safety Administration",
+  "license": "public domain (17 U.S.C. 105); usa.gov public-domain label",
+  "generated_at": "2026-09-15T20:52:31.367250Z",
+  "files": [
+    {
+      "filename": "Hazardous Liquid Accident Data - January 2010 to present.zip",
+      "relative_path": "raw/text/phmsa/Hazardous Liquid Accident Data - January 2010 to present.zip",
+      "size_bytes": 4597548,
+      "sha256": "5aaa1a31834a0503acfdfc82172d9ff3483b480019cec1605ebb8e15d0040f0d",
+      "url": "https://data.transportation.gov/api/views/27nc-rsge/files/1d547e17-2be1-4a32-9958-a1d5a946ade9?download=true&filename=Hazardous%20Liquid%20Accident%20Data%20-%20January%202010%20to%20present.zip",
+      "license": "public domain (17 U.S.C. 105); usa.gov public-domain label",
+      "retrieved_at": "2026-09-15T20:49:12Z",
+      "verified": true
+    }
+  ]
+}

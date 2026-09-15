@@ -201,6 +201,44 @@ def download_text(
         typer.echo(f"{name}: staged {len(manifest.files)} documents")
 
 
+@download_app.command(
+    "phmsa",
+    help="Fetch one PHMSA incident-data attachment from data.transportation.gov.",
+)
+def download_phmsa(
+    asset_id: Annotated[str, typer.Option("--asset-id", help="The attachment's assetId.")],
+    filename: Annotated[str, typer.Option("--filename", help="The attachment's filename.")],
+    view: Annotated[str, typer.Option("--view", help="Socrata view id.")] = "27nc-rsge",
+) -> None:
+    """Fetch one attachment through the robots-gated client, for ``inspect phmsa``.
+
+    Args:
+        asset_id: The attachment's ``assetId``.
+        filename: The attachment's ``filename``.
+        view: The Socrata view the attachment belongs to.
+
+    Raises:
+        typer.Exit: With code 1 if the request was refused or failed.
+    """
+    import requests
+
+    from faultline.data.common.manifest import hash_file
+    from faultline.data.text.phmsa_manual import fetch_socrata_attachment
+    from faultline.download.nrc_text import NrcTextClient
+
+    paths = ProjectPaths.resolve()
+    try:
+        destination, url = fetch_socrata_attachment(
+            NrcTextClient(), paths, view=view, asset_id=asset_id, filename=filename
+        )
+    except requests.HTTPError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"url: {url}")
+    typer.echo(f"file: {destination} ({destination.stat().st_size} bytes)")
+    typer.echo(f"sha256: {hash_file(destination, 'sha256')}")
+
+
 @inspect_app.command(
     "phmsa",
     help="Hash, record and read-only-profile a manually retrieved PHMSA archive.",
@@ -223,15 +261,23 @@ def inspect_phmsa(
             help="ISO date/time the human retrieved it (their own record); now, when omitted.",
         ),
     ] = None,
+    automated: Annotated[
+        bool,
+        typer.Option(
+            "--automated/--manual",
+            help="Fetched by `download phmsa` (robots-gated client) rather than by hand.",
+        ),
+    ] = False,
 ) -> None:
-    """Hash, manifest and read-only-profile a manually retrieved PHMSA archive.
+    """Hash, manifest and read-only-profile a retrieved PHMSA archive.
 
     Does not run any pipeline stage against the file (ADR-0016: staged, not yet used).
 
     Args:
-        zip_path: The manually retrieved file.
+        zip_path: The retrieved file.
         url: Its source URL, for the manifest.
         retrieved_at: When it was retrieved; now (UTC) when omitted.
+        automated: Record the project's own client as the retrieval method.
 
     Raises:
         typer.Exit: With code 1 if the file does not exist yet, code 2 if it does not
@@ -240,6 +286,7 @@ def inspect_phmsa(
     from datetime import UTC, datetime
 
     from faultline.data.text.phmsa_manual import (
+        RETRIEVAL_METHOD,
         ArchiveParseError,
         inspect_archive,
         record_manual_retrieval,
@@ -257,7 +304,13 @@ def inspect_phmsa(
     except ArchiveParseError as exc:
         typer.echo(f"{exc}; nothing recorded", err=True)
         raise typer.Exit(code=2) from exc
-    manifest = record_manual_retrieval(paths, zip_path, url=url, retrieved_at=when)
+    manifest = record_manual_retrieval(
+        paths,
+        zip_path,
+        url=url,
+        retrieved_at=when,
+        retrieval_method=None if automated else RETRIEVAL_METHOD,
+    )
     report = render_report(zip_path, manifest, profiles)
     stamp = datetime.now(tz=UTC).strftime("%Y%m%d")
     destination = paths.data_reports_dir / f"phmsa_manual_{stamp}.md"

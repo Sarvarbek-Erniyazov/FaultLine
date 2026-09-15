@@ -81,7 +81,7 @@ class TestWwwNrcGov:
         ):
             assert nrc_policy.can_fetch(USER_AGENT, NRC + path)
 
-    def test_another_agents_group_does_not_apply(self, nrc_policy: RobotsPolicy) -> None:
+    def test_another_crawlers_group_does_not_apply(self, nrc_policy: RobotsPolicy) -> None:
         # /docs/ is disallowed only for Akamai-SiteSnapshot and Amazonbot
         assert nrc_policy.can_fetch(USER_AGENT, NRC + "/docs/ML0000.pdf")
         assert not nrc_policy.can_fetch("Amazonbot/0.1", NRC + "/docs/ML0000.pdf")

@@ -24,7 +24,7 @@ Matching follows RFC 9309 section 2.2.2: the longest matching pattern decides, a
 ``Allow`` wins a tie, a path no rule matches is allowed, and ``/robots.txt`` itself is
 always allowed. A crawler's groups are those whose ``User-agent`` value equals its
 product token (case-insensitive); only when none does are the ``*`` groups used, and
-several groups naming the same agent are merged, as the RFC requires.
+several groups naming the same crawler are merged, as the RFC requires.
 """
 
 from __future__ import annotations
@@ -68,7 +68,7 @@ def _compile(pattern: str) -> re.Pattern[str]:
 
 @dataclass
 class _Group:
-    agents: list[str] = field(default_factory=list)
+    products: list[str] = field(default_factory=list)
     rules: list[Rule] = field(default_factory=list)
     crawl_delay: float | None = None
 
@@ -78,7 +78,7 @@ class RobotsPolicy:
     """A parsed robots.txt, answering whether one crawler may fetch one URL.
 
     Attributes:
-        groups: ``(agents, rules, crawl_delay)`` per group, in file order.
+        groups: ``(products, rules, crawl_delay)`` per group, in file order.
         allow_all: The policy is "no rules at all" (no robots.txt was stated).
         disallow_all: The policy is "the whole host is closed" (robots.txt refused).
     """
@@ -112,7 +112,7 @@ class RobotsPolicy:
                     current = _Group()
                     groups.append(current)
                     in_rules = False
-                current.agents.append(value.lower())
+                current.products.append(value.lower())
             elif key in ("allow", "disallow"):
                 if current is None:
                     continue  # a rule before any User-agent line belongs to no group
@@ -128,7 +128,7 @@ class RobotsPolicy:
                     pass
         return cls(
             groups=tuple(
-                (tuple(group.agents), tuple(group.rules), group.crawl_delay) for group in groups
+                (tuple(group.products), tuple(group.rules), group.crawl_delay) for group in groups
             )
         )
 
@@ -159,7 +159,7 @@ class RobotsPolicy:
         if path == "/robots.txt":
             return True
         best: Rule | None = None
-        for _agents, rules, _delay in self._groups_for(user_agent):
+        for _products, rules, _delay in self._groups_for(user_agent):
             for rule in rules:
                 if not rule.matches(path):
                     continue

@@ -2,8 +2,28 @@
   "source": "phmsa",
   "provider": "Pipeline and Hazardous Materials Safety Administration",
   "license": "public domain (17 U.S.C. 105); usa.gov public-domain label",
-  "generated_at": "2026-09-15T20:52:31.367250Z",
+  "generated_at": "2026-09-15T21:01:22.864308Z",
   "files": [
+    {
+      "filename": "Gas Distribution Incident Data - January 2010 to present.zip",
+      "relative_path": "raw/text/phmsa/Gas Distribution Incident Data - January 2010 to present.zip",
+      "size_bytes": 1566027,
+      "sha256": "89c21d2ea6f5cb8ff6daad6ac60160608671a7b49c218bf9f917bfb88a2ce5a1",
+      "url": "https://data.transportation.gov/api/views/27nc-rsge/files/fba42a19-f78d-44c9-9a76-4bacfc15fba0?download=true&filename=Gas%20Distribution%20Incident%20Data%20-%20January%202010%20to%20present.zip",
+      "license": "public domain (17 U.S.C. 105); usa.gov public-domain label (http://www.usa.gov/publicdomain/label/1.0/), stated in 27nc-rsge's Socrata metadata",
+      "retrieved_at": "2026-09-15T21:00:17.788149Z",
+      "verified": true
+    },
+    {
+      "filename": "Gas Transmission & Gathering Incident Data - January 2010 to present.zip",
+      "relative_path": "raw/text/phmsa/Gas Transmission & Gathering Incident Data - January 2010 to present.zip",
+      "size_bytes": 2241740,
+      "sha256": "fe0b136ca4b00ac987a8bc2e195098accf910d97512c5fc3b59e62d9da5f674e",
+      "url": "https://data.transportation.gov/api/views/27nc-rsge/files/2b05c2d8-d14a-4c56-ac1c-7d23a4bc31c8?download=true&filename=Gas%20Transmission%20%26%20Gathering%20Incident%20Data%20-%20January%202010%20to%20present.zip",
+      "license": "public domain (17 U.S.C. 105); usa.gov public-domain label (http://www.usa.gov/publicdomain/label/1.0/), stated in 27nc-rsge's Socrata metadata",
+      "retrieved_at": "2026-09-15T21:00:39.360342Z",
+      "verified": true
+    },
     {
       "filename": "Hazardous Liquid Accident Data - January 2010 to present.zip",
       "relative_path": "raw/text/phmsa/Hazardous Liquid Accident Data - January 2010 to present.zip",
@@ -12,6 +32,36 @@
       "url": "https://data.transportation.gov/api/views/27nc-rsge/files/1d547e17-2be1-4a32-9958-a1d5a946ade9?download=true&filename=Hazardous%20Liquid%20Accident%20Data%20-%20January%202010%20to%20present.zip",
       "license": "public domain (17 U.S.C. 105); usa.gov public-domain label",
       "retrieved_at": "2026-09-15T20:49:12Z",
+      "verified": true
+    },
+    {
+      "filename": "Hazardous Liquid Gravity & Reporting-Regulated-Only Jul 2020_present.zip",
+      "relative_path": "raw/text/phmsa/Hazardous Liquid Gravity & Reporting-Regulated-Only Jul 2020_present.zip",
+      "size_bytes": 560015,
+      "sha256": "35ff2f9e6d8f713021b91cd7454e330520c60954110535908c095d9be7d24df4",
+      "url": "https://data.transportation.gov/api/views/27nc-rsge/files/28f0a80f-a155-4294-8d1e-1d46f1237896?download=true&filename=Hazardous%20Liquid%20Gravity%20%26%20Reporting-Regulated-Only%20Jul%202020_present.zip",
+      "license": "public domain (17 U.S.C. 105); usa.gov public-domain label (http://www.usa.gov/publicdomain/label/1.0/), stated in 27nc-rsge's Socrata metadata",
+      "retrieved_at": "2026-09-15T21:01:12.495650Z",
+      "verified": true
+    },
+    {
+      "filename": "Liquefied Natural Gas (LNG) Incident Data - January 2011 to present.zip",
+      "relative_path": "raw/text/phmsa/Liquefied Natural Gas (LNG) Incident Data - January 2011 to present.zip",
+      "size_bytes": 459113,
+      "sha256": "0512b214b1b2f55fee822cdacf93af3c52a7050f8cf7e0dd323c189e0bb363c3",
+      "url": "https://data.transportation.gov/api/views/27nc-rsge/files/875819a6-d388-4fa9-9962-2f0b53ffac21?download=true&filename=Liquefied%20Natural%20Gas%20%28LNG%29%20Incident%20Data%20-%20January%202011%20to%20present.zip",
+      "license": "public domain (17 U.S.C. 105); usa.gov public-domain label (http://www.usa.gov/publicdomain/label/1.0/), stated in 27nc-rsge's Socrata metadata",
+      "retrieved_at": "2026-09-15T21:01:10.499447Z",
+      "verified": true
+    },
+    {
+      "filename": "Type R Reporting-Regulated Gas Gathering May 2022 to Present.zip",
+      "relative_path": "raw/text/phmsa/Type R Reporting-Regulated Gas Gathering May 2022 to Present.zip",
+      "size_bytes": 490509,
+      "sha256": "13dda62bf50d7b6ad312eaf25ce86f412099500c4be111f1442781e82e406876",
+      "url": "https://data.transportation.gov/api/views/27nc-rsge/files/021f4773-ebc0-4abc-8628-9321af069f69?download=true&filename=Type%20R%20Reporting-Regulated%20Gas%20Gathering%20May%202022%20to%20Present.zip",
+      "license": "public domain (17 U.S.C. 105); usa.gov public-domain label (http://www.usa.gov/publicdomain/label/1.0/), stated in 27nc-rsge's Socrata metadata",
+      "retrieved_at": "2026-09-15T21:01:22.861784Z",
       "verified": true
     }
   ]

@@ -1983,3 +1983,33 @@ present.zip", assetId `1d547e17-2be1-4a32-9958-a1d5a946ade9`. The robots gate th
 fetches it is `download/robots.py`, not `urllib.robotparser`. The stdlib parser reads
 `data.transportation.gov`'s file as allow-all, because blank lines separate its
 `Disallow` rules from `User-agent: *` (commit `ebfa946`).
+
+**Outcome, 2026-09-16: the pre-registered rule, applied as written.** Measured in
+`reports/data/phmsa_manual_20260915.md` (commit `4257351`, after the rule's commit
+`7542165`). The target file's one tabular member,
+`accident_hazardous_liquid_jan2010_present.txt`, is tab-delimited Windows-1252 with 648
+columns. All 5,850 data lines were read as 5,850 rows. 62 columns qualify, all of them
+by name. `NARRATIVE` holds 5,820 non-null values, mean 953 characters, distinct-value
+ratio 1.000, and 894,467 whitespace tokens. All qualifying columns together hold
+**1,030,940 tokens, which is >= 250,000**. The rule's third branch applies: **stage all
+2010-onward files, fold them into the corpus, fit once with them included.**
+
+Staged as `phmsa_incident_narratives` in `configs/data/sources_text.yaml`. It covers
+the six 2010-onward attachments: hazardous liquid, gas distribution, gas transmission
+and gathering, LNG from 2011, hazardous-liquid gravity/reporting-regulated from July
+2020, and Type R gas gathering from May 2022. Each zip was fetched through the
+robots-gated client, parsed, and only then recorded in the `phmsa` manifest, with
+`retrieval_method` unset (this project's automated client). Each non-empty `NARRATIVE`
+is one document, `{pipeline_type}_{REPORT_NUMBER}`: 10,033 documents. Every file holds
+one row per report number, so no revision dedup is needed. Report numbers do repeat
+*across* files, because each form has its own sequence, which is why the pipeline type
+prefixes the id. CSV-style quoting left on the field by the tab export is undone.
+
+*A note on the threshold, separate from the rule and not changing its outcome.* Read
+literally, the name pattern is broad. 61 of the 62 qualifying columns are
+`*_DETAILS`/`*_DETAIL` fields, most of them short "other, specify" answers, and some
+are closed code sets: `CAUSE_DETAILS` has 5,850 values at distinct ratio 0.007. The
+file's token total therefore includes non-narrative text. Here that changed nothing,
+since `NARRATIVE` alone is 3.6 times the 250,000 bar. A future rule of this kind
+should apply the distinct-ratio guard to name matches as well. Separately, and as a
+staging choice rather than a reading of the rule, only `NARRATIVE` is staged.

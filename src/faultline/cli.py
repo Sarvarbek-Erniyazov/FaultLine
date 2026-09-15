@@ -178,9 +178,9 @@ def download_text(
     """
     from faultline.download.nrc_text import (
         NrcTextClient,
-        event_notification_shard_key,
         fetch_source,
         load_sources_text_config,
+        shard_key_for,
         stage_documents,
     )
 
@@ -194,10 +194,9 @@ def download_text(
     for name in names:
         source_spec = spec.sources[name]
         documents = fetch_source(name, source_spec, client, paths)
-        # only nrc_event_notifications' record count has ever outgrown a single
-        # manifest file's size limit (ADR-0016); every other source stays as one.
-        shard_key_of = event_notification_shard_key if name == "nrc_event_notifications" else None
-        manifest = stage_documents(name, source_spec, documents, paths, shard_key_of)
+        manifest = stage_documents(
+            name, source_spec, documents, paths, shard_key_for(name, source_spec)
+        )
         typer.echo(f"{name}: staged {len(manifest.files)} documents")
 
 

@@ -216,8 +216,58 @@ class CodeBookSpec(StrictModel):
     telemetry_sources: list[str]
 
 
+class SocrataAttachment(StrictModel):
+    """One file attached to a Socrata catalogue record.
+
+    Attributes:
+        asset_id: The attachment's ``assetId`` in the record's ``metadata.attachments``.
+        filename: The attachment's ``filename``.
+        pipeline_type: Short hyphenated key for what the file covers; prefixes each
+            document id and names the manifest shard its documents are recorded in.
+    """
+
+    asset_id: str
+    filename: str
+    pipeline_type: str = Field(pattern=r"^[a-z0-9-]+$")
+
+
+class SocrataAttachmentsSpec(StrictModel):
+    """Tabular incident files attached to a DOT Socrata record, one narrative per row.
+
+    PHMSA's per-type incident flat files (ADR-0016, 2026-09-16): each attachment is a
+    zip holding one tab-delimited table, one row per report, whose ``narrative_column``
+    is the operator's free-text account. Each non-empty narrative is one document.
+
+    Attributes:
+        kind: Discriminator.
+        enabled: Whether this source is staged.
+        provider: Publishing organisation.
+        license: Licence basis.
+        attribution: Attribution string.
+        view: Socrata view id the attachments belong to.
+        archive_source: Manifest id the zip archives themselves are recorded under.
+        narrative_column: Column holding the narrative.
+        id_column: Column holding the report number, unique within one file.
+        robots_basis: The exact robots.txt reading this access route relies on.
+        attachments: The files staged, in order.
+    """
+
+    kind: Literal["socrata_attachments"] = "socrata_attachments"
+    enabled: bool = True
+    provider: str
+    license: str
+    attribution: str
+    view: str
+    archive_source: str
+    narrative_column: str
+    id_column: str
+    robots_basis: str
+    attachments: list[SocrataAttachment]
+
+
 TextSourceSpec = Annotated[
-    EventNotificationsSpec | GenericCommSpec | CodeBookSpec, Field(discriminator="kind")
+    EventNotificationsSpec | GenericCommSpec | CodeBookSpec | SocrataAttachmentsSpec,
+    Field(discriminator="kind"),
 ]
 
 
@@ -870,6 +920,35 @@ def event_notification_shard_key(record: FileRecord) -> str:
     return record.filename[:4]
 
 
+def pipeline_type_shard_key(record: FileRecord) -> str:
+    """Group an incident-narrative file record by its pipeline type.
+
+    Args:
+        record: A file record whose ``filename`` is ``{pipeline_type}_{report}.txt``.
+
+    Returns:
+        The pipeline-type key (a valid shard-file stem).
+    """
+    return record.filename.split("_", 1)[0]
+
+
+def shard_key_for(source: str, spec: TextSourceSpec) -> Callable[[FileRecord], str] | None:
+    """The manifest shard key a source needs, or ``None`` for a single-file manifest.
+
+    Args:
+        source: Source id.
+        spec: The source's specification.
+
+    Returns:
+        The key function for a source whose record count outgrows one manifest file.
+    """
+    if source == "nrc_event_notifications":
+        return event_notification_shard_key
+    if isinstance(spec, SocrataAttachmentsSpec):
+        return pipeline_type_shard_key
+    return None
+
+
 def stage_documents(
     source: str,
     spec: TextSourceSpec,
@@ -977,6 +1056,11 @@ def fetch_source(
         yield from fetch_generic_comm(client, spec)
     elif isinstance(spec, CodeBookSpec):
         yield from build_status_code_book(spec, paths)
+    elif isinstance(spec, SocrataAttachmentsSpec):
+        # deferred: phmsa_manual imports this module's client at its own import time
+        from faultline.data.text.phmsa_manual import fetch_incident_narratives
+
+        yield from fetch_incident_narratives(client, spec, paths)
     else:  # pragma: no cover - exhaustiveness guard, not a reachable branch
         raise AssertionError(f"{source}: unhandled source kind {spec.kind!r}")
 

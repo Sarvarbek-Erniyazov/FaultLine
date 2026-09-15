@@ -134,6 +134,51 @@ sources:
     # traceable to the collection it was made against (ADR-0016).
 
   # ---------------------------------------------------------------------------------
+  # PHMSA pipeline incident narratives (ADR-0016, 2026-09-16). Staged under the rule
+  # pre-registered in commit 7542165: the Hazardous Liquid 2010-onward file measured
+  # 1,030,940 whitespace tokens in qualifying columns (NARRATIVE alone 894,467;
+  # reports/data/phmsa_manual_20260915.md), >= 250,000, so all 2010-onward files are
+  # staged. Route: data.transportation.gov's 27nc-rsge attachments, not disallowed by
+  # its robots.txt; fetched through NrcTextClient's robots gate (Crawl-delay: 1
+  # honoured). Each zip is recorded in the `phmsa` manifest; each non-empty NARRATIVE
+  # is one document here. Only NARRATIVE is staged: the other name-qualifying
+  # *_DETAILS columns are short "other, specify" fields and closed code sets (e.g.
+  # CAUSE_DETAILS, distinct ratio 0.007), not narrative. The flagged-incidents file
+  # on www.phmsa.dot.gov stays blocked (403 from three clients) and is not a target.
+  # Pre-2010 files are not staged: the rule names 2010-onward only.
+  # ---------------------------------------------------------------------------------
+  phmsa_incident_narratives:
+    kind: socrata_attachments
+    enabled: true
+    provider: "Pipeline and Hazardous Materials Safety Administration, U.S. Department of Transportation"
+    license: "public domain (17 U.S.C. 105); usa.gov public-domain label (http://www.usa.gov/publicdomain/label/1.0/), stated in 27nc-rsge's Socrata metadata"
+    attribution: "PHMSA, pipeline incident and accident flat files (2010 to present), via data.transportation.gov dataset 27nc-rsge (public domain)"
+    view: "27nc-rsge"
+    archive_source: "phmsa"
+    narrative_column: "NARRATIVE"
+    id_column: "REPORT_NUMBER"
+    robots_basis: "data.transportation.gov/robots.txt user-agent:* has no rule matching /api/views/ (Crawl-delay: 1)"
+    attachments:
+      - asset_id: "1d547e17-2be1-4a32-9958-a1d5a946ade9"
+        filename: "Hazardous Liquid Accident Data - January 2010 to present.zip"
+        pipeline_type: "hazardous-liquid"
+      - asset_id: "fba42a19-f78d-44c9-9a76-4bacfc15fba0"
+        filename: "Gas Distribution Incident Data - January 2010 to present.zip"
+        pipeline_type: "gas-distribution"
+      - asset_id: "2b05c2d8-d14a-4c56-ac1c-7d23a4bc31c8"
+        filename: "Gas Transmission & Gathering Incident Data - January 2010 to present.zip"
+        pipeline_type: "gas-transmission-gathering"
+      - asset_id: "875819a6-d388-4fa9-9962-2f0b53ffac21"
+        filename: "Liquefied Natural Gas (LNG) Incident Data - January 2011 to present.zip"
+        pipeline_type: "lng"
+      - asset_id: "28f0a80f-a155-4294-8d1e-1d46f1237896"
+        filename: "Hazardous Liquid Gravity & Reporting-Regulated-Only Jul 2020_present.zip"
+        pipeline_type: "hazardous-liquid-gravity-rr"
+      - asset_id: "021f4773-ebc0-4abc-8628-9321af069f69"
+        filename: "Type R Reporting-Regulated Gas Gathering May 2022 to Present.zip"
+        pipeline_type: "gas-gathering-type-r"
+
+  # ---------------------------------------------------------------------------------
   # The status-message code book (ADR-0007's tiny, separately-carded source). Not
   # fetched over the network: pooled from the Kelmarsh and Penmanshiel telemetry
   # event tables already staged for M1, under the licence those records already
@@ -166,38 +211,6 @@ excluded_candidates:
       form, not a listing, so unlike PHMSA there is no "exact file" to name for a
       person to download by hand. Route forward: a written bulk-export request to
       NRC, not something this session can action.
-
-  phmsa_pipeline_incidents:
-    status: pending_measurement
-    reason: >-
-      a permitted automated route exists (corrected 2026-09-16); the free-text verdict
-      is decided by the rule ADR-0016 pre-registers, measured on one 2010-onward file
-    evidence: >-
-      www.phmsa.dot.gov/robots.txt -> HTTP 403 (fetched 2026-09-13, from two separate
-      networks), and the flagged-incident-file download returns 403 from a third
-      client and network (curl/8.15.0, 2026-09-15, AkamaiGHost "Access Denied",
-      reference #18.ce354317.1789503390.8406901); no copy exists on the author's
-      machine. That file is also the wrong target: qdme-9bbm describes it as an
-      analytical derivative ("20-year trends", serious/significant incidents).
-      CORRECTED 2026-09-16: the earlier record here said no independently-hosted
-      export exists; that was false, because the check read 27nc-rsge's accessPoints
-      (which point back to phmsa.dot.gov) and never its metadata.attachments. 27nc-rsge
-      ("Gas Distribution, Gas Transmission & Gathering, LNG incidents and Hazardous
-      Liquid Accident and Incident Data") carries 15 incident-data zips, 17,991,025
-      bytes in total, hosted on data.transportation.gov itself under
-      /api/views/27nc-rsge/files/<assetId>. No robots.txt rule there matches
-      /api/views/ (Crawl-delay: 1); each file answered 200 to a headers-only request
-      on 2026-09-15. Full list with asset ids and sizes in ADR-0016's 2026-09-16
-      correction.
-    manual_route: >-
-      None needed. The automated route is
-      https://data.transportation.gov/api/views/27nc-rsge/files/<assetId>?download=true&filename=<filename>,
-      fetched through NrcTextClient's robots gate. Measurement target, pre-registered:
-      "Hazardous Liquid Accident Data - January 2010 to present.zip" (assetId
-      1d547e17-2be1-4a32-9958-a1d5a946ade9, 4,597,548 bytes). Licence: usa.gov
-      public-domain label (http://www.usa.gov/publicdomain/label/1.0/), stated in
-      27nc-rsge's Socrata metadata, consistent with 17 U.S.C. 105. Driving the author's
-      real browser against the blocked host was considered and not taken (ADR-0016).
 
   doe_oe417_disturbance_reports:
     status: excluded

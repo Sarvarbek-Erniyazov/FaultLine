@@ -36,6 +36,7 @@ from __future__ import annotations
 import csv
 import io
 import zipfile
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -53,7 +54,7 @@ from faultline.data.common.manifest import (
     write_manifest,
 )
 from faultline.data.common.report import kv_table, section, table
-from faultline.download.nrc_text import NrcTextClient
+from faultline.download.nrc_text import FetchedDocument, NrcTextClient, SocrataAttachmentsSpec
 from faultline.logging_utils import get_logger
 from faultline.paths import ProjectPaths
 
@@ -566,3 +567,118 @@ def render_report(zip_path: Path, manifest: SourceManifest, profiles: list[Membe
         + totals_section
         + samples_section
     )
+
+
+def unquote_field(value: str) -> str:
+    """Undo CSV-style quoting a tab-delimited export left on a free-text field.
+
+    PHMSA's flat files are read with quoting off (see :func:`_read_member`), so a
+    narrative the exporter quoted arrives as ``"..."`` with inner quotes doubled.
+
+    Args:
+        value: The raw cell.
+
+    Returns:
+        The cell with one enclosing quote pair removed and ``""`` restored to ``"``,
+        or unchanged when it is not enclosed in quotes.
+    """
+    if len(value) >= 2 and value.startswith('"') and value.endswith('"'):
+        return value[1:-1].replace('""', '"')
+    return value
+
+
+def _archive_is_recorded(paths: ProjectPaths, source: str, path: Path) -> bool:
+    """Whether a zip on disk matches the hash its manifest records."""
+    manifest = read_manifest(manifest_path(paths.manifests_dir, source))
+    record = manifest.by_filename().get(path.name) if manifest else None
+    return record is not None and path.is_file() and record.sha256 == hash_file(path, "sha256")
+
+
+def _narrative_tables(archive: Path, spec: SocrataAttachmentsSpec) -> list[pd.DataFrame]:
+    """Every tabular member of an archive, checked for the configured columns.
+
+    Args:
+        archive: The zip file.
+        spec: The source specification naming the id and narrative columns.
+
+    Returns:
+        One frame per tabular member.
+
+    Raises:
+        ArchiveParseError: If the archive does not parse, holds no tabular member, or a
+            member lacks the id or narrative column.
+    """
+    inspect_archive(archive)  # the same checks `inspect phmsa` applies
+    frames = []
+    with zipfile.ZipFile(archive) as bundle:
+        for info in bundle.infolist():
+            read = _read_member(info.filename, bundle.read(info.filename))
+            if read is None:
+                continue
+            missing = {spec.narrative_column, spec.id_column} - set(map(str, read.frame.columns))
+            if missing:
+                raise ArchiveParseError(f"{info.filename}: missing columns {sorted(missing)}")
+            frames.append(read.frame)
+    return frames
+
+
+def fetch_incident_narratives(
+    client: NrcTextClient, spec: SocrataAttachmentsSpec, paths: ProjectPaths
+) -> Iterator[FetchedDocument]:
+    """Fetch, verify and record each attachment, then yield one document per narrative.
+
+    An archive already on disk whose hash matches its manifest record is reused; any
+    other is fetched through the robots-gated client. Every archive is parsed before it
+    is recorded (``verified=True`` is only written for a file that parsed), and it is
+    recorded under ``spec.archive_source`` with ``retrieval_method`` left ``None``, the
+    manifest's marker for this project's own automated client.
+
+    Args:
+        client: The paced, robots.txt-gated client.
+        spec: The source specification.
+        paths: Resolved project paths.
+
+    Yields:
+        One document per row with a non-empty narrative, id
+        ``{pipeline_type}_{report number}``.
+
+    Raises:
+        ArchiveParseError: If an archive does not parse, or lacks the configured columns.
+    """
+    for attachment in spec.attachments:
+        archive = paths.stage_dir("raw", "text") / spec.archive_source / attachment.filename
+        url = SOCRATA_ATTACHMENT_URL.format(
+            view=spec.view, asset_id=attachment.asset_id, filename=quote(attachment.filename)
+        )
+        fetched = not _archive_is_recorded(paths, spec.archive_source, archive)
+        if fetched:
+            archive, url = fetch_socrata_attachment(
+                client, paths, spec.view, attachment.asset_id, attachment.filename
+            )
+        frames = _narrative_tables(archive, spec)  # parses every member; raises before recording
+        if fetched:
+            record_manual_retrieval(
+                paths,
+                archive,
+                url=url,
+                retrieved_at=datetime.now(tz=UTC),
+                license=spec.license,
+                retrieval_method=None,
+            )
+        count = 0
+        for frame in frames:
+            for report, narrative in zip(
+                frame[spec.id_column], frame[spec.narrative_column], strict=True
+            ):
+                if pd.isna(narrative) or pd.isna(report):
+                    continue
+                text = unquote_field(str(narrative)).strip()
+                if not text:
+                    continue
+                count += 1
+                yield FetchedDocument(
+                    doc_id=f"{attachment.pipeline_type}_{report}",
+                    url=f"{url}#{spec.id_column}={report}",
+                    text=text,
+                )
+        logger.info("%s: %d narratives", attachment.filename, count)

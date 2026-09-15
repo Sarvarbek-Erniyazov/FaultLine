@@ -255,3 +255,32 @@ def test_keyed_dedup_keeps_only_the_latest_revision_end_to_end(
     shards = list(Path(final.details["directory"]).glob("*.jsonl"))
     kept_ids = {record["doc_id"] for shard in shards for record in read_jsonl(shard)}
     assert kept_ids == {"20030428en_en39780", "20030101en_en40000", "in00013"}
+
+
+def test_source_split_fractions_apply_only_to_the_named_source() -> None:
+    from faultline.data.text.pipeline import FinalConfig
+
+    default = FinalConfig()
+    config = FinalConfig(source_split_fractions={"small": {"train": 0.6, "val": 0.2, "test": 0.2}})
+    texts = [f"document number {index}" for index in range(2000)]
+    # an unnamed source keeps exactly the assignment it had without the field
+    assert all(assign_split(text, config, "large") == assign_split(text, default) for text in texts)
+    held_out = sum(assign_split(text, config, "small") != "train" for text in texts)
+    assert 0.35 < held_out / len(texts) < 0.45
+
+
+@pytest.mark.parametrize(
+    "fractions",
+    [
+        {"train": 0.5, "val": 0.2, "test": 0.2},
+        {"train": 0.8, "test": 0.1, "val": 0.1},
+        {"train": 0.9, "val": 0.1},
+    ],
+)
+def test_source_split_fractions_are_validated(fractions: dict[str, float]) -> None:
+    from pydantic import ValidationError
+
+    from faultline.data.text.pipeline import FinalConfig
+
+    with pytest.raises(ValidationError):
+        FinalConfig(source_split_fractions={"small": fractions})

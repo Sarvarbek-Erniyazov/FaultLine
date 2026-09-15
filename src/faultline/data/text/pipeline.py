@@ -76,6 +76,12 @@ class FinalConfig(StrictModel):
         split_fractions: Fractions per split; must sum to 1.
         split_seed: Seed mixed into the per-document hash, so the assignment is
             deterministic and independent of document order.
+        source_field: Record field naming a document's source.
+        source_split_fractions: Per-source fractions replacing ``split_fractions`` for
+            the sources named, with the same split names. A small collection needs a
+            larger held-out share than a large one for its held-out splits to hold
+            enough text to report on at all; a source not named keeps the default,
+            and so keeps exactly the assignment it had without this field.
     """
 
     shard_size: int = 5_000
@@ -83,16 +89,40 @@ class FinalConfig(StrictModel):
         default_factory=lambda: {"train": 0.98, "val": 0.01, "test": 0.01}
     )
     split_seed: int = 20260909
+    source_field: str = "source"
+    source_split_fractions: dict[str, dict[str, float]] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def _fractions_sum_to_one(self) -> FinalConfig:
         """Reject split fractions that do not form a probability distribution."""
-        total = sum(self.split_fractions.values())
-        if abs(total - 1.0) > 1e-9:
-            raise ValueError(f"final.split_fractions must sum to 1.0, got {total}")
-        if any(value < 0 for value in self.split_fractions.values()):
-            raise ValueError("final.split_fractions must be non-negative")
+        tables = {"final.split_fractions": self.split_fractions} | {
+            f"final.source_split_fractions.{source}": fractions
+            for source, fractions in self.source_split_fractions.items()
+        }
+        for name, fractions in tables.items():
+            total = sum(fractions.values())
+            if abs(total - 1.0) > 1e-9:
+                raise ValueError(f"{name} must sum to 1.0, got {total}")
+            if any(value < 0 for value in fractions.values()):
+                raise ValueError(f"{name} must be non-negative")
+            if list(fractions) != list(self.split_fractions):
+                raise ValueError(
+                    f"{name} must name the splits {list(self.split_fractions)} in that order"
+                )
         return self
+
+    def fractions_for(self, source: str | None) -> dict[str, float]:
+        """The split fractions that apply to one source.
+
+        Args:
+            source: The document's source, or ``None`` when the record carries none.
+
+        Returns:
+            The source's own fractions when configured, otherwise the default.
+        """
+        if source is not None and source in self.source_split_fractions:
+            return self.source_split_fractions[source]
+        return self.split_fractions
 
 
 class TextReportConfig(StrictModel):
@@ -287,7 +317,7 @@ class Reservoir:
         return list(self._items)
 
 
-def assign_split(text: str, config: FinalConfig) -> str:
+def assign_split(text: str, config: FinalConfig, source: str | None = None) -> str:
     """Assign a document to a split deterministically from its content.
 
     Hashing the document rather than drawing a random number makes the assignment
@@ -297,15 +327,17 @@ def assign_split(text: str, config: FinalConfig) -> str:
     Args:
         text: Document body.
         config: Split settings.
+        source: The document's source, selecting per-source fractions when configured.
 
     Returns:
         The chosen split name.
     """
+    fractions = config.fractions_for(source)
     digest = hashlib.sha256(f"{config.split_seed}:{text}".encode()).digest()[:8]
     position = int.from_bytes(digest, "big") / 2**64
     cumulative = 0.0
-    name = next(iter(config.split_fractions))
-    for name, fraction in config.split_fractions.items():
+    name = next(iter(fractions))
+    for name, fraction in fractions.items():
         cumulative += fraction
         if position < cumulative:
             return name
@@ -674,12 +706,19 @@ class FinalStage(TextStage):
         writer = ShardWriter(self.layout.final_dir, self.config.final.shard_size)
         rows_in = 0
         lengths: list[int] = []
+        by_source: dict[str, dict[str, list[int]]] = {}
         try:
             for record in read_jsonl(self.layout.scrubbed):
                 rows_in += 1
                 text = str(record.get(field_name, ""))
                 lengths.append(len(text))
-                writer.write(assign_split(text, self.config.final), record)
+                raw_source = record.get(self.config.final.source_field)
+                source = None if raw_source is None else str(raw_source)
+                split = assign_split(text, self.config.final, source)
+                writer.write(split, record)
+                cell = by_source.setdefault(source or "(none)", {}).setdefault(split, [0, 0])
+                cell[0] += 1
+                cell[1] += len(text.split())
         finally:
             writer.close()
 
@@ -693,6 +732,7 @@ class FinalStage(TextStage):
             counters={},
             details={
                 "splits": counts,
+                "splits_by_source": by_source,
                 "shards": writer.shard_counts,
                 "outputs": writer.written_files(),
                 "lengths": lengths,

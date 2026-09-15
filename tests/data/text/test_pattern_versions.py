@@ -265,6 +265,23 @@ def test_v1_config_differs_from_v0_only_in_declared_keys(repo_root: Path) -> Non
     assert {b for b in v0 if v0[b] != v1[b]} == {"io", "clean", "pii", "dedup"}
 
 
+def test_v2_config_differs_from_v1_only_in_declared_keys(repo_root: Path) -> None:
+    # The corpus name (NRC + PHMSA) and the per-source held-out shares, both documented
+    # in text_v2.yaml and ADR-0016's 2026-09-16 corrections. Nothing else may move.
+    configs = repo_root / "configs" / "data"
+    v1 = load_config(configs / "text_v1.yaml", TextConfigFile).text.model_dump()
+    v2 = load_config(configs / "text_v2.yaml", TextConfigFile).text.model_dump()
+    differing = {
+        f"{block}.{key}"
+        for block in v1
+        if isinstance(v1[block], dict)
+        for key in v1[block]
+        if v1[block][key] != v2[block][key]
+    }
+    assert differing == {"io.corpus_name", "final.source_split_fractions"}
+    assert {b for b in v1 if v1[b] != v2[b]} == {"io", "final"}
+
+
 def test_the_defaults_are_the_ported_behaviour() -> None:
     # A caller who constructs a config without saying anything gets the port, not
     # FaultLine's version. Silently defaulting to v1 would make the port

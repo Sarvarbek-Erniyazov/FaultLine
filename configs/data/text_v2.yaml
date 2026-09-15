@@ -1,0 +1,153 @@
+# Text corpus pipeline configuration, version 2.
+#
+# text_v1.yaml stays exactly as it is: run 20260913-142340_all_text_2a6ec5b7 read it,
+# and its reports name its hash. This file departs from v1 in exactly two keys, and
+# tests/data/text/test_pattern_versions.py fails if anything else moves.
+#
+#   io.corpus_name               "operator_narratives": the five NRC collections plus
+#                                PHMSA's 2010-onward incident narratives, staged under
+#                                the rule ADR-0016 pre-registered (commit 7542165) and
+#                                applied in ba668f1. The NRC-only name no longer
+#                                describes the corpus.
+#
+#   final.source_split_fractions per-source held-out shares (ADR-0016, 2026-09-16
+#                                split correction). Under v1's 98/1/1 for every
+#                                source, the run above gave nrc_reg_issues ZERO
+#                                held-out documents, nrc_bulletins a 2-document /
+#                                1,324-word test split and nrc_gen_letters a
+#                                3-document / 1,557-word val split: sub-context
+#                                splits that would evaluate silently empty. M2b needs
+#                                a held-out split per source, so every source keeps
+#                                one. Rule, fixed before any v2 run, from the
+#                                per-source whitespace-word totals already measured
+#                                (NRC: the v1 run's final splits summed; PHMSA: the
+#                                staged NARRATIVE fields, before cleaning):
+#                                  each of val and test gets the smallest share in
+#                                  {1%, 2%, 5%, 10%, 20%} whose expected size is at
+#                                  least 25,000 whitespace words; 20% is the cap.
+#                                25,000 words is a floor against degenerate splits,
+#                                not a precision target: at an assumed ~1.3 BPE tokens
+#                                per word (unmeasured until the M2c fit), about 16
+#                                non-overlapping 2,048-token windows.
+#
+#                                source                     words      share  expected/split
+#                                nrc_event_notifications    4,939,151   1%    49,392  (default)
+#                                phmsa_incident_narratives  1,669,618   2%    33,392
+#                                nrc_gen_letters              686,503   5%    34,325
+#                                nrc_info_notices             399,881  10%    39,988
+#                                nrc_bulletins                270,290  10%    27,029
+#                                nrc_reg_issues                91,537  20%    18,307  (capped: below the floor)
+#
+#                                nrc_event_notifications is left on the default, so
+#                                its documents keep exactly their v1 assignment.
+#                                nrc_reg_issues cannot reach the floor without giving
+#                                most of a 53-document collection to evaluation; its
+#                                per-source figure is reported with that caveat.
+#                                The alternative, marking small collections train-only
+#                                and reporting perplexity for the large sources only,
+#                                was not taken: it gives up the register comparison
+#                                (licensee event reports vs regulator guidance) that
+#                                is the one thing per-source reporting on this corpus
+#                                can show, to keep about 0.3M words (under 4% of the
+#                                corpus) in training.
+#
+# Everything else is identical to v1.
+
+text:
+  io:
+    corpus_name: "operator_narratives" # v2 departure: 5 NRC collections + PHMSA incident
+      # narratives (ADR-0016, 2026-09-16)
+    input_path: null # null = <data_root>/raw/text/<corpus_name>.jsonl
+    text_field: "text" # course default
+
+  # ---------------------------------------------------------------------------
+  # cleaning (notebook cell 16)
+  # ---------------------------------------------------------------------------
+  clean:
+    unescape_html_entities: true # course default
+    remove_html_tags: true # course default
+    html_tag_pattern: "v1" # FaultLine departure (ADR-0007); v0 keeps the course regex
+    unicode_form: "NFKC" # course default
+    remove_control_chars: true # course default (keeps newline and tab)
+    normalize_whitespace: true # course default
+    drop_empty: true # course default (notebook cell 17 counted these as empty_removed)
+    boilerplate: # Gate-6 correction #2 (2026-09-13): two fixed modern-era artifacts, declared
+      # and measured against the real corpus before being enabled here. See
+      # src/faultline/data/text/boilerplate.py and ADR-0016.
+      strip_en_revision_header: true # "EN Revision Imported Date: .../EN Revision Text:"
+        # metadata lines the extractor left in the narrative text; matches all
+        # 1,316 documents that carry the marker.
+      strip_iaea_less_than_cat3: true # the fixed IAEA "Less than Cat 3" source-category
+        # explanation, matched in both its modern (URL-terminated) and older
+        # form; 3,482 occurrences measured, 3 known source-side URL typos not
+        # matched (documented gap, not chased further).
+
+  # ---------------------------------------------------------------------------
+  # quality filtering (notebook cell 21, FILTER_CONFIG)
+  # ---------------------------------------------------------------------------
+  filter:
+    min_chars: 200 # course default
+    max_chars: 100000 # course default
+    min_alpha_ratio: 0.30 # course default
+    max_repeated_line_ratio: 0.30 # course default
+
+  # ---------------------------------------------------------------------------
+  # deduplication (notebook cells 27-28)
+  # ---------------------------------------------------------------------------
+  dedup:
+    strategy: "exact" # course default. The M2b pre-registered random-pair trigger measured
+      # near-zero near-duplication (near_duplicates.py) -- correctly, but it was
+      # the wrong instrument for THIS corpus's actual near-duplication, which is
+      # keyed on event number, not random pairs (see dedup.keyed below and
+      # keyed_dedup.py). MinHash/LSH stays unimplemented; not needed here.
+    lowercase: true # course default (document_hash lowercased before hashing)
+    strip: true # course default
+    keyed: # Gate-6 correction #1 (2026-09-13): source-aware dedup by event number, applied
+      # after exact dedup. Measured on the real corpus (post exact-dedup,
+      # 27,903 documents): 22,029 distinct event numbers, 3,963 with more than
+      # one surviving revision, 4,604 documents removable this way. See
+      # keyed_dedup.py and reports/data/m2_dedup_stats_20260913.md.
+      enabled: true
+      source: "nrc_event_notifications" # the only source with this republish-with-updates
+        # pattern; every other source's doc_id shape never matches the key
+        # pattern even if this were left enabled for it
+
+  # ---------------------------------------------------------------------------
+  # PII scrubbing (notebook cells 32-34)
+  # ---------------------------------------------------------------------------
+  pii:
+    mask_emails: true # course default
+    mask_phones: true # course default
+    mask_digits: false # FaultLine override (ADR-0005): the course masked any run of six or
+      # more digits, which is right for TinyStories and destructive for
+      # operator narratives, where quantities are the technical content
+    phone_pattern: "v1" # FaultLine departure (ADR-0005): the course regex masked serial
+      # numbers, which mask_digits: false alone did not prevent
+    email_placeholder: "<EMAIL>" # course default
+    phone_placeholder: "<PHONE>" # course default
+    number_placeholder: "<NUMBER>" # course default
+
+  # ---------------------------------------------------------------------------
+  # final corpus (extends the notebook, which wrote one flat file)
+  # ---------------------------------------------------------------------------
+  final:
+    shard_size: 5000 # FaultLine addition: the notebook wrote a single JSONL file
+    split_fractions: # FaultLine addition: the notebook had no splits
+      train: 0.98
+      val: 0.01
+      test: 0.01
+    split_seed: 20260909 # mixed into the per-document hash, so the assignment survives re-runs
+    source_split_fractions: # v2 departure: per-source held-out shares, rule in the header
+      phmsa_incident_narratives: { train: 0.96, val: 0.02, test: 0.02 }
+      nrc_gen_letters: { train: 0.90, val: 0.05, test: 0.05 }
+      nrc_info_notices: { train: 0.80, val: 0.10, test: 0.10 }
+      nrc_bulletins: { train: 0.80, val: 0.10, test: 0.10 }
+      nrc_reg_issues: { train: 0.60, val: 0.20, test: 0.20 }
+
+  # ---------------------------------------------------------------------------
+  # reporting (extends notebook cell 37)
+  # ---------------------------------------------------------------------------
+  report:
+    sample_size: 5 # documents sampled per report section
+    sample_chars: 200 # truncation length for sampled documents
+    sample_seed: 20260909

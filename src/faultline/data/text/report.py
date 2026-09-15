@@ -287,6 +287,27 @@ def final_report(meta: RunMeta, result: StageResult) -> str:
             ),
         )
     )
+    by_source = result.details.get("splits_by_source", {})
+    if by_source:
+        splits = sorted({split for cells in by_source.values() for split in cells})
+        parts.append(
+            section(
+                "Split assignment per source (documents / whitespace words)",
+                table(
+                    ["source", *splits],
+                    [
+                        (
+                            source,
+                            *(
+                                f"{cells.get(split, [0, 0])[0]:,} / {cells.get(split, [0, 0])[1]:,}"
+                                for split in splits
+                            ),
+                        )
+                        for source, cells in sorted(by_source.items())
+                    ],
+                ),
+            )
+        )
     parts.append(
         section(
             "Document length, final corpus (characters)",

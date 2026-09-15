@@ -9,7 +9,10 @@
 # or by text_bpe.py itself.
 
 version: 1
-corpus_name: "nrc_operator_narratives"
+# corpus_name was "nrc_operator_narratives" until 2026-09-16, edited in place because no
+# run had read this file yet: the corpus the one fit uses now includes PHMSA's incident
+# narratives (ADR-0016) and is produced by configs/data/text_v2.yaml.
+corpus_name: "operator_narratives"
 fit_split: "train"
 vocab_size: 32768
 report_splits: ["val", "test"]

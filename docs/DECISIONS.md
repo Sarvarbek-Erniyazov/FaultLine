@@ -2013,3 +2013,36 @@ file's token total therefore includes non-narrative text. Here that changed noth
 since `NARRATIVE` alone is 3.6 times the 250,000 bar. A future rule of this kind
 should apply the distinct-ratio guard to name matches as well. Separately, and as a
 staging choice rather than a reading of the rule, only `NARRATIVE` is staged.
+
+**Correction, 2026-09-16: every source keeps a held-out split.** The v1 run
+(`20260913-142340_all_text_2a6ec5b7`) used 98/1/1 for every source. It gave
+`nrc_reg_issues` zero held-out documents, `nrc_bulletins` a test split of 2 documents
+and 1,324 words, and `nrc_gen_letters` a val split of 3 documents and 1,557 words. M2b
+requires a held-out split per source, so per-source perplexity can be reported. Splits
+that small can fall short of one 2,048-token context and would evaluate as silently
+empty. Commit `ebfa946` makes a zero-window split raise at shard time rather than warn.
+
+**Chosen: larger held-out shares for small collections, not a train-only disposition.**
+`configs/data/text_v2.yaml` adds `final.source_split_fractions`. Val and test each get
+the smallest share in {1%, 2%, 5%, 10%, 20%} whose expected size is at least 25,000
+whitespace words, capped at 20%. The share was fixed before any v2 run, from word
+totals already measured:
+
+| source | words | share | expected words per held-out split |
+| --- | --- | --- | --- |
+| nrc_event_notifications | 4,939,151 | 1% | 49,392 |
+| phmsa_incident_narratives | 1,669,618 | 2% | 33,392 |
+| nrc_gen_letters | 686,503 | 5% | 34,325 |
+| nrc_info_notices | 399,881 | 10% | 39,988 |
+| nrc_bulletins | 270,290 | 10% | 27,029 |
+| nrc_reg_issues | 91,537 | 20% (cap) | 18,307, below the floor |
+
+Event notifications keep the default fraction, so their documents keep exactly their
+v1 assignment. The alternative was to mark small collections train-only and report
+perplexity for the large sources only. That would keep about 0.3M words (under 4% of
+the corpus) in training, but it gives up the register comparison: licensee event
+reports against regulator-authored guidance, which is the one contrast per-source
+reporting on this corpus can show. `nrc_reg_issues` is reported with the stated caveat
+that its held-out splits sit below the floor. The 25,000-word floor guards against
+degenerate splits and is not a precision target. At an assumed, not yet measured,
+~1.3 BPE tokens per word it is about 16 non-overlapping context windows.

@@ -355,6 +355,27 @@ refuses a 32,769-row checkpoint, and a test fails if any module but `checkpoints
 there. All 4,224 per-string NLLs of the E1 record are reproduced through the migration within
 2.9e-6 nats.
 
+**Ruling, 2026-09-16 (E0-E5 ruling, E2): the five sources are not equal evidence.** They answer
+two different questions, and only one check answers the one that matters.
+
+- **Where the extra row is: the five sources.** Four of them (the manifest's `<sep>`, the
+  manifest's vocabulary size, the tokenizer's size and the checkpoint's row count) establish
+  **only that the extra row is the last one, 32,768**. They are sizes and labels written by the
+  same pipeline, and an appended row of any kind would give the same four numbers. The fifth, the
+  training streams (six of six ending in the id, 31,750 occurrences, no two adjacent), shows that
+  the data the model was fed used id 32,768 as a boundary. It is about the data. It does not show
+  what the embedding row at that index learned.
+- **What the row is: the behavioural check.** The row mapped to id 8 is **+3.2 nats (S2) and +4.1
+  nats (S3) more probable where a held-out document ends than elsewhere**, at median rank 3. The
+  last BPE row, the row an off-by-one would have taken, shows +0.2 and -0.5
+  (`reports/data/text_checkpoint_migration_v1_20260916.md`, section 2). **This is the check that
+  establishes the row is a separator.** Mapping a separator onto the structural `<sep>` is only
+  correct if the row is one.
+
+The four agreeing sources are a consistency check on the layout, and the migration still
+refuses to run if any of them disagrees. They are not four confirmations of the separator's
+identity. That rests on the behavioural contrast, one measurement per checkpoint.
+
 ---
 
 ## ADR-0004 Data licence policy

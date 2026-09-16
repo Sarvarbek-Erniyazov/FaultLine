@@ -19,9 +19,11 @@ calibrated abstention, evaluated under shift.**
 started.** M0 is done (tagged `m0`). M1 trained a telemetry-only model ladder, but its risk
 result is **not** a positive finding: H1 is UNTESTED and the pretraining ablation
 INCONCLUSIVE, with the reasons recorded in [docs/ROADMAP.md](docs/ROADMAP.md). M2's two
-text rungs are undertrained at their pre-registered one-pass budget and the larger is not
-better, so they are a working pipeline and a baseline, not a scaling result. No number here
-yet supports the joint model. This line is updated at each milestone.
+text rungs each saw the same 10.0M tokens, far too few for a model ladder to show scaling,
+so they are a working pipeline and a baseline, not a scaling result. H3, the text-transfer
+hypothesis, is **withdrawn on evidence** (ADR-0007): the narrative corpus does not supply
+wind-turbine status vocabulary. No number here yet supports the joint model. This line is
+updated at each milestone.
 
 What exists today: the repository tooling; the telemetry pipeline over four staged SCADA
 sources, its quantile-bin tokenizer, shards and the M1 model ladder with its risk

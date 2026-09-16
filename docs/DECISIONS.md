@@ -143,6 +143,10 @@ are rendered as text through a code description — and the provider describes 1
 at that site as stated. TODO(m1): decide how Hill of Towie alarm codes enter the text
 pathway, if at all, before ADR-0007 is relied on.
 
+*Closed 2026-09-16.* Measured: 0 of Hill of Towie's 693 narrow events map under the rule,
+and H3 is withdrawn on that and two other counts (ADR-0007, "H3 withdrawn"). No alarm-code
+rendering is adopted to rescue it.
+
 ---
 
 ## ADR-0002 Naming discipline
@@ -507,7 +511,8 @@ Which gaps may be treated so, and which may not, is bounded in ADR-0008.
 
 ## ADR-0007 Status messages go through the text pathway, not a code book
 
-**Status:** Accepted · **Date:** 2026-09-09
+**Status:** Accepted, justification replaced 2026-09-16 (**H3 WITHDRAWN on evidence**; the
+decision is kept, the transfer argument is not, see "H3 withdrawn" below) · **Date:** 2026-09-09
 
 **Decision.** Status and alarm messages from the SCADA event logs are encoded
 through the **text pathway** — the byte-level BPE tokenizer, emitted inside
@@ -613,10 +618,68 @@ here.
 The ablation is the test, not the joint-versus-telemetry comparison on its own: a
 joint model can beat a telemetry-only model by having more parameters.
 
+**H3 WITHDRAWN, 2026-09-16: on evidence, not deferred.** H3 is not postponed to a
+larger corpus or a later milestone. It is withdrawn, because the three measured counts
+that decide whether it can be tested all say it cannot:
+
+1. **Hill of Towie, the held-out site: 0 of 693 narrow events map to either side of the
+   split.** Its only described messages are generator cut-in and cut-out (non-stopping),
+   pitch lubrication and cable untwisting (planned), and low wind, high wind and icing
+   (environmental). None of them is technical, so none can be the type of a fault event.
+2. **CARE: 0 of 45 anomalies map.** CARE publishes no status strings.
+3. **At the training sites, where every event does map, the high-overlap side holds 2
+   event types** (Kelmarsh: drive train monitor level 2, safety chain open; Penmanshiel:
+   the same two). A per-type advantage cannot be compared across a side of two types.
+
+**The lenient Hill of Towie mapping is rejected, not adopted.** Labelling each event with
+the last described alarm before it clears the gate's count (639 high, 54 low). It clears
+it by naming a fault after whichever generator alarm fired last, almost always `Fast
+cut-out of generator` or `Large generator Cut-in`, which fire about 442,000 times each.
+That measures which text sits next to a fault, not what the fault was. A split built on
+it would test nothing about status semantics.
+
+**The negative result is a deliverable, and is recorded as one.** *The premise that a
+nuclear and pipeline regulatory narrative corpus supplies wind-turbine status vocabulary
+is false at the lexical level.* Measured (`reports/data/h3_vocab_overlap_v1_20260916.md`):
+29 code-book word types are absent from the NRC + PHMSA training split, among them `yaw`,
+`nacelle`, `anemometer`, `drivetrain`, `bladeangle` and `rotorbearing`. Adding PHMSA,
+9,267 training documents and 1,969,035 BPE training tokens, **moved zero wind-specific
+words**. The eleven code-book words it did move (`mains`, `login`, `plc`, `pads`, ...) are
+generic electrical or plant vocabulary, and they moved the string split from 76 to 80 of
+264. At the token level, which is what the model sees, 18 of 264 strings have every token
+frequent (`data/cards/status_code_book.md`).
+
+**ADR-0007's decision is KEPT; its justification is REPLACED.** Status strings still go
+through the text pathway. **H3's transfer justification did not survive measurement.** The
+decision above argued that subwords shared with the narrative corpus would carry status
+meaning across manufacturers. That argument is withdrawn with H3. The replacement
+justification is pragmatic, and it makes no claim about transfer:
+
+- **A per-OEM code book would not transfer either.** Hill of Towie's eight described strings are
+  distinct from Kelmarsh's and Penmanshiel's, and they are not in the training code book, so
+  a code book fitted on the training sites gives them no identifier. The text pathway at
+  least encodes them.
+- **The joint vocabulary is frozen.** ADR-0003 v2 fixes the text block at `[1184, 33952)`.
+  A categorical message block would have to be carved out of the telemetry prefix, which
+  moves every later identifier. Routing strings through the text block needs no new block.
+- **The cost is small and measured.** A status string costs a median of 5 BPE tokens (mean
+  5.47, p95 9, max 20; `data/cards/status_code_book.md`), and status rows are sparse next
+  to 10-minute telemetry.
+
+Nothing in the replaced justification predicts that narrative pretraining helps the status
+strings. Any M3 result that bears on that question is reported as a new measurement. It is
+not a test of H3. The cheap residual question H3 leaves, whether the barrier is surface
+convention or vocabulary, is taken up as H3', registered on its own before it is measured.
+
 **What would change this decision.** An M2 finding that no adequately licensed
 narrative corpus is reachable, which removes the mechanism H3 depends on and
 re-opens the code book; or an M3 probe showing message representations cluster by
 site rather than by meaning.
+
+*2026-09-16: the first condition is superseded along with H3.* The decision no longer
+depends on the narrative corpus supplying anything. What would change it now: a measured
+sequence-length cost from status strings that is material against the M3 context budget,
+or a held-out source whose status text a code book covers and BPE does not.
 
 **Evidence note, 2026-09-10.** Two facts above were measured on part of the data and
 have since been measured on all of it; see the evidence section of ADR-0001. Pooled over

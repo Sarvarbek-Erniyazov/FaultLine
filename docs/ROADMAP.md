@@ -372,6 +372,27 @@ decisions and their corrections are ADR-0016.*
       actually has is keyed on event number, and `keyed_dedup.py` removes it: 4,521
       superseded revisions, measured. Exact dedup removed a further 5,816 documents.*
 
+*Correction, 2026-09-16: why S3 is not better than S2.* Both rungs spent **10,027,008
+training tokens** (4,896 windows of 2,048). Any reading of the ordering as "the larger rung
+saw fewer tokens", or as a difference in how undertrained each was, is **withdrawn**. What
+the record supports: at about 10M tokens both rungs are far to the left of any balance
+point between model size and tokens. S2 saw 0.98 tokens per parameter and S3 0.50, against
+the roughly 20 of the compute-optimal literature. In that regime a larger model is less
+sample-efficient per token. **The S2-S3 ordering carries no scaling information, and a
+ladder over a corpus of about 10M tokens cannot demonstrate scaling.**
+
+**One limitation carried into M3, stated once.** The configured capacities are sized for a
+corpus several times larger than the licence-clean route could produce. That one fact shows
+up in three places, and they are not three separate limitations:
+
+- the model ladder cannot show scaling at 10.0M training tokens (above);
+- **77.47%** of the tokenizer's vocabulary (25,387 of 32,768 ids) is seen fewer than 100
+  times;
+- the **32,768-id text region** (ADR-0003 v2) is oversized for this corpus.
+
+The corpus is 8.05M words, **26.8% of the 30M floor**, which is 3.7 times what was
+produced. The capacities are frozen (ADR-0003), so this is carried, not fixed.
+
 ---
 
 ## M3 — joint model, modality shift, streaming demonstration
@@ -381,6 +402,20 @@ decisions and their corrections are ADR-0016.*
 > **H3.** Pretraining on the operator-narrative corpus improves cross-OEM transfer of
 > status semantics under leave-site-out evaluation, relative to the same joint
 > architecture with the narrative pretraining ablated. (ADR-0007.)
+
+> **H3 — WITHDRAWN 2026-09-16, on evidence, not deferred.** Three measured counts: Hill of
+> Towie **0/693** narrow events map to either side of the split, CARE **0/45**, and the
+> training sites' high-overlap side holds **2** event types. The lenient Hill of Towie
+> mapping (the last described alarm before the event) is rejected: it names a fault after
+> whichever generator alarm fired last. **Negative result, recorded as a deliverable:** the
+> premise that a nuclear/pipeline narrative corpus supplies wind-turbine status vocabulary
+> is false at the lexical level. PHMSA's 1,969,035 training tokens moved zero wind-specific
+> words (29 code-book word types stay absent). ADR-0007's decision is kept and its
+> justification replaced; the full record is under "H3 withdrawn" in ADR-0007. The residual
+> question, whether convention or vocabulary is the barrier, is taken up as H3', and it
+> needs no training.
+
+*The record below is kept as it was written before the withdrawal.*
 
 H3 exists because ADR-0007 routes SCADA status messages through the BPE text pathway
 instead of a per-OEM code book. That choice only pays off if narrative pretraining
@@ -469,8 +504,11 @@ results to phrase them against.
 - [ ] A reproducible ONNX export plus a CPU streaming demonstration with measured
       latency.
 - [ ] An honest limitations section: where the model fails and what would fix it.
-- [ ] **H3 tested, with the narrative-pretraining ablation actually run** — reported
-      whichever way it comes out, and ADR-0007 superseded if it comes out flat.
+- [x] ~~**H3 tested, with the narrative-pretraining ablation actually run** — reported
+      whichever way it comes out, and ADR-0007 superseded if it comes out flat.~~
+      *Withdrawn 2026-09-16, not met: H3 was withdrawn on evidence before M3 training
+      (above). ADR-0007 keeps its decision with a replaced justification. The negative
+      result stands as this criterion's deliverable.*
 
 ---
 

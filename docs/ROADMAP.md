@@ -548,6 +548,13 @@ results to phrase them against.
   0.0353 and 0.0433; 0.38 GPU-hours for both). It is one draw at 80% of the line, and it
   implies one-seed arm differences carry about 0.010 of seed noise. On Kelmarsh the gap was
   0.0173 (ADR-0020 outcome).
+- **The E0-E5 ruling, 2026-09-16.** The probe PASSED under `33c5ab4`'s line, and the pass is
+  not load-bearing: both seeds are within 0.0100 AUPRC of chance, 0.010 is 30% of the base rate,
+  and no within-seed interval exists (ADR-0020 ruling). *Held-out-site gate, pre-registered
+  (ADR-0021):* `tel_only` at full budget, one seed. Hill of Towie is EVALUABLE only if the lower
+  bound of a 48-hour block-bootstrap interval on its AUPRC is above its base rate, 0.03325.
+  Otherwise leave-site-out becomes a reported negative result, and CARE or a temporal holdout
+  at the training sites becomes primary.
 - Train the joint decoder; compare against both single-modality baselines.
 - Modality-shift evaluation: channels dropped or corrupted, text withheld, at
   inference time — the axis that justifies the joint design.

@@ -2817,3 +2817,83 @@ factor of about 2.4. A projection for a run that includes a probe and a test pas
 effective rate, or this breakdown. The full-budget `tel_only` gate check (ADR-0021) is projected
 from the breakdown: 557.5 s of steps, 128 s of validation and overhead, 226 s of probe and about
 109 s of test and I/O, so about **1,020 seconds, 0.28 GPU-hours**, before start-up.
+
+---
+
+## ADR-0021 The held-out-site gate: `tel_only` at full budget must put Hill of Towie's AUPRC interval above chance
+
+**Status:** Accepted; **pre-registered 2026-09-16, before the run it governs, before its code and
+before any number from it exists** · **Date:** 2026-09-16
+
+**Context.** Hill of Towie is the leave-site-out evaluation that every M3 arm comparison reads
+(ADR-0020). The seed-variance probe passed its line, and the pass is not load-bearing (ADR-0020,
+E5 ruling). Both half-budget seeds sit within 0.0020 and 0.0100 AUPRC of chance, and no
+within-seed interval exists. So it is not yet known whether Hill of Towie can distinguish **any**
+model from chance at these budgets. If it cannot, a three-arm comparison on it cannot come out
+informative whatever the arms do. That is checked first, on the cheapest arm, at the budget the
+arms will actually run.
+
+**The run.** `tel_only`, rung S2, **one seed (1)**, the full per-arm budget of **50,000,000
+tokens** rounded up to a whole optimiser step (764 steps x 32 windows x 2,048 tokens =
+50,069,504). Everything else is ADR-0020's probe held fixed: the `joint_v0` shards, 4 x 8, peak
+rate 6e-4, 6 pretraining validation passes over 500 windows a source, and the frozen probe of
+`configs/train/telemetry_v1.yaml` (balanced, 16,000 positives, prior-corrected per ADR-0019). The
+configuration is `configs/train/gate_check_v0.yaml`, written after this record.
+
+**The read-out.** Hill of Towie test AUPRC of the frozen probe on the same seeded evaluation
+windows as ADR-0020: stride 1, 12,000 windows, seed 20260912, **399 positive windows, base rate
+399 / 12,000 = 0.03325**.
+
+**The within-seed interval, fixed here.**
+
+- **Unit: 48-hour blocks, not windows.** Positive windows are clustered in time: an event makes
+  every window whose 24-hour horizon reaches it positive. On these 12,000 windows the 399
+  positives fall into **274 blocks** of 288 steps (48 hours, twice the label horizon) out of
+  **5,983 occupied blocks**, measured from the labels alone, before any score. A block is the
+  window's end step integer-divided by 288, within its shard. A window bootstrap would treat
+  399 positives as 399 independent draws and understate the interval.
+- **Procedure:** resample the occupied blocks with replacement, as many as there are; take
+  every window of each drawn block, each time it is drawn; compute AUPRC. **10,000 replicates,
+  bootstrap seed 20260916, 95% percentile interval.** A replicate with no positive window is
+  discarded and counted.
+- **The number the rule reads is the interval's lower bound, the 2.5th percentile.**
+
+**The rule.** **EVALUABLE** if and only if the lower bound is **strictly above 0.03325**,
+Hill of Towie's base rate on these windows. The ruling wrote 0.033. The measured rate is
+0.03325, and the stricter reading is registered so that a lower bound between the two cannot
+be argued either way. Otherwise the site is **NOT EVALUABLE**. If more than 1% of replicates are
+discarded, the interval is not trusted, and the verdict is NOT EVALUABLE.
+
+**The fallback, committed with the rule.**
+
+- **EVALUABLE:** leave-site-out on Hill of Towie stays the primary evaluation. The three-arm
+  design of ADR-0020 proceeds, and every arm's Hill of Towie AUPRC is reported with its
+  within-seed interval beside the 0.010 line.
+- **NOT EVALUABLE:** **leave-site-out is demoted to a reported negative result.** Every arm's
+  Hill of Towie AUPRC and interval are still reported, labelled not evaluable under ADR-0021, and
+  no arm claim rests on them. **The primary evaluation is promoted to either CARE (ADR-0010), or
+  a temporal holdout at the training sites (the late test split at Kelmarsh and Penmanshiel).**
+  The choice between those two is the user's. It is recorded and committed before either is
+  scored for any arm, and it is not made by looking at either one's scores. If the temporal
+  holdout is chosen, it carries ADR-0009's caveat: the late split includes a change in what is
+  labelled, so it is not a pure drift test. The demotion is not reversed by a later, better
+  result on Hill of Towie.
+
+**Reported with the verdict, deciding nothing.** Hill of Towie's positive windows (399),
+positive blocks (274) and occupied blocks; the AUPRC point estimate; a window-level bootstrap
+interval, to show what the block unit changes; and an interval on lift over chance (AUPRC minus
+each replicate's own base rate). The test logits are written to disk with the run, so no later
+interval needs the GPU again.
+
+**The half-budget result gets the same interval (§4.2's noise objection).** The same block
+bootstrap, positive count included, is applied to **both ADR-0020 seeds at half budget**. Their
+probe heads and test scores were not saved, only their backbones
+(`checkpoints/variance_probe_v0_5d9ff5c0/`). The probe stage is therefore re-run on each saved
+backbone, seeded exactly as before, and the bootstrap reads the re-run's scores. The re-run's
+AUPRC is reported beside the recorded 0.0353 and 0.0433, and any difference is reported as the
+probe stage's run-to-run nondeterminism, not hidden. These intervals are reported. They do not
+decide this gate, and they do not reopen ADR-0020's verdict.
+
+**What the interval does not cover.** One seed. It measures the evaluation's sampling noise at a
+fixed model, not seed variance. An EVALUABLE verdict says that Hill of Towie can separate this
+model from chance. It does not say that it can separate two arms.

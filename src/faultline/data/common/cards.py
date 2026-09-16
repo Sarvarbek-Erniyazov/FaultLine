@@ -181,6 +181,28 @@ def channel_map_status(path: Path) -> dict[str, object]:
     return rows
 
 
+#: A level-2 section whose heading says it was added by hand, up to the next level-2 heading.
+_HAND_WRITTEN = re.compile(r"^## [^\n]*added by hand[^\n]*\n.*?(?=^## |\Z)", re.M | re.S)
+
+
+def hand_written_sections(card: str) -> list[str]:
+    """The sections of an existing card that were added by hand, in order.
+
+    ``faultline cards build`` rewrites a card from the manifest and the reports, and some
+    records have no field there: the Hill of Towie card's evaluation gap (275 status messages
+    not written into ``tel+status``, ADR-0018) is one. Such a section is marked by its heading,
+    ``## <title> (added by hand, <date>; ...)``, and is carried into the regenerated card
+    before its Generation section rather than silently dropped.
+
+    Args:
+        card: The text of the card on disk.
+
+    Returns:
+        Each hand-written section, formatted as ``section`` formats one.
+    """
+    return ["\n" + match.group(0).strip() + "\n" for match in _HAND_WRITTEN.finditer(card)]
+
+
 def build_card(source: str, spec: SourceSpec, paths: ProjectPaths) -> Path:
     """Render one dataset card from the specification, manifest and inventory.
 
@@ -374,6 +396,9 @@ def build_card(source: str, spec: SourceSpec, paths: ProjectPaths) -> Path:
     )
 
     destination = paths.cards_dir / f"{source}.md"
+    if destination.exists():
+        # a section added by hand has no generator field; regeneration carries it forward
+        parts[-1:-1] = hand_written_sections(destination.read_text(encoding="utf-8"))
     destination.write_text("".join(parts), encoding="utf-8")
     logger.info("%s: wrote %s", source, destination)
     return destination

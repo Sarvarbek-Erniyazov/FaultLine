@@ -79,3 +79,50 @@ def test_the_newest_inventory_wins(tmp_path: Path) -> None:
     newest = latest_inventory(tmp_path, "care")
     assert newest is not None
     assert newest.name == "raw_inventory_care_20260910.md"
+
+
+# ------------------------------------------------------------------ hand-written sections
+
+REPO = Path(__file__).resolve().parents[3]
+
+#: The hand-written note the held-out site's card must keep (ADR-0018 rulings, 2026-09-16).
+HILL_OF_TOWIE_GAP = (
+    "**275 Hill of Towie status messages are not written into the `tel+status` stream.**"
+)
+
+
+def test_a_hand_written_section_survives_regeneration(tmp_paths: ProjectPaths) -> None:
+    written = (
+        "\n## Evaluation gaps (added by hand, 2026-09-16; not produced by `faultline cards build`)"
+        "\n\n- a gap the generator has no field for.\n"
+    )
+    card = build_card("x", _spec(), tmp_paths)
+    generated = card.read_text(encoding="utf-8")
+    card.write_text(
+        generated.replace("\n## Generation", written + "\n## Generation"), encoding="utf-8"
+    )
+    text = build_card("x", _spec(), tmp_paths).read_text(encoding="utf-8")
+    assert written.strip() in text
+    assert text.index("## Evaluation gaps") < text.index("## Generation")
+    # carried once, not appended again on every regeneration
+    assert text.count("## Evaluation gaps") == 1
+    again = build_card("x", _spec(), tmp_paths).read_text(encoding="utf-8")
+    assert again.count("## Evaluation gaps") == 1
+
+
+def test_the_tracked_hill_of_towie_card_carries_the_275_message_gap() -> None:
+    card = (REPO / "data" / "cards" / "hill_of_towie.md").read_text(encoding="utf-8")
+    assert HILL_OF_TOWIE_GAP in card
+
+
+def test_a_regenerated_hill_of_towie_card_keeps_the_275_message_gap(
+    tmp_paths: ProjectPaths,
+) -> None:
+    # The guard the E0-E5 ruling asked for, in the pattern of the torch.load and 32,769-row
+    # tests: `faultline cards build` overwrites the card, so a regeneration that dropped the
+    # hand-written note would silently remove the held-out site's evaluation gap.
+    tracked = (REPO / "data" / "cards" / "hill_of_towie.md").read_text(encoding="utf-8")
+    (tmp_paths.cards_dir / "hill_of_towie.md").write_text(tracked, encoding="utf-8")
+    regenerated = build_card("hill_of_towie", _spec(), tmp_paths).read_text(encoding="utf-8")
+    assert HILL_OF_TOWIE_GAP in regenerated
+    assert "added by hand" in regenerated

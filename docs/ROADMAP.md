@@ -511,6 +511,13 @@ results to phrase them against.
   report a validation AUPRC series pinned at the selection subsample's base rate. Until
   it does, H1 stays UNTESTED and no pretraining claim is made in either direction.
 - Concatenate the M1 and M2 vocabularies per ADR-0003; no retokenization.
+  *Verified 2026-09-16 (`faultline check joint-vocab`): all 14 assertions pass, ADR-0003
+  stands.*
+- **Mixture (ADR-0018), shards written 2026-09-16, nothing trained.** Three streams: `tel`,
+  `txt` (nuclear/pipeline text, NOT paired with wind telemetry) and `tel+status` (the only
+  paired signal; normalized strings by default, raw as the ablation). Arms `joint`,
+  `joint_status_raw` and `tel_only`, each 50,000,000 tokens seen. Ratio 30/20/50, so no stream
+  repeats (`txt` one pass). GPU-hours are an observation.
 - Train the joint decoder; compare against both single-modality baselines.
 - Modality-shift evaluation: channels dropped or corrupted, text withheld, at
   inference time — the axis that justifies the joint design.

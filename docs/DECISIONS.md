@@ -2278,3 +2278,98 @@ That caveat applies to every token-level count in this record.
 **Consequence.** Status strings enter the M3 joint stream **normalized by default** (recorded with the M3 mixture,
 the `tel+status` stream), and unnormalized strings are a declared ablation arm. Nothing in
 Stage A tests whether the model uses the covered strings. Stage A is about encoding only.
+
+---
+
+## ADR-0018 The M3 joint mixture: three named streams, a declared ratio, and budgets in tokens seen
+
+**Status:** Accepted; shards written, nothing trained · **Date:** 2026-09-16
+
+**Decision.** The joint model is pretrained on a mixture of exactly three stream types. Code
+(`faultline.training.mixture.STREAMS`), configuration (`configs/train/joint_v0.yaml`) and
+this record use these names and no others:
+
+| stream | what it is | paired? |
+| --- | --- | --- |
+| `tel` | telemetry windows: the M1 fixed-order stream, `<sep>` then one bin token per core channel | unpaired |
+| `txt` | narrative documents: the M2 NRC and PHMSA text at joint ids | unpaired |
+| `tel+status` | telemetry windows with their own status strings, each wrapped as `<txt> ... </txt>` after its step | **paired** |
+
+**The narrative corpus is not paired with wind telemetry.** `txt` is nuclear and pipeline
+regulatory text: NRC event notifications and generic communications, and PHMSA incident
+narratives. No document in it describes a wind turbine, and none is aligned in time or
+place with any telemetry row. It enters the model as unpaired text, and nothing in M3 may
+be reported as if it were paired. H3, the claim that it would transfer status meaning, is
+withdrawn (ADR-0007). **`tel+status` is the only genuinely paired cross-modal signal in the
+project.** It pairs each training site's telemetry with the status messages that same
+turbine logged.
+
+**How `tel+status` is written.**
+
+- *Attachment.* A message follows the telemetry of the first step at or after its start,
+  its start rounded **up** to the 10-minute grid. An event label at step `t` counts starts in
+  `(t, t + H]`, so rounding down would show a window a message that its own step's label
+  still treats as the future. A message whose step is not in the final rows is not written,
+  and the build counts it.
+- *Convention.* Strings are **normalized by default**, lowercased after one space
+  (`normalize_status`, ADR-0017: 80 of 264 strings have every token frequent, against 18
+  raw). The provider's own casing, recovered from the code book since the status stream is
+  stored lowercased, is the **declared ablation**. Both variants are written as shards, and
+  the configuration refuses a raw arm without a normalized arm of the same mixture.
+
+**How `tel` and `txt` are written.** `tel` is the M1 shards, unchanged. The build re-encodes
+every run with the joint vocabulary and checks it against the M1 bytes before recording a
+run index; it writes no token file. `txt` is the M2 text shards shifted into the text region
+(`1184 + i`). The M2 shards' local `<sep>` (32,768) becomes the structural `<sep>` (8), so
+token counts are unchanged. That gives `<sep>` two roles, a step boundary in telemetry and a
+document boundary in text. The alternative, `</txt> <txt>` at every document boundary,
+costs one token a document and was not taken.
+
+**Windows.** 2,048 tokens for every stream (the M2 context), starting on every sixth step
+for the telemetry streams (M1's stride), and never crossing a split or a segment.
+
+**Arms, the ratio, and the budget.**
+
+| arm | role | `tel` | `txt` | `tel+status` | status strings |
+| --- | --- | --- | --- | --- | --- |
+| `joint` | default | 30% | 20% | 50% | normalized |
+| `joint_status_raw` | ablation | 30% | 20% | 50% | raw |
+| `tel_only` | control | 100% | -- | -- | -- |
+
+**Every arm is budgeted in tokens seen, 50,000,000, one number for all arms.** GPU-hours
+are an observation, and the schema has no field in which a wall-clock cap could be set.
+Every run report states which bound bound, and by construction it is tokens. The ratio and
+the budget are set together by one rule: **no stream repeats.** `txt` holds 10,043,874
+training tokens, so its 20% share (10,000,000) is one pass, as in M2. `tel+status` takes the
+largest share because it is the only paired signal. `tel` takes the rest. `tel_only` is the
+equal-token control: a joint arm that beats M1 by seeing more tokens is not evidence for the
+joint design. `tel` and `tel+status` draw on the same telemetry, so one step can appear in
+both streams of an arm.
+
+**What this record does not decide.** The evaluation harness, the rung and the run order.
+No arm has been trained.
+
+**Measured, 2026-09-16 (`faultline model mixture-shards`,
+`reports/data/joint_mixture_v0_20260916.md`; shards in `data/shards/joint/joint_v0_9876bd4e`,
+not committed).** Every `tel` run re-encoded equal to the M1 bytes. Training tokens available
+to the arms:
+
+| stream | train tokens | arm share | planned tokens | passes |
+| --- | --- | --- | --- | --- |
+| `tel` | 61,601,722 | 30% | 15,000,000 | 0.24 |
+| `txt` | 10,043,874 | 20% | 10,000,000 | 1.00 |
+| `tel+status`, normalized | 65,664,814 | 50% | 25,000,000 | 0.38 |
+| `tel+status`, raw | 65,854,388 | 50% (ablation) | 25,000,000 | 0.38 |
+
+Status messages make up 6.4% (Kelmarsh) and 6.1% (Penmanshiel) of normalized `tel+status`
+training tokens: 248,062 and 490,073 messages. Raw casing costs 189,574 more training tokens
+than normalized, which is H3' Stage A's compression gain measured on the stream. Messages not
+written, because their step is not in the final rows: Kelmarsh 2,887 of 504,180, Penmanshiel
+4,923 of 839,303, Hill of Towie 275. Hill of Towie's test split carries 891,253 messages,
+18.9% of its tokens, almost all generator cut-in and cut-out. No stream repeats in any arm;
+`tel_only` sees 0.81 passes. Projected GPU-hours per arm, an observation: S2 8.5, S3 10.0.
+
+**What would change this decision.** A measured sequence cost of `tel+status` that crowds
+telemetry out of a window; evidence that the shared `<sep>` confuses step and document
+boundaries (then `</txt> <txt>` framing); or a larger licence-clean narrative corpus, which
+would let the budget grow without repeating `txt`.

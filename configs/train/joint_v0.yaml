@@ -1,0 +1,71 @@
+# The M3 joint mixture, version 0: three streams, declared arms, budgets in TOKENS SEEN.
+# Decision record: docs/DECISIONS.md, ADR-0018. Nothing here has been run.
+#
+# THE THREE STREAMS (the names are the same in code, here and in ADR-0018):
+#   tel         telemetry windows, unpaired. The M1 shards (quantile_bins_v2_9cd52b65),
+#               byte for byte; the joint vocabulary encodes them identically (ADR-0003
+#               note, 2026-09-16).
+#   txt         narrative documents, unpaired: NRC + PHMSA, the M2 text shards at joint ids.
+#               NUCLEAR AND PIPELINE REGULATORY TEXT, NOT PAIRED WITH WIND TELEMETRY.
+#   tel+status  telemetry windows with their own status strings: the only genuinely paired
+#               cross-modal signal in the project. Each message follows the first step at or
+#               after its start. Strings NORMALIZED (" " + lowercase, H3', ADR-0017) by
+#               default; raw provider casing is the declared ablation arm below.
+#
+# BUDGET: TOKENS SEEN, EQUAL ACROSS ARMS. `tokens_per_arm` is the only bound. There is no
+# GPU-hour field: wall clock is recorded as an observation after a run, and the report
+# states that tokens bound. 50,000,000 because at the ratio below it is the largest round
+# budget under which NO STREAM REPEATS:
+#   txt train tokens         10,043,874 (text_bpe_v1_22c56e49 manifest, <sep> included)
+#     -> 20% of 50M = 10,000,000 = 0.996 passes. Narrative is seen once, as in M2.
+#   tel train tokens         61,601,722 (Kelmarsh 19,859,853 + Penmanshiel 41,741,869)
+#     -> 30% = 15,000,000 = 0.24 passes.
+#   tel+status train tokens  at least tel's, plus message tokens (measured by the build)
+#     -> 50% = 25,000,000 < 0.41 passes.
+# A larger budget at this ratio would repeat narrative text, which M2 never did, so the
+# budget follows from the smallest stream rather than from a GPU-hour estimate. The
+# projected GPU-hours are in the build report as an observation.
+#
+# `tel` and `tel+status` draw windows from the same telemetry, so a step can be seen in both
+# streams. That is a property of the design, recorded in ADR-0018, not a leak: both are the
+# train split of the training sites.
+
+version: 0
+telemetry_tokenizer_config: "configs/tokenizer/quantile_bins_v2.yaml"
+text_shards_config: "configs/tokenizer/text_shards_v1.yaml"
+
+# Sources whose status streams are paired with their telemetry. Hill of Towie's described
+# messages are written too (test split only), for evaluation; CARE publishes no status
+# strings.
+status_sources: [kelmarsh, penmanshiel, hill_of_towie]
+# The arms train on these sources' train split, as M1 did (splits_v3).
+training_sources: [kelmarsh, penmanshiel]
+
+# 2,048: the M2 text context (text_shards_v1.yaml), used for every stream so a window is
+# the same length whatever it is drawn from. Pure telemetry fills it in 157.5 steps, more
+# than M1's 144-step context.
+context_tokens: 2048
+# 6 steps (hourly): M1's train_stride (telemetry_v0.yaml), for the same reason: windows one
+# step apart share all but 13 tokens.
+window_stride_steps: 6
+
+tokens_per_arm: 50000000
+
+arms:
+  # The mixture ratio. tel+status is the largest share because it is the only paired signal;
+  # txt is sized to one pass (above); tel takes the remainder.
+  - name: joint
+    role: default
+    mixture: {tel: 0.30, txt: 0.20, "tel+status": 0.50}
+    status_convention: normalized
+  # Differs from `joint` only in how status strings are written. The config refuses a raw
+  # arm without a normalized twin of the same mixture.
+  - name: joint_status_raw
+    role: ablation
+    mixture: {tel: 0.30, txt: 0.20, "tel+status": 0.50}
+    status_convention: raw
+  # The same tokens, telemetry only: a joint arm that beats M1 by seeing more tokens is not
+  # evidence for the joint design. 50M tel tokens = 0.81 passes.
+  - name: tel_only
+    role: control
+    mixture: {tel: 1.0}

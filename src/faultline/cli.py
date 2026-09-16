@@ -1005,6 +1005,25 @@ def model_text_curves(
     typer.echo(f"wrote {report} and {figure}")
 
 
+@model_app.command(
+    "mixture-shards",
+    help="Write the M3 mixture's txt and tel+status shards and every stream's run index, "
+    "and report per-stream token counts and per-arm token budgets. Trains nothing.",
+)
+def model_mixture_shards(
+    config: ConfigOption = Path("configs/train/joint_v0.yaml"),
+) -> None:
+    """Build the mixture shards and write their report.
+
+    Args:
+        config: The joint mixture configuration.
+    """
+    from faultline.data.joint.mixture_shards import build_mixture_shards
+
+    report, record = build_mixture_shards(ProjectPaths.resolve(), config)
+    typer.echo(f"wrote {report} and {record}")
+
+
 @check_app.command(
     "joint-vocab",
     help="Verify ADR-0003 v2 on disk: no id collision, M1 telemetry ids bit-identical, the "

@@ -49,7 +49,13 @@ from faultline.paths import ProjectPaths
 from faultline.runs import git_sha
 from faultline.seed import seed_everything
 from faultline.training.config import Budget, LadderModel, Optimiser, Rung
-from faultline.training.loop import Measurement, TrainingResult, language_model_loss, train
+from faultline.training.loop import (
+    Measurement,
+    TrainingResult,
+    language_model_loss,
+    train,
+    write_step_log,
+)
 from faultline.training.windows import ShardSet, WindowSampler, load_windows
 
 logger = get_logger(__name__)
@@ -474,6 +480,8 @@ def run_rung(
         {"spec": spec.__dict__, "kind": "text", "seed": config.seed, "state": result.state},
         checkpoint,
     )
+    # every optimiser step's training loss, beside the checkpoint: it cannot be recovered later
+    write_step_log(result.step_log, checkpoint.with_suffix(".steps.csv"))
 
     test_sources = sorted({key.rsplit("__", 1)[0] for key in shards.keys("test")})
     validation_loss = _per_source_loss(

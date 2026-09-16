@@ -57,6 +57,7 @@ from faultline.training.loop import (
     language_model_loss,
     risk_logits,
     train,
+    write_step_log,
 )
 from faultline.training.windows import (
     BalancedWindowSampler,
@@ -497,6 +498,8 @@ def run_one(
     torch.save(
         {"spec": spec.__dict__, "kind": kind, "seed": seed, "state": result.state}, destination
     )
+    # every optimiser step's training loss, beside the checkpoint: it cannot be recovered later
+    write_step_log(result.step_log, destination.with_suffix(".steps.csv"))
     record = RunRecord(
         kind=kind,
         rung=rung.name,

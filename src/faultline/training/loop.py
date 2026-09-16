@@ -16,8 +16,9 @@ from __future__ import annotations
 
 import math
 import time
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, cast
 
 import numpy as np
@@ -91,6 +92,61 @@ class Measurement:
     extra: dict[str, float] = field(default_factory=dict)
 
 
+@dataclass(frozen=True)
+class StepLog:
+    """One optimiser step's training record, kept for every step of every run.
+
+    Validation is measured a handful of times a run, and at a 50M-token arm that is too few
+    points to read a curve from. The training loss is computed at every step anyway, and
+    once a run ends it cannot be recovered, so it is kept.
+
+    Attributes:
+        step: The optimiser step, counted from one.
+        windows: Training windows consumed by the end of the step.
+        learning_rate: The rate the step was taken at.
+        loss: Mean training loss over the step's forward passes.
+        grad_norm: Global gradient norm before clipping.
+    """
+
+    step: int
+    windows: int
+    learning_rate: float
+    loss: float
+    grad_norm: float
+
+
+STEP_LOG_COLUMNS: tuple[str, ...] = ("step", "windows", "learning_rate", "loss", "grad_norm")
+
+
+def write_step_log(log: Sequence[StepLog], path: Path) -> Path:
+    """Write a run's per-step log as CSV, one row a step.
+
+    Args:
+        log: The run's step log.
+        path: Destination.
+
+    Returns:
+        The path written.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = [",".join(STEP_LOG_COLUMNS)]
+    lines += [
+        f"{s.step},{s.windows},{s.learning_rate:.8g},{s.loss:.8g},{s.grad_norm:.8g}" for s in log
+    ]
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+    return path
+
+
+def read_step_log(path: Path) -> list[StepLog]:
+    """Read a per-step log written by :func:`write_step_log`."""
+    rows = path.read_text(encoding="utf-8").splitlines()[1:]
+    out = []
+    for row in rows:
+        step, windows, rate, loss, norm = row.split(",")
+        out.append(StepLog(int(step), int(windows), float(rate), float(loss), float(norm)))
+    return out
+
+
 @dataclass
 class TrainingResult:
     """What one run produced.
@@ -104,6 +160,7 @@ class TrainingResult:
         tokens: Training tokens consumed.
         seconds: Wall-clock seconds spent, measurement included.
         final_train_loss: Mean training loss over the last tenth of the run.
+        step_log: Every optimiser step's training loss, rate and gradient norm, in order.
     """
 
     history: list[Measurement]
@@ -114,6 +171,7 @@ class TrainingResult:
     tokens: int
     seconds: float
     final_train_loss: float
+    step_log: list[StepLog] = field(default_factory=list)
 
 
 def _snapshot(module: nn.Module) -> dict[str, Tensor]:
@@ -171,12 +229,14 @@ def train(
     tail = max(1, total // 10)
     started = time.perf_counter()
     windows = 0
+    step_log: list[StepLog] = []
 
     for step in range(total):
         rate = learning_rate(step, total, budget.learning_rate, optimiser.warmup_fraction)
         for group in opt.param_groups:
             group["lr"] = rate
         opt.zero_grad(set_to_none=True)
+        step_losses: list[float] = []
         for _ in range(budget.accumulate):
             tokens, labels, _ = next(batches)
             tokens, labels = tokens.to(device, non_blocking=True), labels.to(device)
@@ -184,9 +244,19 @@ def train(
                 loss = loss_fn(module, tokens, labels) / budget.accumulate
             loss.backward()  # type: ignore[no-untyped-call]
             windows += int(tokens.shape[0])
-            recent.append(float(loss.detach()) * budget.accumulate)
-        torch.nn.utils.clip_grad_norm_(trainable, optimiser.grad_clip)
+            step_losses.append(float(loss.detach()) * budget.accumulate)
+        recent.extend(step_losses)
+        norm = torch.nn.utils.clip_grad_norm_(trainable, optimiser.grad_clip)
         opt.step()
+        step_log.append(
+            StepLog(
+                step=step + 1,
+                windows=windows,
+                learning_rate=rate,
+                loss=float(np.mean(step_losses)),
+                grad_norm=float(norm),
+            )
+        )
         if len(recent) > tail * budget.accumulate:
             recent = recent[-tail * budget.accumulate :]
 
@@ -224,6 +294,7 @@ def train(
         tokens=windows * tokens_per_window,
         seconds=time.perf_counter() - started,
         final_train_loss=float(np.mean(recent)) if recent else math.nan,
+        step_log=step_log,
     )
 
 

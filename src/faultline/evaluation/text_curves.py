@@ -10,7 +10,9 @@ fixes exactly: total training tokens over the last step.
 validation loss per million training tokens over the last full measurement interval, the
 last two measurements an equal interval apart. The final interval (the three steps to the
 end of the run) is also reported, but it is short, so single-seed noise dominates it. Per-step
-training loss was logged to the console and not saved, so it is not available.
+training loss was logged to the console and not saved for these two runs, so it is not
+available for them. Every run since the M3 pre-run brief (E4) writes it beside its checkpoint
+(``*.steps.csv``, :func:`faultline.training.loop.write_step_log`).
 
 **What a terminal slope cannot say.** Both runs used a cosine schedule that decays to
 :data:`faultline.training.loop.LR_FLOOR` of the peak rate by the last step. A terminal

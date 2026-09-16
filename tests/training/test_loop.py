@@ -12,9 +12,12 @@ from faultline.training.config import Budget, Optimiser
 from faultline.training.loop import (
     LR_FLOOR,
     Measurement,
+    StepLog,
     learning_rate,
     parameter_groups,
+    read_step_log,
     train,
+    write_step_log,
 )
 from faultline.training.windows import Batch
 
@@ -195,3 +198,45 @@ def test_accumulation_takes_the_same_number_of_windows_in_fewer_steps() -> None:
     )
     assert plain.windows == accumulated.windows == 32
     assert accumulated.steps * 2 == plain.steps
+
+
+def test_every_optimiser_step_is_logged_with_its_loss_rate_and_windows(tmp_path) -> None:
+    torch.manual_seed(0)
+    losses: list[float] = []
+
+    def loss_fn(module: nn.Module, tokens: Tensor, _: Tensor) -> Tensor:
+        loss = module.loss(tokens)
+        losses.append(float(loss.detach()))
+        return loss
+
+    def measure(_: nn.Module) -> Measurement:
+        return Measurement(step=0, windows=0, value=0.0)
+
+    budget = Budget(windows=48, batch_windows=4, accumulate=3, learning_rate=1e-3, evaluations=2)
+    result = train(
+        module=TelemetryDecoder(spec()),
+        batches=batches(),
+        budget=budget,
+        optimiser=Optimiser(),
+        device=torch.device("cpu"),
+        loss_fn=loss_fn,
+        measure=measure,
+        higher_is_better=False,
+        tokens_per_window=CONTEXT,
+    )
+    log = result.step_log
+    # one row a step, not one a validation measurement
+    assert [row.step for row in log] == list(range(1, budget.steps + 1)) == list(range(1, 5))
+    assert [row.windows for row in log] == [12, 24, 36, 48]
+    for index, row in enumerate(log):
+        # the step's loss is the mean of its accumulated forward passes, unscaled
+        assert row.loss == pytest.approx(np.mean(losses[3 * index : 3 * index + 3]), rel=1e-5)
+        assert row.learning_rate == pytest.approx(
+            learning_rate(index, budget.steps, budget.learning_rate, Optimiser().warmup_fraction)
+        )
+        assert row.grad_norm > 0
+    path = write_step_log(log, tmp_path / "run.steps.csv")
+    back = read_step_log(path)
+    assert [r.step for r in back] == [r.step for r in log]
+    assert [r.loss for r in back] == pytest.approx([r.loss for r in log], rel=1e-7)
+    assert isinstance(back[0], StepLog)

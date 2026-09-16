@@ -574,24 +574,31 @@ def pretrain_tel(
 
 def probe_and_score(
     seed: int,
-    checkpoint: Path,
+    checkpoint: Path | None,
     inputs: ProbeInputs,
     held_out_source: str,
     step_log: Path,
     label: str,
+    save_to: Path | None = None,
 ) -> ProbeResult:
-    """Train the frozen probe on a saved backbone and score every test source.
+    """Train the frozen probe on a backbone and score every test source.
 
     The probe stage is seeded here, from the seed alone, so a re-run on a saved backbone starts
     from the state the original run's probe started from.
 
+    **Without a checkpoint the backbone is left as constructed** (ADR-0023's random-init
+    control). The model is built right after ``torch.manual_seed(seed)``, and the backbone is
+    constructed before the head, so its weights are the ones pretraining at ``seed`` starts from,
+    and the head starts where a trained backbone's probe at ``seed`` starts.
+
     Args:
         seed: The seed.
-        checkpoint: The pretrained backbone.
+        checkpoint: The pretrained backbone, or ``None`` for the untrained initialisation.
         inputs: The opened shards, rung and evaluation windows.
         held_out_source: The site whose calibration is measured.
         step_log: Where the probe's per-step training log is written.
         label: The run's label in the training log.
+        save_to: Where to write the selected probe's whole state, when given.
 
     Returns:
         The probe's result, with every test window's logit.
@@ -609,8 +616,9 @@ def probe_and_score(
         label=stage.label,
     )
     model = RiskModel(inputs.spec, risk, frozen=True).to(device)
-    backbone = read_checkpoint(checkpoint)["state"]
-    model.backbone.load_state_dict({k: v.to(device) for k, v in backbone.items()})
+    if checkpoint is not None:
+        backbone = read_checkpoint(checkpoint)["state"]
+        model.backbone.load_state_dict({k: v.to(device) for k, v in backbone.items()})
     sampler = balanced_training_sampler(telemetry, inputs.ladder, stage, probe_budget.batch_windows)
     train_rate = sampler.positives_per_batch / probe_budget.batch_windows
     offset = prior_correction(train_rate, sampler.natural_rate)
@@ -641,6 +649,21 @@ def probe_and_score(
     )
     probe_seconds = time.perf_counter() - started
     probe_log = write_step_log(probe.step_log, step_log)
+    if save_to is not None:
+        save_to.parent.mkdir(parents=True, exist_ok=True)
+        torch.save(
+            {
+                "spec": inputs.spec.__dict__,
+                "kind": "probe",
+                "seed": seed,
+                "backbone": None if checkpoint is None else checkpoint.as_posix(),
+                "selected": (probe.best.step, probe.best.value),
+                "train_rate": train_rate,
+                "natural_rate": sampler.natural_rate,
+                "state": probe.state,
+            },
+            save_to,
+        )
 
     # -- test, the held-out site included ----------------------------------------------
     model.load_state_dict({k: v.to(device) for k, v in probe.state.items()})

@@ -1186,6 +1186,29 @@ def model_probe_intervals(
 
 
 @model_app.command(
+    "probe-control",
+    help="The random-init probe control (ADR-0023): the frozen probe on three untrained S2 "
+    "backbones against the full-budget tel_only backbone, pooled training-site test AUPRC "
+    "intervals, and the pre-registered criterion. Resume-safe.",
+)
+def model_probe_control(
+    config: ConfigOption = Path("configs/train/probe_control_v0.yaml"),
+    device: Annotated[str | None, typer.Option("--device", help="Torch device.")] = None,
+) -> None:
+    """Run the random-init probe control and write its report.
+
+    Args:
+        config: The control configuration.
+        device: Torch device; chosen automatically when omitted.
+    """
+    from faultline.evaluation.probe_control import run_probe_control
+
+    paths = ProjectPaths.resolve()
+    report, record = run_probe_control(paths, paths.repo_root / config, device)
+    typer.echo(f"wrote {report} and {record}")
+
+
+@model_app.command(
     "mixture-shards",
     help="Write the M3 mixture's txt and tel+status shards and every stream's run index, "
     "and report per-stream token counts and per-arm token budgets. Trains nothing.",

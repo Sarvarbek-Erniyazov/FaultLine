@@ -1,0 +1,25 @@
+# The random-init probe control, version 0: can the frozen probe see backbone quality?
+# Decision record: docs/DECISIONS.md, ADR-0023. The criterion below was committed in c9489a2,
+# BEFORE this file, the code that reads it, or any run of it existed.
+#
+# THE CRITERION. On the pooled Kelmarsh + Penmanshiel test windows, with ADR-0021's block
+# bootstrap (the gate configuration's `bootstrap` section), the full-budget tel_only seed-1
+# backbone's 95% AUPRC interval must lie entirely above the random-init interval: its lower bound
+# strictly above the upper bound of every random-init seed below. Hill of Towie is reported and
+# does not decide. On FAIL the probe is the defect, and ADR-0023 §b is registered next.
+#
+# WHAT DIFFERS from the trained side: the backbone's weights only. Each random-init backbone is
+# the S2 decoder as pretraining at that seed constructs it, with no optimiser step. Its probe is
+# the gate run's frozen probe, seeded with the same seed, on the same windows.
+
+version: 0
+gate_config: "configs/train/gate_check_v0.yaml"
+
+# ADR-0023: the probe reads the backbone's final position, as every probe so far has.
+design: final_position
+
+init_seeds: [1, 2, 3]
+
+pooled_sources:
+  - kelmarsh
+  - penmanshiel

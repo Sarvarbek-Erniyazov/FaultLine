@@ -3043,3 +3043,38 @@ goes into a new version of the C0 configuration (`configs/train/telemetry_v1.yam
 **What a pass does not show.** A pass says that the probe can tell a pretrained backbone from an
 untrained one on the training sites' test windows. It does not say that it can tell two
 pretrained arms apart, or that any held-out axis is evaluable.
+
+### Result, 2026-09-16 (F1b) -- FAIL: the final-position frozen probe cannot tell the trained backbone from an untrained one
+
+The criterion was registered in commit **`c9489a2`**, before `faultline model probe-control`,
+`configs/train/probe_control_v0.yaml` or any run of them existed
+(`reports/data/probe_control_v0_20260916.md`). Three random-init S2 backbones (seeds 1-3) were
+probed exactly as the gate run's backbone was. Each probe took 3.6 minutes.
+
+| backbone | pooled Kelmarsh + Penmanshiel AUPRC | 95% block interval (decides) | Hill of Towie AUPRC | 95% block interval (reported) |
+| --- | --- | --- | --- | --- |
+| **full-budget `tel_only`, seed 1** | **0.0502** | **[0.0434, 0.0587]** | 0.0393 | [0.0306, 0.0553] |
+| random init, seed 1 | 0.0405 | [0.0353, 0.0470] | 0.0427 | [0.0328, 0.0591] |
+| random init, seed 2 | 0.0401 | [0.0351, 0.0461] | 0.0406 | [0.0328, 0.0514] |
+| random init, seed 3 | 0.0428 | [0.0372, 0.0500] | 0.0423 | [0.0326, 0.0609] |
+
+Pooled split: 24,000 windows, 919 positive, base rate 0.0383. No replicate was discarded on
+either side.
+
+**Verdict: FAIL. The trained lower bound, 0.0434, is not above the highest random-init upper
+bound, 0.0500 (seed 3).** The trained lower bound is above seeds 1 and 2's upper bounds, and that
+does not count, as registered. **As registered, the probe is the defect.** The arm runs do not
+proceed, and §b is registered next.
+
+Recorded beside the verdict, deciding nothing:
+
+- The trained backbone's point estimate is above every random-init interval on the pooled split.
+  The failure is at the interval, not the point. The probe does see something of the backbone,
+  and not enough to clear the registered bar.
+- Per source, the gap is at Kelmarsh (trained 0.0518; random 0.0351 to 0.0368, around its base
+  rate of 0.0365). At Penmanshiel the random backbones score 0.0454 to 0.0508 against the trained
+  0.0504. At Hill of Towie **every random-init backbone scores above the trained one** (0.0406 to
+  0.0427, against 0.0393).
+- The random-init probes' training loss ends at 0.685 to 0.687, near ln 2 = 0.693. Their selected
+  validation AUPRC (0.0224 to 0.0291, at steps 332 to 996) is below the trained probe's 0.0441 at
+  step 166.

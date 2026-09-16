@@ -1,0 +1,775 @@
+{
+  "conditions": [
+    {
+      "name": "A",
+      "description": "NRC only, pre-4b8caa3 shares (text_v1.yaml)",
+      "documents": {
+        "nrc_info_notices": 410,
+        "nrc_bulletins": 223,
+        "nrc_gen_letters": 549,
+        "nrc_reg_issues": 53,
+        "nrc_event_notifications": 21424
+      },
+      "types_frequent": 191,
+      "types_seen": 266,
+      "types_total": 297,
+      "token_coverage": 0.7021517553793885,
+      "absent": [
+        "adaption",
+        "anemometer",
+        "asymmetry",
+        "autounwind",
+        "bladeangle",
+        "conv",
+        "dev",
+        "drivetrain",
+        "earthed",
+        "electr",
+        "err",
+        "freq",
+        "implausible",
+        "login",
+        "mains",
+        "mconfig",
+        "nacelle",
+        "nat",
+        "obstacle",
+        "overfrequency",
+        "parameterized",
+        "parkmaster",
+        "pmu",
+        "rotorbearing",
+        "sntp",
+        "synchronisation",
+        "thermistor",
+        "transf",
+        "twistangle",
+        "winddirection",
+        "yaw"
+      ],
+      "strings_frequent": 76,
+      "strings_total": 264
+    },
+    {
+      "name": "B",
+      "description": "NRC only, current shares (text_v2.yaml)",
+      "documents": {
+        "nrc_info_notices": 348,
+        "nrc_bulletins": 182,
+        "nrc_gen_letters": 504,
+        "nrc_reg_issues": 25,
+        "nrc_event_notifications": 21424
+      },
+      "types_frequent": 190,
+      "types_seen": 266,
+      "types_total": 297,
+      "token_coverage": 0.7010192525481314,
+      "absent": [
+        "adaption",
+        "anemometer",
+        "asymmetry",
+        "autounwind",
+        "bladeangle",
+        "conv",
+        "dev",
+        "drivetrain",
+        "earthed",
+        "electr",
+        "err",
+        "freq",
+        "implausible",
+        "login",
+        "mains",
+        "mconfig",
+        "nacelle",
+        "nat",
+        "obstacle",
+        "overfrequency",
+        "parameterized",
+        "parkmaster",
+        "pmu",
+        "rotorbearing",
+        "sntp",
+        "synchronisation",
+        "thermistor",
+        "transf",
+        "twistangle",
+        "winddirection",
+        "yaw"
+      ],
+      "strings_frequent": 76,
+      "strings_total": 264
+    },
+    {
+      "name": "C",
+      "description": "NRC + PHMSA, current shares (text_v2.yaml)",
+      "documents": {
+        "nrc_info_notices": 348,
+        "nrc_bulletins": 182,
+        "nrc_gen_letters": 504,
+        "nrc_reg_issues": 25,
+        "phmsa_incident_narratives": 9267,
+        "nrc_event_notifications": 21424
+      },
+      "types_frequent": 199,
+      "types_seen": 268,
+      "types_total": 297,
+      "token_coverage": 0.7191392978482446,
+      "absent": [
+        "adaption",
+        "anemometer",
+        "asymmetry",
+        "autounwind",
+        "bladeangle",
+        "conv",
+        "dev",
+        "drivetrain",
+        "earthed",
+        "electr",
+        "err",
+        "freq",
+        "implausible",
+        "mconfig",
+        "nacelle",
+        "nat",
+        "obstacle",
+        "overfrequency",
+        "parameterized",
+        "parkmaster",
+        "pmu",
+        "rotorbearing",
+        "sntp",
+        "synchronisation",
+        "thermistor",
+        "transf",
+        "twistangle",
+        "winddirection",
+        "yaw"
+      ],
+      "strings_frequent": 80,
+      "strings_total": 264
+    }
+  ],
+  "split_moves": [
+    {
+      "word": "resistor",
+      "before": 117,
+      "after": 78,
+      "kind": "frequent -> rare"
+    }
+  ],
+  "phmsa_moves": [
+    {
+      "word": "login",
+      "before": 0,
+      "after": 1,
+      "kind": "absent -> present"
+    },
+    {
+      "word": "mains",
+      "before": 0,
+      "after": 37,
+      "kind": "absent -> present"
+    },
+    {
+      "word": "bp",
+      "before": 38,
+      "after": 119,
+      "kind": "rare -> frequent"
+    },
+    {
+      "word": "charge",
+      "before": 76,
+      "after": 139,
+      "kind": "rare -> frequent"
+    },
+    {
+      "word": "extreme",
+      "before": 70,
+      "after": 128,
+      "kind": "rare -> frequent"
+    },
+    {
+      "word": "flushing",
+      "before": 56,
+      "after": 104,
+      "kind": "rare -> frequent"
+    },
+    {
+      "word": "man",
+      "before": 83,
+      "after": 108,
+      "kind": "rare -> frequent"
+    },
+    {
+      "word": "pads",
+      "before": 62,
+      "after": 183,
+      "kind": "rare -> frequent"
+    },
+    {
+      "word": "particle",
+      "before": 98,
+      "after": 119,
+      "kind": "rare -> frequent"
+    },
+    {
+      "word": "plc",
+      "before": 59,
+      "after": 231,
+      "kind": "rare -> frequent"
+    },
+    {
+      "word": "uncontrolled",
+      "before": 87,
+      "after": 109,
+      "kind": "rare -> frequent"
+    }
+  ],
+  "pipeline_terms": [
+    {
+      "term": "compressor",
+      "in_code_book": false,
+      "count_b": 203,
+      "count_c": 1378,
+      "moved": false,
+      "verdict": "corpus: confirmed, x6.8; split: not a code-book word, cannot move it"
+    },
+    {
+      "term": "valve",
+      "in_code_book": false,
+      "count_b": 7658,
+      "count_c": 18417,
+      "moved": false,
+      "verdict": "corpus: confirmed, x2.4; split: not a code-book word, cannot move it"
+    },
+    {
+      "term": "pressure",
+      "in_code_book": true,
+      "count_b": 9105,
+      "count_c": 13854,
+      "moved": false,
+      "verdict": "corpus: confirmed, x1.5; split: no effect, already frequent under B"
+    },
+    {
+      "term": "corrosion",
+      "in_code_book": false,
+      "count_b": 569,
+      "count_c": 2993,
+      "moved": false,
+      "verdict": "corpus: confirmed, x5.3; split: not a code-book word, cannot move it"
+    }
+  ],
+  "wind_terms": [
+    {
+      "term": "yaw",
+      "in_code_book": true,
+      "count_b": 0,
+      "count_c": 0,
+      "moved": false,
+      "verdict": "confirmed: did not move"
+    },
+    {
+      "term": "nacelle",
+      "in_code_book": true,
+      "count_b": 0,
+      "count_c": 0,
+      "moved": false,
+      "verdict": "confirmed: did not move"
+    },
+    {
+      "term": "pitch",
+      "in_code_book": true,
+      "count_b": 2,
+      "count_c": 3,
+      "moved": false,
+      "verdict": "confirmed: did not move"
+    },
+    {
+      "term": "rotor",
+      "in_code_book": true,
+      "count_b": 91,
+      "count_c": 95,
+      "moved": false,
+      "verdict": "confirmed: did not move"
+    },
+    {
+      "term": "anemometer",
+      "in_code_book": true,
+      "count_b": 0,
+      "count_c": 0,
+      "moved": false,
+      "verdict": "confirmed: did not move"
+    },
+    {
+      "term": "drivetrain",
+      "in_code_book": true,
+      "count_b": 0,
+      "count_c": 0,
+      "moved": false,
+      "verdict": "confirmed: did not move"
+    },
+    {
+      "term": "bladeangle",
+      "in_code_book": true,
+      "count_b": 0,
+      "count_c": 0,
+      "moved": false,
+      "verdict": "confirmed: did not move"
+    },
+    {
+      "term": "twistangle",
+      "in_code_book": true,
+      "count_b": 0,
+      "count_c": 0,
+      "moved": false,
+      "verdict": "confirmed: did not move"
+    },
+    {
+      "term": "rotorbearing",
+      "in_code_book": true,
+      "count_b": 0,
+      "count_c": 0,
+      "moved": false,
+      "verdict": "confirmed: did not move"
+    }
+  ],
+  "side_strings": {
+    "low": 184,
+    "high": 80
+  },
+  "counts": [
+    {
+      "source": "kelmarsh",
+      "reading": "rule",
+      "events": 719,
+      "unmapped": 0,
+      "per_side": {
+        "high": 44,
+        "low": 675
+      },
+      "types_per_side": {
+        "high": {
+          "drive train monitor level 2": 23,
+          "safety chain open": 21
+        },
+        "low": {
+          "anemometer defect": 226,
+          "tower oscillation x level 2": 103,
+          "tower oscillation x level 1": 66,
+          "repeating error bp52": 64,
+          "frequency converter not ready": 57,
+          "frequency converter error": 53,
+          "tower oscillation y level 1": 44,
+          "pitch run-away (hub box v.>=4)": 26,
+          "uncontrolled yaw movement": 11,
+          "vane defect": 9,
+          "implausible gear speed": 7,
+          "tower oscillation y level 2": 4,
+          "low gearbox oil pressure": 4,
+          "pitch controller communication error": 1
+        }
+      }
+    },
+    {
+      "source": "penmanshiel",
+      "reading": "rule",
+      "events": 1503,
+      "unmapped": 0,
+      "per_side": {
+        "high": 51,
+        "low": 1452
+      },
+      "types_per_side": {
+        "high": {
+          "safety chain open": 43,
+          "drive train monitor level 2": 8
+        },
+        "low": {
+          "anemometer defect": 329,
+          "tower oscillation y level 1": 287,
+          "missing gear oil (high rpm)": 177,
+          "frequency converter not ready": 141,
+          "tower oscillation y level 2": 116,
+          "repeating error bp52": 89,
+          "frequency converter error": 58,
+          "pitch controller communication error": 45,
+          "charging circuit pitch": 41,
+          "tower oscillation x level 1": 38,
+          "low gearbox oil pressure": 34,
+          "tower oscillation x level 2": 24,
+          "implausible gear speed": 22,
+          "uncontrolled yaw movement": 21,
+          "vane defect": 18,
+          "pitch run-away (hub box v.>=4)": 12
+        }
+      }
+    },
+    {
+      "source": "hill_of_towie",
+      "reading": "rule",
+      "events": 693,
+      "unmapped": 693,
+      "per_side": {
+        "high": 0,
+        "low": 0
+      },
+      "types_per_side": {
+        "high": {},
+        "low": {}
+      }
+    },
+    {
+      "source": "hill_of_towie",
+      "reading": "sensitivity: last described alarm by the first step, any status or cause",
+      "events": 693,
+      "unmapped": 0,
+      "per_side": {
+        "high": 639,
+        "low": 54
+      },
+      "types_per_side": {
+        "high": {
+          "Fast cut-out of generator": 565,
+          "Large generator Cut-in": 51,
+          "Availability - low wind": 23
+        },
+        "low": {
+          "Pitch lubrication": 31,
+          "Stopped, untwisting cables": 16,
+          "Windspeed too high to operate": 7
+        }
+      }
+    },
+    {
+      "source": "care",
+      "reading": "rule",
+      "events": 45,
+      "unmapped": 45,
+      "per_side": {
+        "high": 0,
+        "low": 0
+      },
+      "types_per_side": {
+        "high": {},
+        "low": {}
+      }
+    },
+    {
+      "source": "care",
+      "reading": "sensitivity: the written event description, same word rule",
+      "events": 45,
+      "unmapped": 0,
+      "per_side": {
+        "high": 17,
+        "low": 28
+      },
+      "types_per_side": {
+        "high": {
+          "hydraulic group": 6,
+          "high temperature in transformer cell": 3,
+          "generator bearing failure": 2,
+          "transformer failure": 1,
+          "turbine is stopped due to a main bearing damage": 1,
+          "15004 : safety chain relay open + 93005 : gear oil cooler bypass valve": 1,
+          "valve in water cooling system was left in wrong position after maintenance actions on 05-08-2020": 1,
+          "failure 2023-04-05 03:30 - defective coupling between gear oil pump and motor": 1,
+          "turbine has some issues with overpressure on the main transformer": 1
+        },
+        "low": {
+          "gearbox failure": 2,
+          "23020 : axis 3 not ready-to-operate": 2,
+          "gearbox bearings damaged": 1,
+          "rotor bearing 2 - damage": 1,
+          "turbine is in standstill since 01.08 due to rotorbearing damage.": 1,
+          "harting plug nacelle/hub damaged + ncr20_hub: wiring blade control system": 1,
+          "converter failure from 17.11 12:30 - 18.11. 13:57, fuse filter supply": 1,
+          "failure due to rotorbrake and hydraulic problemes - hydraulic pump a disabeld, 2h later turbine back in production - analysis indicates a longer anomaly in temp_hydraulic_oil_tank_1_average until 15.01.2024 which is neither confirmed nor refuted.": 1,
+          "10115 : oil level error, two-pump mode + oil leakage gear oil supply + 12019: rotor brake b cannot be closed + p20_yaw carbon brush damaged": 1,
+          "we had some failures (st\u00f6rung 24vac versorgung rotorbremse) on the 16th in the afternoon. from 17th onwards a longer standstill where we don't know the root cause to.": 1,
+          "p20_spinner_carbonbrush defekt + p20_accumulators_hydraulic system": 1,
+          "pitchfailure - defect beckhoffcard, axis 2, rectified on 23/01 - anomalie liegt aber l\u00e4nger an als der fehler, batterien waren ok": 1,
+          "randomn small failures regarding pitch resulting in a longer standstill due to a defect pitch encoder (26/02)": 1,
+          "p20_grounding role brake disc + p20_cover-lightning-main-cabinet-hub": 1,
+          "communication fault bk1120 in nc300": 1,
+          "pitch failure - defect fan on pitch motor": 1,
+          "p20_blade3_grease collector missing": 1,
+          "p20_dguv-v3 rcd 28f1 nc310 defective + 0 : p20_blades_cabinet caps missing": 1,
+          "communication and pitchfailure - slip ring and beckhoff card": 1,
+          "pending19_prev_yaw_grease pump defective": 1,
+          "wec in failure - current measurement own consumption": 1,
+          "communication fault bk1120 in nc300 a2": 1,
+          "21002 : axis 1 dc-link voltage low, batt": 1,
+          "turbine had several short standstills (max 8min) with failure \"schwingungen umrichter drehmomenten level 1\"": 1,
+          "wec in failure - hub battery charger defect": 1,
+          "wec in failure with pitch battery issues - rewiring": 1
+        }
+      }
+    }
+  ],
+  "held_out_messages": {
+    "hill_of_towie": [
+      [
+        "Large generator Cut-in",
+        "non-stopping",
+        "unknown",
+        441896
+      ],
+      [
+        "Fast cut-out of generator",
+        "non-stopping",
+        "unknown",
+        441895
+      ],
+      [
+        "Pitch lubrication",
+        "stopping",
+        "planned",
+        2977
+      ],
+      [
+        "Availability - low wind",
+        "stopping",
+        "environmental",
+        2744
+      ],
+      [
+        "Stopped, untwisting cables",
+        "stopping",
+        "planned",
+        1508
+      ],
+      [
+        "Windspeed too high to operate",
+        "stopping",
+        "environmental",
+        232
+      ],
+      [
+        "Ice detection: Low torque",
+        "stopping",
+        "environmental",
+        226
+      ],
+      [
+        "Ice detection             :",
+        "non-stopping",
+        "unknown",
+        50
+      ]
+    ],
+    "care": [
+      [
+        "hydraulic group",
+        "event description",
+        "anomaly",
+        6
+      ],
+      [
+        "high temperature in transformer cell",
+        "event description",
+        "anomaly",
+        3
+      ],
+      [
+        "gearbox failure",
+        "event description",
+        "anomaly",
+        2
+      ],
+      [
+        "generator bearing failure",
+        "event description",
+        "anomaly",
+        2
+      ],
+      [
+        "23020 : axis 3 not ready-to-operate",
+        "event description",
+        "anomaly",
+        2
+      ],
+      [
+        "transformer failure",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "gearbox bearings damaged",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "rotor bearing 2 - damage",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "turbine is stopped due to a main bearing damage",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "turbine is in standstill since 01.08 due to rotorbearing damage.",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "harting plug nacelle/hub damaged + ncr20_hub: wiring blade control system",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "converter failure from 17.11 12:30 - 18.11. 13:57, fuse filter supply",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "failure due to rotorbrake and hydraulic problemes - hydraulic pump a disabeld, 2h later turbine back in production - analysis indicates a longer anomaly in temp_hydraulic_oil_tank_1_average until 15.01.2024 which is neither confirmed nor refuted.",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "10115 : oil level error, two-pump mode + oil leakage gear oil supply + 12019: rotor brake b cannot be closed + p20_yaw carbon brush damaged",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "we had some failures (st\u00f6rung 24vac versorgung rotorbremse) on the 16th in the afternoon. from 17th onwards a longer standstill where we don't know the root cause to.",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "p20_spinner_carbonbrush defekt + p20_accumulators_hydraulic system",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "15004 : safety chain relay open + 93005 : gear oil cooler bypass valve",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "pitchfailure - defect beckhoffcard, axis 2, rectified on 23/01 - anomalie liegt aber l\u00e4nger an als der fehler, batterien waren ok",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "randomn small failures regarding pitch resulting in a longer standstill due to a defect pitch encoder (26/02)",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "p20_grounding role brake disc + p20_cover-lightning-main-cabinet-hub",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "communication fault bk1120 in nc300",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "pitch failure - defect fan on pitch motor",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "p20_blade3_grease collector missing",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "p20_dguv-v3 rcd 28f1 nc310 defective + 0 : p20_blades_cabinet caps missing",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "valve in water cooling system was left in wrong position after maintenance actions on 05-08-2020",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "failure 2023-04-05 03:30 - defective coupling between gear oil pump and motor",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "communication and pitchfailure - slip ring and beckhoff card",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "turbine has some issues with overpressure on the main transformer",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "pending19_prev_yaw_grease pump defective",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "wec in failure - current measurement own consumption",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "communication fault bk1120 in nc300 a2",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "21002 : axis 1 dc-link voltage low, batt",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "turbine had several short standstills (max 8min) with failure \"schwingungen umrichter drehmomenten level 1\"",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "wec in failure - hub battery charger defect",
+        "event description",
+        "anomaly",
+        1
+      ],
+      [
+        "wec in failure with pitch battery issues - rewiring",
+        "event description",
+        "anomaly",
+        1
+      ]
+    ]
+  },
+  "testable": false
+}

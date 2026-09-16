@@ -594,6 +594,22 @@ pipeline, corpus. PHMSA is not expected to close the wind-specific gap; that
 expectation is not yet measured, and the split is re-measured against the corpus the
 M2c fit actually uses (Gate 6 report).
 
+*Testability gate, 2026-09-16 (`reports/data/h3_vocab_overlap_v1_20260916.md`,
+`faultline inspect vocab-overlap`).* The split was re-measured under three conditions so the
+held-out share change (`4b8caa3`) is not read as PHMSA's contribution: NRC only at the old
+shares 191/297 types, 76/264 strings (re-derived, matching the record); NRC only at the new
+shares 190/297, 76/264 (`resistor` fell from 117 to 78); NRC + PHMSA 199/297, 80/264. PHMSA
+moves eleven code-book words (`mains` and `login` from absent; nine past 100) and **no wind
+term**; `compressor`, `valve` and `corrosion` rose in the corpus but are not code-book words,
+and `pressure` was already frequent, so none of them moves the split. **The pre-registered
+gate fired.** Under the rule (an event's type is the status string that opens it), **0 of Hill
+of Towie's 693 narrow events and 0 of CARE's 45 anomalies map to either side**: the held-out
+site's only described messages are generator switching, lubrication, wind and icing, none of
+them technical, and CARE has no status strings. Even at the training sites, where every event
+maps, the high-overlap side holds 2 event types. **H3 as worded is not testable at this data
+scale**; Part C of the M3 entry brief was not started. What replaces the test is not decided
+here.
+
 The ablation is the test, not the joint-versus-telemetry comparison on its own: a
 joint model can beat a telemetry-only model by having more parameters.
 

@@ -536,6 +536,27 @@ def inspect_verification_command(
 
 
 @inspect_app.command(
+    "vocab-overlap",
+    help="H3's word overlap under three corpus conditions, PHMSA's movers, and the "
+    "pre-registered testability gate on held-out events.",
+)
+def inspect_vocab_overlap_command(
+    labels: Annotated[
+        Path, typer.Option("--labels", help="Event labelling file the labels were built under.")
+    ] = Path("configs/data/events_v2.yaml"),
+) -> None:
+    """Measure H3's vocabulary split and its gate, and write the report.
+
+    Args:
+        labels: The event labelling file.
+    """
+    from faultline.data.text.vocab_overlap import inspect_vocab_overlap
+
+    report, record = inspect_vocab_overlap(ProjectPaths.resolve(), labels)
+    typer.echo(f"wrote {report} and {record}")
+
+
+@inspect_app.command(
     "core",
     help="The core channel rule on the cleaned grid: coverage per site and year, the "
     "seasonally matched shortcut control, and the training exclusions.",

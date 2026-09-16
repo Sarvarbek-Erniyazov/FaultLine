@@ -2962,3 +2962,84 @@ either candidate is scored for any seed.[^0021-lift]
 [^0021-lift]: The window-resampling interval on lift over chance is [+0.0004, +0.0172]. Its lower
 bound is above zero. That row is not the registered unit and decides nothing. The block
 interval on lift, the registered unit, is [-0.0012, +0.0211].
+
+---
+
+## ADR-0022 The primary evaluation axis after ADR-0021 (number reserved)
+
+**Status:** Reserved 2026-09-16. The axis selection rule and the two CARE facts are written here
+in their own commit, before either candidate (CARE or the temporal holdout) is scored for any
+seed. Nothing is decided under this number yet.
+
+---
+
+## ADR-0023 The random-init probe control: can the frozen probe see backbone quality?
+
+**Status:** Accepted; **pre-registered 2026-09-16, before any code, configuration or run of the
+control exists** · **Date:** 2026-09-16
+
+**Context.** H1 is read entirely through the frozen probe (ADR-0020). Doubling pretraining lowered
+selected validation loss from 4.21 to 3.317, about 0.9 nats, and no site's probe AUPRC moved
+outside its interval (ADR-0021 outcome). There are two readings. Either next-token loss does not
+track a risk-relevant representation, or the probe cannot see backbone quality at all. Only a
+control separates them. If the probe cannot see backbone quality, no arm comparison read through
+it is informative, and the choice of evaluation axis (ADR-0022) does not matter.
+
+**The criterion, verbatim as registered.**
+
+> The probe is judged sensitive to backbone quality if and only if, on the pooled Kelmarsh +
+> Penmanshiel test split with the same 12,000-window block bootstrap and 95% interval used in
+> ADR-0021, the full-budget `tel_only` seed-1 backbone's AUPRC interval lies entirely above the
+> random-init backbone's AUPRC interval. Hill of Towie is reported alongside but does not
+> decide. If the criterion fails, the probe is the defect; the arm runs do not proceed until a
+> redesigned probe passes this same criterion.
+
+**How the criterion is read, fixed here before any number exists.**
+
+- **The pooled split.** Kelmarsh's and Penmanshiel's test windows, as every probe here scores
+  them (`configs/train/telemetry_v1.yaml`, evaluation: stride 1, 12,000 windows per source, seed
+  20260912). That is **24,000 windows, 919 positive (438 + 481), and 373 of 5,705 occupied 48-hour
+  blocks holding a positive**, counted from the labels in the gate run's saved test file. "The
+  same 12,000-window block bootstrap" means the same procedure over these pooled windows: blocks
+  of 288 steps within each source's shard, resampled with replacement, **10,000 replicates,
+  seed 20260916, 95% percentile interval**, one AUPRC per replicate over the pooled windows.
+  If more than 1% of either side's replicates are discarded, that interval is untrusted and the
+  criterion is not met.
+- **Three random-init backbones, one criterion.** The random-init side has three seeds (1, 2,
+  3), so it has three intervals. **The criterion is met if and only if the trained backbone's
+  lower bound is strictly above the upper bound of every one of the three.** A pass against the
+  most favourable random seed alone does not count.
+- **The trained side** is the registered gate run as scored: the full-budget `tel_only` seed-1
+  backbone's probe, from its saved test scores
+  (`checkpoints/gate_check_v0_9697a266/S2_tel_only_seed1_test_scores.npz`). It is not re-run for
+  this criterion.
+- **The random-init side.** The S2 backbone at the joint vocabulary and context 2,048, built by
+  the same constructor pretraining uses (`TelemetryDecoder`), with the global seed set to the init
+  seed before construction, as pretraining sets it, and **no optimiser step taken**. Its probe
+  is the frozen probe of `probe_and_score`, run exactly as the full-budget probe was: seeded with
+  the same seed, the balanced sampler, 16,000 positives, rate 2e-3, six validation measurements
+  on the selection windows, the best of them selected, and the same test pass. Only the backbone's
+  weights differ. **Every selected probe head is saved**, so that ADR-0019's check (the F2
+  addendum) can be measured on it.
+- **Reported, deciding nothing:** Hill of Towie's AUPRC and block interval for all four backbones,
+  and each source's AUPRC separately.
+- **This control selects no axis.** The pooled split is the same set of windows as the
+  temporal-holdout candidate of ADR-0022. It asks whether the probe responds to the backbone, not
+  whether that axis is evaluable, and ADR-0022's rule is registered separately.
+
+**If the criterion fails: one redesign iteration, in this order.** Each step is registered as its
+own sub-section here (**§b**, **§c**, **§d**), committed before its code or run, and judged by the
+same criterion against three random-init backbones read through the same design:
+
+- **§b** the probe reads the mean of the final hidden states over the window, instead of the
+  final position;
+- **§c** a two-layer MLP probe on the same pooled states;
+- **§d** the last two backbone blocks unfrozen, at a separate, lower learning rate.
+
+The first design that passes becomes the probe for every arm. It is stated here, and the change
+goes into a new version of the C0 configuration (`configs/train/telemetry_v1.yaml` is frozen). **If
+§d also fails, the work stops and is reported; nothing further proceeds.**
+
+**What a pass does not show.** A pass says that the probe can tell a pretrained backbone from an
+untrained one on the training sites' test windows. It does not say that it can tell two
+pretrained arms apart, or that any held-out axis is evaluable.

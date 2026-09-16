@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="380" viewBox="0 0 640 380" font-family="system-ui, sans-serif" font-size="12">
+<title>Validation loss against training tokens seen, S2, S3</title>
+<rect width="640" height="380" fill="#fcfcfb"/>
+<text x="64" y="22" fill="#1a1a19" font-size="14" font-weight="600">Validation loss (nats) vs tokens seen</text>
+<line x1="64" x2="568" y1="328.0" y2="328.0" stroke="#e4e3dd" stroke-width="1"/><text x="56" y="332.0" fill="#5f5e58" text-anchor="end">6.00</text>
+<line x1="64" x2="568" y1="278.8" y2="278.8" stroke="#e4e3dd" stroke-width="1"/><text x="56" y="282.8" fill="#5f5e58" text-anchor="end">6.25</text>
+<line x1="64" x2="568" y1="229.7" y2="229.7" stroke="#e4e3dd" stroke-width="1"/><text x="56" y="233.7" fill="#5f5e58" text-anchor="end">6.50</text>
+<line x1="64" x2="568" y1="180.5" y2="180.5" stroke="#e4e3dd" stroke-width="1"/><text x="56" y="184.5" fill="#5f5e58" text-anchor="end">6.75</text>
+<line x1="64" x2="568" y1="131.3" y2="131.3" stroke="#e4e3dd" stroke-width="1"/><text x="56" y="135.3" fill="#5f5e58" text-anchor="end">7.00</text>
+<line x1="64" x2="568" y1="82.1" y2="82.1" stroke="#e4e3dd" stroke-width="1"/><text x="56" y="86.1" fill="#5f5e58" text-anchor="end">7.25</text>
+<text x="64.0" y="346" fill="#5f5e58" text-anchor="middle">0M</text>
+<text x="164.5" y="346" fill="#5f5e58" text-anchor="middle">2M</text>
+<text x="265.1" y="346" fill="#5f5e58" text-anchor="middle">4M</text>
+<text x="365.6" y="346" fill="#5f5e58" text-anchor="middle">6M</text>
+<text x="466.1" y="346" fill="#5f5e58" text-anchor="middle">8M</text>
+<text x="566.6" y="346" fill="#5f5e58" text-anchor="middle">10M</text>
+<text x="316" y="368" fill="#5f5e58" text-anchor="middle">training tokens seen</text>
+<circle cx="390.0" cy="18.0" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<text x="400" y="22" fill="#1a1a19">S2 (10.2M params)</text>
+<polyline points="146.4,59.7 228.7,169.4 311.1,232.6 393.4,269.2 475.8,288.8 558.1,297.8 568.0,299.0" fill="none" stroke="#2a78d6" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="146.4" cy="59.7" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="228.7" cy="169.4" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="311.1" cy="232.6" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="393.4" cy="269.2" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="475.8" cy="288.8" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="558.1" cy="297.8" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="568.0" cy="299.0" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<text x="576.0" y="315.0" fill="#1a1a19">S2 6.147</text>
+<rect x="510.5" y="13.5" width="9" height="9" rx="1.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<text x="525" y="22" fill="#1a1a19">S3 (20.0M params)</text>
+<polyline points="146.4,97.9 228.7,179.9 311.1,226.4 393.4,257.8 475.8,277.2 558.1,287.1 568.0,289.1" fill="none" stroke="#eb6834" stroke-width="2" stroke-linejoin="round"/>
+<rect x="141.9" y="93.4" width="9" height="9" rx="1.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<rect x="224.2" y="175.4" width="9" height="9" rx="1.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<rect x="306.6" y="221.9" width="9" height="9" rx="1.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<rect x="388.9" y="253.3" width="9" height="9" rx="1.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<rect x="471.3" y="272.7" width="9" height="9" rx="1.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<rect x="553.6" y="282.6" width="9" height="9" rx="1.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<rect x="563.5" y="284.6" width="9" height="9" rx="1.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<text x="576.0" y="281.1" fill="#1a1a19">S3 6.198</text>
+</svg>

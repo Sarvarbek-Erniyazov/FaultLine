@@ -983,6 +983,28 @@ def model_text_pretrain(
     typer.echo(f"wrote {report}")
 
 
+@model_app.command(
+    "text-curves",
+    help="Loss against tokens seen and terminal slopes for the text ladder, read from its "
+    "pretraining record; nothing is retrained.",
+)
+def model_text_curves(
+    record: Annotated[
+        Path, typer.Option("--record", help="The text pretraining record to read.")
+    ] = Path("reports/data/text_pretrain_v1_20260916.json"),
+) -> None:
+    """Write the text ladder's curves report and figure.
+
+    Args:
+        record: The ``text_pretrain_v*.json`` the runs wrote.
+    """
+    from faultline.evaluation.text_curves import write_text_curves
+
+    paths = ProjectPaths.resolve()
+    report, figure = write_text_curves(paths, (paths.repo_root / record).resolve())
+    typer.echo(f"wrote {report} and {figure}")
+
+
 @check_app.command(
     "naming",
     help="Fail if a forbidden string appears in a tracked file (ADR-0002).",

@@ -381,6 +381,13 @@ the roughly 20 of the compute-optimal literature. In that regime a larger model 
 sample-efficient per token. **The S2-S3 ordering carries no scaling information, and a
 ladder over a corpus of about 10M tokens cannot demonstrate scaling.**
 
+*Curves, 2026-09-16 (`reports/data/text_pretrain_curves_v1_20260916.md`, read from the
+pretraining record, nothing retrained).* Terminal slope over the last full interval (steps
+125 to 150): S2 -0.0279, **S3 -0.0308** nats per million tokens, so S3's is 1.10 times
+steeper. One seed each. The curves already crossed once: S3 was below S2 up to 3.3M tokens
+and above it from 4.9M. **Whether S3 would cross back is open.** Both slopes were read at a
+learning rate decayed to 0.1 of its peak, so no crossover is extrapolated.
+
 **One limitation carried into M3, stated once.** The configured capacities are sized for a
 corpus several times larger than the licence-clean route could produce. That one fact shows
 up in three places, and they are not three separate limitations:

@@ -14,18 +14,22 @@ calibrated abstention, evaluated under shift.**
 
 ## Status
 
-**M2 — text tokenizer and text-only pretraining, in progress (2026-09-16).** M0 is done
-(tagged `m0`). M1 trained a telemetry-only model ladder, but its risk result is **not** a
-positive finding: H1 is UNTESTED and the pretraining ablation INCONCLUSIVE, with the reasons
-recorded in [docs/ROADMAP.md](docs/ROADMAP.md). No number here yet supports the joint model.
-This line is updated at each milestone.
+**M2 — text tokenizer and text-only pretraining, done 2026-09-16
+([Gate 6 report](reports/data/m2_gate6_20260916.md)). M3, the joint model, is not
+started.** M0 is done (tagged `m0`). M1 trained a telemetry-only model ladder, but its risk
+result is **not** a positive finding: H1 is UNTESTED and the pretraining ablation
+INCONCLUSIVE, with the reasons recorded in [docs/ROADMAP.md](docs/ROADMAP.md). M2's two
+text rungs are undertrained at their pre-registered one-pass budget and the larger is not
+better, so they are a working pipeline and a baseline, not a scaling result. No number here
+yet supports the joint model. This line is updated at each milestone.
 
 What exists today: the repository tooling; the telemetry pipeline over four staged SCADA
 sources, its quantile-bin tokenizer, shards and the M1 model ladder with its risk
 evaluation; the text pipeline, ported from a course reference notebook into a tested
-package and run on the real text corpus; a robots.txt-gated text downloader; and dataset
-cards plus checksum manifests. What does not exist yet: the text tokenizer fit, text-only
-pretraining, and anything joint.
+package and run on the real text corpus; a robots.txt-gated text downloader; the fitted
+byte-level BPE tokenizer (32,768 ids), its text shards and two text-only pretrained rungs;
+and dataset cards plus checksum manifests for every staged source. What does not exist yet:
+anything joint - no telemetry-and-text model, and no evaluation under modality shift.
 
 **Tier 1 is staged for all four sources**: 37 files, 17.44 GB, every one md5-verified
 against its record and re-hashed on 2026-09-10 — Kelmarsh 11 files (3.69 GB), Penmanshiel

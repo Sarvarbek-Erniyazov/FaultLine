@@ -322,6 +322,23 @@ every channel after wind direction. The identifier is now the canonical position
 against the layout when a vocabulary is built, and tested with a tokenizer fitted in reverse
 order. No shard or checkpoint carried the old numbering: no channel token has been written.
 
+### Verified on disk, 2026-09-16 (M3 entry, C1) -- the v2 promise holds
+
+`faultline check joint-vocab` (`reports/data/joint_vocab_check_v1_20260916.md`) checked the
+concatenation against the artefacts, not the constants. **All 14 assertions pass.** No id
+collides across `[0,1184)` and `[1184,33952)`: 33,952 ids were decoded, and the 274 encodable
+telemetry ids and 32,768 text ids share none. All 32 M1 ladder checkpoints embed exactly 1,184
+rows. For each of the 8 shard files, the first turbine-year written to it was re-encoded with
+the M1 vocabulary and with the joint vocabulary, and both equal the bytes on disk. The highest
+id in 193,590,020 shard tokens is 351. The text region is exactly full at 32,768, contiguous,
+and the id after it is refused. A telemetry+text fixture round-trips to the single-modality
+encodings. Each check is tested to fail on a broken input
+(`tests/tokenizers/test_joint_check.py`). **This record is not superseded.**
+
+Observed, not asserted: the M2 text checkpoints embed 32,769 rows, because the text shards
+append a local `<sep>` at 32,768. That row has no joint id in the text region. A joint model
+initialised from them maps it to the structural `<sep>` (id 8) rather than appending it.
+
 ---
 
 ## ADR-0004 Data licence policy

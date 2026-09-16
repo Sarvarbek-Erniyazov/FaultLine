@@ -1006,6 +1006,55 @@ def model_text_curves(
 
 
 @check_app.command(
+    "joint-vocab",
+    help="Verify ADR-0003 v2 on disk: no id collision, M1 telemetry ids bit-identical, the "
+    "text region exactly full, and a telemetry+text round trip. Exits 1 on any failure.",
+)
+def check_joint_vocab(
+    bins_config: Annotated[
+        Path, typer.Option("--bins-config", help="The M1 tokenizer configuration.")
+    ] = Path("configs/tokenizer/quantile_bins_v2.yaml"),
+    text_tokenizer: Annotated[
+        Path, typer.Option("--text-tokenizer", help="The fitted M2 text tokenizer.")
+    ] = Path("data/tokenizers/text_bpe_v1_22c56e49.json"),
+    checkpoints: Annotated[
+        Path, typer.Option("--checkpoints", help="The M1 ladder checkpoint directory.")
+    ] = Path("checkpoints/ladder_v0_70860821"),
+) -> None:
+    """Verify the joint vocabulary and write its report.
+
+    Args:
+        bins_config: The quantile bin configuration whose shards and tokenizer are read.
+        text_tokenizer: The text tokenizer.
+        checkpoints: The M1 checkpoints whose embedding rows are compared.
+
+    Raises:
+        typer.Exit: With code 1 if any assertion fails.
+    """
+    from faultline.config import load_config
+    from faultline.data.telemetry.bins import QuantileBinsConfig
+    from faultline.data.telemetry.shards import shards_dir, tokenizer_path
+    from faultline.tokenizers.joint_check import verify_joint_vocabulary
+
+    paths = ProjectPaths.resolve()
+    config = load_config(paths.repo_root / bins_config, QuantileBinsConfig)
+    bins = tokenizer_path(paths, config)
+    report, checks = verify_joint_vocabulary(
+        paths,
+        bins,
+        (paths.repo_root / text_tokenizer).resolve(),
+        shards_dir(paths, bins),
+        (paths.repo_root / checkpoints).resolve(),
+        config.excluded,
+    )
+    for result in checks:
+        typer.echo(f"{'PASS' if result.passed else 'FAIL'}  {result.name}")
+    typer.echo(f"wrote {report}")
+    if not all(result.passed for result in checks):
+        raise typer.Exit(code=1)
+
+
+@check_app.command(
     "naming",
     help="Fail if a forbidden string appears in a tracked file (ADR-0002).",
 )

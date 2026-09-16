@@ -3134,3 +3134,27 @@ Recorded, deciding nothing. Mean pooling raised the pooled AUPRC of **both** sid
 them. At the point estimate, the trained backbone is now 0.0027 above the best random-init
 backbone, against 0.0074 under §a. Across all four backbones, Hill of Towie scores sit between
 0.0347 and 0.0379, against a base rate of 0.03325.
+
+### §c, registered 2026-09-16 before its code or run -- a two-layer MLP probe on the mean-pooled states
+
+**Status:** pre-registered after the §b FAIL (commit `a4cfc49`), before any §c code, configuration
+or run exists.
+
+**The design.** The probe reads the same mean-pooled final hidden states as §b. The head becomes a
+two-layer MLP. **"Two-layer" is read here as two hidden layers**, because the head every probe has
+used so far (`RiskHead`) already has one: input norm (RMSNorm), Linear(192 → 192), GELU,
+Linear(192 → 192), GELU, Linear(192 → 1). The width is the ladder's head width (`head_hidden` 1.0
+× `d_model`), and the dropout is the ladder's head dropout. The initialisation is `RiskHead`'s:
+normal(0, 0.02) weights and zero biases. **Nothing else changes:** frozen backbone, balanced
+sampling, 16,000 positives, rate 2e-3, six validation measurements with the best one selected, and
+the prior correction.
+
+**The criterion, unchanged.** It is ADR-0023's criterion as registered in `c9489a2`, read as in §b.
+Both sides are probed through §c: the full-budget `tel_only` seed-1 backbone with seed 1, and the
+three untrained backbones (seeds 1-3, pretraining's initialisation) with their own seeds. The
+split is the pooled Kelmarsh + Penmanshiel test split, with the same block bootstrap. **Met if and
+only if the trained lower bound is strictly above the upper bound of every one of the three.**
+Hill of Towie is reported and does not decide. Every selected head is saved.
+
+**On FAIL, §d is registered next** (the last two backbone blocks unfrozen, at a separate, lower
+rate). **On PASS, §c is the probe for every arm.**

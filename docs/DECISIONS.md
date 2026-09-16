@@ -2897,3 +2897,10 @@ decide this gate, and they do not reopen ADR-0020's verdict.
 **What the interval does not cover.** One seed. It measures the evaluation's sampling noise at a
 fixed model, not seed variance. An EVALUABLE verdict says that Hill of Towie can separate this
 model from chance. It does not say that it can separate two arms.
+
+**Erratum, 2026-09-16, with the code that reads this record (no run made).** "764 steps x 32
+windows x 2,048 tokens = 50,069,504" above is an arithmetic slip: it doubled the half-budget
+probe's 382 steps instead of rounding the full budget up. 50,000,000 tokens round up to **763
+steps, 50,003,968 tokens**, and that is what `configs/train/gate_check_v0.yaml` runs
+(`tests/evaluation/test_gate_check.py` pins it). The rule, the interval and the fallback are
+unchanged. ADR-0020's projection of 557.5 seconds of steps becomes 556.7.

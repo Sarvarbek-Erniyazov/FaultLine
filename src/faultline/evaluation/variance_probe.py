@@ -36,7 +36,7 @@ from collections.abc import Iterator
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol
 
 import numpy as np
 import pyarrow.parquet as pq
@@ -311,26 +311,30 @@ def tel_lm_loss(model: nn.Module, windows: TelWindows, device: torch.device, bat
     return total / counted if counted else math.nan
 
 
-def run_seed(
-    seed: int,
-    config: VarianceProbeConfig,
-    spec: ModelSpec,
-    ladder: LadderConfig,
-    ladder_model: LadderModel,
-    telemetry: ShardSet,
-    joint_root: Path,
-    mixture: JointMixtureConfig,
-    splits: dict[str, Any],
-    device: torch.device,
-    out_dir: Path,
-    log_dir: Path,
-    paths: ProjectPaths,
-) -> SeedRecord:
-    """Pretrain ``tel_only`` at half budget, probe it, score it.
+class TelPretraining(Protocol):
+    """What pretraining ``tel_only`` reads from a configuration: the probe's or the gate's."""
 
-    Args:
-        seed: The seed.
-        config: The probe configuration.
+    @property
+    def rung(self) -> str:
+        """The rung."""
+
+    @property
+    def arm(self) -> str:
+        """The arm, telemetry-only."""
+
+    @property
+    def batch_windows(self) -> int:
+        """Windows per forward pass while pretraining."""
+
+    def budget(self, context_tokens: int) -> Budget:
+        """The pretraining window budget."""
+
+
+@dataclass
+class ProbeInputs:
+    """Everything a ``tel_only`` pretraining and its frozen probe read, opened once.
+
+    Attributes:
         spec: The rung at the joint vocabulary and the mixture context.
         ladder: The positive-aware risk stage's configuration.
         ladder_model: The ladder's model configuration, for the head.
@@ -339,27 +343,191 @@ def run_seed(
         mixture: The mixture configuration.
         splits: The evaluation windows: ``lm_selection``, ``selection`` and ``test``.
         device: Where to train.
-        out_dir: Where checkpoints are written.
-        log_dir: Where the per-step training logs are written (tracked, beside the report).
-        paths: Resolved project paths, so the record names files relative to the repository.
+    """
+
+    spec: ModelSpec
+    ladder: LadderConfig
+    ladder_model: LadderModel
+    telemetry: ShardSet
+    joint_root: Path
+    mixture: JointMixtureConfig
+    splits: dict[str, Any]
+    device: torch.device
+
+
+def open_probe_inputs(
+    paths: ProjectPaths,
+    mixture_config: str,
+    ladder_config: str,
+    arm_name: str,
+    rung_name: str,
+    selection_windows: int,
+    held_out_source: str,
+    device_name: str | None,
+) -> ProbeInputs:
+    """Open the shards, the rung and the evaluation windows a ``tel_only`` probe reads.
+
+    Args:
+        paths: Resolved project paths.
+        mixture_config: The joint mixture configuration, relative to the repository.
+        ladder_config: The ladder configuration, relative to the repository.
+        arm_name: The arm; only a telemetry-only arm is supported.
+        rung_name: The rung.
+        selection_windows: Validation ``tel`` windows per source for pretraining selection.
+        held_out_source: The held-out site, scored on test beside the training sites.
+        device_name: Torch device; chosen automatically when omitted.
 
     Returns:
-        The seed's record.
-    """
-    assert isinstance(ladder.risk, PositiveAwareRiskStage)
-    stage = ladder.risk
-    optimiser: Optimiser = ladder.optimiser
+        The opened inputs.
 
-    # -- pretraining -----------------------------------------------------------------
+    Raises:
+        ValueError: If the arm is not telemetry-only or the ladder's risk stage is not the
+            positive-aware one.
+    """
+    mixture = load_config(paths.repo_root / mixture_config, JointMixtureConfig)
+    ladder = load_config(paths.repo_root / ladder_config, LadderConfig)
+    ladder_model = load_config(paths.repo_root / ladder.model_config_path, LadderModel)
+    arm = next(a for a in mixture.arms if a.name == arm_name)
+    if arm.mixture != {"tel": 1.0}:
+        raise ValueError(f"{arm_name} is not a telemetry-only arm: {arm.mixture}")
+    if not isinstance(ladder.risk, PositiveAwareRiskStage):
+        raise ValueError(f"{ladder_config} is not the positive-aware risk stage")
+    bins = load_config(paths.repo_root / mixture.telemetry_tokenizer_config, QuantileBinsConfig)
+    telemetry = ShardSet.load(shards_dir(paths, tokenizer_path(paths, bins)))
+    joint_root = (
+        paths.data_root / "shards" / "joint" / f"joint_v{mixture.version}_{config_hash(mixture)}"
+    )
+    joint_manifest = json.loads((joint_root / "manifest.json").read_text(encoding="utf-8"))
+    rung = next(r for r in ladder_model.rungs if r.name == rung_name)
+    spec = rung.spec(
+        mixture.context_tokens, int(joint_manifest["vocabulary_size"]), ladder_model.dropout
+    )
+    device = torch.device(device_name or ("cuda" if torch.cuda.is_available() else "cpu"))
+    evaluation = ladder.evaluation
+    splits: dict[str, Any] = {
+        "lm_selection": tel_windows(
+            joint_root,
+            telemetry,
+            "val",
+            mixture.training_sources,
+            spec.context,
+            mixture.window_stride_steps,
+            limit=selection_windows,
+            seed=evaluation.seed,
+        ),
+        "selection": build_split(
+            telemetry,
+            "val",
+            evaluation.selection_windows,
+            evaluation.stride,
+            evaluation.seed,
+            evaluation.batch_windows,
+            ladder.risk.label,
+        ),
+        "test": build_split(
+            telemetry,
+            "test",
+            evaluation.test_windows,
+            evaluation.stride,
+            evaluation.seed,
+            evaluation.batch_windows,
+            ladder.risk.label,
+            sources=[*mixture.training_sources, held_out_source],
+        ),
+    }
+    return ProbeInputs(
+        spec=spec,
+        ladder=ladder,
+        ladder_model=ladder_model,
+        telemetry=telemetry,
+        joint_root=joint_root,
+        mixture=mixture,
+        splits=splits,
+        device=device,
+    )
+
+
+@dataclass
+class PretrainRecord:
+    """One seed's ``tel_only`` pretraining.
+
+    Attributes:
+        lm_tokens: Pretraining tokens seen.
+        lm_steps: Pretraining optimiser steps.
+        lm_seconds: Pretraining wall clock, measurement included.
+        lm_selected: The selected validation next-token loss and its step.
+        lm_history: Every pretraining validation measurement, as (step, loss).
+        lm_final_train_loss: Mean training loss over the last tenth of pretraining.
+        checkpoint: The pretrained backbone's file.
+        step_log: The per-step training log's file.
+    """
+
+    lm_tokens: int
+    lm_steps: int
+    lm_seconds: float
+    lm_selected: tuple[int, float]
+    lm_history: list[tuple[int, float]]
+    lm_final_train_loss: float
+    checkpoint: Path
+    step_log: Path
+
+
+@dataclass
+class ProbeResult:
+    """One frozen probe on one backbone, and what it scored.
+
+    Attributes:
+        probe_positives_seen: Positive windows the probe drew.
+        probe_seconds: Probe wall clock.
+        probe_selected: The selected validation AUPRC and its step.
+        prior_offset: The logit offset reading scores at the natural rate.
+        natural_rate: The training windows' positive share.
+        test: Per test source, its score.
+        held_out_calibration: Mean corrected probability, base rate and ECE on the held-out site.
+        step_log: The probe's per-step training log's file.
+        logits: Every test window's logit, before the offset.
+        labels: Every test window's label.
+        which: Every test window's window-set index into the test split's sources.
+    """
+
+    probe_positives_seen: int
+    probe_seconds: float
+    probe_selected: tuple[int, float]
+    prior_offset: float
+    natural_rate: float
+    test: list[RiskScore]
+    held_out_calibration: dict[str, float]
+    step_log: Path
+    logits: np.ndarray
+    labels: np.ndarray
+    which: np.ndarray
+
+
+def pretrain_tel(
+    seed: int, config: TelPretraining, inputs: ProbeInputs, out_dir: Path, log_dir: Path
+) -> PretrainRecord:
+    """Pretrain ``tel_only`` to the configuration's budget and save the backbone.
+
+    Args:
+        seed: The seed.
+        config: The rung, arm and budget.
+        inputs: The opened shards, rung and evaluation windows.
+        out_dir: Where the checkpoint is written.
+        log_dir: Where the per-step training log is written.
+
+    Returns:
+        The pretraining record.
+    """
+    spec, device = inputs.spec, inputs.device
     seed_everything(seed)
     torch.manual_seed(seed)
     train_windows = tel_windows(
-        joint_root,
-        telemetry,
+        inputs.joint_root,
+        inputs.telemetry,
         "train",
-        mixture.training_sources,
+        inputs.mixture.training_sources,
         spec.context,
-        mixture.window_stride_steps,
+        inputs.mixture.window_stride_steps,
     )
     budget = config.budget(spec.context)
     decoder = TelemetryDecoder(spec).to(device)
@@ -369,7 +537,7 @@ def run_seed(
         return model.loss(tokens)  # type: ignore[operator,no-any-return]
 
     def lm_measure(model: nn.Module) -> Measurement:
-        value = tel_lm_loss(model, splits["lm_selection"], device, config.batch_windows)
+        value = tel_lm_loss(model, inputs.splits["lm_selection"], device, config.batch_windows)
         return Measurement(step=0, windows=0, value=value)
 
     started = time.perf_counter()
@@ -377,7 +545,7 @@ def run_seed(
         module=decoder,
         batches=train_windows.forever(seed, budget.batch_windows),
         budget=budget,
-        optimiser=optimiser,
+        optimiser=inputs.ladder.optimiser,
         device=device,
         loss_fn=lm_loss,
         measure=lm_measure,
@@ -392,18 +560,58 @@ def run_seed(
         lm.step_log, log_dir / f"{config.rung}_{config.arm}_seed{seed}_lm.steps.csv"
     )
     del decoder
+    return PretrainRecord(
+        lm_tokens=lm.tokens,
+        lm_steps=lm.steps,
+        lm_seconds=lm_seconds,
+        lm_selected=(lm.best.step, lm.best.value),
+        lm_history=[(m.step, m.value) for m in lm.history],
+        lm_final_train_loss=lm.final_train_loss,
+        checkpoint=checkpoint,
+        step_log=lm_log,
+    )
 
-    # -- the frozen probe --------------------------------------------------------------
+
+def probe_and_score(
+    seed: int,
+    checkpoint: Path,
+    inputs: ProbeInputs,
+    held_out_source: str,
+    step_log: Path,
+    label: str,
+) -> ProbeResult:
+    """Train the frozen probe on a saved backbone and score every test source.
+
+    The probe stage is seeded here, from the seed alone, so a re-run on a saved backbone starts
+    from the state the original run's probe started from.
+
+    Args:
+        seed: The seed.
+        checkpoint: The pretrained backbone.
+        inputs: The opened shards, rung and evaluation windows.
+        held_out_source: The site whose calibration is measured.
+        step_log: Where the probe's per-step training log is written.
+        label: The run's label in the training log.
+
+    Returns:
+        The probe's result, with every test window's logit.
+    """
+    assert isinstance(inputs.ladder.risk, PositiveAwareRiskStage)
+    stage = inputs.ladder.risk
+    optimiser: Optimiser = inputs.ladder.optimiser
+    telemetry, device, splits = inputs.telemetry, inputs.device, inputs.splits
     seed_everything(seed)
     torch.manual_seed(seed)
     probe_budget = stage.budget("probe")
     risk = RiskSpec(
-        hidden=ladder_model.head_hidden, dropout=ladder_model.head_dropout, label=stage.label
+        hidden=inputs.ladder_model.head_hidden,
+        dropout=inputs.ladder_model.head_dropout,
+        label=stage.label,
     )
-    model = RiskModel(spec, risk, frozen=True).to(device)
+    model = RiskModel(inputs.spec, risk, frozen=True).to(device)
     backbone = read_checkpoint(checkpoint)["state"]
     model.backbone.load_state_dict({k: v.to(device) for k, v in backbone.items()})
-    sampler = balanced_training_sampler(telemetry, ladder, stage, probe_budget.batch_windows)
+    sampler = balanced_training_sampler(telemetry, inputs.ladder, stage, probe_budget.batch_windows)
     train_rate = sampler.positives_per_batch / probe_budget.batch_windows
     offset = prior_correction(train_rate, sampler.natural_rate)
     autocast_on = optimiser.precision == "bf16"
@@ -429,12 +637,10 @@ def run_seed(
         measure=probe_measure,
         higher_is_better=True,
         tokens_per_window=telemetry.context_tokens,
-        label=f"{config.rung}/{config.arm}/seed{seed}/probe",
+        label=label,
     )
     probe_seconds = time.perf_counter() - started
-    probe_log = write_step_log(
-        probe.step_log, log_dir / f"{config.rung}_{config.arm}_seed{seed}_probe.steps.csv"
-    )
+    probe_log = write_step_log(probe.step_log, step_log)
 
     # -- test, the held-out site included ----------------------------------------------
     model.load_state_dict({k: v.to(device) for k, v in probe.state.items()})
@@ -448,7 +654,7 @@ def run_seed(
         test.append(
             score_source(source, logits[chosen] + offset, labels[chosen], split.shares[source])
         )
-        if source == config.held_out_source:
+        if source == held_out_source:
             scores = at_natural_rate(logits[chosen], train_rate, sampler.natural_rate)
             calibration = {
                 "mean_predicted_rate": mean_predicted_rate(scores),
@@ -458,14 +664,7 @@ def run_seed(
                     at_natural_rate(logits[chosen], train_rate, train_rate)
                 ),
             }
-    return SeedRecord(
-        seed=seed,
-        lm_tokens=lm.tokens,
-        lm_steps=lm.steps,
-        lm_seconds=lm_seconds,
-        lm_selected=(lm.best.step, lm.best.value),
-        lm_history=[(m.step, m.value) for m in lm.history],
-        lm_final_train_loss=lm.final_train_loss,
+    return ProbeResult(
         probe_positives_seen=sampler.positives_seen,
         probe_seconds=probe_seconds,
         probe_selected=(probe.best.step, probe.best.value),
@@ -473,8 +672,60 @@ def run_seed(
         natural_rate=sampler.natural_rate,
         test=test,
         held_out_calibration=calibration,
-        checkpoint=_relative(checkpoint, paths),
-        step_logs={"lm": _relative(lm_log, paths), "probe": _relative(probe_log, paths)},
+        step_log=probe_log,
+        logits=logits,
+        labels=labels,
+        which=which,
+    )
+
+
+def run_seed(
+    seed: int,
+    config: VarianceProbeConfig,
+    inputs: ProbeInputs,
+    out_dir: Path,
+    log_dir: Path,
+    paths: ProjectPaths,
+) -> SeedRecord:
+    """Pretrain ``tel_only`` at half budget, probe it, score it.
+
+    Args:
+        seed: The seed.
+        config: The probe configuration.
+        inputs: The opened shards, rung and evaluation windows.
+        out_dir: Where checkpoints are written.
+        log_dir: Where the per-step training logs are written (tracked, beside the report).
+        paths: Resolved project paths, so the record names files relative to the repository.
+
+    Returns:
+        The seed's record.
+    """
+    lm = pretrain_tel(seed, config, inputs, out_dir, log_dir)
+    probe = probe_and_score(
+        seed,
+        lm.checkpoint,
+        inputs,
+        config.held_out_source,
+        log_dir / f"{config.rung}_{config.arm}_seed{seed}_probe.steps.csv",
+        f"{config.rung}/{config.arm}/seed{seed}/probe",
+    )
+    return SeedRecord(
+        seed=seed,
+        lm_tokens=lm.lm_tokens,
+        lm_steps=lm.lm_steps,
+        lm_seconds=lm.lm_seconds,
+        lm_selected=lm.lm_selected,
+        lm_history=lm.lm_history,
+        lm_final_train_loss=lm.lm_final_train_loss,
+        probe_positives_seen=probe.probe_positives_seen,
+        probe_seconds=probe.probe_seconds,
+        probe_selected=probe.probe_selected,
+        prior_offset=probe.prior_offset,
+        natural_rate=probe.natural_rate,
+        test=probe.test,
+        held_out_calibration=probe.held_out_calibration,
+        checkpoint=_relative(lm.checkpoint, paths),
+        step_logs={"lm": _relative(lm.step_log, paths), "probe": _relative(probe.step_log, paths)},
     )
 
 
@@ -551,87 +802,32 @@ def run_variance_probe(
     """
     config = load_config(config_path, VarianceProbeConfig)
     mixture = load_config(paths.repo_root / config.mixture_config, JointMixtureConfig)
-    ladder = load_config(paths.repo_root / config.ladder_config, LadderConfig)
-    ladder_model = load_config(paths.repo_root / ladder.model_config_path, LadderModel)
-    arm = next(a for a in mixture.arms if a.name == config.arm)
-    if arm.mixture != {"tel": 1.0}:
-        raise ValueError(f"{config.arm} is not a telemetry-only arm: {arm.mixture}")
-    if not isinstance(ladder.risk, PositiveAwareRiskStage):
-        raise ValueError(f"{config.ladder_config} is not the positive-aware risk stage")
     if config.tokens * 2 != mixture.tokens_per_arm:
         raise ValueError(
             f"the probe runs at half budget: {config.tokens:,} x 2 != {mixture.tokens_per_arm:,}"
         )
-    bins = load_config(paths.repo_root / mixture.telemetry_tokenizer_config, QuantileBinsConfig)
-    telemetry = ShardSet.load(shards_dir(paths, tokenizer_path(paths, bins)))
-    joint_root = (
-        paths.data_root / "shards" / "joint" / f"joint_v{mixture.version}_{config_hash(mixture)}"
+    inputs = open_probe_inputs(
+        paths,
+        config.mixture_config,
+        config.ladder_config,
+        config.arm,
+        config.rung,
+        config.selection_windows,
+        config.held_out_source,
+        device_name,
     )
-    joint_manifest = json.loads((joint_root / "manifest.json").read_text(encoding="utf-8"))
-    rung = next(r for r in ladder_model.rungs if r.name == config.rung)
-    spec = rung.spec(
-        mixture.context_tokens, int(joint_manifest["vocabulary_size"]), ladder_model.dropout
-    )
-    device = torch.device(device_name or ("cuda" if torch.cuda.is_available() else "cpu"))
+    spec, device = inputs.spec, inputs.device
     digest = config_hash(config)
     out_dir = paths.checkpoints_dir / f"variance_probe_v{config.version}_{digest}"
     out_dir.mkdir(parents=True, exist_ok=True)
     log_dir = paths.data_reports_dir / f"variance_probe_v{config.version}_steps"
     log_dir.mkdir(parents=True, exist_ok=True)
 
-    evaluation = ladder.evaluation
-    splits: dict[str, Any] = {
-        "lm_selection": tel_windows(
-            joint_root,
-            telemetry,
-            "val",
-            mixture.training_sources,
-            spec.context,
-            mixture.window_stride_steps,
-            limit=config.selection_windows,
-            seed=evaluation.seed,
-        ),
-        "selection": build_split(
-            telemetry,
-            "val",
-            evaluation.selection_windows,
-            evaluation.stride,
-            evaluation.seed,
-            evaluation.batch_windows,
-            ladder.risk.label,
-        ),
-        "test": build_split(
-            telemetry,
-            "test",
-            evaluation.test_windows,
-            evaluation.stride,
-            evaluation.seed,
-            evaluation.batch_windows,
-            ladder.risk.label,
-            sources=[*mixture.training_sources, config.held_out_source],
-        ),
-    }
     started = time.perf_counter()
     records = []
     for seed in config.seeds:
         logger.info("=== variance probe %s seed %d ===", config.arm, seed)
-        records.append(
-            run_seed(
-                seed,
-                config,
-                spec,
-                ladder,
-                ladder_model,
-                telemetry,
-                joint_root,
-                mixture,
-                splits,
-                device,
-                out_dir,
-                log_dir,
-                paths,
-            )
-        )
+        records.append(run_seed(seed, config, inputs, out_dir, log_dir, paths))
     seconds = time.perf_counter() - started
     first, second = (r.held_out(config.held_out_source).auprc for r in records)
     verdict = decide(first, second, config.smallest_claimable_auprc_difference)

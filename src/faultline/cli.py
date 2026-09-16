@@ -1141,6 +1141,51 @@ def model_variance_probe(
 
 
 @model_app.command(
+    "gate-check",
+    help="The held-out-site gate (ADR-0021): tel_only once at the full per-arm budget, frozen "
+    "probe, a 48-hour block-bootstrap interval on Hill of Towie test AUPRC, and the "
+    "pre-registered verdict. Starts no other run.",
+)
+def model_gate_check(
+    config: ConfigOption = Path("configs/train/gate_check_v0.yaml"),
+    device: Annotated[str | None, typer.Option("--device", help="Torch device.")] = None,
+) -> None:
+    """Run the held-out-site gate and write its report.
+
+    Args:
+        config: The gate configuration.
+        device: Torch device; chosen automatically when omitted.
+    """
+    from faultline.evaluation.gate_check import run_gate_check
+
+    paths = ProjectPaths.resolve()
+    report, record = run_gate_check(paths, paths.repo_root / config, device)
+    typer.echo(f"wrote {report} and {record}")
+
+
+@model_app.command(
+    "probe-intervals",
+    help="ADR-0021's within-seed interval on ADR-0020's half-budget seeds: re-run the frozen "
+    "probe on each saved backbone and bootstrap Hill of Towie test AUPRC. Decides nothing.",
+)
+def model_probe_intervals(
+    config: ConfigOption = Path("configs/train/gate_check_v0.yaml"),
+    device: Annotated[str | None, typer.Option("--device", help="Torch device.")] = None,
+) -> None:
+    """Re-probe the half-budget backbones and write their intervals.
+
+    Args:
+        config: The gate configuration, which names the interval and the probe.
+        device: Torch device; chosen automatically when omitted.
+    """
+    from faultline.evaluation.gate_check import run_probe_intervals
+
+    paths = ProjectPaths.resolve()
+    report, record = run_probe_intervals(paths, paths.repo_root / config, device)
+    typer.echo(f"wrote {report} and {record}")
+
+
+@model_app.command(
     "mixture-shards",
     help="Write the M3 mixture's txt and tel+status shards and every stream's run index, "
     "and report per-stream token counts and per-arm token budgets. Trains nothing.",

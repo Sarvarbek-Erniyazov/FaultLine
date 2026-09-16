@@ -1,0 +1,45 @@
+# The held-out-site gate, version 0: tel_only once at the full per-arm budget.
+# Decision record: docs/DECISIONS.md, ADR-0021. The rule, the interval and the fallback below were
+# committed in ce9c8ad, BEFORE this file, the code that reads it, or any run of it existed.
+#
+# THE RULE. Hill of Towie is EVALUABLE only if the lower bound of the 95% block-bootstrap interval
+# on its test AUPRC is strictly above its base rate on the scored windows (399 / 12,000 =
+# 0.03325). Otherwise leave-site-out is demoted to a reported negative result, and CARE or a
+# temporal holdout at the training sites becomes the primary evaluation (the user's choice,
+# committed before either is scored). This run starts no other run.
+#
+# WHAT IS HELD FIXED against ADR-0020's probe: everything but the budget and the number of seeds.
+
+version: 0
+mixture_config: "configs/train/joint_v0.yaml"
+ladder_config: "configs/train/telemetry_v1.yaml"
+
+arm: tel_only
+rung: S2
+seed: 1
+
+# joint_v0's full per-arm budget, rounded UP to a whole optimiser step
+# (763 steps x 32 windows x 2,048 tokens = 50,003,968; ADR-0021 erratum).
+tokens: 50000000
+batch_windows: 4
+accumulate: 8
+learning_rate: 0.0006
+evaluations: 6
+selection_windows: 500
+
+held_out_source: hill_of_towie
+
+# ADR-0021. Registered before any run.
+bootstrap:
+  # 48 hours of 10-minute steps: twice the narrow_within_24h label horizon. On the 12,000 Hill of
+  # Towie test windows the 399 positives fall into 274 such blocks (measured on labels alone).
+  block_steps: 288
+  replicates: 10000
+  seed: 20260916
+  confidence: 0.95
+  # Above 1% of replicates without a positive window, the interval is not trusted: NOT EVALUABLE.
+  max_discarded_share: 0.01
+
+# ADR-0020's probe. Its saved backbones get the same interval (faultline model probe-intervals),
+# reported and deciding nothing.
+half_budget_probe_config: "configs/train/variance_probe_v0.yaml"

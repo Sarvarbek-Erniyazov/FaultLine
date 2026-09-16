@@ -498,7 +498,11 @@ results to phrase them against.
   windows are positive (2.21%), so `pos_weight` would need about 725,000 windows per arm to
   show a head 16,000 positives. Budgets are 16,000 positives seen per arm (32,000 windows).
   The probe learning rate is 2e-3, against 5e-4 for the fine-tune and the control. The
-  provenance of every value is in the YAML. Originally "not started";
+  provenance of every value is in the YAML. **The prior correction is part of the method
+  (ADR-0019, 2026-09-16):** logits move by `logit(pi_true) - logit(pi_train)` before any
+  calibration metric or abstention threshold, and `faultline.evaluation.calibration` refuses
+  uncorrected scores. On a held-out set at the natural prior, a balanced head recovers the
+  base rate: 3.07% predicted against 2.89% true, where uncorrected it reads 13.8%. Originally "not started";
   recorded 2026-09-13 from the M1e re-reading above, which left H1 UNTESTED and the
   pretraining ablation INCONCLUSIVE because no risk arm trained on enough positives to
   say otherwise.* Three changes, all pre-registered here rather than chosen once numbers

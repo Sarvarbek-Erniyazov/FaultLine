@@ -2456,3 +2456,64 @@ written, because their step is not in the final rows: Kelmarsh 2,887 of 504,180,
 telemetry out of a window; evidence that the shared `<sep>` confuses step and document
 boundaries (then `</txt> <txt>` framing); or a larger licence-clean narrative corpus, which
 would let the budget grow without repeating `txt`.
+
+---
+
+## ADR-0019 Positive-aware risk training: balanced sampling, and the prior correction as part of the method
+
+**Status:** Accepted; implemented and tested, no risk run of it yet · **Date:** 2026-09-16
+
+**Context.** M1e's risk arms trained at the natural base rate and saw 882 positives in 40,000
+windows; the control sat at the prior, H1 went UNTESTED (ROADMAP, M1 results). M3 step 0
+pre-registered the remedy, and `configs/train/telemetry_v1.yaml` fixed its values
+(`904ff77`). This record states the method in one place, because one part of it is not a
+detail: the base rate the model is trained at is not the base rate it is scored at.
+
+**Decision 1: balanced sampling, not `pos_weight`.** 16,524 of 749,387 stride-6 training
+windows are positive (2.21%). `pos_weight` keeps that rate, so showing a head 16,000 positives
+would cost about 725,000 windows an arm, and about half the steps would still carry no
+positive. Balanced sampling at a positive fraction of 0.5 shows 16,000 positives in 32,000
+windows, and every step carries 16. Budgets are stated in positives seen.
+
+**Decision 2: the prior correction is applied before any calibration metric or abstention
+threshold.** A head trained on half-positive batches learns a 50% prior. Its probabilities
+are miscalibrated against the true prior **by construction**, and this project's claim is
+*risk-calibrated* abstention, so an uncorrected probability would make that claim false
+before any model is trained.
+
+The correction is **logit adjustment** under label shift (the windows given a label are the
+same in training and in deployment; only the class mix changes). Per class `c`, subtract
+`log(pi_train_c / pi_true_c)` from its logit. The head has one binary logit `z = z_1 - z_0`,
+so both classes' terms enter, and the correction is one constant:
+
+    z_true = z_train - log(pi_train / pi_true) + log((1 - pi_train) / (1 - pi_true))
+           = z_train + logit(pi_true) - logit(pi_train)
+
+`pi_train` is the declared positive fraction (0.5). `pi_true` is the positive share of the
+training windows at the training stride, measured by the sampler (`natural_rate`, 2.21%), and
+not the evaluation split's rate, which a deployed model does not know. The offset is
+-3.79 nats. Applying the positive class's term alone, `-log(0.5 / 0.0221)`, would under-correct
+by `log(0.9779 / 0.5)` = 0.67 nats and leave scores at about twice the prior.
+
+**The ordering is enforced in code, not by convention.** `faultline.evaluation.calibration`
+computes calibration (mean predicted rate, expected calibration error) and abstention
+thresholds only from `NaturalRateScores`. The only constructor is `at_natural_rate`, which
+applies the offset, and a raw logit array is refused at run time as well as by the type
+checker. AUPRC, a ranking metric, is unchanged by a constant shift and is read either way.
+
+**Tested behaviourally, not only algebraically.**
+`tests/evaluation/test_calibration.py::test_a_balanced_head_corrected_to_the_prior_recovers_the_true_base_rate`
+trains a logistic head through `BalancedWindowSampler` on windows at a 3% natural rate and
+scores 40,000 held-out windows at that rate. The windows' training natural rate is 2.97%, and the held-out rate is 2.89%. **Uncorrected, the mean predicted probability is 13.8% (ECE 0.110). Corrected, it is 3.07% (ECE 0.0019),** inside 15% of the true rate, which the test asserts. The one-term rule gives 4.08%, above the prior as the algebra says. The test trains with a decaying learning rate, as every run here does. A first version at a constant rate read 3.73%: the last iterate of an undecayed run is a noisy draw around the fit, and calibration reads the last iterate.
+
+**What the correction assumes, and what would break it.** Label shift: `p(window | label)` is
+the same in training and at the site scored. That fails under covariate shift, which is what a
+held-out site is. At Hill of Towie the correction brings the prior to the training sites'
+2.21%, not to Hill of Towie's own rate. The gap between the corrected mean prediction and a
+held-out site's base rate is therefore reported as a measured shift, never absorbed into the
+correction. A site-specific prior would need that site's labels, and using them is not
+held-out evaluation.
+
+**What would change this decision.** A calibration method fitted on validation data
+(temperature or Platt scaling) that beats the analytic offset on the training sites' held-out
+split. It would be fitted after the correction, not instead of it, and on validation only.

@@ -3181,3 +3181,37 @@ above every random-init point estimate in all three designs** (margins 0.0074, 0
 No design brings its interval clear. The random-init backbones' pooled AUPRC ranges from 0.0401
 to 0.0515, above the pooled base rate of 0.0383. An untrained S2 decoder's features carry most of
 what these probes read.
+
+### §d, registered 2026-09-17 before its code or run -- the last two backbone blocks unfrozen, at a lower rate
+
+**Status:** pre-registered after the §c FAIL (commit `c743a8b`), before any §d code, configuration
+or run exists. **§d is the last sub-step authorised. If it fails, the work stops and is reported.**
+
+**The design.** §c's probe, which is mean-pooled final hidden states into the two-hidden-layer
+head, with **the last two of the backbone's eight blocks unfrozen** (`blocks.6` and `blocks.7`,
+every parameter in them). It builds on §c, not on §a, so each sub-step only adds capacity to the
+one before it. Everything else in the backbone stays frozen: the token and position embeddings,
+blocks 0-5, and the final norm.
+
+- **Two learning rates, both fixed here and not tuned.** The head keeps the probe's peak rate of
+  **2e-3**. The two unfrozen blocks take **5e-4**, the fine-tune rate that
+  `configs/train/telemetry_v1.yaml` fixed before any run (4x lower). Both follow the same warmup
+  and cosine schedule, as fixed ratios of it. Weight decay (0.1 on matrices, none on norms and
+  biases), betas, clipping (global norm 1.0 over every trainable parameter) and precision are the
+  optimiser's.
+- **Unchanged:** balanced sampling, 16,000 positives, six validation measurements with the best
+  one selected, the prior correction, and the test pass.
+
+**The criterion, unchanged.** It is ADR-0023's criterion as registered in `c9489a2`, read as in §b
+and §c. Both sides are probed through §d: the full-budget `tel_only` seed-1 backbone with seed 1,
+and the three untrained backbones (seeds 1-3, pretraining's initialisation) with their own seeds.
+On the untrained backbones, the same two blocks train from their initialisation. The split is the
+pooled Kelmarsh + Penmanshiel test split, with the same block bootstrap. **Met if and only if the
+trained lower bound is strictly above the upper bound of every one of the three.** Hill of Towie
+is reported and does not decide. Every selected model is saved whole, since its backbone changed.
+
+**What a §d pass would and would not license.** A pass makes §d the probe for every arm. Because
+two blocks train, the read-out is then partly a fine-tune. What it measures is the pretrained
+representation plus 16,000 positives' worth of adaptation, which ADR-0020 chose the frozen probe
+to avoid. That cost is accepted by the brief. It is stated here so that no arm claim reads §d as a
+frozen probe.

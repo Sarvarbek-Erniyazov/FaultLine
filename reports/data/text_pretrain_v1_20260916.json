@@ -1,0 +1,170 @@
+[
+  {
+    "rung": "S2",
+    "seed": 1,
+    "params": {
+      "backbone": 3542208,
+      "embeddings": 6684864,
+      "total": 10227072,
+      "nominal": 3538944
+    },
+    "train_loss": 5.881896336873372,
+    "selected": {
+      "step": 153,
+      "value": 6.147399241977268
+    },
+    "history": [
+      {
+        "step": 25,
+        "value": 7.364199417114258
+      },
+      {
+        "step": 50,
+        "value": 6.80613024605645
+      },
+      {
+        "step": 75,
+        "value": 6.48510318713718
+      },
+      {
+        "step": 100,
+        "value": 6.29900105243259
+      },
+      {
+        "step": 125,
+        "value": 6.199052702585856
+      },
+      {
+        "step": 150,
+        "value": 6.153312981499566
+      },
+      {
+        "step": 153,
+        "value": 6.147399241977268
+      }
+    ],
+    "validation_loss": {
+      "nrc_bulletins": 6.156582720184326,
+      "nrc_event_notifications": 5.833884540303548,
+      "nrc_gen_letters": 6.132207467905681,
+      "nrc_info_notices": 6.035003337097168,
+      "nrc_reg_issues": 6.622295065307617,
+      "phmsa_incident_narratives": 6.0919412246704105
+    },
+    "test_loss": {
+      "nrc_bulletins": 6.043528533299764,
+      "nrc_event_notifications": 5.7461805973052975,
+      "nrc_gen_letters": 6.1675342947642005,
+      "nrc_info_notices": 6.132212648391723,
+      "nrc_reg_issues": 6.547269264856975,
+      "phmsa_incident_narratives": 6.090492521921794
+    },
+    "validation_bpb": {
+      "nrc_bulletins": 1.8996659019928654,
+      "nrc_event_notifications": 1.7770800974620606,
+      "nrc_gen_letters": 1.8435502659718654,
+      "nrc_info_notices": 1.849405615559465,
+      "nrc_reg_issues": 1.7885040043515377,
+      "phmsa_incident_narratives": 1.7781823647048156
+    },
+    "test_bpb": {
+      "nrc_bulletins": 1.8958217207520183,
+      "nrc_event_notifications": 1.7342718511470312,
+      "nrc_gen_letters": 1.8493682517980057,
+      "nrc_info_notices": 1.9270266589923404,
+      "nrc_reg_issues": 1.809888741991354,
+      "phmsa_incident_narratives": 1.782291387010026
+    },
+    "windows": 4896,
+    "tokens": 10027008,
+    "seconds": 6107.796823900004,
+    "budget_bound": "one_pass",
+    "one_pass_windows": 4905,
+    "gpu_hour_windows": 81706,
+    "checkpoint": "text/S2_text_seed1.pt"
+  },
+  {
+    "rung": "S3",
+    "seed": 1,
+    "params": {
+      "backbone": 9959328,
+      "embeddings": 10027296,
+      "total": 19986624,
+      "nominal": 9953280
+    },
+    "train_loss": 5.9298662662506105,
+    "selected": {
+      "step": 153,
+      "value": 6.197706878238254
+    },
+    "history": [
+      {
+        "step": 25,
+        "value": 7.169851444244385
+      },
+      {
+        "step": 50,
+        "value": 6.753111875745986
+      },
+      {
+        "step": 75,
+        "value": 6.5163690376281735
+      },
+      {
+        "step": 100,
+        "value": 6.356784455617269
+      },
+      {
+        "step": 125,
+        "value": 6.258439521789551
+      },
+      {
+        "step": 150,
+        "value": 6.20798636203342
+      },
+      {
+        "step": 153,
+        "value": 6.197706878238254
+      }
+    ],
+    "validation_loss": {
+      "nrc_bulletins": 6.232985809071859,
+      "nrc_event_notifications": 5.9045149490356446,
+      "nrc_gen_letters": 6.194328577931722,
+      "nrc_info_notices": 6.099340259043376,
+      "nrc_reg_issues": 6.702653292592367,
+      "phmsa_incident_narratives": 6.037166049957276
+    },
+    "test_loss": {
+      "nrc_bulletins": 6.08543381245931,
+      "nrc_event_notifications": 5.813923384348551,
+      "nrc_gen_letters": 6.2469344870249435,
+      "nrc_info_notices": 6.19344090461731,
+      "nrc_reg_issues": 6.636946636199951,
+      "phmsa_incident_narratives": 6.036608624140421
+    },
+    "validation_bpb": {
+      "nrc_bulletins": 1.92324072415691,
+      "nrc_event_notifications": 1.7985950747925665,
+      "nrc_gen_letters": 1.8622259858509398,
+      "nrc_info_notices": 1.8691214397419844,
+      "nrc_reg_issues": 1.8102066029014396,
+      "phmsa_incident_narratives": 1.7621939882404987
+    },
+    "test_bpb": {
+      "nrc_bulletins": 1.9089671767562553,
+      "nrc_event_notifications": 1.7547175031236601,
+      "nrc_gen_letters": 1.8731768254898182,
+      "nrc_info_notices": 1.9462674271775835,
+      "nrc_reg_issues": 1.834678628925778,
+      "phmsa_incident_narratives": 1.766523071628536
+    },
+    "windows": 4896,
+    "tokens": 10027008,
+    "seconds": 7206.990565100001,
+    "budget_bound": "one_pass",
+    "one_pass_windows": 4905,
+    "gpu_hour_windows": 47842,
+    "checkpoint": "text/S3_text_seed1.pt"
+  }
+]

@@ -100,6 +100,23 @@ These are questions the provider metadata could not settle, because it either co
 
 **Known limits of this card.** Every field marked `UNVERIFIED` is an open question, not an absence of a problem.
 
+## Evaluation gaps (added by hand, 2026-09-16; not produced by `faultline cards build`)
+
+This section is written by hand, because the generator has no field for it. A regeneration of
+this card must carry it forward. The same record is kept in `docs/ROADMAP.md` (M3) and
+ADR-0018.
+
+- **275 Hill of Towie status messages are not written into the `tel+status` stream.** Their
+  step is absent from the final telemetry rows (a filtered outage or a gap), so the attachment
+  rule has no step to put them after (`reports/data/joint_mixture_v0_20260916.md`, messages not
+  written). Hill of Towie is the held-out site, so every held-out-site result that reads status
+  text is measured without these 275 messages. The number is small against the 891,253 written
+  to its test split, and it is not zero. It is not known whether those messages cluster around
+  events: a gap in the rows is where an outage, and therefore an event, is likely.
+- The free-text verdict above (`VERIFIED no`) was generated at M0 from the event tables alone.
+  The described status messages the M3 stream reads were added to this source later.
+  `data/cards/status_code_book.md` is the record of those strings.
+
 ## Generation
 
 | field | value |

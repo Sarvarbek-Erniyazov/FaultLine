@@ -533,6 +533,17 @@ results to phrase them against.
   paired signal; normalized strings by default, raw as the ablation). Arms `joint`,
   `joint_status_raw` and `tel_only`, each 50,000,000 tokens seen. Ratio 30/20/50, so no stream
   repeats (`txt` one pass). GPU-hours are an observation.
+- **Before the full run, 2026-09-16 (M3 pre-run brief).** *Resource ruling:* all three arms
+  at S2 only, a rung fixed for comparability, not performance; S3 on `joint` alone and only if
+  budget remains. The 8.5 GPU-hours an arm projection is wrong by about 50 times. It came from
+  M2 runs at micro-batch 16, which spill out of 8 GB. At 4 x 8 an S2 arm trains at 89,817
+  tokens/s (ADR-0018 rulings). *Hypothesis, not a finding:* S3 better than S2 to 3.3M tokens
+  and worse from 4.9M runs backwards for an undertrained pair. The ordinary cause is a peak rate
+  tuned at S2 being too high for S3, so the text rungs may not be comparable for a reason
+  separate from corpus size. *Held-out gap:* 275 Hill of Towie status messages are not written
+  (step absent from the final rows), recorded on the card. *Seed-variance probe (ADR-0020):*
+  `tel_only` twice at half budget. If the Hill of Towie test AUPRC gap between seeds is at or
+  above **0.010**, the design becomes two arms (`joint`, `tel_only`) at three seeds.
 - Train the joint decoder; compare against both single-modality baselines.
 - Modality-shift evaluation: channels dropped or corrupted, text withheld, at
   inference time — the axis that justifies the joint design.

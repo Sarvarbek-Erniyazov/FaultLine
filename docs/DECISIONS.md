@@ -2457,6 +2457,39 @@ telemetry out of a window; evidence that the shared `<sep>` confuses step and do
 boundaries (then `</txt> <txt>` framing); or a larger licence-clean narrative corpus, which
 would let the budget grow without repeating `txt`.
 
+### Rulings and records, 2026-09-16 (M3 pre-run brief), before any M3 run
+
+**Resource ruling: all three arms at S2 only.** The rung is fixed for **comparability, not
+performance**. Every arm runs at one rung, so an arm difference cannot be a rung difference.
+S3 runs on the `joint` arm alone, and only if budget remains after the S2 arms. The ruling was
+made against the projection above (3 x 8.5 = 25.5 GPU-hours). Its basis is comparability, so it
+does not change if the projection does.
+
+**The projection above is wrong by about 50 times, measured.** It was taken from the M2 text
+runs' rate at micro-batch 16, and at a 2,048-token context over a 33,952-id output softmax,
+micro-batch 16 does not fit the card's 8 GB. It spills into shared memory. Measured on
+2026-09-16 at S2 on the joint vocabulary with random telemetry ids and 32 windows per step
+(throughput only, no run): micro-batch 8 x 4 gives **24,046 tokens/s** (6.91 GB peak, at
+the limit); **4 x 8 gives 89,817 tokens/s (3.56 GB)**; 2 x 16 gives 86,765 tokens/s (1.89 GB). At
+4 x 8 a 50,000,000-token arm trains in about **0.15 GPU-hours**, validation excluded, not 8.5.
+The M2 runs' reported token counts and losses are unaffected, because their budgets were in
+tokens. Only their wall clock, and projections built on it, carried the spill. The M3 runs use
+4 x 8, the same 32 windows per optimiser step as M2's 16 x 2. The consequence for the S3
+condition above ("only if budget remains") is left to the user.
+
+**Hypothesis for M3, not a finding: the text rungs may not be comparable for a reason other than
+corpus size.** D4 (`reports/data/text_pretrain_curves_v1_20260916.md`) found S3 better than S2
+up to about 3.3M tokens and worse from about 4.9M. For an undertrained pair that runs
+backwards: more capacity should help more as tokens accumulate, not less. The ordinary cause
+is a peak learning rate tuned at S2 (6e-4, shared) being too high for S3's width. If that is
+the cause, the S2/S3 comparison is confounded by the learning rate as well as limited by the
+corpus. Recorded so that no M3 claim treats the text rungs as comparable before it is tested.
+
+**Evaluation gap at the held-out site.** 275 Hill of Towie status messages are not written into
+`tel+status`, because their step is absent from the final telemetry rows (measured above). Hill
+of Towie is the held-out site, so the gap is recorded on its card
+(`data/cards/hill_of_towie.md`, "Evaluation gaps") and in the roadmap.
+
 ---
 
 ## ADR-0019 Positive-aware risk training: balanced sampling, and the prior correction as part of the method
@@ -2517,3 +2550,53 @@ held-out evaluation.
 **What would change this decision.** A calibration method fitted on validation data
 (temperature or Platt scaling) that beats the analytic offset on the training sites' held-out
 split. It would be fitted after the correction, not instead of it, and on validation only.
+
+---
+
+## ADR-0020 The seed-variance probe, and the smallest held-out-site AUPRC difference worth claiming
+
+**Status:** Accepted; the line is registered **before** either probe run · **Date:** 2026-09-16
+
+**Context.** ADR-0018 plans three arms (`joint`, `joint_status_raw`, `tel_only`), each run
+once. If two runs of one arm that differ only in seed land further apart on the held-out site
+than any arm difference we would claim, then a one-seed arm comparison cannot tell an arm
+effect from a seed. That is measured before the full run by running `tel_only` twice at half
+budget (25,000,000 tokens), differing only in seed, and reading one number.
+
+**The line: 0.010 absolute AUPRC on Hill of Towie test.** Decided blind, with no probe run
+made. The only information used was already in the record:
+
+- Hill of Towie is the held-out site. On the evaluation subsample every risk read-out uses
+  (`telemetry_v1.yaml`: stride 1, 12,000 windows, seed 20260912) it holds 399 positive
+  windows, a **base rate of 0.033** (M1e ladder record).
+- M1e's S2 and S3 risk arms scored **0.032 to 0.046** there, lift 0.95 to 1.39, from models
+  that differed in rung, arm and initialisation, not only seed.
+
+A difference of 0.010 is 0.3 of the base rate in lift. Below that, two arms whose held-out
+scores both sit within about 1.4 base rates of chance do not rank differently in any way an
+abstention threshold would act on, and a claim resting on a smaller difference would rest on
+the third decimal of a metric computed from 399 time-clustered positives. The line is not
+set larger, because M1e's whole spread across rungs and arms was 0.015. A line above that
+would declare every difference the project has ever measured unclaimable before looking.
+
+**The pre-registered rule** (the M3 pre-run brief, verbatim in substance): if the between-seed
+gap in held-out-site AUPRC is **at or above 0.010**, a three-arm n=1 design is uninformative,
+and the plan changes to **two arms (`joint` vs `tel_only`) at three seeds**. Below 0.010 the
+three-arm design stands. Either way the full run is not started by the probe.
+
+**The read-out the line refers to.** Hill of Towie test AUPRC of the **frozen probe** of M3
+step 0 (`telemetry_v1.yaml`: balanced, 16,000 positives, probe rate 2e-3, prior-corrected
+per ADR-0019) on the pretrained S2 backbone, read on M1's 1,872-token risk windows.
+The frozen probe is chosen over the fine-tune because the arms differ only in pretraining. A
+fine-tune spends 16,000 positives rewriting the backbone, and at M1e the fine-tune and the
+random control were not separable, so it would wash out the property under comparison. The
+same read-out applies to the arm comparison the verdict governs.
+
+**Held fixed between the two seeds:** the shards, the evaluation windows, the rung (S2), the
+budget, the micro-batch and accumulation, the schedule, and the probe stage. The seed sets
+the backbone initialisation, the pretraining data order, the head initialisation and the
+balanced sampler's order. That is the variance a one-seed arm carries.
+
+**What this record does not decide.** Whether a gap below the line licenses a claim between
+arms. It licenses only the three-arm design at one seed. Any claim is still read against the
+line and against the measured seed gap.

@@ -1,0 +1,59 @@
+{
+  "location": {
+    "S2": {
+      "row": 32768,
+      "manifest_sep": 32768,
+      "manifest_vocabulary": 32769,
+      "tokenizer_size": 32768,
+      "checkpoint_rows": 32769,
+      "stream_maximum": 32768,
+      "streams_ending_in_sep": [
+        6,
+        6
+      ],
+      "adjacent_separators": 0,
+      "separators": 31750
+    },
+    "S3": {
+      "row": 32768,
+      "manifest_sep": 32768,
+      "manifest_vocabulary": 32769,
+      "tokenizer_size": 32768,
+      "checkpoint_rows": 32769,
+      "stream_maximum": 32768,
+      "streams_ending_in_sep": [
+        6,
+        6
+      ],
+      "adjacent_separators": 0,
+      "separators": 31750
+    }
+  },
+  "behaviour": {
+    "S2": {
+      "boundaries": 217,
+      "others": 119777,
+      "mean_logp_at_boundary": -3.713390827178955,
+      "mean_logp_elsewhere": -6.88484001159668,
+      "median_rank_at_boundary": 3.0,
+      "contrast_last_bpe_row": 0.2103719711303711
+    },
+    "S3": {
+      "boundaries": 217,
+      "others": 119777,
+      "mean_logp_at_boundary": -3.479518175125122,
+      "mean_logp_elsewhere": -7.592076301574707,
+      "median_rank_at_boundary": 3.0,
+      "contrast_last_bpe_row": -0.5199565887451172
+    }
+  },
+  "nll_compared": {
+    "S2": 2112,
+    "S3": 2112
+  },
+  "nll_max_difference": {
+    "S2": 0.0,
+    "S3": 2.86102294921875e-06
+  },
+  "record": "reports/data/h3prime_behavioural_v1_20260916.json"
+}

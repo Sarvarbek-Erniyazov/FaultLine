@@ -33,11 +33,11 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import torch
 
 from faultline.data.common.report import kv_table, section, table
 from faultline.data.telemetry.schemas import CHANNEL_NAMES
 from faultline.logging_utils import get_logger
+from faultline.model.checkpoints import embedding_rows
 from faultline.paths import ProjectPaths
 from faultline.runs import git_sha
 from faultline.tokenizers.joint import JointVocab
@@ -54,9 +54,6 @@ logger = get_logger(__name__)
 
 #: Blocks that belong to the telemetry prefix.
 PREFIX_KINDS = ("special", "channel", "bin", "time")
-
-#: The token-embedding key of a bare decoder and of a risk model's backbone.
-EMBEDDING_KEYS = ("tokens.weight", "backbone.tokens.weight")
 
 
 @dataclass(frozen=True)
@@ -145,9 +142,7 @@ def check_checkpoint_rows(checkpoints: Sequence[Path]) -> Check:
     """
     rows: dict[str, int] = {}
     for path in checkpoints:
-        state = torch.load(path, map_location="cpu", weights_only=False)["state"]
-        key = next((k for k in EMBEDDING_KEYS if k in state), None)
-        rows[path.name] = int(state[key].shape[0]) if key is not None else -1
+        rows[path.name] = embedding_rows(path)
     wrong = {name: n for name, n in rows.items() if n != TELEMETRY_PREFIX_SIZE}
     return Check(
         "every M1 checkpoint embeds exactly the 1184-id telemetry prefix",
@@ -302,8 +297,7 @@ def text_checkpoint_rows(checkpoints: Sequence[Path]) -> dict[str, int]:
     """
     rows: dict[str, int] = {}
     for path in checkpoints:
-        state = torch.load(path, map_location="cpu", weights_only=False)["state"]
-        rows[path.name] = int(state["tokens.weight"].shape[0])
+        rows[path.name] = embedding_rows(path)
     return rows
 
 

@@ -45,6 +45,7 @@ from typing import Any
 import numpy as np
 import torch
 import torch.nn.functional as F
+from torch import Tensor
 
 from faultline.data.common.report import kv_table, section, table
 from faultline.data.text.code_book import (
@@ -57,9 +58,11 @@ from faultline.data.text.code_book import (
 from faultline.data.text.shards import shards_dir
 from faultline.data.text.status_convention import CONVENTIONS, NORMALIZED, RAW
 from faultline.logging_utils import get_logger
+from faultline.model.checkpoints import migrate_text_checkpoint, text_support
 from faultline.model.transformer import ModelSpec, TelemetryDecoder
 from faultline.paths import ProjectPaths
 from faultline.runs import git_sha
+from faultline.tokenizers.layout import VocabLayout
 from faultline.tokenizers.text_bpe import TextBPETokenizer, pretokenize
 
 logger = get_logger(__name__)
@@ -164,6 +167,7 @@ def sequence_nll(
     sequences: Sequence[Sequence[int]],
     device: torch.device,
     batch: int = 64,
+    to_model: Tensor | None = None,
 ) -> list[np.ndarray]:
     """Per-token NLL of each sequence, given a shared prefix, under a causal decoder.
 
@@ -173,9 +177,14 @@ def sequence_nll(
     Args:
         model: The decoder, in evaluation mode.
         prefix: Context tokens before every sequence, at least one.
-        sequences: Token ids to score.
+        sequences: Token ids to score, in the scored vocabulary's own ids.
         device: Where the model lives.
         batch: Sequences per forward pass.
+        to_model: Where the scored vocabulary sits in the model's: entry ``i`` is the model
+            id of scored id ``i``. The softmax is taken over those ids only, so a text-only
+            checkpoint migrated to the joint vocabulary scores exactly as it did natively
+            (:func:`faultline.model.checkpoints.text_support`). ``None`` scores the model's
+            own vocabulary.
 
     Returns:
         Per sequence, the NLL of each of its tokens in nats, float64.
@@ -185,6 +194,7 @@ def sequence_nll(
     """
     if not prefix:
         raise ValueError("a prefix of at least one token is required")
+    support = to_model.to(device) if to_model is not None else None
     out: list[np.ndarray] = []
     for start in range(0, len(sequences), batch):
         group = sequences[start : start + batch]
@@ -194,7 +204,10 @@ def sequence_nll(
             full = [*prefix, *sequence]
             ids[row, : len(full)] = torch.tensor(full, dtype=torch.long)
         ids = ids.to(device)
-        logits = model.logits(model(ids[:, :-1])).float()
+        inputs = support[ids] if support is not None else ids
+        logits = model.logits(model(inputs[:, :-1])).float()
+        if support is not None:
+            logits = logits[..., support]
         logp = F.log_softmax(logits, dim=-1)
         nll = -logp.gather(-1, ids[:, 1:].unsqueeze(-1)).squeeze(-1).double().cpu().numpy()
         for row, sequence in enumerate(group):
@@ -203,20 +216,29 @@ def sequence_nll(
     return out
 
 
-def load_text_decoder(path: Path, device: torch.device) -> TelemetryDecoder:
-    """A text-only checkpoint as the decoder it was trained as, at its own vocabulary.
+def load_text_decoder(
+    path: Path, layout: VocabLayout, shard_dir: Path, tokenizer_size: int, device: torch.device
+) -> tuple[TelemetryDecoder, Tensor]:
+    """A text-only checkpoint, migrated to the joint vocabulary, and its text support.
+
+    A 32,769-row checkpoint is read only through the migration (E2), so the model scored here
+    is the joint-vocabulary decoder M3 initialises from. Scored over its text support, it
+    gives the text-only model's own distribution.
 
     Args:
         path: A ``checkpoints/text/*_text_seed*.pt`` file.
+        layout: The joint layout.
+        shard_dir: The text shards it was trained on, to locate its separator row.
+        tokenizer_size: Ids the fitted tokenizer defines.
         device: Where to put the model.
 
     Returns:
-        The decoder, in evaluation mode.
+        The decoder in evaluation mode, and :func:`text_support` for ``to_model``.
     """
-    payload = torch.load(path, map_location="cpu", weights_only=False)
+    payload, _location = migrate_text_checkpoint(path, layout, shard_dir, tokenizer_size)
     model = TelemetryDecoder(ModelSpec(**payload["spec"]))
     model.load_state_dict(payload["state"])
-    return model.to(device).eval()
+    return model.to(device).eval(), text_support(layout)
 
 
 @dataclass
@@ -283,6 +305,7 @@ def narrative_reference(
     shard_dir: Path,
     device: torch.device,
     record: dict[str, Any],
+    to_model: Tensor | None = None,
 ) -> Reference:
     """Score the first tokens of held-out documents, and read the full-context loss.
 
@@ -292,6 +315,7 @@ def narrative_reference(
         shard_dir: The text shards; validation streams are read from them.
         device: Where the model lives.
         record: The checkpoint's pretraining record entry.
+        to_model: The text support of a migrated model, as :func:`sequence_nll` takes it.
 
     Returns:
         The reference scale.
@@ -311,7 +335,7 @@ def narrative_reference(
         ]
         take = rng.choice(len(docs), size=min(REFERENCE_DOCUMENTS, len(docs)), replace=False)
         starts.extend(docs[int(i)] for i in sorted(take))
-    nll = np.stack(sequence_nll(model, [sep], starts, device))
+    nll = np.stack(sequence_nll(model, [sep], starts, device, to_model=to_model))
     byte_lengths = np.array(
         [[len(tokenizer.decode_bytes([t])) for t in doc] for doc in starts], dtype=np.float64
     )
@@ -388,6 +412,7 @@ def measure_behaviour(
     checkpoints: dict[str, Path],
     record_path: Path,
     device: torch.device,
+    layout: VocabLayout,
 ) -> BehaviourResult:
     """Measure single-token-word rates and per-string NLL for the staged code book.
 
@@ -398,6 +423,7 @@ def measure_behaviour(
         checkpoints: Per rung name, its text-only checkpoint.
         record_path: The text pretraining record, for the full-context reference.
         device: Where to run the models.
+        layout: The joint layout the checkpoints are migrated to.
 
     Returns:
         The measurement.
@@ -444,21 +470,21 @@ def measure_behaviour(
     records = {r["rung"]: r for r in json.loads(record_path.read_text(encoding="utf-8"))}
     references: dict[str, Reference] = {}
     for name, path in checkpoints.items():
-        model = load_text_decoder(path, device)
-        if model.spec.vocab_size != tokenizer.vocab_size + 1:
-            raise ValueError(
-                f"{path}: {model.spec.vocab_size} rows, expected the text vocabulary plus <sep>"
-            )
+        model, support = load_text_decoder(path, layout, shard_dir, tokenizer.vocab_size, device)
         for context, prefix in contexts.items():
             for convention, convert in CONVENTIONS.items():
                 encoded = [tokenizer.encode(convert(s.text)) for s in strings]
                 for record, nll in zip(
-                    strings, sequence_nll(model, prefix, encoded, device), strict=True
+                    strings,
+                    sequence_nll(model, prefix, encoded, device, to_model=support),
+                    strict=True,
                 ):
                     record.nll.setdefault(name, {}).setdefault(context, {})[convention] = float(
                         nll.sum()
                     )
-        references[name] = narrative_reference(model, tokenizer, shard_dir, device, records[name])
+        references[name] = narrative_reference(
+            model, tokenizer, shard_dir, device, records[name], support
+        )
         logger.info("%s scored: %d strings, 4 conventions, 2 contexts", name, len(strings))
         del model
     return BehaviourResult(
@@ -665,7 +691,8 @@ def render_behaviour_report(result: BehaviourResult, paths: ProjectPaths) -> str
         )
     part_b = (
         f"Every string, under all four Stage A conventions, scored by {', '.join(ckpts)} (the M2 "
-        "text-only checkpoints, native 32,769-row vocabulary), as its total next-token NLL given a "
+        "text-only checkpoints, read through the E2 migration onto the joint vocabulary and "
+        "scored over their own 32,769 ids), as its total next-token NLL given a "
         "context. `<sep>` is the primary context, declared before scoring: it is the only boundary "
         f"the text model saw. Mid-prose is `<sep>` + `{PROSE_CONTEXT}`. Per byte means over the "
         "string's bytes **as staged**, one denominator for every convention.\n\n"
@@ -778,6 +805,7 @@ def write_behaviour_report(
     checkpoints: dict[str, Path],
     record_path: Path,
     device: torch.device,
+    layout: VocabLayout,
 ) -> tuple[Path, Path]:
     """Measure, then write the report and its JSON record.
 
@@ -788,11 +816,14 @@ def write_behaviour_report(
         checkpoints: Per rung name, its text-only checkpoint.
         record_path: The text pretraining record.
         device: Where to run the models.
+        layout: The joint layout the checkpoints are migrated to.
 
     Returns:
         The report and the JSON record.
     """
-    result = measure_behaviour(paths, tokenizer_file, corpus_name, checkpoints, record_path, device)
+    result = measure_behaviour(
+        paths, tokenizer_file, corpus_name, checkpoints, record_path, device, layout
+    )
     stem = f"h3prime_behavioural_v1_{datetime.now(tz=UTC):%Y%m%d}"
     report = paths.data_reports_dir / f"{stem}.md"
     report.write_text(render_behaviour_report(result, paths), encoding="utf-8", newline="\n")

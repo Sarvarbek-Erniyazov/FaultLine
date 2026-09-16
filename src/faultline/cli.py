@@ -20,6 +20,7 @@ from dotenv import load_dotenv
 from faultline import __version__
 from faultline.logging_utils import get_logger
 from faultline.paths import ProjectPaths
+from faultline.tokenizers.layout import VocabLayout
 
 logger = get_logger(__name__)
 
@@ -1042,8 +1043,78 @@ def model_status_nll(
         checkpoints,
         (paths.repo_root / record).resolve(),
         chosen,
+        _joint_layout(paths),
     )
     typer.echo(f"wrote {report} and {json_path}")
+
+
+def _joint_layout(paths: ProjectPaths, bins_config: Path | None = None) -> VocabLayout:
+    """The M3 joint layout: the M1 bins tokenizer's blocks plus the full text block.
+
+    Args:
+        paths: Resolved project paths.
+        bins_config: The M1 quantile bin configuration; ``quantile_bins_v2`` when omitted.
+
+    Returns:
+        The layout.
+    """
+    from faultline.config import load_config
+    from faultline.data.telemetry.bins import QuantileBinsConfig
+    from faultline.data.telemetry.shards import tokenizer_path
+    from faultline.tokenizers.joint_check import joint_layout
+    from faultline.tokenizers.layout import TEXT_CAPACITY
+    from faultline.tokenizers.quantile_bins import QuantileBinTokenizer
+
+    config_path = bins_config or Path("configs/tokenizer/quantile_bins_v2.yaml")
+    config = load_config(paths.repo_root / config_path, QuantileBinsConfig)
+    bins = QuantileBinTokenizer.load(tokenizer_path(paths, config))
+    return joint_layout(bins, TEXT_CAPACITY)
+
+
+@check_app.command(
+    "text-migration",
+    help="Locate the text checkpoints' separator row, migrate them onto the joint vocabulary, "
+    "and check the migrated models score text exactly as before. Exits 1 on any failure.",
+)
+def check_text_migration(
+    tokenizer: Annotated[
+        Path, typer.Option("--tokenizer", help="The frozen text tokenizer.")
+    ] = Path("data/tokenizers/text_bpe_v1_22c56e49.json"),
+    record: Annotated[
+        Path, typer.Option("--record", help="The behavioural H3' record to compare against.")
+    ] = Path("reports/data/h3prime_behavioural_v1_20260916.json"),
+    device: Annotated[str | None, typer.Option("--device", help="Torch device.")] = None,
+) -> None:
+    """Write the migration check report.
+
+    Args:
+        tokenizer: The frozen text tokenizer file.
+        record: The E1 JSON record.
+        device: Torch device; chosen automatically when omitted.
+
+    Raises:
+        typer.Exit: With code 1 if any check fails.
+    """
+    import torch
+
+    from faultline.evaluation.text_migration import write_migration_report
+
+    paths = ProjectPaths.resolve()
+    checkpoints = {
+        rung: paths.checkpoints_dir / "text" / f"{rung}_text_seed1.pt" for rung in ("S2", "S3")
+    }
+    chosen = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
+    report, check = write_migration_report(
+        paths,
+        (paths.repo_root / tokenizer).resolve(),
+        checkpoints,
+        _joint_layout(paths),
+        (paths.repo_root / record).resolve(),
+        chosen,
+    )
+    typer.echo(f"wrote {report}")
+    if not check.passed():
+        raise typer.Exit(code=1)
 
 
 @model_app.command(

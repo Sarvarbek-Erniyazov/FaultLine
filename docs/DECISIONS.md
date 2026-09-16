@@ -339,6 +339,22 @@ Observed, not asserted: the M2 text checkpoints embed 32,769 rows, because the t
 append a local `<sep>` at 32,768. That row has no joint id in the text region. A joint model
 initialised from them maps it to the structural `<sep>` (id 8) rather than appending it.
 
+### Migration, 2026-09-16 (M3 pre-run brief, E2) -- asserted, a named function, and the only way in
+
+The observation above is now an assertion, and the mapping is code, not a note.
+`faultline.model.checkpoints.migrate_text_checkpoint` locates the separator row from five
+independent sources before it maps anything: the text shard manifest's `<sep>`, its vocabulary
+size, the tokenizer's size, the checkpoint's row count, and the training streams themselves. All
+six streams end in the id, it is the stream maximum, and there are no adjacent separators. All
+agree on **row 32,768, the last**, so rows 0 to 32,767 are the BPE ids untouched. BPE row `i`
+goes to joint `1,184 + i` bit for bit, and row 32,768 goes to joint id 8. `read_checkpoint`
+refuses a 32,769-row checkpoint, and a test fails if any module but `checkpoints.py` calls
+`torch.load`. On the real S2 and S3 checkpoints (`faultline check text-migration`,
+`reports/data/text_checkpoint_migration_v1_20260916.md`), the row moved to id 8 is +3.2 (S2) and
++4.1 (S3) nats more probable where a held-out document ends than elsewhere, with median rank 3
+there. All 4,224 per-string NLLs of the E1 record are reproduced through the migration within
+2.9e-6 nats.
+
 ---
 
 ## ADR-0004 Data licence policy

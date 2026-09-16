@@ -3262,7 +3262,7 @@ Recorded beside the stop, deciding nothing:
 - **Under §d, Hill of Towie's trained interval, [0.0369, 0.0577], lies above its base rate of
   0.03325.** This is a different read-out from ADR-0021's frozen probe, and one design of four. As
   ADR-0021 registered, the demotion is not reversed by a later, better Hill of Towie result.
-- Every trained-backbone probe except §b's selected its **first** validation measurement, step 166.
-  §b's selected step 166 too; its value is lower. The random-init probes selected later steps. The
-  prior-band question F2 would have asked of that checkpoint is still open.
-- Probe compute for the whole control, §a to §d: 0.25 + 0.36 + 0.35 + 0.44 = about 1.4 GPU-hours.
+- **All four trained-backbone probes selected their first validation measurement, step 166 of
+  1,000.** Of the twelve random-init probes, eleven selected later steps. The prior-band question
+  that F2 would have asked of such an early checkpoint is still open.
+- Probe compute for the whole control, §a to §d: 0.27 + 0.36 + 0.35 + 0.44 = 1.42 GPU-hours.

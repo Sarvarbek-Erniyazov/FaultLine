@@ -12,6 +12,7 @@ from faultline.config import load_config
 from faultline.evaluation.bootstrap import AuprcInterval
 from faultline.evaluation.gate_check import BootstrapConfig
 from faultline.evaluation.probe_control import (
+    HEAD_LAYERS,
     POOLING,
     ProbeControlConfig,
     ScoredWindows,
@@ -150,5 +151,17 @@ def test_the_shipped_mean_pooled_control_is_adr_0023_section_b() -> None:
     assert v1.design == "mean_pooled" and POOLING[v1.design] == "mean"
     # Only the design (and the version) differ from §a.
     assert v1.model_dump(exclude={"design", "version"}) == v0.model_dump(
+        exclude={"design", "version"}
+    )
+
+
+def test_the_shipped_mlp_control_is_adr_0023_section_c() -> None:
+    v1 = load_config(REPO / "configs/train/probe_control_v1.yaml", ProbeControlConfig)
+    v2 = load_config(REPO / "configs/train/probe_control_v2.yaml", ProbeControlConfig)
+    decisions = (REPO / "docs/DECISIONS.md").read_text(encoding="utf-8")
+    assert "### §c, registered 2026-09-16 before its code or run" in decisions
+    assert v2.design == "mlp_mean_pooled"
+    assert POOLING[v2.design] == "mean" and HEAD_LAYERS[v2.design] == 2
+    assert v2.model_dump(exclude={"design", "version"}) == v1.model_dump(
         exclude={"design", "version"}
     )

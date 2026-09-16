@@ -1,0 +1,22 @@
+# The random-init probe control, version 2: ADR-0023 §c, a two-hidden-layer MLP probe on the
+# window's mean hidden state. Decision record: docs/DECISIONS.md, ADR-0023 §c, registered in
+# 7e230be BEFORE this file, the code that reads it, or any run of it existed. probe_control_v0.yaml
+# (§a, FAIL, 81a8fab) and probe_control_v1.yaml (§b, FAIL, a4cfc49) are frozen.
+#
+# THE CRITERION is §a's, unchanged: on the pooled Kelmarsh + Penmanshiel test windows, with the gate
+# configuration's block bootstrap, the trained backbone's 95% AUPRC interval must lie entirely above
+# the interval of every random-init seed below. Hill of Towie is reported and does not decide.
+#
+# WHAT CHANGES from v1: `design` only. Both sides are probed through it. On FAIL, §d is registered.
+
+version: 2
+gate_config: "configs/train/gate_check_v0.yaml"
+
+# ADR-0023 §c: mean-pooled states, head with two hidden layers of 192.
+design: mlp_mean_pooled
+
+init_seeds: [1, 2, 3]
+
+pooled_sources:
+  - kelmarsh
+  - penmanshiel

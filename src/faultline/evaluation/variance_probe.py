@@ -581,6 +581,7 @@ def probe_and_score(
     label: str,
     save_to: Path | None = None,
     pooling: Literal["last", "mean"] = "last",
+    head_layers: Literal[1, 2] = 1,
 ) -> ProbeResult:
     """Train the frozen probe on a backbone and score every test source.
 
@@ -601,6 +602,7 @@ def probe_and_score(
         label: The run's label in the training log.
         save_to: Where to write the selected probe's whole state, when given.
         pooling: What the head reads (ADR-0023 §b): the final position or the window's mean.
+        head_layers: Hidden layers in the head (ADR-0023 §c): one, or two.
 
     Returns:
         The probe's result, with every test window's logit.
@@ -617,6 +619,7 @@ def probe_and_score(
         dropout=inputs.ladder_model.head_dropout,
         label=stage.label,
         pooling=pooling,
+        layers=head_layers,
     )
     model = RiskModel(inputs.spec, risk, frozen=True).to(device)
     if checkpoint is not None:
@@ -659,6 +662,7 @@ def probe_and_score(
                 "spec": inputs.spec.__dict__,
                 "kind": "probe",
                 "pooling": pooling,
+                "head_layers": head_layers,
                 "seed": seed,
                 "backbone": None if checkpoint is None else checkpoint.as_posix(),
                 "selected": (probe.best.step, probe.best.value),

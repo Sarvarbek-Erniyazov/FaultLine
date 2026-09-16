@@ -39,12 +39,14 @@ class RiskSpec:
         label: The window-index column the head is trained on, for the record.
         pooling: What the head reads: the final position's hidden state (``last``, every probe
             before ADR-0023 §b), or the mean over every position of the window (``mean``, §b).
+        layers: Hidden layers in the head: one for every probe before ADR-0023 §c, two for §c.
     """
 
     hidden: float = 1.0
     dropout: float = 0.0
     label: str = "narrow_within_24h"
     pooling: Literal["last", "mean"] = "last"
+    layers: Literal[1, 2] = 1
 
 
 class RiskHead(nn.Module):
@@ -54,6 +56,7 @@ class RiskHead(nn.Module):
         norm: Norm on the pooled state, so a frozen backbone's scale does not set the
             head's learning rate.
         up: Hidden projection.
+        mid: A second hidden projection, present only for a two-hidden-layer head (§c).
         down: Output projection to a single logit.
         dropout: Dropout before the output projection.
     """
@@ -75,6 +78,13 @@ class RiskHead(nn.Module):
         nn.init.zeros_(self.up.bias)
         nn.init.normal_(self.down.weight, mean=0.0, std=0.02)
         nn.init.zeros_(self.down.bias)
+        # Built last and only when asked for, so a one-hidden-layer head draws exactly the random
+        # numbers, and holds exactly the state, that it did before ADR-0023 §c.
+        self.mid: nn.Linear | None = None
+        if spec.layers == 2:
+            self.mid = nn.Linear(hidden, hidden)
+            nn.init.normal_(self.mid.weight, mean=0.0, std=0.02)
+            nn.init.zeros_(self.mid.bias)
 
     def forward(self, hidden: Tensor) -> Tensor:
         """Score one window.
@@ -87,6 +97,8 @@ class RiskHead(nn.Module):
             One logit per window, of shape ``(batch,)``.
         """
         x = F.gelu(self.up(self.norm(hidden)))
+        if self.mid is not None:
+            x = F.gelu(self.mid(x))
         return cast(Tensor, self.down(self.dropout(x)).squeeze(-1))
 
 

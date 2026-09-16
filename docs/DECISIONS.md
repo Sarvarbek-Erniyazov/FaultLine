@@ -3158,3 +3158,26 @@ Hill of Towie is reported and does not decide. Every selected head is saved.
 
 **On FAIL, §d is registered next** (the last two backbone blocks unfrozen, at a separate, lower
 rate). **On PASS, §c is the probe for every arm.**
+
+### §c result, 2026-09-16 -- FAIL: a two-hidden-layer head does not separate the trained backbone either
+
+§c was registered in **`7e230be`**, before `configs/train/probe_control_v2.yaml`, the `layers` option
+in `RiskSpec` or any run of them (`reports/data/probe_control_v2_20260916.md`, git_sha `7e230be`;
+the run crossed midnight UTC+9, and the report's date is its UTC date). It took 0.35 GPU-hours.
+
+| backbone | pooled Kelmarsh + Penmanshiel AUPRC | 95% block interval (decides) | Hill of Towie AUPRC | 95% block interval (reported) | selected validation AUPRC |
+| --- | --- | --- | --- | --- | --- |
+| **full-budget `tel_only`, seed 1** | **0.0521** | **[0.0449, 0.0608]** | 0.0369 | [0.0305, 0.0470] | 0.0441 at step 166 |
+| random init, seed 1 | 0.0462 | [0.0388, 0.0570] | 0.0339 | [0.0289, 0.0405] | 0.0230 at step 166 |
+| random init, seed 2 | 0.0514 | [0.0432, 0.0624] | 0.0347 | [0.0295, 0.0423] | 0.0267 at step 1000 |
+| random init, seed 3 | 0.0471 | [0.0401, 0.0561] | 0.0384 | [0.0309, 0.0529] | 0.0260 at step 498 |
+
+**Verdict: FAIL. The trained lower bound, 0.0449, is not above the highest random-init upper bound,
+0.0624 (seed 2),** or above any of the three. §d is registered next, and it is the last sub-step
+authorised.
+
+Recorded, deciding nothing. Across §a to §c, **the trained backbone's pooled point estimate is
+above every random-init point estimate in all three designs** (margins 0.0074, 0.0027, 0.0007).
+No design brings its interval clear. The random-init backbones' pooled AUPRC ranges from 0.0401
+to 0.0515, above the pooled base rate of 0.0383. An untrained S2 decoder's features carry most of
+what these probes read.

@@ -84,3 +84,24 @@ def test_mean_pooling_reads_the_mean_hidden_state_of_the_window() -> None:
         hidden = model.backbone(tokens)
         assert torch.allclose(model(tokens), model.head(hidden.mean(dim=1)), atol=1e-6)
         assert not torch.allclose(model(tokens), model.head(hidden[:, -1]), atol=1e-4)
+
+
+def test_a_one_hidden_layer_head_is_unchanged_by_the_two_layer_option() -> None:
+    # ADR-0023 §c adds a second hidden layer only when asked: the default head draws the same
+    # random numbers and holds the same state as before, so earlier probes reproduce.
+    torch.manual_seed(7)
+    one = RiskModel(spec(), RiskSpec(), frozen=True)
+    torch.manual_seed(7)
+    two = RiskModel(spec(), RiskSpec(layers=2), frozen=True)
+    assert set(one.head.state_dict()) == {
+        "norm.weight",
+        "up.weight",
+        "up.bias",
+        "down.weight",
+        "down.bias",
+    }
+    assert {"mid.weight", "mid.bias"} <= set(two.head.state_dict())
+    assert torch.equal(one.head.up.weight, two.head.up.weight)
+    assert torch.equal(one.head.down.weight, two.head.down.weight)
+    tokens = torch.randint(0, 64, (3, CONTEXT))
+    assert two.eval()(tokens).shape == (3,)

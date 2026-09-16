@@ -43,7 +43,18 @@ from faultline.runs import git_sha
 logger = get_logger(__name__)
 
 #: What the head reads under each registered design (ADR-0023: §a the final position, §b the mean).
-POOLING: dict[str, Literal["last", "mean"]] = {"final_position": "last", "mean_pooled": "mean"}
+POOLING: dict[str, Literal["last", "mean"]] = {
+    "final_position": "last",
+    "mean_pooled": "mean",
+    "mlp_mean_pooled": "mean",
+}
+
+#: Hidden layers in the head under each registered design (ADR-0023 §c: two).
+HEAD_LAYERS: dict[str, Literal[1, 2]] = {
+    "final_position": 1,
+    "mean_pooled": 1,
+    "mlp_mean_pooled": 2,
+}
 
 
 class ProbeControlConfig(StrictModel):
@@ -59,7 +70,7 @@ class ProbeControlConfig(StrictModel):
 
     version: int = 0
     gate_config: str
-    design: Literal["final_position", "mean_pooled"]
+    design: Literal["final_position", "mean_pooled", "mlp_mean_pooled"]
     init_seeds: list[int] = Field(min_length=1)
     pooled_sources: list[str] = Field(min_length=1)
 
@@ -292,6 +303,7 @@ def run_probe_control(
                 f"{name}/probe",
                 save_to=out_dir / f"{name}_probe.pt",
                 pooling=pooling,
+                head_layers=HEAD_LAYERS[config.design],
             )
             save_scores(scores_file, probe, opened_inputs.splits["test"])
             probe_record = {

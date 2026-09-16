@@ -2362,6 +2362,61 @@ the NLL effect, not on the coverage count. The raw arm remains the declared abla
 here shows that the joint model *uses* a string. It shows that the text-only model finds
 normalized strings less surprising, and that strings with absent words stay surprising.
 
+### Ruling, 2026-09-16 (E0-E5 ruling, E1) -- the context argument is load-bearing, the effect is additive at S2, and the single-token-word rate is retired
+
+**The `<sep>` argument is load-bearing, and it stands verbatim.** From the amendment above:
+"The primary context is `<sep>`, declared before scoring. It is biased against normalization: 0
+of 502 held-out documents start with a space." The headline effect (-5.33 at S2, -5.67 at S3) is
+read at the one context in which the model never saw a leading space after a boundary. A
+convention effect that survives there is not produced by the choice of context. The mid-prose
+figures (-7.75 and -8.66) are larger, and they are not the headline for that reason. Any later
+restatement of H3' that moves the primary context to mid-prose would remove the ground the
+effect stands on.
+
+**The two parts add up at S2, and not at S3.** At S2, `<sep>`, the leading space alone gives
+-3.72 and lowercase alone -1.64: **-3.72 + -1.64 = -5.36, against -5.33 measured** for both
+together, 0.03 nats apart and well inside either interval. At S2 the two parts of the convention
+act as separate, additive terms. Read from the same table, the sum is not the measured effect
+elsewhere: S3 at `<sep>` sums to -4.71 against -5.67 measured, S2 mid-prose to -7.42 against
+-7.75, and S3 mid-prose to -7.74 against -8.66. At the larger rung and in prose, the combined
+effect exceeds its parts. "Additive" is a statement about S2 at `<sep>` only.
+
+**The single-token-word rate is retired as a primary metric.** It was introduced with this
+amendment as the instrument that "checks exactly whether the word's surface form exists as one
+vocabulary entry". Read against its own distribution
+(`reports/data/h3prime_behavioural_v1_20260916.md`, section a), it cannot carry the claim:
+
+- **It saturates.** The median over strings is 1.0. **144 of 264 strings (55%) score exactly 1,**
+  so it cannot order more than half the code book.
+- **It disagrees with the coverage metric it replaced, in both directions.** 144 strings score 1,
+  of which 65 are among Stage A's 80 token-covered strings, so **79 strings score 1 that coverage
+  called uncovered**. And **15 of the 80 strings coverage called covered score below 1**. Neither
+  instrument is a refinement of the other.
+- **What separates strings is word frequency, not tokenization.** By the string's rarest word, 72
+  of 80 all-frequent strings score 1, against 2 of 53 strings with an absent word. The rate tracks
+  how often the words occur in training, which the word-status partition already states directly.
+  It adds no information about segmentation that the NLL does not measure better. The report keeps
+  printing it, as the record of what was measured. No H3' claim reads it.
+
+The behavioural NLL is the only primary instrument for H3'. The retirement is audit entry 12
+(`docs/INSTRUMENT_AUDIT.md`).
+
+**The absence figures, 2.64 and 2.26, come from two different partitions.** Both are S2,
+normalized, `<sep>`, mean nats per staged byte. They do not contradict each other:
+
+- **2.64** is the **"a word absent"** class of the **word-status partition**. Every string is
+  placed by its rarest word's count in `operator_narratives` training text, in three classes:
+  every word seen at least 100 times (80 strings), a word seen 1-99 times and none absent (131),
+  and **at least one word seen 0 times (53)**. The class holds absent words only.
+- **2.26** is the **"residual, vocabulary-absent"** class of **Stage A's four-class partition**
+  (word-level coverage crossed with normalized token-level coverage): **not token-covered after
+  normalization, and with at least one word seen fewer than 100 times (176 strings)**. That is
+  the 131 rare and 53 absent strings minus the 8 that are token-covered. It mixes rare words
+  (2.11 by the first partition) with absent ones (2.64), which is why its mean sits between them.
+
+"Vocabulary-absent" in the Stage A class name means below the 100-occurrence floor, not
+zero occurrences. Where this record says "absent" without the Stage A class name, it means zero.
+
 ---
 
 ## ADR-0018 The M3 joint mixture: three named streams, a declared ratio, and budgets in tokens seen

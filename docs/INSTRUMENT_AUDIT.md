@@ -193,6 +193,22 @@ strings covered at the token level but not the word level cost **2.30 nats/byte*
 That is as much as the 176-string vocabulary-absent residual (2.26), against 1.62 for strings
 covered at both levels. The old metric put them on the covered side, and the model does not.
 
+## 12. The single-token-word rate saturates, and it measures word frequency
+
+*Added 2026-09-16.* **This is the third analysis-level entry, after entries 9 and 11, and the
+first where the defective instrument was proposed by the analysis-level review itself.** Entry 11
+retired token-level coverage and named its replacement. The replacement did not measure what
+entry 11 said it measured.
+
+| field | |
+| --- | --- |
+| supposed to measure | Whether a status string's words are known to the tokenizer as words: the single-token-word rate "checks exactly whether the word's surface form exists as one vocabulary entry" (entry 11, regression-test row), reported beside the NLL as the second instrument for H3' (ADR-0017, amendment of 2026-09-16, "Single-token-word rate"). That amendment read it as agreeing with the NLL ordering. |
+| actually measured | **Mostly how frequent a string's words are, on a scale that is full for most strings.** The median over the 264 strings is **1.0**, and **144 of 264** score exactly 1. It disagrees with token-level coverage in both directions: **79 strings score 1 that coverage called uncovered**, and **15 of coverage's 80 covered strings score below 1**. What does separate strings is word frequency: 72 of 80 all-frequent strings score 1, against 2 of 53 strings with an absent word. That ordering is what the word-status partition already gives by counting words, without the tokenizer. The rate added a saturated copy of it. |
+| how found | The E0-E5 ruling of 2026-09-16 read the rate's own distribution table (`reports/data/h3prime_behavioural_v1_20260916.md`, section a) against the claim it was introduced to support. It asked what input would make the rate come out low, which is the test entry 11's lesson calls for. The answer was "a rare word", not "a word split into pieces". The amendment had checked that the rate agreed with the NLL ordering, but not that it could disagree with the frequency partition. |
+| reported result if undetected | **H3' would have carried a second instrument that confirmed the first by construction.** "The rate agrees with the NLL ordering; token coverage did not" (ADR-0017) reads as two independent instruments agreeing. The agreement is word frequency showing up in both. Any later claim that normalization or a refit "makes words single tokens" would have been measured on a scale where 55% of strings are already at the ceiling. |
+| regression test | **None pins the retirement, for the reason given in entry 9: a test checks code against a rule, not a rule against a claim.** The two tests recorded under entry 11 still pin the rate's definition. They show that the code computes the rate it says it computes, not that the rate is the right instrument. |
+| commit | None in code. Recorded with the ADR-0017 ruling that retires the rate as a primary metric; the report still prints it. |
+
 ---
 
 ## The seven defects reported for the Gate 6 run, classified
@@ -278,6 +294,14 @@ names.** Before a count is read as evidence, ask what input would make it come o
 check that the input is the thing the claim is about. For "the model knows this word", the
 answer is behavioural: its NLL under the pretrained model (entry 11, and the E1 step that
 replaces the metric).
+
+### Entry 12: the replacement needs the same question
+
+Entry 11's question was asked of the metric it retired and not of the one it proposed. The
+single-token-word rate comes out low for a rare word, not for a word the tokenizer splits, and
+it is at its ceiling for 55% of strings. **A replacement instrument gets the same test as the one
+it replaces, before it is reported beside a result.** Agreement with a trusted instrument is not
+that test. Two instruments that both track word frequency will agree.
 
 ### Entry 10: the check on the checks
 

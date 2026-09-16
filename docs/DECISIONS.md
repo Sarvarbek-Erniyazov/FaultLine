@@ -669,7 +669,7 @@ justification is pragmatic, and it makes no claim about transfer:
 Nothing in the replaced justification predicts that narrative pretraining helps the status
 strings. Any M3 result that bears on that question is reported as a new measurement. It is
 not a test of H3. The cheap residual question H3 leaves, whether the barrier is surface
-convention or vocabulary, is taken up as H3', registered on its own before it is measured.
+convention or vocabulary, is registered as H3' in ADR-0017.
 
 **What would change this decision.** An M2 finding that no adequately licensed
 narrative corpus is reachable, which removes the mechanism H3 depends on and
@@ -2172,3 +2172,92 @@ reporting on this corpus can show. `nrc_reg_issues` is reported with the stated 
 that its held-out splits sit below the floor. The 25,000-word floor guards against
 degenerate splits and is not a precision target. At an assumed, not yet measured,
 ~1.3 BPE tokens per word it is about 16 non-overlapping context windows.
+
+---
+
+## ADR-0017 H3': the status strings' token-level gap is split into convention and vocabulary
+
+**Status:** Accepted; Stage A pre-registered 2026-09-16, before its measurement ·
+**Date:** 2026-09-16
+
+**Context.** H3 is withdrawn (ADR-0007). One question it leaves costs nothing to answer.
+At the token level, the unit the model sees, **18 of 264** status strings have every BPE
+token seen at least 100 times in training. At the word level (lowercase `[a-z]+`), **80
+of 264** have every word seen that often (`data/cards/status_code_book.md`). The gap
+between the two is a property of how a string is written, not of what words it uses. A
+status string starts a line and is capitalised, so its first word encodes as a
+string-initial piece that prose rarely produces (`Wind` is `W` + `ind`; prose writes
+` wind`). The card counts 60 strings held below the floor by their first token alone.
+
+**H3'.** *Of the 246 strings not covered at the token level, 62 are blocked by surface
+convention (the step from 18 to 80) and 184 by genuine vocabulary absence (the step from
+80 to 264).* The 184 are not recoverable by narrative pretraining on this corpus: their
+words are rare or absent in it (ADR-0007, "H3 withdrawn"). The 62 might be recoverable
+at no cost, by writing a status string the way prose writes words.
+
+This decomposition uses the word-level count, 80, as the ceiling on what convention can
+recover. Stage A measures the convention share directly, and the two need not agree. A
+word can be frequent while the pieces it encodes into after normalization are not.
+
+**Stage A: normalization at encode time, no training, no refit.** All 264 strings are
+re-encoded **lowercased with a single leading space** (`" " + s.lower()`) with the frozen
+tokenizer `text_bpe_v1_22c56e49`. Token-level coverage is then re-measured with the same
+instrument and threshold as the card: every token id seen at least 100 times in that
+tokenizer's training shards. The tokenizer is not refitted, and no shard is rewritten.
+
+**Decision rule, pre-registered here and in the M3 entry brief of 2026-09-16, before the
+normalized count was computed:**
+
+- **more than 50 of 264** covered after normalization: surface convention is confirmed as
+  the dominant barrier among the recoverable strings;
+- **50 of 264 or fewer**: convention is only a partial explanation, and the rest of the
+  gap is at the segmentation level. The words are frequent, but the tokenizer does not
+  split these strings into frequent pieces. That is reported as the finding, and the claim
+  is not re-worded to fit the number.
+
+Reported with it: the per-string diff (which strings change side, in either direction);
+how many of the 60 first-token failures normalization fixes; and characters and bytes
+per token before and after, against the held-out narrative baseline of 4.63-5.29 bytes
+per token.
+
+Normalization is an encoding convention for status strings in the joint stream (M3). It
+is not a change to the tokenizer, the vocabulary or ADR-0003's layout.
+
+**Stage A outcome, 2026-09-16 (`reports/data/h3prime_stage_a_v1_20260916.md`, `faultline
+inspect status-convention`).** The raw row reproduces the card first: 18/264 covered, 60
+first-token failures, and 63/264 with a leading space alone.
+
+| convention | every token frequent | chars/token |
+| --- | --- | --- |
+| raw | 18 / 264 | 4.15 |
+| leading space only | 63 / 264 | 4.67 |
+| lowercase only | 32 / 264 | 4.33 |
+| **normalized, lowercased after a space (pre-registered)** | **80 / 264** | **4.82** |
+
+**80 > 50: surface convention is CONFIRMED as the dominant barrier among the recoverable
+strings.** Normalization covers 67 strings and loses 5, net +62. It fixes 45 of the 60
+first-token failures. Characters per token rise from 4.15 to 4.82, inside the held-out
+narrative range of 4.63-5.29 bytes per token. Normalized strings compress like the prose
+the tokenizer was fitted on. The leading space does most of the work (18 to 63); lowercase
+adds the rest (to 80).
+
+**The decomposition holds by count, not by set.** The normalized count equals the word-level
+count, 80, but only 72 strings are in both sets:
+
+- 8 strings are token-covered after normalization although a word is rare (`Mains
+  connection`, `Tower resonance`, `WEC shut down`, ...);
+- 8 have every word frequent and still encode a rare piece (`PLC hardware error`, `Park
+  master stop`, `Particle sensor defect`, ...). This residual is below the word level: the
+  frozen tokenizer splits a word into rare pieces, or the word rule ignores a digit or a
+  symbol.
+
+So of the 184 strings still uncovered after normalization, 176 carry a rare or absent word,
+which is the vocabulary absence narrative pretraining cannot supply, and 8 are blocked below
+the word level. The 5 strings normalization loses include `Yaw error`: raw it is `Y` `aw`
+` error`, all frequent, and `yaw` never occurs in the corpus. **Token-level coverage is
+therefore a floor on how often pieces were seen. It does not show that a word is known.**
+That caveat applies to every token-level count in this record.
+
+**Consequence.** Status strings enter the M3 joint stream **normalized by default** (recorded with the M3 mixture,
+the `tel+status` stream), and unnormalized strings are a declared ablation arm. Nothing in
+Stage A tests whether the model uses the covered strings. Stage A is about encoding only.

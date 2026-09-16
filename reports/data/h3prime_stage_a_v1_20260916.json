@@ -1,0 +1,1302 @@
+{
+  "strings": 264,
+  "coverage": [
+    {
+      "convention": "raw",
+      "covered": 18,
+      "tokens": 1443,
+      "chars": 5990,
+      "utf8_bytes": 5995
+    },
+    {
+      "convention": "leading space only",
+      "covered": 63,
+      "tokens": 1338,
+      "chars": 6254,
+      "utf8_bytes": 6259
+    },
+    {
+      "convention": "lowercase only",
+      "covered": 32,
+      "tokens": 1383,
+      "chars": 5990,
+      "utf8_bytes": 5995
+    },
+    {
+      "convention": "normalized",
+      "covered": 80,
+      "tokens": 1298,
+      "chars": 6254,
+      "utf8_bytes": 6259
+    }
+  ],
+  "changes": [
+    {
+      "text": "Absence of wind during run-up",
+      "gained": true,
+      "raw_pieces": [
+        "A",
+        "bs",
+        "ence",
+        " of",
+        " wind",
+        " during",
+        " run",
+        "-",
+        "up"
+      ],
+      "normalized_pieces": [
+        " absence",
+        " of",
+        " wind",
+        " during",
+        " run",
+        "-",
+        "up"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Alarm call test",
+      "gained": true,
+      "raw_pieces": [
+        "Al",
+        "arm",
+        " call",
+        " test"
+      ],
+      "normalized_pieces": [
+        " alarm",
+        " call",
+        " test"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Automatic start-up",
+      "gained": true,
+      "raw_pieces": [
+        "Automatic",
+        " start",
+        "-",
+        "up"
+      ],
+      "normalized_pieces": [
+        " automatic",
+        " start",
+        "-",
+        "up"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Battery monitoring test interval",
+      "gained": true,
+      "raw_pieces": [
+        "B",
+        "atter",
+        "y",
+        " monitoring",
+        " test",
+        " interval"
+      ],
+      "normalized_pieces": [
+        " battery",
+        " monitoring",
+        " test",
+        " interval"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Battery test",
+      "gained": true,
+      "raw_pieces": [
+        "B",
+        "atter",
+        "y",
+        " test"
+      ],
+      "normalized_pieces": [
+        " battery",
+        " test"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Bypass limit switches",
+      "gained": true,
+      "raw_pieces": [
+        "B",
+        "ypass",
+        " limit",
+        " switches"
+      ],
+      "normalized_pieces": [
+        " bypass",
+        " limit",
+        " switches"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Cable overload",
+      "gained": true,
+      "raw_pieces": [
+        "Cable",
+        " overload"
+      ],
+      "normalized_pieces": [
+        " cable",
+        " overload"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Cable panel breaker open",
+      "gained": true,
+      "raw_pieces": [
+        "Cable",
+        " panel",
+        " breaker",
+        " open"
+      ],
+      "normalized_pieces": [
+        " cable",
+        " panel",
+        " breaker",
+        " open"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Data communication unavailable",
+      "gained": true,
+      "raw_pieces": [
+        "D",
+        "ata",
+        " communication",
+        " unavailable"
+      ],
+      "normalized_pieces": [
+        " data",
+        " communication",
+        " unavailable"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Drive train monitor level 1",
+      "gained": true,
+      "raw_pieces": [
+        "D",
+        "rive",
+        " train",
+        " monitor",
+        " level",
+        " 1"
+      ],
+      "normalized_pieces": [
+        " drive",
+        " train",
+        " monitor",
+        " level",
+        " 1"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Drive train monitor level 2",
+      "gained": true,
+      "raw_pieces": [
+        "D",
+        "rive",
+        " train",
+        " monitor",
+        " level",
+        " 2"
+      ],
+      "normalized_pieces": [
+        " drive",
+        " train",
+        " monitor",
+        " level",
+        " 2"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Grid error",
+      "gained": true,
+      "raw_pieces": [
+        "G",
+        "rid",
+        " error"
+      ],
+      "normalized_pieces": [
+        " grid",
+        " error"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Grid loss",
+      "gained": true,
+      "raw_pieces": [
+        "G",
+        "rid",
+        " loss"
+      ],
+      "normalized_pieces": [
+        " grid",
+        " loss"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Grid measurement error",
+      "gained": true,
+      "raw_pieces": [
+        "G",
+        "rid",
+        " measurement",
+        " error"
+      ],
+      "normalized_pieces": [
+        " grid",
+        " measurement",
+        " error"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Heating/fan base box faulty",
+      "gained": true,
+      "raw_pieces": [
+        "Heating",
+        "/",
+        "f",
+        "an",
+        " base",
+        " box",
+        " faulty"
+      ],
+      "normalized_pieces": [
+        " heating",
+        "/",
+        "f",
+        "an",
+        " base",
+        " box",
+        " faulty"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Heating/fan top box faulty",
+      "gained": true,
+      "raw_pieces": [
+        "Heating",
+        "/",
+        "f",
+        "an",
+        " top",
+        " box",
+        " faulty"
+      ],
+      "normalized_pieces": [
+        " heating",
+        "/",
+        "f",
+        "an",
+        " top",
+        " box",
+        " faulty"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Low gear oil temperature",
+      "gained": true,
+      "raw_pieces": [
+        "Low",
+        " gear",
+        " oil",
+        " temperature"
+      ],
+      "normalized_pieces": [
+        " low",
+        " gear",
+        " oil",
+        " temperature"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Low hydraulic pressure",
+      "gained": true,
+      "raw_pieces": [
+        "Low",
+        " hydraulic",
+        " pressure"
+      ],
+      "normalized_pieces": [
+        " low",
+        " hydraulic",
+        " pressure"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Mains connection",
+      "gained": true,
+      "raw_pieces": [
+        "Main",
+        "s",
+        " connection"
+      ],
+      "normalized_pieces": [
+        " main",
+        "s",
+        " connection"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Mains operation",
+      "gained": true,
+      "raw_pieces": [
+        "Main",
+        "s",
+        " operation"
+      ],
+      "normalized_pieces": [
+        " main",
+        "s",
+        " operation"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Mains run-up",
+      "gained": true,
+      "raw_pieces": [
+        "Main",
+        "s",
+        " run",
+        "-",
+        "up"
+      ],
+      "normalized_pieces": [
+        " main",
+        "s",
+        " run",
+        "-",
+        "up"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Manual operation",
+      "gained": true,
+      "raw_pieces": [
+        "Manual",
+        " operation"
+      ],
+      "normalized_pieces": [
+        " manual",
+        " operation"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Manual operation fan gear",
+      "gained": true,
+      "raw_pieces": [
+        "Manual",
+        " operation",
+        " fan",
+        " gear"
+      ],
+      "normalized_pieces": [
+        " manual",
+        " operation",
+        " fan",
+        " gear"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Manual operation gear bypass filter",
+      "gained": true,
+      "raw_pieces": [
+        "Manual",
+        " operation",
+        " gear",
+        " bypass",
+        " filter"
+      ],
+      "normalized_pieces": [
+        " manual",
+        " operation",
+        " gear",
+        " bypass",
+        " filter"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Manual operation gear heating",
+      "gained": true,
+      "raw_pieces": [
+        "Manual",
+        " operation",
+        " gear",
+        " heating"
+      ],
+      "normalized_pieces": [
+        " manual",
+        " operation",
+        " gear",
+        " heating"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Manual operation gear oil pump",
+      "gained": true,
+      "raw_pieces": [
+        "Manual",
+        " operation",
+        " gear",
+        " oil",
+        " pump"
+      ],
+      "normalized_pieces": [
+        " manual",
+        " operation",
+        " gear",
+        " oil",
+        " pump"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Manual operation generator fan 1",
+      "gained": true,
+      "raw_pieces": [
+        "Manual",
+        " operation",
+        " generator",
+        " fan",
+        " 1"
+      ],
+      "normalized_pieces": [
+        " manual",
+        " operation",
+        " generator",
+        " fan",
+        " 1"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Manual operation generator fan 2",
+      "gained": true,
+      "raw_pieces": [
+        "Manual",
+        " operation",
+        " generator",
+        " fan",
+        " 2"
+      ],
+      "normalized_pieces": [
+        " manual",
+        " operation",
+        " generator",
+        " fan",
+        " 2"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Manual operation generator fan 3",
+      "gained": true,
+      "raw_pieces": [
+        "Manual",
+        " operation",
+        " generator",
+        " fan",
+        " 3"
+      ],
+      "normalized_pieces": [
+        " manual",
+        " operation",
+        " generator",
+        " fan",
+        " 3"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Manual operation generator heating",
+      "gained": true,
+      "raw_pieces": [
+        "Manual",
+        " operation",
+        " generator",
+        " heating"
+      ],
+      "normalized_pieces": [
+        " manual",
+        " operation",
+        " generator",
+        " heating"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Manual operation hydraulic pump",
+      "gained": true,
+      "raw_pieces": [
+        "Manual",
+        " operation",
+        " hydraulic",
+        " pump"
+      ],
+      "normalized_pieces": [
+        " manual",
+        " operation",
+        " hydraulic",
+        " pump"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Manual stop - on site",
+      "gained": true,
+      "raw_pieces": [
+        "Manual",
+        " stop",
+        " -",
+        " on",
+        " site"
+      ],
+      "normalized_pieces": [
+        " manual",
+        " stop",
+        " -",
+        " on",
+        " site"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Manual stop - remote",
+      "gained": true,
+      "raw_pieces": [
+        "Manual",
+        " stop",
+        " -",
+        " remote"
+      ],
+      "normalized_pieces": [
+        " manual",
+        " stop",
+        " -",
+        " remote"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Manual stop without login",
+      "gained": true,
+      "raw_pieces": [
+        "Manual",
+        " stop",
+        " without",
+        " log",
+        "in"
+      ],
+      "normalized_pieces": [
+        " manual",
+        " stop",
+        " without",
+        " log",
+        "in"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Maximum generator speed",
+      "gained": true,
+      "raw_pieces": [
+        "Maximum",
+        " generator",
+        " speed"
+      ],
+      "normalized_pieces": [
+        " maximum",
+        " generator",
+        " speed"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Maximum grid frequency",
+      "gained": true,
+      "raw_pieces": [
+        "Maximum",
+        " grid",
+        " frequency"
+      ],
+      "normalized_pieces": [
+        " maximum",
+        " grid",
+        " frequency"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Minimum grid frequency",
+      "gained": true,
+      "raw_pieces": [
+        "Minimum",
+        " grid",
+        " frequency"
+      ],
+      "normalized_pieces": [
+        " minimum",
+        " grid",
+        " frequency"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Overload fan oil cooler gear",
+      "gained": true,
+      "raw_pieces": [
+        "Over",
+        "load",
+        " fan",
+        " oil",
+        " cooler",
+        " gear"
+      ],
+      "normalized_pieces": [
+        " overload",
+        " fan",
+        " oil",
+        " cooler",
+        " gear"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Overload gear bypass filter",
+      "gained": true,
+      "raw_pieces": [
+        "Over",
+        "load",
+        " gear",
+        " bypass",
+        " filter"
+      ],
+      "normalized_pieces": [
+        " overload",
+        " gear",
+        " bypass",
+        " filter"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Overload gear heating",
+      "gained": true,
+      "raw_pieces": [
+        "Over",
+        "load",
+        " gear",
+        " heating"
+      ],
+      "normalized_pieces": [
+        " overload",
+        " gear",
+        " heating"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Overload gear oil pump",
+      "gained": true,
+      "raw_pieces": [
+        "Over",
+        "load",
+        " gear",
+        " oil",
+        " pump"
+      ],
+      "normalized_pieces": [
+        " overload",
+        " gear",
+        " oil",
+        " pump"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Overload generator fan 1",
+      "gained": true,
+      "raw_pieces": [
+        "Over",
+        "load",
+        " generator",
+        " fan",
+        " 1"
+      ],
+      "normalized_pieces": [
+        " overload",
+        " generator",
+        " fan",
+        " 1"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Overload generator fan 2",
+      "gained": true,
+      "raw_pieces": [
+        "Over",
+        "load",
+        " generator",
+        " fan",
+        " 2"
+      ],
+      "normalized_pieces": [
+        " overload",
+        " generator",
+        " fan",
+        " 2"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Overload generator fan 3",
+      "gained": true,
+      "raw_pieces": [
+        "Over",
+        "load",
+        " generator",
+        " fan",
+        " 3"
+      ],
+      "normalized_pieces": [
+        " overload",
+        " generator",
+        " fan",
+        " 3"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Overload generator heating",
+      "gained": true,
+      "raw_pieces": [
+        "Over",
+        "load",
+        " generator",
+        " heating"
+      ],
+      "normalized_pieces": [
+        " overload",
+        " generator",
+        " heating"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Overload hydraulic pump",
+      "gained": true,
+      "raw_pieces": [
+        "Over",
+        "load",
+        " hydraulic",
+        " pump"
+      ],
+      "normalized_pieces": [
+        " overload",
+        " hydraulic",
+        " pump"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Overload transformer fan outlet air",
+      "gained": true,
+      "raw_pieces": [
+        "Over",
+        "load",
+        " transformer",
+        " fan",
+        " outlet",
+        " air"
+      ],
+      "normalized_pieces": [
+        " overload",
+        " transformer",
+        " fan",
+        " outlet",
+        " air"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Parameter outside limits",
+      "gained": true,
+      "raw_pieces": [
+        "Par",
+        "ameter",
+        " outside",
+        " limits"
+      ],
+      "normalized_pieces": [
+        " parameter",
+        " outside",
+        " limits"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Parameter update active",
+      "gained": true,
+      "raw_pieces": [
+        "Par",
+        "ameter",
+        " update",
+        " active"
+      ],
+      "normalized_pieces": [
+        " parameter",
+        " update",
+        " active"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Parameterized P red.",
+      "gained": true,
+      "raw_pieces": [
+        "Par",
+        "ameter",
+        "ized",
+        " P",
+        " red",
+        "."
+      ],
+      "normalized_pieces": [
+        " parameter",
+        "ized",
+        " p",
+        " red",
+        "."
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Particle Gear Alarm 10min",
+      "gained": false,
+      "raw_pieces": [
+        "Part",
+        "ic",
+        "le",
+        " G",
+        "ear",
+        " Alarm",
+        " 10",
+        "min"
+      ],
+      "normalized_pieces": [
+        " particle",
+        " gear",
+        " alarm",
+        " 10",
+        "min"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Particle Gear Alarm 24h",
+      "gained": false,
+      "raw_pieces": [
+        "Part",
+        "ic",
+        "le",
+        " G",
+        "ear",
+        " Alarm",
+        " 24",
+        "h"
+      ],
+      "normalized_pieces": [
+        " particle",
+        " gear",
+        " alarm",
+        " 24",
+        "h"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Particle sensor defect",
+      "gained": false,
+      "raw_pieces": [
+        "Part",
+        "ic",
+        "le",
+        " sensor",
+        " defect"
+      ],
+      "normalized_pieces": [
+        " particle",
+        " sensor",
+        " defect"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Reduced power transformer",
+      "gained": true,
+      "raw_pieces": [
+        "Red",
+        "uced",
+        " power",
+        " transformer"
+      ],
+      "normalized_pieces": [
+        " reduced",
+        " power",
+        " transformer"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "System OK",
+      "gained": true,
+      "raw_pieces": [
+        "System",
+        " OK"
+      ],
+      "normalized_pieces": [
+        " system",
+        " o",
+        "k"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "System test 1",
+      "gained": true,
+      "raw_pieces": [
+        "System",
+        " test",
+        " 1"
+      ],
+      "normalized_pieces": [
+        " system",
+        " test",
+        " 1"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "System test 2",
+      "gained": true,
+      "raw_pieces": [
+        "System",
+        " test",
+        " 2"
+      ],
+      "normalized_pieces": [
+        " system",
+        " test",
+        " 2"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "System test 3",
+      "gained": true,
+      "raw_pieces": [
+        "System",
+        " test",
+        " 3"
+      ],
+      "normalized_pieces": [
+        " system",
+        " test",
+        " 3"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Timeout B sensor active",
+      "gained": true,
+      "raw_pieces": [
+        "Time",
+        "out",
+        " B",
+        " sensor",
+        " active"
+      ],
+      "normalized_pieces": [
+        " time",
+        "out",
+        " b",
+        " sensor",
+        " active"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Top box temperature high",
+      "gained": true,
+      "raw_pieces": [
+        "Top",
+        " box",
+        " temperature",
+        " high"
+      ],
+      "normalized_pieces": [
+        " top",
+        " box",
+        " temperature",
+        " high"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Tower resonance",
+      "gained": true,
+      "raw_pieces": [
+        "T",
+        "ower",
+        " res",
+        "on",
+        "ance"
+      ],
+      "normalized_pieces": [
+        " tower",
+        " res",
+        "on",
+        "ance"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Transient fault",
+      "gained": true,
+      "raw_pieces": [
+        "Trans",
+        "ient",
+        " fault"
+      ],
+      "normalized_pieces": [
+        " transient",
+        " fault"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Transient voltage peak",
+      "gained": true,
+      "raw_pieces": [
+        "Trans",
+        "ient",
+        " voltage",
+        " peak"
+      ],
+      "normalized_pieces": [
+        " transient",
+        " voltage",
+        " peak"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "UPS error",
+      "gained": true,
+      "raw_pieces": [
+        "UPS",
+        " error"
+      ],
+      "normalized_pieces": [
+        " up",
+        "s",
+        " error"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "UPS warning",
+      "gained": true,
+      "raw_pieces": [
+        "UPS",
+        " warning"
+      ],
+      "normalized_pieces": [
+        " up",
+        "s",
+        " warning"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Unknown status code",
+      "gained": true,
+      "raw_pieces": [
+        "Un",
+        "known",
+        " status",
+        " code"
+      ],
+      "normalized_pieces": [
+        " unknown",
+        " status",
+        " code"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Update active",
+      "gained": true,
+      "raw_pieces": [
+        "Update",
+        " active"
+      ],
+      "normalized_pieces": [
+        " update",
+        " active"
+      ],
+      "first_token_only": true
+    },
+    {
+      "text": "Wind < power",
+      "gained": true,
+      "raw_pieces": [
+        "W",
+        "ind",
+        " <",
+        " power"
+      ],
+      "normalized_pieces": [
+        " wind",
+        " <",
+        " power"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Wind < start wind",
+      "gained": true,
+      "raw_pieces": [
+        "W",
+        "ind",
+        " <",
+        " start",
+        " wind"
+      ],
+      "normalized_pieces": [
+        " wind",
+        " <",
+        " start",
+        " wind"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Wind > power",
+      "gained": true,
+      "raw_pieces": [
+        "W",
+        "ind",
+        " >",
+        " power"
+      ],
+      "normalized_pieces": [
+        " wind",
+        " >",
+        " power"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Yaw error",
+      "gained": false,
+      "raw_pieces": [
+        "Y",
+        "aw",
+        " error"
+      ],
+      "normalized_pieces": [
+        " y",
+        "aw",
+        " error"
+      ],
+      "first_token_only": false
+    },
+    {
+      "text": "Yaw speed high",
+      "gained": false,
+      "raw_pieces": [
+        "Y",
+        "aw",
+        " speed",
+        " high"
+      ],
+      "normalized_pieces": [
+        " y",
+        "aw",
+        " speed",
+        " high"
+      ],
+      "first_token_only": false
+    }
+  ],
+  "first_token_failures": 60,
+  "first_token_fixed": 45,
+  "word_covered": 80,
+  "normalized_not_word": [
+    "Mains connection",
+    "Mains operation",
+    "Mains run-up",
+    "Manual stop without login",
+    "Parameterized P red.",
+    "Timeout B sensor active",
+    "Tower resonance",
+    "WEC shut down"
+  ],
+  "word_not_normalized": [
+    "Deviation of wind direction>45\u00b0",
+    "Hydraulic oil flushing operation",
+    "PLC hardware error",
+    "Park master stop",
+    "Particle Gear Alarm 24h",
+    "Particle sensor defect",
+    "Semi-automatic operation",
+    "Supply circuit breaker off-state"
+  ],
+  "narrative_bytes_per_token": {
+    "nrc_bulletins": 4.6282363496539345,
+    "nrc_event_notifications": 4.7753067210997,
+    "nrc_gen_letters": 4.807589486717695,
+    "nrc_info_notices": 4.651986778113984,
+    "nrc_reg_issues": 5.288740182833783,
+    "phmsa_incident_narratives": 4.959077468953282
+  },
+  "tokenizer_file": "data/tokenizers/text_bpe_v1_22c56e49.json",
+  "shard_dir": "text_bpe_v1_22c56e49",
+  "corpus_name": "operator_narratives",
+  "threshold": 100,
+  "convention_dominant": true,
+  "line": 50
+}

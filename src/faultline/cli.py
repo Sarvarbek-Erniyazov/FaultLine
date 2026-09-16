@@ -557,6 +557,34 @@ def inspect_vocab_overlap_command(
 
 
 @inspect_app.command(
+    "status-convention",
+    help="H3' Stage A: status-string token coverage lowercased after a space, frozen "
+    "tokenizer, against ADR-0017's pre-registered line.",
+)
+def inspect_status_convention_command(
+    tokenizer: Annotated[
+        Path, typer.Option("--tokenizer", help="Frozen text tokenizer to encode with.")
+    ] = Path("data/tokenizers/text_bpe_v1_22c56e49.json"),
+    corpus: Annotated[
+        str, typer.Option("--corpus", help="Corpus the tokenizer was fitted on.")
+    ] = "operator_narratives",
+) -> None:
+    """Measure H3' Stage A and write its report.
+
+    Args:
+        tokenizer: The frozen text tokenizer; its shards give token frequency.
+        corpus: The corpus it was fitted on, for the narrative bytes/token baseline.
+    """
+    from faultline.data.text.status_convention import inspect_status_convention
+
+    paths = ProjectPaths.resolve()
+    report, record = inspect_status_convention(
+        paths, (paths.repo_root / tokenizer).resolve(), corpus
+    )
+    typer.echo(f"wrote {report} and {record}")
+
+
+@inspect_app.command(
     "core",
     help="The core channel rule on the cleaned grid: coverage per site and year, the "
     "seasonally matched shortcut control, and the training exclusions.",

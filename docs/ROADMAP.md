@@ -412,8 +412,15 @@ produced. The capacities are frozen (ADR-0003), so this is carried, not fixed.
 > is false at the lexical level. PHMSA's 1,969,035 training tokens moved zero wind-specific
 > words (29 code-book word types stay absent). ADR-0007's decision is kept and its
 > justification replaced; the full record is under "H3 withdrawn" in ADR-0007. The residual
-> question, whether convention or vocabulary is the barrier, is taken up as H3', and it
+> question, whether convention or vocabulary is the barrier, is H3' (ADR-0017), and it
 > needs no training.
+>
+> **H3' Stage A, 2026-09-16:** lowercased after a space with the frozen tokenizer, **80/264**
+> status strings have every token frequent (raw 18). That is above the pre-registered 50, so
+> surface convention is confirmed as the dominant barrier. 45 of the 60 first-token failures
+> are fixed, and chars/token goes from 4.15 to 4.82, inside the narrative 4.63-5.29. Equal to
+> the word-level 80 by count but not by set (72 shared). The residual 184 is 176
+> vocabulary-absent plus 8 below the word level (ADR-0017).
 
 *The record below is kept as it was written before the withdrawal.*
 

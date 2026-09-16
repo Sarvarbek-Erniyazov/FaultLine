@@ -3078,3 +3078,35 @@ Recorded beside the verdict, deciding nothing:
 - The random-init probes' training loss ends at 0.685 to 0.687, near ln 2 = 0.693. Their selected
   validation AUPRC (0.0224 to 0.0291, at steps 332 to 996) is below the trained probe's 0.0441 at
   step 166.
+
+### §b, registered 2026-09-16 before its code or run -- the probe reads the window's mean hidden state
+
+**Status:** pre-registered after the §a FAIL (commit `81a8fab`), before any §b code, configuration
+or run exists.
+
+**The design.** The frozen probe reads **the mean of the backbone's final hidden states over every
+position of the window** (all 1,872 tokens: 144 steps of `<sep>` and 12 channel tokens, after
+the final norm), instead of the final position's state. Nothing else changes. The head is the same
+one-hidden-layer `RiskHead`, including its input norm, and it receives the pooled vector. The
+probe stage is also unchanged: balanced sampling, 16,000 positives, rate 2e-3, six validation
+measurements, the best one selected, and the prior correction. The M1e objection in
+`faultline.model.risk` ("mean-pooling would score better and would not be deployable a step at a
+time") is set aside for this sub-step, as the brief authorises. A mean over a fixed 144-step
+window needs the same window a final-position read does, and whether it streams is a deployment
+question, not a question about the representation.
+
+**The criterion, unchanged.** It is ADR-0023's criterion, read as registered in `c9489a2`, with
+both sides probed through the §b design:
+
+- **Trained side:** the full-budget `tel_only` seed-1 backbone
+  (`checkpoints/gate_check_v0_9697a266/S2_tel_only_seed1.pt`), probed through §b with seed 1. The
+  §a scores are not reused.
+- **Random-init side:** the same three untrained backbones as §a (seeds 1, 2, 3; pretraining's
+  initialisation, no optimiser step), each probed through §b with its own seed.
+- **Pooled** Kelmarsh + Penmanshiel test split, same windows, same block bootstrap. **Met if and
+  only if the trained lower bound is strictly above the upper bound of every one of the three.**
+  Hill of Towie is reported and does not decide. Every selected head is saved.
+
+**On FAIL, §c is registered next** (a two-layer MLP probe on the same pooled states). **On PASS,
+§b is the probe for every arm.** A new version of the C0 configuration then records it, because
+`telemetry_v1.yaml` is frozen.

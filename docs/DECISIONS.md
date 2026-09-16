@@ -2279,6 +2279,73 @@ That caveat applies to every token-level count in this record.
 the `tel+status` stream), and unnormalized strings are a declared ablation arm. Nothing in
 Stage A tests whether the model uses the covered strings. Stage A is about encoding only.
 
+### Amendment, 2026-09-16 (M3 pre-run brief, E1) -- H3' restated as a behavioural claim; the metric replaced
+
+**The instrument is withdrawn.** Token-level coverage cannot fail for an absent word
+(`docs/INSTRUMENT_AUDIT.md`, entry 11). Byte-level BPE has no out-of-vocabulary token, so a
+missing word falls back to shorter, more frequent pieces and can *raise* coverage. `Yaw error`
+is covered raw, and `yaw` occurs 0 times in training. The Stage A verdict above ("80 > 50,
+CONFIRMED") is kept as the record of what was measured. It is no longer read as evidence
+about word knowledge, and every count built on it below is superseded.
+
+**Withdrawn: "62 blocked by convention, 184 by vocabulary absence".** That decomposition
+subtracted two counts of 80 that are not the same set: the word-level and normalized-token
+80s share 72 strings. The measured change from raw to normalized is **67 strings gained and
+5 lost**, not a block of 62. The residual 184 is **176 with a rare or absent word plus 8
+blocked below the word level**. **The mechanism is the word-initial leading space more than
+the casing.** A leading space alone takes coverage from 18 to 63, and lowercase alone to 32.
+
+**H3', restated.** *Writing a status string the way prose writes words is a treatment on
+what the pretrained text model assigns to it. Normalization (`" " + s.lower()`) is the
+treatment, and the per-string NLL difference under the frozen text-only checkpoints
+(normalized minus raw, in nats per string, paired over the 264 strings) is the effect size.*
+Two companion claims are read on the same instrument: that the effect comes more from the
+leading space than from casing, and that strings with an absent word stay costly after
+normalization (the absence claim).
+
+**Measured, 2026-09-16** (`faultline model status-nll`,
+`reports/data/h3prime_behavioural_v1_20260916.md`; S2 and S3 text checkpoints, forward
+passes only). The primary context is `<sep>`, declared before scoring. It is biased against
+normalization: 0 of 502 held-out documents start with a space. A mid-prose context is
+reported beside it.
+
+| checkpoint | context | normalized - raw | leading space only - raw | lowercase only - raw | strings lower than raw |
+| --- | --- | --- | --- | --- | --- |
+| S2 | `<sep>` | **-5.33** [-6.12, -4.56] | -3.72 [-4.29, -3.18] | -1.64 [-2.14, -1.14] | 216 / 264 |
+| S3 | `<sep>` | **-5.67** [-6.51, -4.84] | -3.27 [-3.84, -2.72] | -1.44 [-1.99, -0.89] | 217 / 264 |
+| S2 | mid-prose | -7.75 [-8.53, -6.97] | -5.18 [-5.76, -4.63] | -2.24 [-2.79, -1.70] | 240 / 264 |
+| S3 | mid-prose | -8.66 [-9.54, -7.79] | -5.37 [-6.00, -4.76] | -2.37 [-2.96, -1.78] | 229 / 264 |
+
+Nats per string; the brackets are bootstrap 95% intervals over strings. **The convention effect
+is real and not an artefact of the metric.** Normalization lowers NLL by about 5.5 nats a
+string at the context biased against it, and every interval excludes zero. The leading space
+carries about twice the casing's share (-3.72 against -1.64 at S2), as the counts said. Raw
+strings average 51.2 nats (S2), so this is about a tenth of a string's cost.
+
+**The absence claim** (normalized, `<sep>`, nats per staged byte; S2 then S3). Every word
+frequent (80 strings): 1.63 / 1.65. A word rare, none absent (131): 2.11 / 2.17. A word
+absent (53): 2.64 / 2.71. The **reference scale** is held-out narrative text under the same
+checkpoints: 1.20-1.32 nats/byte over the first 2-16 tokens of a document (S2), and 1.26 at full
+context. Even strings whose every word is frequent cost 1.3 times narrative text per byte, and
+strings with an absent word cost 2.1 times. Normalization narrows the gap for the absent group
+least (2.77 to 2.64, against 1.91 to 1.63 for the frequent group). The 8 strings Stage A counted
+as covered at the token level only cost 2.30 nats/byte, as much as the vocabulary-absent residual
+(2.26). That is entry 11's defect, seen in behaviour.
+
+**Single-token-word rate** (normalized; a word is a pretokenizer letter chunk, and one token
+means an exact vocabulary entry for its bytes, with 0 disagreements from the encoder).
+Mean over strings 0.818, median 1.0. **144 strings have every word one token, 116 some, and 4
+none.** Of Stage A's 80 covered strings, 65 have rate 1 and 15 do not. By word status the mean
+rate is 0.966 for every word frequent (72 of 80 at rate 1), 0.826 for a rare word, and 0.576 for
+an absent word (2 of 53 at rate 1). The rate can be fooled only where an absent abbreviation is
+spelled like a frequent prefix piece (` conv`, ` electr`, ` transf`, `err`). The rate agrees
+with the NLL ordering; token coverage did not.
+
+**Consequence.** The M3 default stays **normalized** status strings. The decision now rests on
+the NLL effect, not on the coverage count. The raw arm remains the declared ablation. Nothing
+here shows that the joint model *uses* a string. It shows that the text-only model finds
+normalized strings less surprising, and that strings with absent words stay surprising.
+
 ---
 
 ## ADR-0018 The M3 joint mixture: three named streams, a declared ratio, and budgets in tokens seen

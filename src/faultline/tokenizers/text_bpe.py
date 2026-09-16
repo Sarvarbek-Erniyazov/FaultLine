@@ -241,6 +241,7 @@ class TextBPETokenizer:
         }
         self._bytes_of: dict[int, bytes] = self._resolve_byte_sequences()
         self._chunk_cache: dict[str, list[int]] = {}
+        self._id_of_bytes: dict[bytes, int] | None = None
 
     @property
     def is_fitted(self) -> bool:
@@ -378,6 +379,37 @@ class TextBPETokenizer:
             _rank, pair = best
             symbols = _apply_merge(symbols, pair, self._merge_id[pair])
         return symbols
+
+    def decode_bytes(self, ids: list[int]) -> bytes:
+        """Decode local identifiers to their raw bytes, with no UTF-8 repair.
+
+        Args:
+            ids: Local identifiers.
+
+        Returns:
+            The concatenated byte sequences.
+        """
+        return b"".join(self._bytes_of[i] for i in ids)
+
+    def id_of_bytes(self, surface: bytes) -> int | None:
+        """The one identifier whose byte sequence is exactly ``surface``, if any.
+
+        An exact lookup, not an encoding: whether a word *is* one vocabulary entry is a
+        property of the vocabulary, and the encoder's output for that word is a separate
+        question (H3', audit entry 11).
+
+        Args:
+            surface: The bytes to look up.
+
+        Returns:
+            The identifier, or ``None`` where no entry has exactly these bytes.
+        """
+        if self._id_of_bytes is None:
+            table: dict[bytes, int] = {}
+            for token, raw in self._bytes_of.items():
+                table.setdefault(raw, token)
+            self._id_of_bytes = table
+        return self._id_of_bytes.get(surface)
 
     def decode(self, ids: list[int]) -> str:
         """Decode local identifiers back into text.

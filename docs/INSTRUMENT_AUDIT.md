@@ -183,6 +183,16 @@ what the number was taken to show.
 | regression test | Added with the replacement metric (step E1 of the M3 pre-run brief): single-token-word rate, which checks exactly whether the word's surface form exists as one vocabulary entry, and per-string NLL under the text checkpoints, which is behavioural. The test names are recorded in the note added with that commit. |
 | commit | The commit that adds this entry records the defect. The metric is replaced in the next commit (E1). |
 
+*Note added with E1, 2026-09-16.* The regression tests are
+`tests/evaluation/test_status_nll.py::test_a_word_absent_from_the_corpus_is_covered_by_tokens_and_is_not_one_token`
+(on a fitted tokenizer, ` yaw error` reads covered at the token level while its
+single-token-word rate is 0.5) and
+`tests/evaluation/test_status_nll.py::test_one_token_means_an_exact_vocabulary_entry_not_an_encoder_accident`.
+Measured on the real code book (`reports/data/h3prime_behavioural_v1_20260916.md`), the 8
+strings covered at the token level but not the word level cost **2.30 nats/byte** under S2.
+That is as much as the 176-string vocabulary-absent residual (2.26), against 1.62 for strings
+covered at both levels. The old metric put them on the covered side, and the model does not.
+
 ---
 
 ## The seven defects reported for the Gate 6 run, classified

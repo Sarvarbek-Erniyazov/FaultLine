@@ -1006,6 +1006,47 @@ def model_text_curves(
 
 
 @model_app.command(
+    "status-nll",
+    help="H3' measured behaviourally: single-token-word rate per status string, and per-string "
+    "NLL under the text-only checkpoints against held-out narrative text. No training.",
+)
+def model_status_nll(
+    tokenizer: Annotated[
+        Path, typer.Option("--tokenizer", help="The frozen text tokenizer.")
+    ] = Path("data/tokenizers/text_bpe_v1_22c56e49.json"),
+    record: Annotated[Path, typer.Option("--record", help="The text pretraining record.")] = Path(
+        "reports/data/text_pretrain_v1_20260916.json"
+    ),
+    device: Annotated[str | None, typer.Option("--device", help="Torch device.")] = None,
+) -> None:
+    """Write the behavioural H3' report.
+
+    Args:
+        tokenizer: The frozen text tokenizer file.
+        record: The ``text_pretrain_v*.json`` the text runs wrote.
+        device: Torch device; chosen automatically when omitted.
+    """
+    import torch
+
+    from faultline.evaluation.status_nll import write_behaviour_report
+
+    paths = ProjectPaths.resolve()
+    checkpoints = {
+        rung: paths.checkpoints_dir / "text" / f"{rung}_text_seed1.pt" for rung in ("S2", "S3")
+    }
+    chosen = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
+    report, json_path = write_behaviour_report(
+        paths,
+        (paths.repo_root / tokenizer).resolve(),
+        "operator_narratives",
+        checkpoints,
+        (paths.repo_root / record).resolve(),
+        chosen,
+    )
+    typer.echo(f"wrote {report} and {json_path}")
+
+
+@model_app.command(
     "mixture-shards",
     help="Write the M3 mixture's txt and tel+status shards and every stream's run index, "
     "and report per-stream token counts and per-arm token budgets. Trains nothing.",

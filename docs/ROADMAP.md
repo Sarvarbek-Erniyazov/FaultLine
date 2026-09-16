@@ -428,6 +428,17 @@ produced. The capacities are frozen (ADR-0003), so this is carried, not fixed.
 > are fixed, and chars/token goes from 4.15 to 4.82, inside the narrative 4.63-5.29. Equal to
 > the word-level 80 by count but not by set (72 shared). The residual 184 is 176
 > vocabulary-absent plus 8 below the word level (ADR-0017).
+>
+> **H3' restated, 2026-09-16 (ADR-0017 amendment).** Token-level coverage is withdrawn as
+> the metric, because it cannot fail for an absent word (INSTRUMENT_AUDIT entry 11). The "62
+> blocked by convention" decomposition is **withdrawn**: the measured change is 67 gained and
+> 5 lost, and the mechanism is the word-initial leading space (18 to 63) more than casing (18
+> to 32). H3' is now behavioural. Normalization is the treatment, and the per-string NLL
+> difference under the text-only checkpoints is the effect size: **-5.33 nats/string at S2,
+> -5.67 at S3** (`<sep>` context, 95% intervals exclude 0). The leading space alone gives
+> -3.72 and lowercase alone -1.64. Strings with an absent word stay at 2.64 nats/byte
+> normalized, against 1.26 for held-out narrative text
+> (`reports/data/h3prime_behavioural_v1_20260916.md`).
 
 *The record below is kept as it was written before the withdrawal.*
 

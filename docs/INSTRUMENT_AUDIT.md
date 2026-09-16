@@ -124,6 +124,24 @@ Each instrument has six fields:
 
 ---
 
+## 9. H3's vocabulary split was drawn at the word level, and the model reads tokens
+
+*Added 2026-09-16.* **This is the first entry where the instrument that did not measure what
+it claimed was the scientific analysis, not the code.** Every line of code involved did what
+its docstring says. What diverged was the choice of unit in the analysis that H3's test was
+built on.
+
+| field | |
+| --- | --- |
+| supposed to measure | Which status strings "share vocabulary with the narrative corpus", the split H3's test rests on: "the joint model's held-out-site advantage over the telemetry-only M1 model should be **larger** for event types whose status strings share vocabulary with the narrative corpus than for event types whose strings do not" (`docs/DECISIONS.md`, ADR-0007, H3). The mechanism H3 names is narrative pretraining, so the vocabulary that counts is what pretraining leaves the model: trained embeddings for the token ids a status string encodes to. |
+| actually measured | **Word-level overlap.** A string was on the high side when every lowercase `[a-z]+` word in it occurs at least 100 times in the training split's text (`src/faultline/data/text/vocab_overlap.py`, partition under condition C). The word rule lowercases, ignores position, and treats a word as one unit. The tokenizer does none of those things. A status string starts a line and is capitalised, so its first word encodes as a string-initial piece that prose rarely produces (`Wind` is `W` + `ind`). **Word level: 80/264 on the high side, which looked workable. Token level, what the model receives: 18/264.** Of the 80 high-side strings, **66 reach the model with at least one token id seen fewer than 100 times.** |
+| how found | Two instruments disagreed. Building the code-book card (step A1 of the M3 entry brief, `3c294c2`), token-level coverage was computed beside the word-level count, and both were printed, labelled by level, in one table: 18/264 against 80/264. The disagreement was recorded on the card as a property of string framing. It was recognised as a defect in H3's analysis only when H3 was withdrawn and its split was read against its own mechanism. H3' Stage A (`d56684a`) then measured the gap directly. |
+| reported result if undetected | **H3 would have been run as an ablation that could not answer its own question.** The narrative-pretraining ablation would have compared held-out advantage across a "high-overlap" side where 66 of 80 strings carry a token pretraining barely trained. A flat result could not separate "narrative pretraining does not transfer status meaning" from "the high side was not high for the model", and a positive result could not be attributed to shared vocabulary. The run did not happen, but for other reasons: the testability gate fired on event counts (Hill of Towie 0/693, CARE 0/45, 2 types on the training sites' high side) before any training. Had those counts cleared, nothing in the pipeline would have stopped the ablation from running on the word-level split. |
+| regression test | **No test can pin this, and that is the finding.** A test checks that code implements a rule. It cannot check that the rule is the right unit for the hypothesis. Two tests pin what can be pinned: `tests/data/text/test_code_book.py::test_card_labels_token_and_word_level_and_states_role` (both levels are always reported, and labelled), and `tests/data/text/test_status_convention.py::test_equal_counts_are_compared_as_sets` (Stage A's normalized 80 equals the word-level 80 by count but shares only 72 strings, so the two levels are compared as sets). Token-level coverage has a limit of its own: it is a floor on how often pieces were seen, not evidence that a word is known. `Yaw error` is token-covered as `Y` `aw` ` error`, and `yaw` never occurs in the corpus (ADR-0017). |
+| commit | None fixes it in code. Found in `3c294c2`; H3 withdrawn in `343e302`; measured at the token level in `d56684a`. |
+
+---
+
 ## The seven defects reported for the Gate 6 run, classified
 
 Gate 6's section 9 lists five defects and two further fixes. The seventh "fix", the
@@ -161,13 +179,21 @@ The finds came from practices, not from checks:
 - **Reading an output against what the rule implied**: entry 3 (a calibration rate
   implausible for the card) and entry 4 (a per-column table whose qualifiers were code
   sets).
-- **Two independent instruments disagreeing**: entry 8.
+- **Two independent instruments disagreeing**: entries 8 and 9.
 
 The same point applies to the tests. A regression test written after the fact pins the
 corrected definition, but it cannot say whether a new instrument measures what its brief
 says. That question is only answered by reading the instrument against the brief. Two
 entries (3 and 4) still have no regression test at all. *(2026-09-16: both now have one;
 see their rows.)*
+
+### The same shape one level up: an analysis in the wrong unit (entry 9)
+
+Entries 1 to 8 are code whose rule diverged from its brief. In entry 9 the code matched its
+brief, and the analysis diverged from the hypothesis it served: the split was measured in
+words, and the model reads tokens. This is the budget sub-pattern below, applied to the
+unit of analysis. **Measure in the unit the mechanism acts on.** For a claim about what
+pretraining gives the model, that unit is the token id, not the word.
 
 ### A sub-pattern seen twice: a budget stated in the wrong unit
 

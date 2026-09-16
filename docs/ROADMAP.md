@@ -480,7 +480,14 @@ results to phrase them against.
 
 **Work**
 
-- **Step 0 — positive-aware risk training, before any joint work.** *Not started;
+- **Step 0 — positive-aware risk training, before any joint work.** *Implemented and
+  fixture-tested 2026-09-16, NOT RUN (`configs/train/telemetry_v1.yaml`,
+  `PositiveAwareRiskStage`, `BalancedWindowSampler`, `prior_correction`). Balanced sampling
+  at a positive fraction of 0.5, not `pos_weight`: 16,524 of 749,387 stride-6 training
+  windows are positive (2.21%), so `pos_weight` would need about 725,000 windows per arm to
+  show a head 16,000 positives. Budgets are 16,000 positives seen per arm (32,000 windows).
+  The probe learning rate is 2e-3, against 5e-4 for the fine-tune and the control. The
+  provenance of every value is in the YAML. Originally "not started";
   recorded 2026-09-13 from the M1e re-reading above, which left H1 UNTESTED and the
   pretraining ablation INCONCLUSIVE because no risk arm trained on enough positives to
   say otherwise.* Three changes, all pre-registered here rather than chosen once numbers

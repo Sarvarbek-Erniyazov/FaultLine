@@ -214,6 +214,143 @@ class RiskStage(StrictModel):
         return self
 
 
+class PositiveBudget(StrictModel):
+    """A risk run's budget in positives seen, not in windows or steps (M3 step 0).
+
+    M1e budgeted its risk runs in windows: 40,000 windows at the natural base rate bought
+    882 positives, and 49% of optimiser steps carried none. A budget in windows hides that
+    number and a budget in positives cannot, so the positive target is what the file
+    states. The window count is derived from it and from the declared positive fraction,
+    and both go in the run record.
+
+    Attributes:
+        positives: Positive windows the run is to see, counting repeats.
+        batch_windows: Windows per forward pass.
+        accumulate: Forward passes per optimiser step.
+        learning_rate: Peak learning rate, fixed per arm before the runs.
+        evaluations: How many times the run stops to measure validation.
+    """
+
+    positives: int = Field(gt=0)
+    batch_windows: int = Field(gt=0)
+    accumulate: int = Field(default=1, gt=0)
+    learning_rate: float = Field(gt=0.0)
+    evaluations: int = Field(default=10, gt=0)
+
+    def positives_per_batch(self, positive_fraction: float) -> int:
+        """Positive windows in every forward pass, exactly.
+
+        Args:
+            positive_fraction: The declared share of each batch that is positive.
+
+        Returns:
+            The whole number of positives per batch.
+        """
+        return round(positive_fraction * self.batch_windows)
+
+    def to_budget(self, positive_fraction: float) -> Budget:
+        """The window budget the training loop is handed.
+
+        Every step carries exactly ``positives_per_batch * accumulate`` positives, so the
+        step count is the positive target over that, rounded up: the run sees at least
+        the target and less than one step more.
+
+        Args:
+            positive_fraction: The declared share of each batch that is positive.
+
+        Returns:
+            The equivalent window budget.
+        """
+        per_step = self.positives_per_batch(positive_fraction) * self.accumulate
+        steps = -(-self.positives // per_step)
+        return Budget(
+            windows=steps * self.batch_windows * self.accumulate,
+            batch_windows=self.batch_windows,
+            accumulate=self.accumulate,
+            learning_rate=self.learning_rate,
+            evaluations=self.evaluations,
+        )
+
+
+class PositiveAwareRiskStage(StrictModel):
+    """The three risk runs under M3 step 0's pre-registered remedy.
+
+    Three changes against :class:`RiskStage`, each recorded in ``docs/ROADMAP.md`` (M3,
+    step 0) before any run:
+
+    * **Balanced sampling**, not a loss weight. Every training batch holds a declared share
+      of positive windows, and the loss is unweighted because the positives are already in
+      the batch. Scores are brought back to the natural base rate by
+      :func:`faultline.model.risk.prior_correction` wherever a calibrated probability is
+      read; a ranking metric (AUPRC) is unchanged by that constant logit shift.
+    * **The budget is in positives seen** (:class:`PositiveBudget`).
+    * **The frozen probe has its own learning rate.** M1e shared one rate across the three
+      arms and reported the cost as limitation (a); this stage refuses a probe rate equal
+      to the fine-tune rate. The random control still matches the fine-tune in everything
+      but initialisation.
+
+    Attributes:
+        label: The window-index column the head is trained and selected on.
+        sampling: How positives reach the head. Only ``balanced`` is implemented.
+        positive_fraction: The share of each training batch that is positive.
+        probe: The frozen-backbone run's budget.
+        finetune: The unfrozen run's budget.
+        random: The randomly initialised control's budget.
+    """
+
+    label: str = "narrow_within_24h"
+    sampling: Literal["balanced"]
+    positive_fraction: float = Field(gt=0.0, lt=1.0)
+    probe: PositiveBudget
+    finetune: PositiveBudget
+    random: PositiveBudget
+
+    @model_validator(mode="after")
+    def _readable(self) -> PositiveAwareRiskStage:
+        """Refuse a stage whose arms could not be compared as pre-registered.
+
+        Raises:
+            ValueError: If a batch cannot hold a whole, non-zero number of positives and
+                negatives at the declared fraction; if the control differs from the
+                fine-tune in anything but initialisation; or if the probe shares the
+                fine-tune learning rate.
+        """
+        for name in ("probe", "finetune", "random"):
+            arm: PositiveBudget = getattr(self, name)
+            exact = self.positive_fraction * arm.batch_windows
+            if abs(exact - round(exact)) > 1e-9 or not 0 < round(exact) < arm.batch_windows:
+                raise ValueError(
+                    f"{name}: positive_fraction {self.positive_fraction} of "
+                    f"{arm.batch_windows} windows is not a whole number of positives with "
+                    "at least one negative beside it"
+                )
+        same = ("positives", "batch_windows", "accumulate", "learning_rate")
+        differing = [f for f in same if getattr(self.random, f) != getattr(self.finetune, f)]
+        if differing:
+            raise ValueError(
+                f"the random-initialisation control differs from finetune in {differing}; "
+                "it is the control for that run and must differ only in initialisation"
+            )
+        if self.probe.learning_rate == self.finetune.learning_rate:
+            raise ValueError(
+                "the frozen probe shares the fine-tune learning rate; M3 step 0 gives the "
+                "probe its own, declared before the runs"
+            )
+        return self
+
+    def budget(self, kind: RunKind) -> Budget:
+        """The window budget one risk arm is handed.
+
+        Args:
+            kind: ``probe``, ``finetune`` or ``random``.
+
+        Returns:
+            Its window budget, derived from its positive target.
+        """
+        arm: PositiveBudget = getattr(self, kind)
+        return arm.to_budget(self.positive_fraction)
+
+
 class Evaluation(StrictModel):
     """How the trained models are scored, and on how much.
 
@@ -254,7 +391,8 @@ class LadderConfig(StrictModel):
         runs: Which of the four runs the ladder makes.
         optimiser: The optimiser and schedule.
         lm: The language-modelling budget.
-        risk: The three risk runs.
+        risk: The three risk runs: M1e's window-budgeted stage, or M3 step 0's
+            positive-aware one.
         evaluation: How the trained models are scored.
         notes: Free text printed at the end of the report.
     """
@@ -266,7 +404,7 @@ class LadderConfig(StrictModel):
     runs: list[RunKind] = Field(default_factory=lambda: list(RUN_KINDS))
     optimiser: Optimiser = Field(default_factory=Optimiser)
     lm: Budget
-    risk: RiskStage
+    risk: RiskStage | PositiveAwareRiskStage
     evaluation: Evaluation
     notes: str = ""
 
@@ -302,8 +440,11 @@ class LadderConfig(StrictModel):
         Returns:
             Its budget.
         """
+        if kind == "lm":
+            return self.lm
+        if isinstance(self.risk, PositiveAwareRiskStage):
+            return self.risk.budget(kind)
         return {
-            "lm": self.lm,
             "probe": self.risk.probe,
             "finetune": self.risk.finetune,
             "random": self.risk.random,

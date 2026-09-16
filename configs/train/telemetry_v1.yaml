@@ -1,0 +1,116 @@
+# Training the telemetry ladder, version 1 (M3 step 0). POSITIVE-AWARE RISK TRAINING.
+#
+# telemetry_v0.yaml is frozen: M1e's runs read it, and its report names its hash. This file
+# changes the three risk runs and nothing else. The language model, the stride, the
+# optimiser and the evaluation are copied from v0 unchanged, so any difference between a
+# v0 and a v1 risk arm is the risk stage's.
+#
+# WHY. M1e's risk arms were budgeted in windows at the natural base rate: 40,000 windows
+# bought 882 positives, 49% of optimiser steps carried none, and the random control sat
+# pinned at the prior (docs/ROADMAP.md, M1 results; docs/INSTRUMENT_AUDIT.md, "a budget
+# stated in the wrong unit"). H1 went UNTESTED and the pretraining ablation INCONCLUSIVE for
+# that reason. docs/ROADMAP.md M3 step 0 pre-registered three changes, and this file makes
+# them, with every value fixed here before any run:
+#
+#   1. BALANCED SAMPLING, NOT pos_weight. Declared: `sampling: balanced`.
+#      Measured on 2026-09-16 from the window index of quantile_bins_v2_9cd52b65 at
+#      train_stride 6 (index read only, no training): 749,387 admissible labelled training
+#      windows, 16,524 positive (2.21%; Kelmarsh 3,907 of 247,463 = 1.58%, Penmanshiel
+#      12,617 of 501,924 = 2.51%).
+#      - pos_weight keeps the natural rate, so the head still sees 2.2 positives per 100
+#        windows. Seeing 16,000 positives would take about 725,000 windows per arm, 18x
+#        M1e's 40,000, and about half of all steps would still carry no positive.
+#      - Balanced sampling puts a fixed number of positives in every batch. 16,000
+#        positives cost 32,000 windows at a positive fraction of 0.5, below M1e's per-arm
+#        compute, and no step is without a positive.
+#      - What it costs: the head learns a 50% prior. Scores are shifted back to the natural
+#        rate by a constant logit offset (faultline.model.risk.prior_correction) before any
+#        loss or calibration is read. AUPRC, a ranking metric, is unchanged by that shift.
+#        The loss is not reweighted as well: positive_weight does not exist in this stage.
+#
+#   2. THE BUDGET IS IN POSITIVES SEEN. `positives` is the stated quantity. Windows and
+#      steps are derived (PositiveBudget.to_budget): 8 positives per batch of 16, 2 batches
+#      a step, so 16 positives a step and 1,000 steps = 32,000 windows per arm.
+#      16,000 is below the 16,524 distinct positive windows, so each is drawn at most once
+#      (0.97 passes over the positives, without replacement inside a pass). The target is
+#      the distinct count rounded down to a whole thousand. It was not tuned.
+#      Positives are clustered in time: one event labels every window whose 24-hour
+#      horizon reaches it. 16,000 positive windows are therefore far fewer independent
+#      events, and the run record says so rather than implying 16,000 examples.
+#
+#   3. THE FROZEN PROBE HAS ITS OWN LEARNING RATE. M1e shared 5e-4 across the three arms
+#      and carried the cost as limitation (a): a frozen head usually wants a higher rate.
+#      Fixed here, not tuned: the probe runs at 2e-3, four times the fine-tune rate. It
+#      trains only the one-hidden-layer head on a fixed representation, where 1e-3 to 3e-3
+#      is the usual AdamW range for a freshly initialised layer. The fine-tune and the
+#      random control keep v0's 5e-4, and the control still matches the fine-tune in
+#      everything but initialisation. The stage refuses to load if the probe's rate equals
+#      the fine-tune's.
+#
+# DONE WHEN (docs/ROADMAP.md, M3 step 0): the random control moves off the prior, measured.
+# No run of this file may report a validation AUPRC series pinned at the selection
+# subsample's base rate. Until one exists, H1 stays UNTESTED. This file does not run
+# anything by itself, and no run of it was made when it was written.
+
+version: 1
+tokenizer_config: "configs/tokenizer/quantile_bins_v2.yaml"
+model_config_path: "configs/model/ladder_v0.yaml"
+
+train_stride: 6
+runs: [lm, probe, finetune, random]
+
+optimiser:
+  weight_decay: 0.1
+  beta1: 0.9
+  beta2: 0.95
+  warmup_fraction: 0.02
+  grad_clip: 1.0
+  precision: bf16
+
+# Unchanged from v0.
+lm:
+  windows: 80000
+  batch_windows: 16
+  accumulate: 2
+  learning_rate: 0.0006
+  evaluations: 6
+
+risk:
+  label: "narrow_within_24h"
+  sampling: balanced
+  # 0.5: a balanced batch, 8 positives and 8 negatives of 16. See point 1 above.
+  positive_fraction: 0.5
+  probe:
+    positives: 16000
+    batch_windows: 16
+    accumulate: 2
+    learning_rate: 0.002 # point 3: the probe's own rate, 4x the fine-tune's
+    evaluations: 6
+  finetune:
+    positives: 16000
+    batch_windows: 16
+    accumulate: 2
+    learning_rate: 0.0005 # v0's rate, unchanged
+    evaluations: 6
+  random:
+    positives: 16000
+    batch_windows: 16
+    accumulate: 2
+    learning_rate: 0.0005 # must equal finetune's; the stage refuses otherwise
+    evaluations: 6
+
+# Unchanged from v0.
+evaluation:
+  stride: 1
+  selection_windows: 3000
+  validation_windows: 15000
+  test_windows: 12000
+  seed: 20260912
+  batch_windows: 32
+
+notes: >-
+  M3 step 0. Balanced sampling at a positive fraction of 0.5, budgets of 16,000 positives
+  seen per risk arm (32,000 windows), and a frozen-probe learning rate of 2e-3 against 5e-4
+  for the fine-tune and the control, all fixed before any run. Scores are read at the
+  natural base rate through a constant logit offset; AUPRC is unaffected by it. Positive
+  windows are clustered in time, so 16,000 positives are fewer independent events.

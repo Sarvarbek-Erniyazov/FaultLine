@@ -346,3 +346,113 @@ class WindowSampler:
             yield from self.epoch(generator)
             passes += 1
             logger.debug("sampler completed pass %d", passes)
+
+
+class BalancedWindowSampler(WindowSampler):
+    """Training batches holding a fixed number of positive windows (M3 step 0).
+
+    At the natural base rate (2.2% of training windows at stride 6) a 32-window step
+    carries no positive about half the time, which is how M1e's risk arms trained on 882
+    positives. This sampler puts exactly ``positives_per_batch`` positives in every batch
+    and fills the rest with negatives. Positives and negatives are each drawn by shuffled
+    passes over their own rows, without replacement inside a pass, so every positive is
+    seen once before any is seen twice. Within a batch the order is shuffled, so position
+    says nothing about the label.
+
+    It is a training sampler only. Evaluation reads the natural rate, so :meth:`epoch` is
+    refused rather than quietly yielding a different distribution.
+
+    Attributes:
+        positives_per_batch: Positive windows in every batch.
+        positives_seen: Positive windows drawn so far, counting repeats.
+        positive_rows: Positive windows available.
+        natural_rate: The share of positive windows in the sets, the rate a prior
+            correction maps scores back to.
+    """
+
+    def __init__(
+        self,
+        sets: Sequence[WindowSet],
+        batch_size: int,
+        positives_per_batch: int,
+        tokens_per_step: int,
+        context_steps: int,
+    ) -> None:
+        """Build the sampler.
+
+        Args:
+            sets: The labelled shards to draw from.
+            batch_size: Windows per batch.
+            positives_per_batch: Positive windows in every batch.
+            tokens_per_step: Tokens a grid step contributes, from the manifest.
+            context_steps: Steps in a window, from the manifest.
+
+        Raises:
+            ValueError: If a batch could not hold at least one positive and one negative,
+                or the sets hold no positive or no negative window.
+        """
+        super().__init__(sets, batch_size, tokens_per_step, context_steps, labelled=True)
+        if not 0 < positives_per_batch < batch_size:
+            raise ValueError(
+                f"positives_per_batch {positives_per_batch} must leave a positive and a "
+                f"negative in a batch of {batch_size}"
+            )
+        self.positives_per_batch = positives_per_batch
+        labels = np.array(
+            [self.sets[int(which)].labels[int(row)] for which, row in self._index],
+            dtype=np.float32,
+        )
+        positive = labels > 0.5
+        self._positives = self._index[positive]
+        self._negatives = self._index[~positive]
+        if not self._positives.shape[0] or not self._negatives.shape[0]:
+            raise ValueError(
+                f"balanced sampling needs both classes: {self._positives.shape[0]} positive "
+                f"and {self._negatives.shape[0]} negative windows"
+            )
+        self.positives_seen = 0
+
+    @property
+    def positive_rows(self) -> int:
+        """Positive windows available."""
+        return int(self._positives.shape[0])
+
+    @property
+    def natural_rate(self) -> float:
+        """The share of positive windows in the sets."""
+        return self.positive_rows / self.windows
+
+    def epoch(self, generator: np.random.Generator | None = None) -> Iterator[Batch]:
+        """Refused: a balanced sampler has no natural pass, and evaluation must not use one.
+
+        Raises:
+            TypeError: Always.
+        """
+        raise TypeError("a balanced sampler is for training; evaluate at the natural rate")
+
+    @staticmethod
+    def _stream(rows: np.ndarray, generator: np.random.Generator) -> Iterator[np.ndarray]:
+        """Rows one at a time, in shuffled passes without replacement inside a pass."""
+        while True:
+            yield from rows[generator.permutation(rows.shape[0])]
+
+    def forever(self, seed: int) -> Iterator[Batch]:
+        """Iterate balanced batches without end.
+
+        Args:
+            seed: Seed of the sampling generator.
+
+        Yields:
+            Batches with exactly ``positives_per_batch`` positive windows each.
+        """
+        generator = np.random.default_rng(seed)
+        positives = self._stream(self._positives, generator)
+        negatives = self._stream(self._negatives, generator)
+        negatives_per_batch = self.batch_size - self.positives_per_batch
+        while True:
+            rows = np.stack(
+                [next(positives) for _ in range(self.positives_per_batch)]
+                + [next(negatives) for _ in range(negatives_per_batch)]
+            )
+            self.positives_seen += self.positives_per_batch
+            yield self._gather(rows[generator.permutation(rows.shape[0])])

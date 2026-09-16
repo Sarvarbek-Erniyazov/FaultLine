@@ -18,6 +18,7 @@ be called a probe.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import cast
 
@@ -149,3 +150,32 @@ class RiskModel(nn.Module):
         logits = self(tokens).float()
         weight = torch.as_tensor(positive_weight, device=logits.device, dtype=logits.dtype)
         return F.binary_cross_entropy_with_logits(logits, labels.float(), pos_weight=weight)
+
+
+def prior_correction(train_rate: float, natural_rate: float) -> float:
+    """The logit offset that maps a score trained at one base rate back to another.
+
+    A head trained on batches that are ``train_rate`` positive learns that prior. Under
+    the usual label-shift assumption (the windows given a label are the same, only the mix
+    changes), adding ``logit(natural_rate) - logit(train_rate)`` to its logits gives the
+    score a head trained at ``natural_rate`` would give. The offset is one constant, so
+    any ranking metric, AUPRC included, is unchanged by it. Loss and calibration are not.
+
+    Args:
+        train_rate: The positive share of the training batches.
+        natural_rate: The positive share the scores are to be read at.
+
+    Returns:
+        The offset to add to every logit.
+
+    Raises:
+        ValueError: If either rate is not strictly between 0 and 1.
+    """
+    for name, rate in (("train_rate", train_rate), ("natural_rate", natural_rate)):
+        if not 0.0 < rate < 1.0:
+            raise ValueError(f"{name} must be strictly between 0 and 1, got {rate}")
+
+    def logit(rate: float) -> float:
+        return math.log(rate / (1.0 - rate))
+
+    return logit(natural_rate) - logit(train_rate)

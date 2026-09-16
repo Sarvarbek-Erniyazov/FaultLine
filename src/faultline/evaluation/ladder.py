@@ -39,19 +39,32 @@ from faultline.data.telemetry.bins import QuantileBinsConfig
 from faultline.data.telemetry.shards import shards_dir, tokenizer_path
 from faultline.evaluation.metrics import RiskScore, score_source
 from faultline.logging_utils import get_logger
-from faultline.model.risk import RiskModel, RiskSpec
+from faultline.model.risk import RiskModel, RiskSpec, prior_correction
 from faultline.model.transformer import TelemetryDecoder
 from faultline.paths import ProjectPaths
 from faultline.runs import git_sha
 from faultline.seed import seed_everything
-from faultline.training.config import SELECTION, LadderConfig, LadderModel, Rung, RunKind
+from faultline.training.config import (
+    SELECTION,
+    LadderConfig,
+    LadderModel,
+    PositiveAwareRiskStage,
+    Rung,
+    RunKind,
+)
 from faultline.training.loop import (
     Measurement,
     language_model_loss,
     risk_logits,
     train,
 )
-from faultline.training.windows import ShardSet, WindowSampler, WindowSet, load_windows
+from faultline.training.windows import (
+    BalancedWindowSampler,
+    ShardSet,
+    WindowSampler,
+    WindowSet,
+    load_windows,
+)
 
 logger = get_logger(__name__)
 
@@ -135,6 +148,10 @@ class RunRecord:
         test_years: Per source and calendar year, the same, for a held-out site.
         lm_loss: Per split and source, next-token loss; empty for a risk run.
         checkpoint: Where the selected parameters were written.
+        positives_seen: Positive training windows drawn, counting repeats, where the
+            sampler counts them exactly (balanced sampling); ``None`` otherwise.
+        prior_offset: The logit offset added to every score so it reads at the natural
+            base rate; 0.0 for a run trained at that rate.
     """
 
     kind: RunKind
@@ -153,6 +170,8 @@ class RunRecord:
     test_years: list[tuple[str, int, RiskScore]] = field(default_factory=list)
     lm_loss: dict[str, float] = field(default_factory=dict)
     checkpoint: str = ""
+    positives_seen: int | None = None
+    prior_offset: float = 0.0
 
     @property
     def key(self) -> str:
@@ -237,7 +256,11 @@ def build_split(
 
 
 def score_split(
-    module: nn.Module, split: SplitEval, device: torch.device, autocast_on: bool
+    module: nn.Module,
+    split: SplitEval,
+    device: torch.device,
+    autocast_on: bool,
+    logit_offset: float = 0.0,
 ) -> tuple[list[RiskScore], list[tuple[str, int, RiskScore]]]:
     """Score every window of a split, per source and per source-year.
 
@@ -246,11 +269,13 @@ def score_split(
         split: The windows.
         device: Where the model lives.
         autocast_on: Whether to run the pass in bfloat16.
+        logit_offset: Added to every logit, the prior correction of a balanced run.
 
     Returns:
         One score per source, and one per source and calendar year.
     """
     logits, labels, which = risk_logits(module, split.sampler, device, autocast_on)
+    logits = logits + logit_offset
     per_source: list[RiskScore] = []
     per_year: list[tuple[str, int, RiskScore]] = []
     for index, source in enumerate(split.sources):
@@ -335,6 +360,33 @@ def training_sampler(
     )
 
 
+def balanced_training_sampler(
+    shards: ShardSet, config: LadderConfig, stage: PositiveAwareRiskStage, batch_windows: int
+) -> BalancedWindowSampler:
+    """Open the labelled training windows for balanced sampling.
+
+    Args:
+        shards: The shard set.
+        config: The ladder configuration, for the training stride.
+        stage: The positive-aware stage, for the label and the positive fraction.
+        batch_windows: Windows per forward pass.
+
+    Returns:
+        A sampler putting a fixed number of positives in every batch.
+    """
+    sets = [
+        load_windows(shards, key, stride=config.train_stride, label=stage.label)
+        for key in shards.keys("train")
+    ]
+    return BalancedWindowSampler(
+        [s for s in sets if len(s)],
+        batch_size=batch_windows,
+        positives_per_batch=round(stage.positive_fraction * batch_windows),
+        tokens_per_step=shards.tokens_per_step,
+        context_steps=shards.context_steps,
+    )
+
+
 def run_one(
     kind: RunKind,
     rung: Rung,
@@ -376,6 +428,7 @@ def run_one(
     label = f"{rung.name}/{kind}/seed{seed}"
 
     module: nn.Module
+    offset = 0.0
     if kind == "lm":
         module = TelemetryDecoder(spec).to(device)
         counts = module.parameter_counts()
@@ -402,15 +455,23 @@ def run_one(
             model.backbone.load_state_dict({k: v.to(device) for k, v in backbone_state.items()})
         module = model
         counts = model.backbone.parameter_counts()
-        sampler = training_sampler(shards, config, config.risk.label, budget.batch_windows)
-        weight = config.risk.positive_weight
+        if isinstance(config.risk, PositiveAwareRiskStage):
+            # the positives are in the batch, so the loss is not reweighted as well
+            sampler = balanced_training_sampler(shards, config, config.risk, budget.batch_windows)
+            weight = 1.0
+            offset = prior_correction(
+                sampler.positives_per_batch / budget.batch_windows, sampler.natural_rate
+            )
+        else:
+            sampler = training_sampler(shards, config, config.risk.label, budget.batch_windows)
+            weight = config.risk.positive_weight
 
         def loss_fn(model: nn.Module, tokens: Tensor, labels: Tensor) -> Tensor:
             return cast(Tensor, model.loss(tokens, labels, weight))  # type: ignore[operator]
 
         def measure(model: nn.Module) -> Measurement:
             logits, labels, _ = risk_logits(model, selection.sampler, device, autocast_on)
-            scored = score_source("validation", logits, labels, math.nan)
+            scored = score_source("validation", logits + offset, labels, math.nan)
             return Measurement(
                 step=0,
                 windows=0,
@@ -449,6 +510,10 @@ def run_one(
         tokens=result.tokens,
         train_loss=result.final_train_loss,
         checkpoint=destination.name,
+        positives_seen=(
+            sampler.positives_seen if isinstance(sampler, BalancedWindowSampler) else None
+        ),
+        prior_offset=offset,
     )
     return record, result.state
 
@@ -489,9 +554,11 @@ def score_record(
     scorer = RiskModel(spec, risk, frozen=False).to(device)
     scorer.load_state_dict({k: v.to(device) for k, v in state.items()})
     scorer.eval()
-    record.validation, _ = score_split(scorer, validation, device, autocast_on)
+    record.validation, _ = score_split(scorer, validation, device, autocast_on, record.prior_offset)
     if test is not None:
-        record.test, record.test_years = score_split(scorer, test, device, autocast_on)
+        record.test, record.test_years = score_split(
+            scorer, test, device, autocast_on, record.prior_offset
+        )
 
 
 # =====================================================================================

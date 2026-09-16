@@ -3110,3 +3110,27 @@ both sides probed through the §b design:
 **On FAIL, §c is registered next** (a two-layer MLP probe on the same pooled states). **On PASS,
 §b is the probe for every arm.** A new version of the C0 configuration then records it, because
 `telemetry_v1.yaml` is frozen.
+
+### §b result, 2026-09-16 -- FAIL: mean pooling does not separate the trained backbone either
+
+§b was registered in **`04af42f`**, before `configs/train/probe_control_v1.yaml` (hash 1a56b74f), the
+pooling option in `RiskSpec` or any run of them (`reports/data/probe_control_v1_20260916.md`,
+git_sha `04af42f`). All four backbones were probed through the mean-pooled design, which took 0.36
+GPU-hours.
+
+| backbone | pooled Kelmarsh + Penmanshiel AUPRC | 95% block interval (decides) | Hill of Towie AUPRC | 95% block interval (reported) | selected validation AUPRC |
+| --- | --- | --- | --- | --- | --- |
+| **full-budget `tel_only`, seed 1** | **0.0542** | **[0.0463, 0.0641]** | 0.0360 | [0.0299, 0.0451] | 0.0352 at step 166 |
+| random init, seed 1 | 0.0515 | [0.0424, 0.0661] | 0.0347 | [0.0295, 0.0414] | 0.0223 at step 996 |
+| random init, seed 2 | 0.0510 | [0.0429, 0.0619] | 0.0358 | [0.0302, 0.0448] | 0.0257 at step 996 |
+| random init, seed 3 | 0.0472 | [0.0402, 0.0562] | 0.0379 | [0.0305, 0.0517] | 0.0255 at step 498 |
+
+**Verdict: FAIL. The trained lower bound, 0.0463, is not above the highest random-init upper bound,
+0.0661 (seed 1).** It is not above any of the three random-init upper bounds. §c is registered
+next.
+
+Recorded, deciding nothing. Mean pooling raised the pooled AUPRC of **both** sides: trained from
+0.0502 to 0.0542, random init from 0.0401-0.0428 to 0.0472-0.0515. It narrowed the gap between
+them. At the point estimate, the trained backbone is now 0.0027 above the best random-init
+backbone, against 0.0074 under §a. Across all four backbones, Hill of Towie scores sit between
+0.0347 and 0.0379, against a base rate of 0.03325.

@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import cast
+from typing import Literal, cast
 
 import torch
 import torch.nn.functional as F
@@ -37,11 +37,14 @@ class RiskSpec:
         hidden: Width of the head's single hidden layer, as a multiple of ``d_model``.
         dropout: Dropout before the output projection.
         label: The window-index column the head is trained on, for the record.
+        pooling: What the head reads: the final position's hidden state (``last``, every probe
+            before ADR-0023 §b), or the mean over every position of the window (``mean``, §b).
     """
 
     hidden: float = 1.0
     dropout: float = 0.0
     label: str = "narrow_within_24h"
+    pooling: Literal["last", "mean"] = "last"
 
 
 class RiskHead(nn.Module):
@@ -94,6 +97,7 @@ class RiskModel(nn.Module):
         backbone: The telemetry decoder.
         head: The risk head.
         frozen: Whether the backbone's parameters are held fixed.
+        pooling: What the head reads, from the head's specification.
     """
 
     def __init__(self, spec: ModelSpec, risk: RiskSpec, frozen: bool, fused: bool = True) -> None:
@@ -109,6 +113,7 @@ class RiskModel(nn.Module):
         self.backbone = TelemetryDecoder(spec, fused=fused)
         self.head = RiskHead(spec.d_model, risk)
         self.frozen = frozen
+        self.pooling = risk.pooling
         if frozen:
             for parameter in self.backbone.parameters():
                 parameter.requires_grad_(False)
@@ -132,7 +137,8 @@ class RiskModel(nn.Module):
             hidden = hidden.detach()
         else:
             hidden = self.backbone(tokens)
-        return cast(Tensor, self.head(hidden[:, -1]))
+        pooled = hidden.mean(dim=1) if self.pooling == "mean" else hidden[:, -1]
+        return cast(Tensor, self.head(pooled))
 
     def loss(self, tokens: Tensor, labels: Tensor, positive_weight: float = 1.0) -> Tensor:
         """Binary cross entropy of the risk logits against the horizon labels.

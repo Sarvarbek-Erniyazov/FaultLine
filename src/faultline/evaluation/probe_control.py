@@ -12,8 +12,9 @@ Kelmarsh + Penmanshiel test windows, with ADR-0021's block bootstrap, the traine
 interval must lie entirely above the random-init interval: its lower bound strictly above the
 upper bound of **every** random-init seed. Hill of Towie is reported and does not decide.
 
-The trained side is the registered gate run as scored, read from its saved test scores. Nothing
-about it is re-run here.
+Under §a (the final position) the trained side is the registered gate run as scored, read from its
+saved test scores. Under a redesigned probe (§b onward), both sides are probed through the design:
+the gate run's saved backbone with its seed, and the untrained backbones with theirs.
 """
 
 from __future__ import annotations
@@ -34,12 +35,15 @@ from faultline.data.common.report import kv_table, section, table
 from faultline.evaluation.bootstrap import AuprcInterval, bootstrap_auprc, window_blocks
 from faultline.evaluation.gate_check import BootstrapConfig, GateCheckConfig, save_scores
 from faultline.evaluation.metrics import average_precision
-from faultline.evaluation.variance_probe import open_probe_inputs, probe_and_score
+from faultline.evaluation.variance_probe import ProbeInputs, open_probe_inputs, probe_and_score
 from faultline.logging_utils import get_logger
 from faultline.paths import ProjectPaths
 from faultline.runs import git_sha
 
 logger = get_logger(__name__)
+
+#: What the head reads under each registered design (ADR-0023: §a the final position, §b the mean).
+POOLING: dict[str, Literal["last", "mean"]] = {"final_position": "last", "mean_pooled": "mean"}
 
 
 class ProbeControlConfig(StrictModel):
@@ -55,7 +59,7 @@ class ProbeControlConfig(StrictModel):
 
     version: int = 0
     gate_config: str
-    design: Literal["final_position"]
+    design: Literal["final_position", "mean_pooled"]
     init_seeds: list[int] = Field(min_length=1)
     pooled_sources: list[str] = Field(min_length=1)
 
@@ -247,28 +251,18 @@ def run_probe_control(
     config = load_config(config_path, ProbeControlConfig)
     gate_path = paths.repo_root / config.gate_config
     gate = load_config(gate_path, GateCheckConfig)
-    trained_path = trained_scores_path(paths, gate)
-    if not trained_path.exists():
-        raise FileNotFoundError(f"the gate run's test scores are missing: {trained_path}")
-    trained = ScoredWindows.load(trained_path)
-
     digest = config_hash(config)
     out_dir = paths.checkpoints_dir / f"probe_control_v{config.version}_{digest}"
     out_dir.mkdir(parents=True, exist_ok=True)
     log_dir = paths.data_reports_dir / f"probe_control_v{config.version}_steps"
+    pooling = POOLING[config.design]
     started = time.perf_counter()
-    inputs = None
-    runs: dict[int, dict[str, Any]] = {}
-    scored: dict[int, ScoredWindows] = {}
-    for seed in config.init_seeds:
-        name = f"{gate.rung}_random_seed{seed}"
-        scores_file = out_dir / f"{name}_test_scores.npz"
-        record_file = out_dir / f"{name}_probe.json"
-        if scores_file.exists() and record_file.exists():
-            logger.info("%s already scored, reading %s", name, scores_file)
-        else:
-            if inputs is None:
-                inputs = open_probe_inputs(
+    opened: list[ProbeInputs] = []
+
+    def inputs() -> ProbeInputs:
+        if not opened:
+            opened.append(
+                open_probe_inputs(
                     paths,
                     gate.mixture_config,
                     gate.ladder_config,
@@ -278,19 +272,32 @@ def run_probe_control(
                     gate.held_out_source,
                     device_name,
                 )
-            logger.info("=== random-init control %s ===", name)
+            )
+        return opened[0]
+
+    def probed(name: str, seed: int, checkpoint: Path | None) -> tuple[dict[str, Any], Path]:
+        scores_file = out_dir / f"{name}_test_scores.npz"
+        record_file = out_dir / f"{name}_probe.json"
+        if scores_file.exists() and record_file.exists():
+            logger.info("%s already scored, reading %s", name, scores_file)
+        else:
+            logger.info("=== probe control %s, design %s ===", name, config.design)
+            opened_inputs = inputs()
             probe = probe_and_score(
                 seed,
-                None,
-                inputs,
+                checkpoint,
+                opened_inputs,
                 gate.held_out_source,
                 log_dir / f"{name}_probe.steps.csv",
-                f"{gate.rung}/random/seed{seed}/probe",
+                f"{name}/probe",
                 save_to=out_dir / f"{name}_probe.pt",
+                pooling=pooling,
             )
-            save_scores(scores_file, probe, inputs.splits["test"])
+            save_scores(scores_file, probe, opened_inputs.splits["test"])
             probe_record = {
                 "seed": seed,
+                "backbone": None if checkpoint is None else _relative(checkpoint, paths),
+                "design": config.design,
                 "positives_seen": probe.probe_positives_seen,
                 "seconds": probe.probe_seconds,
                 "selected": list(probe.probe_selected),
@@ -302,7 +309,29 @@ def run_probe_control(
                 "step_log": _relative(probe.step_log, paths),
             }
             record_file.write_text(json.dumps(probe_record, indent=1) + "\n", encoding="utf-8")
-        runs[seed] = json.loads(record_file.read_text(encoding="utf-8"))
+        return json.loads(record_file.read_text(encoding="utf-8")), scores_file
+
+    backbone = trained_scores_path(paths, gate).with_name(
+        f"{gate.rung}_{gate.arm}_seed{gate.seed}.pt"
+    )
+    if config.design == "final_position":
+        # §a: the registered gate run as scored, not re-run.
+        trained_path = trained_scores_path(paths, gate)
+        if not trained_path.exists():
+            raise FileNotFoundError(f"the gate run's test scores are missing: {trained_path}")
+        trained_run: dict[str, Any] = {"seed": gate.seed, "selected": list(_gate_selected(paths))}
+    else:
+        if not backbone.exists():
+            raise FileNotFoundError(f"the gate run's backbone is missing: {backbone}")
+        trained_run, trained_path = probed(
+            f"{gate.rung}_trained_seed{gate.seed}", gate.seed, backbone
+        )
+    trained = ScoredWindows.load(trained_path)
+    runs: dict[int, dict[str, Any]] = {}
+    scored: dict[int, ScoredWindows] = {}
+    for seed in config.init_seeds:
+        name = f"{gate.rung}_random_seed{seed}"
+        runs[seed], scores_file = probed(name, seed, None)
         scored[seed] = ScoredWindows.load(scores_file)
         if not scored[seed].same_windows(trained):
             raise ValueError(f"{name} was scored on other windows than the trained backbone")
@@ -333,6 +362,7 @@ def run_probe_control(
             gate,
             trained_path,
             rows,
+            trained_run,
             runs,
             verdict,
             gpu_seconds,
@@ -360,11 +390,21 @@ def run_probe_control(
             }
             for row in rows
         ],
+        "trained_probe": trained_run,
         "random_probes": [runs[seed] for seed in config.init_seeds],
     }
     record.write_text(json.dumps(payload, indent=1) + "\n", encoding="utf-8", newline="\n")
     logger.info("wrote %s and %s", report, record)
     return report, record
+
+
+def _gate_selected(paths: ProjectPaths) -> tuple[int, float]:
+    """The gate run's selected probe step and validation AUPRC, from its newest record."""
+    found = sorted(paths.data_reports_dir.glob("gate_check_v0_[0-9]*.json"))
+    if not found:
+        raise FileNotFoundError("no gate_check_v0_<date>.json record")
+    step, value = json.loads(found[-1].read_text(encoding="utf-8"))["probe"]["selected"]
+    return int(step), float(value)
 
 
 def _backbone_row(
@@ -407,6 +447,7 @@ def render_control_report(
     gate: GateCheckConfig,
     trained_path: Path,
     rows: list[dict[str, Any]],
+    trained_run: dict[str, Any],
     runs: dict[int, dict[str, Any]],
     verdict: ControlVerdict,
     gpu_seconds: float,
@@ -421,6 +462,7 @@ def render_control_report(
         gate: The gate configuration the trained side and the interval come from.
         trained_path: The trained backbone's scores file.
         rows: Per backbone, its pooled and held-out intervals and per-source AUPRC.
+        trained_run: The trained backbone's probe record (its seed and selected step at least).
         runs: Per random-init seed, its probe record.
         verdict: The criterion applied.
         gpu_seconds: Wall clock of the probe stages this invocation ran.
@@ -451,20 +493,23 @@ def render_control_report(
     ]
     probe_rows = [
         (
-            seed,
-            f"{run['positives_seen']:,}",
+            label,
+            f"{run['positives_seen']:,}" if "positives_seen" in run else "16,000",
             f"{run['selected'][1]:.4f} at step {run['selected'][0]}",
-            f"{run['seconds'] / 60:.1f}",
+            f"{run['seconds'] / 60:.1f}" if "seconds" in run else "(gate run)",
         )
-        for seed, run in runs.items()
+        for label, run in [
+            (f"trained, seed {trained_run['seed']}", trained_run),
+            *((f"random init, seed {seed}", run) for seed, run in runs.items()),
+        ]
     ]
     word = "PASS" if verdict.sensitive else "FAIL"
     consequence = (
-        "The probe is judged sensitive to backbone quality. The final-position frozen probe stays "
-        "the probe for every arm."
+        f"The probe is judged sensitive to backbone quality. The {config.design} design is the "
+        "probe for every arm."
         if verdict.sensitive
-        else "The probe is the defect. The arm runs do not proceed until a redesigned probe passes "
-        "this same criterion (ADR-0023, §b first)."
+        else f"The {config.design} design is the defect. The arm runs do not proceed until a "
+        "redesigned probe passes this same criterion (ADR-0023, the next registered sub-step)."
     )
     return "".join(
         [
@@ -476,8 +521,12 @@ def render_control_report(
                     "decision record": "docs/DECISIONS.md, ADR-0023 (registered in c9489a2, "
                     "before this code)",
                     "probe design": config.design,
-                    "trained side": f"{_relative(trained_path, paths)} (the ADR-0021 gate run, "
-                    "not re-run)",
+                    "trained side": f"{_relative(trained_path, paths)} "
+                    + (
+                        "(the ADR-0021 gate run, not re-run)"
+                        if config.design == "final_position"
+                        else f"(the ADR-0021 gate backbone, probed through {config.design})"
+                    ),
                     "random-init seeds": ", ".join(str(s) for s in config.init_seeds),
                     "pooled split": f"{pooled_name} test: {first.windows:,} windows, "
                     f"{first.positives:,} positive, {first.positive_blocks:,} of "
@@ -517,13 +566,11 @@ def render_control_report(
                 table(["backbone", *rows[0]["per_source"]], source_rows),
             ),
             section(
-                "4. The random-init probes",
+                "4. The probes",
                 table(
-                    ["seed", "positives seen", "selected validation AUPRC", "probe min"],
+                    ["backbone", "positives seen", "selected validation AUPRC", "probe min"],
                     probe_rows,
-                )
-                + "\nThe trained backbone's probe selected validation AUPRC 0.0441 at step 166 "
-                "(reports/data/gate_check_v0_20260916.md).\n",
+                ),
             ),
         ]
     )

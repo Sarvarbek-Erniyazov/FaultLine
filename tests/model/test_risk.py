@@ -73,3 +73,14 @@ def test_the_positive_weight_raises_the_cost_of_missing_a_positive() -> None:
         plain = float(model.loss(tokens, positives, 1.0))
         weighted = float(model.loss(tokens, positives, 4.0))
     assert weighted == pytest.approx(4 * plain, rel=1e-5)
+
+
+def test_mean_pooling_reads_the_mean_hidden_state_of_the_window() -> None:
+    # ADR-0023 §b: the head reads the mean over every position, not the last one.
+    torch.manual_seed(0)
+    model = RiskModel(spec(), RiskSpec(pooling="mean"), frozen=True).eval()
+    tokens = torch.randint(0, 64, (2, CONTEXT))
+    with torch.no_grad():
+        hidden = model.backbone(tokens)
+        assert torch.allclose(model(tokens), model.head(hidden.mean(dim=1)), atol=1e-6)
+        assert not torch.allclose(model(tokens), model.head(hidden[:, -1]), atol=1e-4)

@@ -1,0 +1,414 @@
+{
+ "config": {
+  "version": 1,
+  "gate_config": "configs/train/gate_check_v0.yaml",
+  "design": "mean_pooled",
+  "init_seeds": [
+   1,
+   2,
+   3
+  ],
+  "pooled_sources": [
+   "kelmarsh",
+   "penmanshiel"
+  ]
+ },
+ "config_hash": "1a56b74f",
+ "gate_config_hash": "9697a266",
+ "trained_scores": "checkpoints/probe_control_v1_1a56b74f/S2_trained_seed1_test_scores.npz",
+ "seconds": 1392.5100838999933,
+ "verdict": {
+  "sensitive": false,
+  "trained_low": 0.04625392594330506,
+  "random_high": 0.06612224722814872,
+  "reason": "the trained lower bound 0.0463 is not above the highest random-init upper bound 0.0661"
+ },
+ "backbones": [
+  {
+   "backbone": "trained",
+   "seed": 1,
+   "pooled": {
+    "unit": "block",
+    "auprc": 0.054202020296725884,
+    "low": 0.04625392594330506,
+    "high": 0.06407805676232926,
+    "lift_low": 0.00971857838513937,
+    "lift_high": 0.024142423670456888,
+    "base_rate": 0.03829166666666667,
+    "windows": 24000,
+    "positives": 919,
+    "blocks": 5705,
+    "positive_blocks": 373,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "held_out": {
+    "unit": "block",
+    "auprc": 0.03595725526010221,
+    "low": 0.029921216491073058,
+    "high": 0.04509151355143104,
+    "lift_low": -0.0012540418386269819,
+    "lift_high": 0.010469284257018823,
+    "base_rate": 0.03325,
+    "windows": 12000,
+    "positives": 399,
+    "blocks": 5983,
+    "positive_blocks": 274,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "per_source_auprc": {
+    "hill_of_towie": 0.03595725526010221,
+    "kelmarsh": 0.05197726433591466,
+    "penmanshiel": 0.05885189240002281
+   }
+  },
+  {
+   "backbone": "random",
+   "seed": 1,
+   "pooled": {
+    "unit": "block",
+    "auprc": 0.05150504210950309,
+    "low": 0.04236454014740016,
+    "high": 0.06612224722814872,
+    "lift_low": 0.0056407509333489805,
+    "lift_high": 0.026774412246846215,
+    "base_rate": 0.03829166666666667,
+    "windows": 24000,
+    "positives": 919,
+    "blocks": 5705,
+    "positive_blocks": 373,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "held_out": {
+    "unit": "block",
+    "auprc": 0.03472473621334567,
+    "low": 0.029518520500921682,
+    "high": 0.04137127297781945,
+    "lift_low": -0.001812677007829111,
+    "lift_high": 0.006296113423694058,
+    "base_rate": 0.03325,
+    "windows": 12000,
+    "positives": 399,
+    "blocks": 5983,
+    "positive_blocks": 274,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "per_source_auprc": {
+    "hill_of_towie": 0.03472473621334567,
+    "kelmarsh": 0.0477099166041001,
+    "penmanshiel": 0.057451328025364706
+   }
+  },
+  {
+   "backbone": "random",
+   "seed": 2,
+   "pooled": {
+    "unit": "block",
+    "auprc": 0.051035250645225204,
+    "low": 0.04287859208555114,
+    "high": 0.061857629641046935,
+    "lift_low": 0.006272161600404359,
+    "lift_high": 0.02223226069827512,
+    "base_rate": 0.03829166666666667,
+    "windows": 24000,
+    "positives": 919,
+    "blocks": 5705,
+    "positive_blocks": 373,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "held_out": {
+    "unit": "block",
+    "auprc": 0.03580578753456751,
+    "low": 0.030162803149009085,
+    "high": 0.04477132037303911,
+    "lift_low": -0.0011780239318247082,
+    "lift_high": 0.010235258585483898,
+    "base_rate": 0.03325,
+    "windows": 12000,
+    "positives": 399,
+    "blocks": 5983,
+    "positive_blocks": 274,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "per_source_auprc": {
+    "hill_of_towie": 0.03580578753456751,
+    "kelmarsh": 0.049699858196607084,
+    "penmanshiel": 0.05305699371594358
+   }
+  },
+  {
+   "backbone": "random",
+   "seed": 3,
+   "pooled": {
+    "unit": "block",
+    "auprc": 0.04723925129237794,
+    "low": 0.040201258666744635,
+    "high": 0.05617638732854528,
+    "lift_low": 0.003716084182107146,
+    "lift_high": 0.016224926874145118,
+    "base_rate": 0.03829166666666667,
+    "windows": 24000,
+    "positives": 919,
+    "blocks": 5705,
+    "positive_blocks": 373,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "held_out": {
+    "unit": "block",
+    "auprc": 0.037887562295080696,
+    "low": 0.030536560893796298,
+    "high": 0.0516779558771092,
+    "lift_low": -0.0010325974573512314,
+    "lift_high": 0.017265011793555374,
+    "base_rate": 0.03325,
+    "windows": 12000,
+    "positives": 399,
+    "blocks": 5983,
+    "positive_blocks": 274,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "per_source_auprc": {
+    "hill_of_towie": 0.037887562295080696,
+    "kelmarsh": 0.04448456990890661,
+    "penmanshiel": 0.05067589778935179
+   }
+  }
+ ],
+ "trained_probe": {
+  "seed": 1,
+  "backbone": "checkpoints/gate_check_v0_9697a266/S2_tel_only_seed1.pt",
+  "design": "mean_pooled",
+  "positives_seen": 16000,
+  "seconds": 220.5419472000067,
+  "selected": [
+   166,
+   0.035199541169557744
+  ],
+  "prior_offset": -3.7921449117457753,
+  "natural_rate": 0.022050022218159642,
+  "test": [
+   {
+    "source": "hill_of_towie",
+    "windows": 12000,
+    "positives": 399,
+    "auprc": 0.03595725526010221,
+    "base_rate": 0.03325,
+    "lift": 1.0814212108301415,
+    "loss": 0.1509502956402219,
+    "nan_share": 4.4801311728395064e-05
+   },
+   {
+    "source": "kelmarsh",
+    "windows": 12000,
+    "positives": 438,
+    "auprc": 0.05197726433591466,
+    "base_rate": 0.0365,
+    "lift": 1.4240346393401278,
+    "loss": 0.17400171365878084,
+    "nan_share": 0.0011313175154320989
+   },
+   {
+    "source": "penmanshiel",
+    "windows": 12000,
+    "positives": 481,
+    "auprc": 0.05885189240002281,
+    "base_rate": 0.04008333333333333,
+    "lift": 1.468238479834249,
+    "loss": 0.17495239552884534,
+    "nan_share": 0.003326244212962963
+   }
+  ],
+  "held_out_calibration": {
+   "mean_predicted_rate": 0.02368006921239634,
+   "base_rate": 0.033250000327825546,
+   "expected_calibration_error": 0.009977654460498695,
+   "uncorrected_mean_predicted_rate": 0.4806531419707252
+  },
+  "probe_state": "checkpoints/probe_control_v1_1a56b74f/S2_trained_seed1_probe.pt",
+  "step_log": "reports/data/probe_control_v1_steps/S2_trained_seed1_probe.steps.csv"
+ },
+ "random_probes": [
+  {
+   "seed": 1,
+   "backbone": null,
+   "design": "mean_pooled",
+   "positives_seen": 16000,
+   "seconds": 219.97954080000636,
+   "selected": [
+    996,
+    0.022287936689626066
+   ],
+   "prior_offset": -3.7921449117457753,
+   "natural_rate": 0.022050022218159642,
+   "test": [
+    {
+     "source": "hill_of_towie",
+     "windows": 12000,
+     "positives": 399,
+     "auprc": 0.03472473621334567,
+     "base_rate": 0.03325,
+     "lift": 1.044352968822426,
+     "loss": 0.15706683485102016,
+     "nan_share": 4.4801311728395064e-05
+    },
+    {
+     "source": "kelmarsh",
+     "windows": 12000,
+     "positives": 438,
+     "auprc": 0.0477099166041001,
+     "base_rate": 0.0365,
+     "lift": 1.3071210028520577,
+     "loss": 0.16444819250666254,
+     "nan_share": 0.0011313175154320989
+    },
+    {
+     "source": "penmanshiel",
+     "windows": 12000,
+     "positives": 481,
+     "auprc": 0.057451328025364706,
+     "base_rate": 0.04008333333333333,
+     "lift": 1.4332971648739636,
+     "loss": 0.1741779004045697,
+     "nan_share": 0.003326244212962963
+    }
+   ],
+   "held_out_calibration": {
+    "mean_predicted_rate": 0.017668995295191402,
+    "base_rate": 0.033250000327825546,
+    "expected_calibration_error": 0.01811750270279939,
+    "uncorrected_mean_predicted_rate": 0.404191399374658
+   },
+   "probe_state": "checkpoints/probe_control_v1_1a56b74f/S2_random_seed1_probe.pt",
+   "step_log": "reports/data/probe_control_v1_steps/S2_random_seed1_probe.steps.csv"
+  },
+  {
+   "seed": 2,
+   "backbone": null,
+   "design": "mean_pooled",
+   "positives_seen": 16000,
+   "seconds": 221.1805214000051,
+   "selected": [
+    996,
+    0.025686574047641485
+   ],
+   "prior_offset": -3.7921449117457753,
+   "natural_rate": 0.022050022218159642,
+   "test": [
+    {
+     "source": "hill_of_towie",
+     "windows": 12000,
+     "positives": 399,
+     "auprc": 0.03580578753456751,
+     "base_rate": 0.03325,
+     "lift": 1.0768657905133083,
+     "loss": 0.15968780208023553,
+     "nan_share": 4.4801311728395064e-05
+    },
+    {
+     "source": "kelmarsh",
+     "windows": 12000,
+     "positives": 438,
+     "auprc": 0.049699858196607084,
+     "base_rate": 0.0365,
+     "lift": 1.361639950591975,
+     "loss": 0.16142918332871184,
+     "nan_share": 0.0011313175154320989
+    },
+    {
+     "source": "penmanshiel",
+     "windows": 12000,
+     "positives": 481,
+     "auprc": 0.05305699371594358,
+     "base_rate": 0.04008333333333333,
+     "lift": 1.3236672028925633,
+     "loss": 0.17168776920853743,
+     "nan_share": 0.003326244212962963
+    }
+   ],
+   "held_out_calibration": {
+    "mean_predicted_rate": 0.014355141177963493,
+    "base_rate": 0.033250000327825546,
+    "expected_calibration_error": 0.01927663663555835,
+    "uncorrected_mean_predicted_rate": 0.3598070061976762
+   },
+   "probe_state": "checkpoints/probe_control_v1_1a56b74f/S2_random_seed2_probe.pt",
+   "step_log": "reports/data/probe_control_v1_steps/S2_random_seed2_probe.steps.csv"
+  },
+  {
+   "seed": 3,
+   "backbone": null,
+   "design": "mean_pooled",
+   "positives_seen": 16000,
+   "seconds": 214.60245250001026,
+   "selected": [
+    498,
+    0.025456295659218794
+   ],
+   "prior_offset": -3.7921449117457753,
+   "natural_rate": 0.022050022218159642,
+   "test": [
+    {
+     "source": "hill_of_towie",
+     "windows": 12000,
+     "positives": 399,
+     "auprc": 0.037887562295080696,
+     "base_rate": 0.03325,
+     "lift": 1.1394755577467879,
+     "loss": 0.14985942731795318,
+     "nan_share": 4.4801311728395064e-05
+    },
+    {
+     "source": "kelmarsh",
+     "windows": 12000,
+     "positives": 438,
+     "auprc": 0.04448456990890661,
+     "base_rate": 0.0365,
+     "lift": 1.2187553399700441,
+     "loss": 0.16353837715873729,
+     "nan_share": 0.0011313175154320989
+    },
+    {
+     "source": "penmanshiel",
+     "windows": 12000,
+     "positives": 481,
+     "auprc": 0.05067589778935179,
+     "base_rate": 0.04008333333333333,
+     "lift": 1.2642635623123109,
+     "loss": 0.1726317750721148,
+     "nan_share": 0.003326244212962963
+    }
+   ],
+   "held_out_calibration": {
+    "mean_predicted_rate": 0.027462914128684738,
+    "base_rate": 0.033250000327825546,
+    "expected_calibration_error": 0.007802601122557798,
+    "uncorrected_mean_predicted_rate": 0.5261832226658494
+   },
+   "probe_state": "checkpoints/probe_control_v1_1a56b74f/S2_random_seed3_probe.pt",
+   "step_log": "reports/data/probe_control_v1_steps/S2_random_seed3_probe.steps.csv"
+  }
+ ]
+}

@@ -12,6 +12,7 @@ from faultline.config import load_config
 from faultline.evaluation.bootstrap import AuprcInterval
 from faultline.evaluation.gate_check import BootstrapConfig
 from faultline.evaluation.probe_control import (
+    POOLING,
     ProbeControlConfig,
     ScoredWindows,
     decide_sensitive,
@@ -139,3 +140,15 @@ def test_the_shipped_control_is_the_one_registered_in_adr_0023() -> None:
     assert config.pooled_sources == ["kelmarsh", "penmanshiel"]
     assert config.design == "final_position"
     assert config.gate_config == "configs/train/gate_check_v0.yaml"
+
+
+def test_the_shipped_mean_pooled_control_is_adr_0023_section_b() -> None:
+    v0 = load_config(SHIPPED, ProbeControlConfig)
+    v1 = load_config(REPO / "configs/train/probe_control_v1.yaml", ProbeControlConfig)
+    decisions = (REPO / "docs/DECISIONS.md").read_text(encoding="utf-8")
+    assert "### §b, registered 2026-09-16 before its code or run" in decisions
+    assert v1.design == "mean_pooled" and POOLING[v1.design] == "mean"
+    # Only the design (and the version) differ from §a.
+    assert v1.model_dump(exclude={"design", "version"}) == v0.model_dump(
+        exclude={"design", "version"}
+    )

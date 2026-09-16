@@ -36,7 +36,7 @@ from collections.abc import Iterator
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Literal, Protocol
 
 import numpy as np
 import pyarrow.parquet as pq
@@ -580,6 +580,7 @@ def probe_and_score(
     step_log: Path,
     label: str,
     save_to: Path | None = None,
+    pooling: Literal["last", "mean"] = "last",
 ) -> ProbeResult:
     """Train the frozen probe on a backbone and score every test source.
 
@@ -599,6 +600,7 @@ def probe_and_score(
         step_log: Where the probe's per-step training log is written.
         label: The run's label in the training log.
         save_to: Where to write the selected probe's whole state, when given.
+        pooling: What the head reads (ADR-0023 §b): the final position or the window's mean.
 
     Returns:
         The probe's result, with every test window's logit.
@@ -614,6 +616,7 @@ def probe_and_score(
         hidden=inputs.ladder_model.head_hidden,
         dropout=inputs.ladder_model.head_dropout,
         label=stage.label,
+        pooling=pooling,
     )
     model = RiskModel(inputs.spec, risk, frozen=True).to(device)
     if checkpoint is not None:
@@ -655,6 +658,7 @@ def probe_and_score(
             {
                 "spec": inputs.spec.__dict__,
                 "kind": "probe",
+                "pooling": pooling,
                 "seed": seed,
                 "backbone": None if checkpoint is None else checkpoint.as_posix(),
                 "selected": (probe.best.step, probe.best.value),

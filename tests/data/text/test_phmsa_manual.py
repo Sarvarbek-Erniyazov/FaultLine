@@ -101,6 +101,16 @@ def test_a_long_but_repeated_coded_column_is_not_narrative() -> None:
     assert profile.narrative_columns == []
 
 
+def test_a_narrative_named_closed_code_set_is_not_narrative() -> None:
+    # the CAUSE_DETAILS shape: a name the hints match, holding a few repeated codes
+    codes = ["PIPE BODY", "WELD", "VALVE"]
+    rows = [f"{i},{codes[i % 3]}" for i in range(30)]
+    profile = profile_member("x.csv", _csv_bytes("ID,CAUSE_DETAILS", rows))
+    assert profile is not None
+    assert profile.narrative_columns == []
+    assert profile.narrative_tokens == 0
+
+
 def test_profile_member_finds_no_narrative_column_in_purely_categorical_data() -> None:
     raw = _csv_bytes("ID,CODE,COMMODITY", ["1,04,CRUDE OIL", "2,07,REFINED PRODUCT"])
     profile = profile_member("x.csv", raw)

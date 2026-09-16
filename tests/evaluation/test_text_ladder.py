@@ -181,3 +181,35 @@ def test_run_text_ladder_end_to_end(tmp_paths: ProjectPaths, pretrain_config_pat
     assert "bound hit" in report
     assert "bits/byte" in report
     assert "never selected on" in report
+
+
+def test_calibration_is_timed_on_training_alone(
+    tmp_paths: ProjectPaths, pretrain_config_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # bc0fd3a: the timed calibration call once scored the whole selection set, so its
+    # windows/second counted evaluation as training and shrank the GPU-hour bound
+    from faultline.evaluation import text_ladder
+
+    active: list[str] = []
+    scored_under: list[str] = []
+    real_train = text_ladder.train
+    real_loss = text_ladder.language_model_loss
+
+    def recording_train(*args: object, **kwargs: object) -> object:
+        active.append(str(kwargs["label"]))
+        try:
+            return real_train(*args, **kwargs)  # type: ignore[arg-type]
+        finally:
+            active.pop()
+
+    def recording_loss(*args: object, **kwargs: object) -> float:
+        scored_under.append(active[-1] if active else "")
+        return real_loss(*args, **kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(text_ladder, "train", recording_train)
+    monkeypatch.setattr(text_ladder, "language_model_loss", recording_loss)
+    run_text_ladder(tmp_paths, pretrain_config_path)
+
+    assert not [label for label in scored_under if label.endswith("/calibrate")]
+    # the budgeted run still measures, so the check above is not vacuous
+    assert [label for label in scored_under if label.endswith("/lm")]

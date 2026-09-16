@@ -2062,6 +2062,21 @@ since `NARRATIVE` alone is 3.6 times the 250,000 bar. A future rule of this kind
 should apply the distinct-ratio guard to name matches as well. Separately, and as a
 staging choice rather than a reading of the rule, only `NARRATIVE` is staged.
 
+*Amendment applied, 2026-09-16.* The detector now reads `name matches AND distinct ratio
+> 0.5` (`phmsa_manual.profile_member`; test
+`tests/data/text/test_phmsa_manual.py::test_a_narrative_named_closed_code_set_is_not_narrative`),
+as ruled on 2026-09-16 and not applied until now. Re-read on the same target file, read-only:
+**54 columns qualify instead of 62, and all qualifying columns hold 1,001,924 tokens instead of
+1,030,940.** The eight columns that no longer qualify are `CAUSE_DETAILS` (ratio 0.007, 25,456
+tokens), `MATERIAL_DETAILS` (0.432, 2,633), `COMMODITY_DETAILS` (0.251, 776),
+`PIPE_SEAM_DETAILS` (0.256, 151) and four columns with no values. **The amendment did not
+change the PHMSA decision:** `NARRATIVE` alone is 894,467 tokens, 3.6 times the 250,000 bar,
+and it is the only column staged. The measured report
+`reports/data/phmsa_manual_20260915.md` is not regenerated. It stays the record of the rule
+as it was applied. The guard removes closed code sets. It does not remove short "other,
+specify" fields with high distinct ratios: 52 of the 54 qualifying columns are still
+`*_DETAILS` fields.
+
 **Correction, 2026-09-16: every source keeps a held-out split.** The v1 run
 (`20260913-142340_all_text_2a6ec5b7`) used 98/1/1 for every source. It gave
 `nrc_reg_issues` zero held-out documents, `nrc_bulletins` a test split of 2 documents

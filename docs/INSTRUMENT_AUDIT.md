@@ -64,7 +64,7 @@ Each instrument has six fields:
 | actually measured | 20 optimiser steps **plus one full validation measurement** (up to 3,000 windows per source) inside the timed call. S2 read **0.7 windows/s** against a true training rate of 5.7. |
 | how found | Reading S2's logged calibration line during the real run: the rate was implausible for the card. The code was then read against the config's definition. The run was stopped and restarted rather than reported. This is the one entry found from a running job's output rather than before the run. |
 | reported result if undetected | S2's cap would still have exceeded one pass (0.7 x 14,400 s = 10,080 windows, more than 4,905), so S2 would have run as reported. **S3 would have calibrated at about 0.24 windows/s and been cut to about 3,400 windows (about 7M tokens) by the GPU-hour bound**, against S2's 10.0M. Gate 6 would then have compared rungs at unequal token budgets, and "S3 is worse" would have been confounded with "S3 saw 30% fewer tokens" (`reports/data/m2_gate6_20260916.md`, section 9.5). |
-| regression test | **None.** `bc0fd3a` changed `text_ladder.py` only. This is an open gap. |
+| regression test | `tests/evaluation/test_text_ladder.py::test_calibration_is_timed_on_training_alone`, added 2026-09-16. The first version of this entry read: "**None.** `bc0fd3a` changed `text_ladder.py` only. This is an open gap." The test runs the ladder end to end and fails if validation loss is scored during the timed calibration call. It was checked against the pre-fix line (`measure=measure`), and it fails there. |
 | commit | `bc0fd3a` |
 
 ## 4. The free-text detector's name branch bypasses the ratio guard
@@ -75,8 +75,8 @@ Each instrument has six fields:
 | actually measured | Exactly the wording, which defeats the stated purpose. The name branch (`src/faultline/data/text/phmsa_manual.py:314`) admits any column whose name contains `detail`, `description` and so on, whatever its distinct-value ratio. That is the coded-field failure the guard was added to stop. **62 columns qualified, all by name**, and 61 of them are short `*_DETAILS` "other, specify" fields, some closed code sets (`CAUSE_DETAILS`: distinct ratio 0.007). |
 | how found | Reading the measured per-column verdict table (`reports/data/phmsa_manual_20260915.md`) against the guard's stated reason while writing the Gate 6 report. This one was found by reading output against the rule, not code. |
 | reported result if undetected | The free-text yield of the target file would stand as **1,030,940 tokens (all qualifying columns) rather than 894,467 (`NARRATIVE`)**, overstated by 136,473 (15.3%). The staging branch did not change here, because `NARRATIVE` alone is 3.6x the 250,000 bar. On a thinner file, closed code sets named `*_DETAILS` could have carried a source over the bar. |
-| regression test | **None. Not fixed.** The detector still evaluates the name branch first. The Gate 6 report records it as a limitation for "a future rule of this shape" (section 2). This is an open gap. |
-| commit | none (recorded in `4b3149a`) |
+| regression test | `tests/data/text/test_phmsa_manual.py::test_a_narrative_named_closed_code_set_is_not_narrative`, added 2026-09-16. The first version of this entry read: "**None. Not fixed.** The detector still evaluates the name branch first." The detector now requires `name matches AND distinct ratio > 0.5`. Re-read on the same file, 54 columns qualify instead of 62, and the file total is 1,001,924 tokens instead of 1,030,940. The PHMSA decision is unchanged (ADR-0016, amendment note of 2026-09-16). |
+| commit | recorded in `4b3149a`; the amendment is applied in the commit that adds this entry's test |
 
 ## 5. The robots.txt gate (`urllib.robotparser`)
 
@@ -166,7 +166,8 @@ The finds came from practices, not from checks:
 The same point applies to the tests. A regression test written after the fact pins the
 corrected definition, but it cannot say whether a new instrument measures what its brief
 says. That question is only answered by reading the instrument against the brief. Two
-entries (3 and 4) still have no regression test at all.
+entries (3 and 4) still have no regression test at all. *(2026-09-16: both now have one;
+see their rows.)*
 
 ### A sub-pattern seen twice: a budget stated in the wrong unit
 

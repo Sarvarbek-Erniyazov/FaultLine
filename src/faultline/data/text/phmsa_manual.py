@@ -21,14 +21,20 @@ wrong guess is visible instead of silently trusted.
 
 **Narrative columns are found two ways, not one guess.** A column whose name contains
 a narrative-shaped hint (``narrative``, ``description``, ``summary``, ``comment``,
-``remark``, ``additional_info``, ``detail``) is one candidate; any string-typed column
-whose values average longer than :data:`MEAN_LENGTH_NARRATIVE_THRESHOLD` characters
-**and** whose distinct-value ratio exceeds :data:`DISTINCT_RATIO_THRESHOLD` is
-another, independent of its name. Both are reported, because a name-only search would
-miss a narrative field PHMSA happens to call something else, and a length-only search
-would miss a short but genuinely free-text field. The ratio guard is the OE-417 lesson
-(ADR-0016): a long coded field -- a closed set of category sentences repeated across
-rows -- passes on mean length alone, and is a code book, not narrative.
+``remark``, ``additional_info``, ``detail``) **and** whose distinct-value ratio exceeds
+:data:`DISTINCT_RATIO_THRESHOLD` is one candidate; any string-typed column whose values
+average longer than :data:`MEAN_LENGTH_NARRATIVE_THRESHOLD` characters **and** whose
+distinct-value ratio exceeds :data:`DISTINCT_RATIO_THRESHOLD` is another, independent of
+its name. Both are reported, because a name-only search would miss a narrative field
+PHMSA happens to call something else, and a length-only search would miss a short but
+genuinely free-text field. The ratio guard is the OE-417 lesson (ADR-0016): a long coded
+field -- a closed set of category sentences repeated across rows -- passes on mean length
+alone, and is a code book, not narrative.
+
+*Amended 2026-09-16.* The guard now applies to the name branch too. As first written the
+name branch admitted any matching column whatever its ratio, which let closed code sets
+named ``*_DETAILS`` through (``CAUSE_DETAILS``: distinct ratio 0.007) --
+``docs/INSTRUMENT_AUDIT.md``, entry 4.
 """
 
 from __future__ import annotations
@@ -311,7 +317,10 @@ def profile_member(name: str, raw: bytes) -> MemberProfile | None:
             frame[column]
         )
         test = ""
-        if any(hint in column.lower() for hint in NARRATIVE_HINTS):
+        if (
+            any(hint in column.lower() for hint in NARRATIVE_HINTS)
+            and ratio > DISTINCT_RATIO_THRESHOLD
+        ):
             test = "name"
         elif (
             textual

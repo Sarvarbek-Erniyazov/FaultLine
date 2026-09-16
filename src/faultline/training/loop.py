@@ -67,12 +67,20 @@ def parameter_groups(module: nn.Module, weight_decay: float) -> list[dict[str, A
     Returns:
         Two parameter groups, either of which may be empty.
     """
-    decay = [p for p in module.parameters() if p.requires_grad and p.dim() >= 2]
-    plain = [p for p in module.parameters() if p.requires_grad and p.dim() < 2]
-    return [
-        {"params": decay, "weight_decay": weight_decay},
-        {"params": plain, "weight_decay": 0.0},
-    ]
+    scale_of = getattr(module, "parameter_lr_scale", None)
+    named = [(n, p) for n, p in module.named_parameters() if p.requires_grad]
+    scales = {n: float(scale_of(n)) if callable(scale_of) else 1.0 for n, _ in named}
+    groups: list[dict[str, Any]] = []
+    # One pair of groups a learning-rate scale. A module without scales gets exactly the two
+    # groups it always had, in the same order, so every earlier run's optimiser is unchanged.
+    for scale in sorted(set(scales.values()) | {1.0}, reverse=True):
+        decay = [p for n, p in named if scales[n] == scale and p.dim() >= 2]
+        plain = [p for n, p in named if scales[n] == scale and p.dim() < 2]
+        if scale != 1.0 and not decay and not plain:
+            continue
+        groups.append({"params": decay, "weight_decay": weight_decay, "lr_scale": scale})
+        groups.append({"params": plain, "weight_decay": 0.0, "lr_scale": scale})
+    return groups
 
 
 @dataclass
@@ -234,7 +242,7 @@ def train(
     for step in range(total):
         rate = learning_rate(step, total, budget.learning_rate, optimiser.warmup_fraction)
         for group in opt.param_groups:
-            group["lr"] = rate
+            group["lr"] = rate * group.get("lr_scale", 1.0)
         opt.zero_grad(set_to_none=True)
         step_losses: list[float] = []
         for _ in range(budget.accumulate):

@@ -105,3 +105,33 @@ def test_a_one_hidden_layer_head_is_unchanged_by_the_two_layer_option() -> None:
     assert torch.equal(one.head.down.weight, two.head.down.weight)
     tokens = torch.randint(0, 64, (3, CONTEXT))
     assert two.eval()(tokens).shape == (3,)
+
+
+def test_unfreezing_the_tail_trains_those_blocks_and_the_head_only() -> None:
+    # ADR-0023 §d: the last two blocks train under a frozen backbone; nothing before them does.
+    torch.manual_seed(0)
+    model = RiskModel(spec(), RiskSpec(), frozen=True, unfrozen_blocks=1, backbone_lr_scale=0.25)
+    loss = model.loss(torch.randint(0, 64, (4, CONTEXT)), torch.tensor([0.0, 1.0, 0.0, 1.0]))
+    loss.backward()
+    graded = {n for n, p in model.named_parameters() if p.grad is not None}
+    assert any(n.startswith("backbone.blocks.1.") for n in graded)
+    assert not any(
+        n.startswith(("backbone.blocks.0.", "backbone.tokens", "backbone.norm")) for n in graded
+    )
+    assert model.parameter_lr_scale("backbone.blocks.1.mlp.up.weight") == 0.25
+    assert model.parameter_lr_scale("head.up.weight") == 1.0
+
+
+def test_the_trainable_tail_computes_what_the_whole_stack_computes() -> None:
+    torch.manual_seed(0)
+    model = RiskModel(spec(), RiskSpec(), frozen=True, unfrozen_blocks=1).eval()
+    tokens = torch.randint(0, 64, (2, CONTEXT))
+    with torch.no_grad():
+        assert torch.allclose(
+            model.backbone.forward_with_trainable_tail(tokens, 1), model.backbone(tokens), atol=1e-6
+        )
+
+
+def test_blocks_cannot_be_unfrozen_in_an_unfrozen_model() -> None:
+    with pytest.raises(ValueError, match="frozen backbone only"):
+        RiskModel(spec(), RiskSpec(), frozen=False, unfrozen_blocks=1)

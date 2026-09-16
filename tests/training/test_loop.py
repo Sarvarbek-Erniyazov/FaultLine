@@ -240,3 +240,14 @@ def test_every_optimiser_step_is_logged_with_its_loss_rate_and_windows(tmp_path)
     assert [r.step for r in back] == [r.step for r in log]
     assert [r.loss for r in back] == pytest.approx([r.loss for r in log], rel=1e-7)
     assert isinstance(back[0], StepLog)
+
+
+def test_a_scaled_parameter_gets_its_own_groups_and_a_plain_module_keeps_two() -> None:
+    from faultline.model.risk import RiskModel, RiskSpec
+
+    assert len(parameter_groups(TelemetryDecoder(spec()), 0.1)) == 2
+    model = RiskModel(spec(), RiskSpec(), frozen=True, unfrozen_blocks=1, backbone_lr_scale=0.25)
+    groups = parameter_groups(model, 0.1)
+    assert [g["lr_scale"] for g in groups] == [1.0, 1.0, 0.25, 0.25]
+    scaled = {id(p) for g in groups if g["lr_scale"] == 0.25 for p in g["params"]}
+    assert scaled == {id(p) for p in model.backbone.blocks[-1].parameters()}

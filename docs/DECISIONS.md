@@ -3215,3 +3215,54 @@ two blocks train, the read-out is then partly a fine-tune. What it measures is t
 representation plus 16,000 positives' worth of adaptation, which ADR-0020 chose the frozen probe
 to avoid. That cost is accepted by the brief. It is stated here so that no arm claim reads §d as a
 frozen probe.
+
+### §d result, 2026-09-17 -- FAIL; no registered probe design passes, and the work stops here
+
+§d was registered in **`d0351e5`**, before `configs/train/probe_control_v3.yaml`, the unfrozen-tail
+code (`forward_with_trainable_tail`, `RiskModel.unfrozen_blocks`, per-group learning-rate scales in
+the training loop) or any run of them (`reports/data/probe_control_v3_20260916.md`, git_sha
+`d0351e5`, dated in UTC). It took 0.44 GPU-hours, 4.8 minutes a probe.
+
+| backbone | pooled Kelmarsh + Penmanshiel AUPRC | 95% block interval (decides) | Hill of Towie AUPRC | 95% block interval (reported) | selected validation AUPRC |
+| --- | --- | --- | --- | --- | --- |
+| **full-budget `tel_only`, seed 1** | **0.0541** | **[0.0463, 0.0645]** | 0.0456 | [0.0369, 0.0577] | 0.0487 at step 166 |
+| random init, seed 1 | 0.0497 | [0.0419, 0.0595] | 0.0347 | [0.0295, 0.0411] | 0.0207 at step 332 |
+| random init, seed 2 | 0.0461 | [0.0399, 0.0542] | 0.0348 | [0.0290, 0.0446] | 0.0307 at step 996 |
+| random init, seed 3 | 0.0463 | [0.0397, 0.0547] | 0.0399 | [0.0322, 0.0509] | 0.0210 at step 1000 |
+
+**Verdict: FAIL. The trained lower bound, 0.0463, is not above the highest random-init upper bound,
+0.0595 (seed 1).** It is above the upper bounds of seeds 2 and 3, and that does not count, as
+registered.
+
+**All four registered designs fail ADR-0023's criterion.** As registered, **the work stops here and
+is reported.** F2 (the prior-band check), F3 (seeds 2 and 3), F4 (ADR-0022) and F5 (the axis gate)
+are not started. No probe design is in force for any arm, the C0 configuration is not versioned,
+and ADR-0022 stays reserved with nothing decided under it. The report's generic line, "the next
+registered sub-step", has no referent: none is authorised.
+
+**The four designs, the pooled criterion side by side** (trained lower bound against the highest
+random-init upper bound; the trained point estimate against the best random-init point estimate):
+
+| sub-step | design | trained interval | highest random upper bound | trained point − best random point |
+| --- | --- | --- | --- | --- |
+| §a | final position, one hidden layer, frozen | [0.0434, 0.0587] | 0.0500 | +0.0074 |
+| §b | mean-pooled, one hidden layer, frozen | [0.0463, 0.0641] | 0.0661 | +0.0027 |
+| §c | mean-pooled, two hidden layers, frozen | [0.0449, 0.0608] | 0.0624 | +0.0007 |
+| §d | §c with blocks 6-7 unfrozen at 5e-4 | [0.0463, 0.0645] | 0.0595 | +0.0044 |
+
+Recorded beside the stop, deciding nothing:
+
+- **In every design, the trained backbone's pooled point estimate is above every random-init
+  point estimate, and in no design does its interval clear.** The probes see something of the
+  pretraining. On the training sites' test windows, a 12,000-window-per-source evaluation cannot
+  resolve that from an untrained S2 decoder. The two readings in this record's context are not
+  separated, because the control cannot resolve its own contrast. "The probe is the defect" is the
+  verdict the registered rule assigns. The data alone do not show whether the defect is the probe,
+  the evaluation's resolution, or a pretraining signal too small to see.
+- **Under §d, Hill of Towie's trained interval, [0.0369, 0.0577], lies above its base rate of
+  0.03325.** This is a different read-out from ADR-0021's frozen probe, and one design of four. As
+  ADR-0021 registered, the demotion is not reversed by a later, better Hill of Towie result.
+- Every trained-backbone probe except §b's selected its **first** validation measurement, step 166.
+  §b's selected step 166 too; its value is lower. The random-init probes selected later steps. The
+  prior-band question F2 would have asked of that checkpoint is still open.
+- Probe compute for the whole control, §a to §d: 0.25 + 0.36 + 0.35 + 0.44 = about 1.4 GPU-hours.

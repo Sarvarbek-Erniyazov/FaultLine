@@ -110,9 +110,19 @@ class RiskModel(nn.Module):
         head: The risk head.
         frozen: Whether the backbone's parameters are held fixed.
         pooling: What the head reads, from the head's specification.
+        unfrozen_blocks: Blocks at the end of a frozen backbone that train anyway (ADR-0023 §d).
+        backbone_lr_scale: The unfrozen blocks' learning rate as a fraction of the head's.
     """
 
-    def __init__(self, spec: ModelSpec, risk: RiskSpec, frozen: bool, fused: bool = True) -> None:
+    def __init__(
+        self,
+        spec: ModelSpec,
+        risk: RiskSpec,
+        frozen: bool,
+        fused: bool = True,
+        unfrozen_blocks: int = 0,
+        backbone_lr_scale: float = 1.0,
+    ) -> None:
         """Build the risk model.
 
         Args:
@@ -120,15 +130,37 @@ class RiskModel(nn.Module):
             risk: The head's shape.
             frozen: Freeze the backbone, which is what makes run (2) a probe.
             fused: Use the fused attention kernel.
+            unfrozen_blocks: With ``frozen``, this many final blocks train anyway (ADR-0023 §d).
+            backbone_lr_scale: Those blocks' learning rate as a fraction of the run's.
+
+        Raises:
+            ValueError: If blocks are unfrozen in an unfrozen model, or more than exist.
         """
         super().__init__()
         self.backbone = TelemetryDecoder(spec, fused=fused)
         self.head = RiskHead(spec.d_model, risk)
         self.frozen = frozen
         self.pooling = risk.pooling
+        if unfrozen_blocks and not frozen:
+            raise ValueError("unfrozen_blocks applies to a frozen backbone only")
+        if not 0 <= unfrozen_blocks <= spec.n_layer:
+            raise ValueError(f"unfrozen_blocks must be in 0..{spec.n_layer}, got {unfrozen_blocks}")
+        self.unfrozen_blocks = unfrozen_blocks
+        self.backbone_lr_scale = backbone_lr_scale
         if frozen:
             for parameter in self.backbone.parameters():
                 parameter.requires_grad_(False)
+            for block in self.backbone.blocks[spec.n_layer - unfrozen_blocks :]:
+                for parameter in block.parameters():
+                    parameter.requires_grad_(True)
+
+    def parameter_lr_scale(self, name: str) -> float:
+        """The learning-rate multiple of one named parameter: the unfrozen blocks' scale, or 1."""
+        first = self.backbone.spec.n_layer - self.unfrozen_blocks
+        if self.unfrozen_blocks and name.startswith("backbone.blocks."):
+            if int(name.split(".")[2]) >= first:
+                return self.backbone_lr_scale
+        return 1.0
 
     def trainable_parameters(self) -> list[nn.Parameter]:
         """The parameters the optimiser is given, which is what ``frozen`` decides."""
@@ -143,7 +175,9 @@ class RiskModel(nn.Module):
         Returns:
             One risk logit per window, of shape ``(batch,)``.
         """
-        if self.frozen:
+        if self.frozen and self.unfrozen_blocks:
+            hidden = self.backbone.forward_with_trainable_tail(tokens, self.unfrozen_blocks)
+        elif self.frozen:
             with torch.no_grad():
                 hidden = self.backbone(tokens)
             hidden = hidden.detach()

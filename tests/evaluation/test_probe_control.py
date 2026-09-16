@@ -14,6 +14,7 @@ from faultline.evaluation.gate_check import BootstrapConfig
 from faultline.evaluation.probe_control import (
     HEAD_LAYERS,
     POOLING,
+    UNFROZEN_BLOCKS,
     ProbeControlConfig,
     ScoredWindows,
     decide_sensitive,
@@ -163,5 +164,21 @@ def test_the_shipped_mlp_control_is_adr_0023_section_c() -> None:
     assert v2.design == "mlp_mean_pooled"
     assert POOLING[v2.design] == "mean" and HEAD_LAYERS[v2.design] == 2
     assert v2.model_dump(exclude={"design", "version"}) == v1.model_dump(
+        exclude={"design", "version"}
+    )
+
+
+def test_the_shipped_unfrozen_control_is_adr_0023_section_d() -> None:
+    v2 = load_config(REPO / "configs/train/probe_control_v2.yaml", ProbeControlConfig)
+    v3 = load_config(REPO / "configs/train/probe_control_v3.yaml", ProbeControlConfig)
+    decisions = (REPO / "docs/DECISIONS.md").read_text(encoding="utf-8")
+    assert "### §d, registered 2026-09-17 before its code or run" in decisions
+    assert v3.design == "unfrozen_mlp_mean_pooled"
+    assert POOLING[v3.design] == "mean" and HEAD_LAYERS[v3.design] == 2
+    assert UNFROZEN_BLOCKS[v3.design] == 2
+    assert all(
+        UNFROZEN_BLOCKS[d] == 0 for d in ("final_position", "mean_pooled", "mlp_mean_pooled")
+    )
+    assert v3.model_dump(exclude={"design", "version"}) == v2.model_dump(
         exclude={"design", "version"}
     )

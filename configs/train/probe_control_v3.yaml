@@ -1,0 +1,24 @@
+# The random-init probe control, version 3: ADR-0023 §d, the last two backbone blocks unfrozen at
+# a lower rate under the §c head. Decision record: docs/DECISIONS.md, ADR-0023 §d, registered in
+# d0351e5 BEFORE this file, the code that reads it, or any run of it existed. Versions 0-2 (§a, §b,
+# §c, all FAIL) are frozen.
+#
+# THE CRITERION is §a's, unchanged: on the pooled Kelmarsh + Penmanshiel test windows, with the gate
+# configuration's block bootstrap, the trained backbone's 95% AUPRC interval must lie entirely above
+# the interval of every random-init seed below. Hill of Towie is reported and does not decide.
+#
+# WHAT CHANGES from v2: `design` only. The head trains at the probe's 2e-3 and blocks 6-7 at the
+# ladder's fine-tune rate, 5e-4, both read from configs/train/telemetry_v1.yaml. §d is the last
+# sub-step authorised: on FAIL, the work stops and is reported.
+
+version: 3
+gate_config: "configs/train/gate_check_v0.yaml"
+
+# ADR-0023 §d: mean-pooled states, two-hidden-layer head, blocks 6 and 7 of 8 unfrozen.
+design: unfrozen_mlp_mean_pooled
+
+init_seeds: [1, 2, 3]
+
+pooled_sources:
+  - kelmarsh
+  - penmanshiel

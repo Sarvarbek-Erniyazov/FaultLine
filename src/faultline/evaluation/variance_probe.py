@@ -582,6 +582,7 @@ def probe_and_score(
     save_to: Path | None = None,
     pooling: Literal["last", "mean"] = "last",
     head_layers: Literal[1, 2] = 1,
+    unfrozen_blocks: int = 0,
 ) -> ProbeResult:
     """Train the frozen probe on a backbone and score every test source.
 
@@ -603,6 +604,8 @@ def probe_and_score(
         save_to: Where to write the selected probe's whole state, when given.
         pooling: What the head reads (ADR-0023 §b): the final position or the window's mean.
         head_layers: Hidden layers in the head (ADR-0023 §c): one, or two.
+        unfrozen_blocks: Final backbone blocks that train (ADR-0023 §d), at the ladder's
+            fine-tune rate, while the head keeps the probe's rate.
 
     Returns:
         The probe's result, with every test window's logit.
@@ -621,7 +624,13 @@ def probe_and_score(
         pooling=pooling,
         layers=head_layers,
     )
-    model = RiskModel(inputs.spec, risk, frozen=True).to(device)
+    model = RiskModel(
+        inputs.spec,
+        risk,
+        frozen=True,
+        unfrozen_blocks=unfrozen_blocks,
+        backbone_lr_scale=stage.budget("finetune").learning_rate / probe_budget.learning_rate,
+    ).to(device)
     if checkpoint is not None:
         backbone = read_checkpoint(checkpoint)["state"]
         model.backbone.load_state_dict({k: v.to(device) for k, v in backbone.items()})
@@ -663,6 +672,7 @@ def probe_and_score(
                 "kind": "probe",
                 "pooling": pooling,
                 "head_layers": head_layers,
+                "unfrozen_blocks": unfrozen_blocks,
                 "seed": seed,
                 "backbone": None if checkpoint is None else checkpoint.as_posix(),
                 "selected": (probe.best.step, probe.best.value),

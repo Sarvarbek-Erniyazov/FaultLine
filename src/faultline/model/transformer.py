@@ -350,6 +350,39 @@ class TelemetryDecoder(nn.Module):
             x = block(x)
         return cast(Tensor, self.norm(x))
 
+    def forward_with_trainable_tail(self, tokens: Tensor, trainable_blocks: int) -> Tensor:
+        """Run the stack with gradients only through its last ``trainable_blocks`` blocks.
+
+        The embeddings and the leading blocks run without a graph, so a probe that unfreezes the
+        tail (ADR-0023 §d) stores activations for the tail alone. The arithmetic is
+        :meth:`forward`'s.
+
+        Args:
+            tokens: Token identifiers of shape ``(batch, time)``.
+            trainable_blocks: Blocks at the end of the stack that keep a graph.
+
+        Returns:
+            Hidden states of shape ``(batch, time, d_model)``, normed.
+
+        Raises:
+            ValueError: If the sequence exceeds the context, or the block count is out of range.
+        """
+        if not 0 < trainable_blocks <= len(self.blocks):
+            raise ValueError(f"trainable_blocks must be in 1..{len(self.blocks)}")
+        _, time = tokens.shape
+        if time > self.spec.context:
+            raise ValueError(f"sequence of {time} tokens exceeds context {self.spec.context}")
+        split = len(self.blocks) - trainable_blocks
+        with torch.no_grad():
+            positions = torch.arange(time, device=tokens.device)
+            x = self.drop(self.tokens(tokens) + self.positions(positions))
+            for block in self.blocks[:split]:
+                x = block(x)
+        x = x.detach()
+        for block in self.blocks[split:]:
+            x = block(x)
+        return cast(Tensor, self.norm(x))
+
     def logits(self, hidden: Tensor) -> Tensor:
         """Project hidden states onto the vocabulary through the tied embedding.
 

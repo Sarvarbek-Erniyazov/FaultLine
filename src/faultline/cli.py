@@ -1118,6 +1118,29 @@ def check_text_migration(
 
 
 @model_app.command(
+    "variance-probe",
+    help="The seed-variance probe (ADR-0020): tel_only twice at half budget, frozen probe, "
+    "Hill of Towie test AUPRC per seed, and the pre-registered design verdict. "
+    "Starts no other run.",
+)
+def model_variance_probe(
+    config: ConfigOption = Path("configs/train/variance_probe_v0.yaml"),
+    device: Annotated[str | None, typer.Option("--device", help="Torch device.")] = None,
+) -> None:
+    """Run the seed-variance probe and write its report.
+
+    Args:
+        config: The probe configuration.
+        device: Torch device; chosen automatically when omitted.
+    """
+    from faultline.evaluation.variance_probe import run_variance_probe
+
+    paths = ProjectPaths.resolve()
+    report, record = run_variance_probe(paths, paths.repo_root / config, device)
+    typer.echo(f"wrote {report} and {record}")
+
+
+@model_app.command(
     "mixture-shards",
     help="Write the M3 mixture's txt and tel+status shards and every stream's run index, "
     "and report per-stream token counts and per-arm token budgets. Trains nothing.",

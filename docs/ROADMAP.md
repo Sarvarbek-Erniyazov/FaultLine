@@ -544,6 +544,10 @@ results to phrase them against.
   (step absent from the final rows), recorded on the card. *Seed-variance probe (ADR-0020):*
   `tel_only` twice at half budget. If the Hill of Towie test AUPRC gap between seeds is at or
   above **0.010**, the design becomes two arms (`joint`, `tel_only`) at three seeds.
+  **Outcome:** the gap is **0.0080**, below the line, so the three-arm design stands (seeds:
+  0.0353 and 0.0433; 0.38 GPU-hours for both). It is one draw at 80% of the line, and it
+  implies one-seed arm differences carry about 0.010 of seed noise. On Kelmarsh the gap was
+  0.0173 (ADR-0020 outcome).
 - Train the joint decoder; compare against both single-modality baselines.
 - Modality-shift evaluation: channels dropped or corrupted, text withheld, at
   inference time — the axis that justifies the joint design.

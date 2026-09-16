@@ -1,0 +1,42 @@
+# The seed-variance probe, version 0: tel_only twice at half budget, differing only in seed.
+# Decision record: docs/DECISIONS.md, ADR-0020. The line below was committed in 33c5ab4,
+# BEFORE this file, the code that reads it, or any probe run existed.
+#
+# THE RULE. If the two seeds' Hill of Towie test AUPRC differ by at least
+# smallest_claimable_auprc_difference, a three-arm design at one seed cannot separate an arm
+# effect from a seed, and the M3 plan becomes two arms (joint vs tel_only) at three seeds.
+# Below it, the three-arm design stands. Nothing else is decided by this run, and it starts
+# no other run.
+#
+# WHAT IS HELD FIXED between the seeds: everything in this file and in the two it reads.
+
+version: 0
+# The shards (joint_v0_9876bd4e), the arm and the per-arm budget the half is taken of.
+mixture_config: "configs/train/joint_v0.yaml"
+# The positive-aware risk stage (balanced, 16,000 positives, probe rate 2e-3), the evaluation
+# windows (seed 20260912: 3,000 selection windows a validation source, 12,000 test windows a
+# source) and the optimiser (AdamW, cosine to 0.1, 2% warmup, clip 1.0, bf16).
+ladder_config: "configs/train/telemetry_v1.yaml"
+
+arm: tel_only
+# The resource ruling (ADR-0018, 2026-09-16): every arm at S2, fixed for comparability.
+rung: S2
+seeds: [1, 2]
+
+# Half of joint_v0's 50,000,000 tokens per arm; rounded UP to a whole optimiser step
+# (382 steps x 32 windows x 2,048 tokens = 25,034,752).
+tokens: 25000000
+# 4 x 8 = 32 windows a step, M2's 16 x 2. Micro-batch 16 does not fit 8 GB at a 33,952-id
+# softmax; 4 x 8 measured 89,817 tokens/s at 3.56 GB (ADR-0018 rulings, 2026-09-16).
+batch_windows: 4
+accumulate: 8
+# The M2 text rungs' and the M1 language model's peak rate, unchanged.
+learning_rate: 0.0006
+# Pretraining is selected on validation next-token loss over these many tel windows a
+# validation source (seeded by the ladder's evaluation seed), measured this many times.
+evaluations: 6
+selection_windows: 500
+
+held_out_source: hill_of_towie
+# ADR-0020. Registered before any run.
+smallest_claimable_auprc_difference: 0.010

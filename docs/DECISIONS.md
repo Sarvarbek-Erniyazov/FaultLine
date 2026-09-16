@@ -2600,3 +2600,37 @@ balanced sampler's order. That is the variance a one-seed arm carries.
 **What this record does not decide.** Whether a gap below the line licenses a claim between
 arms. It licenses only the three-arm design at one seed. Any claim is still read against the
 line and against the measured seed gap.
+
+### Outcome, 2026-09-16 -- the gap is below the line; the three-arm design stands
+
+`faultline model variance-probe` (`configs/train/variance_probe_v0.yaml`,
+`reports/data/variance_probe_v0_20260916.md`). Both seeds ran 25,034,752 pretraining tokens
+(382 steps at 4 x 8) and a 16,000-positive frozen probe. Both seeds took **0.38 GPU-hours
+together**, against the brief's estimate of about 8.5 (ADR-0018 rulings). Per-step logs are in
+`reports/data/variance_probe_v0_steps/`.
+
+| test source | seed 1 AUPRC | seed 2 AUPRC | base rate | gap |
+| --- | --- | --- | --- | --- |
+| **hill_of_towie (held out)** | 0.0353 (lift 1.06) | 0.0433 (lift 1.30) | 0.0333 | **0.0080** |
+| kelmarsh | 0.0679 | 0.0506 | 0.0365 | 0.0173 |
+| penmanshiel | 0.0535 | 0.0624 | 0.0401 | 0.0088 |
+
+**Verdict under the registered rule: 0.0080 < 0.010. A three-arm design at one seed stands.**
+The rule reads the held-out site only, and it is applied as written.
+
+Recorded beside the verdict, not as a re-decision:
+
+- **The gap is 80% of the line, and it is one draw.** Two seeds give one absolute difference.
+  If run-to-run AUPRC has standard deviation `s`, the expected gap is `1.13 s`, so this gap
+  implies `s` near 0.007. A one-seed difference between two arms then has a standard deviation
+  near `s x sqrt(2)`, about 0.010, the line itself. Under the three-arm design, an arm
+  difference at the line would sit within one standard deviation of seed noise.
+- On Kelmarsh, a training site, the gap between seeds is 0.0173, above the line.
+- Both backbones are undertrained at half budget. Validation loss was still falling at the last
+  step (seed 1: 4.2837 at step 315, 4.2128 at step 382). Both probes selected mid-run (steps 830
+  and 664 of 1,000). Held-out lift is 1.06 and 1.30, the range M1e reached.
+- The prior correction brings the uncorrected mean probability on Hill of Towie (0.47 and 0.53)
+  to 0.022 and 0.027, near the training sites' 2.21%. Hill of Towie's own base rate is 3.33%.
+  That gap is site shift, measured and not corrected (ADR-0019). ECE is 0.012 and 0.008.
+
+No other run was started.

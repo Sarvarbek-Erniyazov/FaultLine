@@ -661,6 +661,41 @@ def cards_text(
         typer.echo(f"{name}: wrote {card}")
 
 
+@cards_app.command(
+    "code-book",
+    help="Measure the status code book against the fitted tokenizer and render its card.",
+)
+def cards_code_book(
+    config: ConfigOption = Path("configs/data/sources_text.yaml"),
+    tokenizer: Annotated[
+        Path, typer.Option("--tokenizer", help="Fitted text tokenizer to measure with.")
+    ] = Path("data/tokenizers/text_bpe_v1_22c56e49.json"),
+    corpus: Annotated[
+        str, typer.Option("--corpus", help="Finished corpus the tokenizer was fitted on.")
+    ] = "operator_narratives",
+) -> None:
+    """Render the status code book's dataset card from its measurements.
+
+    Args:
+        config: Text source specification file naming the code book's sites.
+        tokenizer: The fitted text tokenizer; its shards are read for token frequency.
+        corpus: The finished corpus, for word frequency and the narrative comparison.
+    """
+    from faultline.data.text.code_book import CODE_BOOK_SOURCE, build_code_book_card
+    from faultline.data.text.shards import shards_dir
+    from faultline.download.nrc_text import CodeBookSpec, load_sources_text_config
+
+    paths = ProjectPaths.resolve()
+    spec = load_sources_text_config(config).sources[CODE_BOOK_SOURCE]
+    if not isinstance(spec, CodeBookSpec):
+        raise typer.BadParameter(f"{CODE_BOOK_SOURCE} is not a code-book source in {config}")
+    tokenizer_file = (paths.repo_root / tokenizer).resolve()
+    card = build_code_book_card(
+        paths, spec, tokenizer_file, shards_dir(paths, tokenizer_file), corpus
+    )
+    typer.echo(f"{CODE_BOOK_SOURCE}: wrote {card}")
+
+
 @text_app.command(
     "corpus",
     help="Combine staged per-source raw text into one JSONL corpus for `text run`.",

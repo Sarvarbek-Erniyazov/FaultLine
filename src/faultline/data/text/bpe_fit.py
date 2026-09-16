@@ -149,6 +149,25 @@ def token_frequency(tokenizer: TextBPETokenizer, documents: list[CorpusDocument]
     return counts
 
 
+def rare_id_count(frequency: Counter[int], vocab_size: int, threshold: int) -> int:
+    """Count the vocabulary ids seen fewer than ``threshold`` times, never-seen ids included.
+
+    A ``Counter`` holds only the ids that occurred, so counting over its values misses
+    every id seen zero times -- which is fewer than any positive threshold. The M2c report
+    did exactly that and printed 24,456 (74.63%) where the vocabulary holds 25,387
+    (77.47%) such ids.
+
+    Args:
+        frequency: Token id frequencies over a split.
+        vocab_size: The vocabulary the share is taken of.
+        threshold: The rare threshold, exclusive.
+
+    Returns:
+        Ids in ``[0, vocab_size)`` whose frequency is below ``threshold``.
+    """
+    return sum(1 for token_id in range(vocab_size) if frequency.get(token_id, 0) < threshold)
+
+
 def render_report(
     config: TextBPEConfig,
     config_path: Path,
@@ -206,7 +225,7 @@ def render_report(
 
     total_train_tokens = sum(train_frequency.values())
     rare_threshold = 100
-    rare = sum(1 for count in train_frequency.values() if count < rare_threshold)
+    rare = rare_id_count(train_frequency, tokenizer.vocab_size, rare_threshold)
     seen_ids = set(train_frequency)
     unseen = tokenizer.vocab_size - len(seen_ids)
     frequency_section = section(

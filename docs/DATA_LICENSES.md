@@ -35,6 +35,7 @@ route and robots.txt reading: ADR-0016. Cards: `faultline cards text`.
 | NRC Bulletins | U.S. Nuclear Regulatory Commission | public domain (17 U.S.C. 105) | as above (`nrc_bulletins.json`) | as configured |
 | NRC Generic Letters | U.S. Nuclear Regulatory Commission | public domain (17 U.S.C. 105) | as above (`nrc_gen_letters.json`) | as configured |
 | NRC Regulatory Issue Summaries | U.S. Nuclear Regulatory Commission | public domain (17 U.S.C. 105) | as above (`nrc_reg_issues.json`) | as configured |
+| Status code book (derived, not downloaded; readiness only, not training data) | Cubico Sustainable Investments Ltd | CC BY 4.0, inherited from the Kelmarsh and Penmanshiel records above | pooled from the status tables already staged for M1 (`status_code_book.json`); card: `faultline cards code-book` | Cubico Sustainable Investments Ltd, Kelmarsh and Penmanshiel wind farm data, Zenodo, doi:10.5281/zenodo.5841833 and doi:10.5281/zenodo.5946807 (CC BY 4.0) |
 | PHMSA pipeline incident narratives, 2010 onward | Pipeline and Hazardous Materials Safety Administration, U.S. DOT | public domain (17 U.S.C. 105); usa.gov public-domain label stated in data.transportation.gov record 27nc-rsge | six 27nc-rsge attachments on data.transportation.gov (`phmsa.json` for the zips, `phmsa_incident_narratives/` for documents) | PHMSA, pipeline incident and accident flat files (2010 to present), via data.transportation.gov dataset 27nc-rsge (public domain) |
 
 ## Provenance chains of republished data

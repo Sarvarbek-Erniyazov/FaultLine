@@ -359,7 +359,9 @@ decisions and their corrections are ADR-0016.*
 - [x] A trained tokenizer with documented vocabulary size and compression statistics
       on held-out text. *32,768 ids (32,512 merges), one fit, no sweep;
       `reports/data/text_bpe_v1_20260915.md` reports bytes/token per source on val and
-      test, never pooled, and the 74.63% share of the vocabulary seen under 100 times.*
+      test, never pooled, and the share of the vocabulary seen under 100 times -- 77.47%,
+      corrected 2026-09-16 from the 74.63% that report prints (never-seen ids were left
+      out of the count).*
 - [x] A text-only checkpoint with a validation loss curve and a documented compute
       budget. *S2 and S3, one seed each; `reports/data/text_pretrain_v1_*.md` carries
       the loss curve, the per-source loss and bits/byte, and which bound each rung hit;

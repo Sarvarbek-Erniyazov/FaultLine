@@ -99,3 +99,15 @@ def test_fit_writes_a_tokenizer_and_a_report(corpus_paths: ProjectPaths, config_
     assert "| val | a |" in report or "| val | b |" in report
     assert "Tokens per status string" in report
     assert "rare threshold" in report or "fewer than" in report
+
+
+def test_rare_id_count_includes_ids_never_seen() -> None:
+    # Regression: the M2c report counted over a Counter's values, which hold only the
+    # ids that occurred, so an id seen zero times was never counted as rare.
+    from collections import Counter
+
+    from faultline.data.text.bpe_fit import rare_id_count
+
+    frequency = Counter({0: 500, 1: 99, 2: 100})  # ids 3 and 4 never seen
+    assert rare_id_count(frequency, vocab_size=5, threshold=100) == 3
+    assert sum(1 for count in frequency.values() if count < 100) == 1  # the old count

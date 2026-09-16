@@ -2627,6 +2627,52 @@ held-out evaluation.
 (temperature or Platt scaling) that beats the analytic offset on the training sites' held-out
 split. It would be fitted after the correction, not instead of it, and on validation only.
 
+### Correction, 2026-09-16 (E0-E5 ruling, E3) -- the one-term form was wrong; this record supersedes the evaluation design's section 4
+
+**Supersedes section 4 of `FaultLine_M3_evaluation_design_2026-09-16.md`** (the M3 evaluation
+design document; it is not a file in this repository). That section wrote the prior correction in
+the one-term, per-class form, subtracting `log(pi_train / pi_true)` from the positive logit alone.
+**That form is wrong for this head.** The head emits one binary logit, `z = z_1 - z_0`, so the
+negative class's term enters with the opposite sign. The correct form is the two-term offset
+recorded above, `z_true = z_train + logit(pi_true) - logit(pi_train)`, and the code and tests
+already implement it. Where the design document and this record disagree, this record holds.
+
+**Verified independently.** The ruling recomputed the one-term form's shortfall,
+`log((1 - pi_true) / (1 - pi_train))`, and got **0.664 nats**, against **0.67** reported above.
+Both are right, at different priors. 0.664 is the shortfall at the calibration fixture's
+held-out rate of 2.89% (0.6638; 0.6630 at the fixture's training rate of 2.97%). 0.67 is the
+shortfall at the project's training natural rate of 2.21% (0.6708). The algebra agrees in both
+cases. `tests/evaluation/test_calibration.py::test_the_one_term_multiclass_rule_would_still_read_above_the_prior`
+checks the shortfall against the same expression to 1e-5.
+
+**The interval on 3.07% against 2.89%.** The corrected mean prediction over-reads the held-out
+rate by **+0.18 percentage points, a ratio of 1.063: about 6% relative.** A paired bootstrap over
+the fixture's 40,000 held-out windows (2,000 resamples, seed 20260916, mean prediction and
+observed rate drawn together from one resample) gives:
+
+| quantity | point | 95% interval |
+| --- | --- | --- |
+| corrected mean prediction | 3.070% | [2.947%, 3.196%] |
+| held-out positive rate | 2.888% | [2.722%, 3.053%] |
+| over-read, predicted minus observed | +0.182 pp | **[+0.072, +0.290] pp** |
+| over-read, predicted over observed | 1.063 | **[1.024, 1.105]** |
+
+`tests/evaluation/test_calibration.py::test_the_corrected_over_read_is_small_and_its_interval_is_on_record`
+recomputes the interval and pins it (above zero, below a ratio of 1.15).
+
+**Whether ECE 0.0019 is enough to call this small residual miscalibration.** ECE is not enough
+by itself. It bins by confidence, and at a 3% rate nearly every window sits in the lowest bins,
+so a 6% relative shift in the mean moves ECE by about 0.002 whether the shift is real or noise.
+**The held-out-set interval is what decides it,** and it confirms the over-read: the paired
+interval excludes zero, and it bounds the over-read at no more than 10.5% relative. Most of it has
+a known source. The correction reads scores at the **training** sample's rate, which is 2.97% here,
+and the held-out sample drew 2.89%. Against the rate the correction targets, the corrected mean
+over-reads by **3.4%**. The other 2.8% is the difference between the two samples. The correction
+reads the training prior by design, and a model cannot know the held-out rate. So: a small
+residual miscalibration of about 3% relative, confirmed on a held-out interval, plus a sampling
+difference between the two synthetic sets. That interval does not include the uncertainty of the
+training rate itself (40,000 windows, standard error about 0.085 pp).
+
 ---
 
 ## ADR-0020 The seed-variance probe, and the smallest held-out-site AUPRC difference worth claiming

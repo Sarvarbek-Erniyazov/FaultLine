@@ -136,3 +136,26 @@ def test_abstention_answers_the_requested_share_of_windows() -> None:
     assert (confidence >= threshold).mean() == pytest.approx(0.8, abs=0.002)
     with pytest.raises(ValueError, match="coverage"):
         abstention_threshold(scores, 0.0)
+
+
+def test_the_corrected_over_read_is_small_and_its_interval_is_on_record(
+    trained: tuple[np.ndarray, np.ndarray, float],
+) -> None:
+    # ADR-0019, E3 ruling: corrected 3.07% against a held-out 2.89%. A paired bootstrap over
+    # the held-out windows puts an interval on the over-read. It excludes zero on this set, and
+    # it bounds the relative over-read well inside the 15% the calibration test allows.
+    logits, labels, natural = trained
+    probabilities = at_natural_rate(logits, 0.5, natural).probabilities
+    rng = np.random.default_rng(20260916)
+    ratios, gaps = [], []
+    for _ in range(2_000):
+        rows = rng.integers(0, labels.size, labels.size)
+        predicted, observed = probabilities[rows].mean(), labels[rows].mean()
+        ratios.append(predicted / observed)
+        gaps.append(predicted - observed)
+    low, high = np.quantile(gaps, [0.025, 0.975])
+    ratio_low, ratio_high = np.quantile(ratios, [0.025, 0.975])
+    assert 0.0 < low < high < 0.004
+    assert 1.0 < ratio_low < ratio_high < 1.15
+    # half the over-read is the training sample's rate, which the correction reads by design
+    assert natural > float(labels.mean())

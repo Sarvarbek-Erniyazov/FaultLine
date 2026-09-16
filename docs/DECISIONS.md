@@ -2756,3 +2756,64 @@ Recorded beside the verdict, not as a re-decision:
   That gap is site shift, measured and not corrected (ADR-0019). ECE is 0.012 and 0.008.
 
 No other run was started.
+
+### Ruling, 2026-09-16 (E0-E5 ruling, E5) -- PASSED, and the pass is not load-bearing
+
+**Verdict: PASSED. 0.0080 < 0.010.** The line was fixed in commit **`33c5ab4`** ("pre-register
+the seed-variance line, 0.010 held-out AUPRC, before any probe run"). The probe code, the
+configuration and both runs came after it (`f35ce4b`; the report's `git_sha` is `33c5ab4`). The
+rule was applied as written, and the three-arm design at one seed stands under it. This entry
+does not reopen that verdict.
+
+**Why the pass carries no weight beyond that.** Three reasons, each enough by itself:
+
+1. **A floor effect.** Both seeds sit at the floor of the metric. Their lift over chance, AUPRC
+   minus Hill of Towie's base rate, is **0.0020 and 0.0100** (0.035297 and 0.043281 against
+   399/12,000 = 0.03325; the ruling's 0.0023 and 0.0103 are the same subtraction against 0.033
+   rounded). Seed 2 is **about 4.5 to 5 times** as far above chance as seed 1 (4.9 exact, 4.5
+   against the rounded rate). When both scores are that close to chance, a small absolute gap
+   says only that neither seed has much signal to differ in. It does not say that seeds agree.
+   **The control is Kelmarsh,** a training site with signal (lift 1.39 to 1.86). There the same
+   two seeds differ by **0.0173**, above the line. Where there is signal, the model has room to
+   vary, and it does.
+2. **The wrong scale.** 0.010 is **30% of the 0.033 base rate** (0.0100 / 0.03325 = 0.30). At the
+   held-out site, a gap below the line can still be a large fraction of everything above chance:
+   seed 1's whole lift is 0.0020. A line in absolute AUPRC, fixed without a lift or base-rate
+   scale, cannot tell "seeds agree" from "both near zero".
+3. **Conflated noise.** The gap mixes two noise sources and reports neither alone. It is seed
+   variance (initialisation, data order, head, sampler) plus the sampling noise of the evaluation
+   itself: 12,000 windows and 399 positive windows, clustered in time. **No within-seed interval
+   was reported,** so it is not known how much of 0.0080, or of either AUPRC, a resample of the
+   same windows would move. The within-seed bootstrap is pre-registered next, as ADR-0021, and applied to
+   these two seeds there.
+
+The E5 result licenses the three-arm design under its own rule and nothing more. It is not
+evidence that one-seed arm differences at Hill of Towie are interpretable. Whether Hill of Towie
+can be evaluated at all is ADR-0021's gate.
+
+**The budget, reconciled.** Two throughput figures are on record for the same configuration, and
+they measure different things:
+
+| scope | tokens | seconds | tokens/s |
+| --- | --- | --- | --- |
+| **steady state**: throughput measurement, 4 x 8, random ids, optimiser steps only (ADR-0018 rulings) | -- | -- | **89,817** |
+| pretraining stage, seed 1, with its 6 validation passes | 25,034,752 | 344.2 | 72,737 |
+| pretraining stage, seed 2, with its 6 validation passes | 25,034,752 | 341.5 | 73,311 |
+| **effective**: both seeds end to end, pretraining tokens over all wall clock | 50,069,504 | 1,356.0 | **36,925** |
+| effective, as the ruling stated it: 50,000,000 nominal over 0.38 h | 50,000,000 | 1,368 | 36,550 |
+
+Where the 1,356 seconds went (`reports/data/variance_probe_v0_20260916.json`):
+
+| part | seconds | share |
+| --- | --- | --- |
+| optimiser steps at the steady-state rate (50,069,504 / 89,817) | 557.5 | 41% |
+| pretraining validation passes and stage overhead (685.7 - 557.5) | 128.2 | 9% |
+| probe stages, 16,000 positives each, validation included | 452.0 | 33% |
+| test scoring (36,000 risk windows a seed), checkpoint I/O and set-up | 218.3 | 16% |
+
+The steady-state rate is correct for what it measures. Less than half the wall clock is
+pretraining steps, and a GPU-hour projection built on 89,817 alone under-reads a run by a
+factor of about 2.4. A projection for a run that includes a probe and a test pass uses the
+effective rate, or this breakdown. The full-budget `tel_only` gate check (ADR-0021) is projected
+from the breakdown: 557.5 s of steps, 128 s of validation and overhead, 226 s of probe and about
+109 s of test and I/O, so about **1,020 seconds, 0.28 GPU-hours**, before start-up.

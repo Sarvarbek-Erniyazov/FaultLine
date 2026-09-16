@@ -142,6 +142,49 @@ built on.
 
 ---
 
+## 10. The gate chain that did not gate
+
+*Added 2026-09-16.* **The verification harness failed its own check.** Every other entry
+here is a check that measured the wrong thing. This one is the check that decides whether
+any of those checks ran green before a commit.
+
+| field | |
+| --- | --- |
+| supposed to measure | Whether every gate is green before a commit: "all gates green before each commit" (the M3 briefs of 2026-09-16). The gates are ruff, `mypy --strict src/`, `pytest -q` and `faultline check naming`, run as one chain whose failure stops the commit. |
+| actually measured | **The exit status of `tail`.** The chain was typed as `pytest -q \| tail -n 3 && ... && git commit`. A pipeline's status is its last command's, and `tail` exits 0 whatever it reads. A failing pytest therefore let the chain continue to `git commit`. Ruff and mypy were piped the same way, so a lint or type failure would have passed as well. Only the final summary lines were printed, and the chain went on either way. |
+| how found | The failure summary was read in the output of the same command that had made the commit. The commit `bbd8614` (C0, 18:58:05) carried a failing test, `tests/training/test_positive_aware_risk.py::test_the_ladder_opens_a_balanced_sampler_at_the_stage_fraction`. The synthetic shard was too short for `telemetry_v1`'s stride of 6 to keep a positive window, so the sampler raised. It was amended 65 seconds later as `904ff77`, which changes only that test (`git diff bbd8614 904ff77`). The failing tree is kept in the reflog. |
+| reported result if undetected | **Every "gates green" in a commit message since the chain was piped is unverified.** C0's message says "implemented and fixture-tested" over a red test. Nothing would have stopped a real defect in C1 or C2 in the same way, and a later commit's message would have been built on it. The earlier commits were re-gated for this entry: see the note below the table. The failure that was caught happened to be a test defect, not a code defect. That was luck, not the chain. |
+| regression test | `tests/test_gates.py::test_a_failing_stage_fails_the_chain_although_its_output_is_piped_to_tail`, with three siblings: every stage runs so one run shows every red gate, a failure inside a stage's own pipeline counts, and the shipped chain names all four gates under `pipefail`. It was checked against the defect. With `pipefail` removed from `scripts/gates.sh`, the same failing stage prints `ALL GATES PASSED` and exits 0. |
+| commit | The commit that adds this entry: `scripts/gates.sh`, with `set -euo pipefail` over the whole chain and every stage run as `bash -o pipefail -c`. The script also refuses untracked, unignored files, because `faultline check naming` scans tracked files only, and a file not yet added passes it unread. |
+
+**Re-gated for this entry, 2026-09-16.** Every commit of the M3 entry brief was checked out
+into a clean worktree and run through the four gates, each exit code read directly with no
+pipe: `3c294c2`, `e29c10c`, `314fcd0`, `b29e2a4`, `343e302`, `d56684a`, `8f9379f`,
+`33c9591`, `904ff77`, `fc7104c` and `58c0096`. **All eleven pass ruff, `mypy --strict`,
+pytest and naming.** As a control, the pre-amend tree `bbd8614` was run the same way, and
+pytest exits 1 with the one failure named above. So the harness that re-gated the history
+can see a failure, and none of the committed trees hides one. The claims in those commit
+messages stand, but they now stand on this re-run, not on the chain that made them.
+
+## 11. Token-level coverage cannot fail for an absent word
+
+*Added 2026-09-16.* **This is the second analysis-level entry, after entry 9.** Entry 9 found
+that a split drawn at the word level did not describe what the model reads, and moved the
+measurement to the token level. This entry finds that the token-level measurement is not a
+valid metric for the claim either. The code does what its docstring says. What is wrong is
+what the number was taken to show.
+
+| field | |
+| --- | --- |
+| supposed to measure | Whether a status string is within what narrative pretraining gave the model: "Of the 246 strings not covered at the token level, 62 are blocked by surface convention ... and 184 by genuine vocabulary absence" (`docs/DECISIONS.md`, ADR-0017, H3'). Stage A's decision rule reads the same instrument: "more than 50 of 264 covered after normalization: surface convention is confirmed as the dominant barrier" (ibid.). |
+| actually measured | **How often the pieces of a string's segmentation were seen**, which is a property of the tokenizer's fallback, not of the words. Byte-level BPE has no out-of-vocabulary token by construction. A word the corpus never contains is still encoded, into shorter pieces, and shorter pieces are more frequent. `Yaw error` is covered raw as `Y` (1,089) `aw` (110) ` error` (1,242), and `yaw` occurs **0** times in the training text. So an absent word can make a string *more* likely to be covered, not less. Measured on the frozen tokenizer: **2 of the 18** raw-covered strings contain a word that never occurs in training (`Yaw error`, `Yaw speed high`), and 4 of 18 a word seen fewer than 100 times. Normalized, 1 of the 80 covered strings has a never-seen word and 8 have a rare one. As training text grows, every short piece clears any fixed floor, and coverage tends to 264/264 whether or not a single status word becomes known. **In the limit the metric measures nothing.** |
+| how found | Reading Stage A's own diff against the claim it supported. Of the 5 strings normalization *loses*, `Yaw error` goes from covered to uncovered because ` y` (41) is rarer than `Y`. A string should not leave the covered set when its encoding comes closer to how prose writes words. The caveat was written into ADR-0017 and entry 9 ("a floor on how often pieces were seen ... not evidence that a word is known"), but the verdict and the "62 by convention" decomposition were still read off the same count. The instrument was retired when that caveat was read against the verdict. |
+| reported result if undetected | **H3' would have been reported on a metric that cannot fail.** "Surface convention CONFIRMED as the dominant barrier (80 > 50)" is in ADR-0017 and the roadmap. Under a metric where more fallback means more coverage, no count could have come out at 50 or below for a reason connected to word knowledge. The "62 blocked by convention" decomposition would have gone into the M3 record as a mechanism. The two 80s share only 72 strings, and the measured change is 67 gained and 5 lost, not a block of 62. |
+| regression test | Added with the replacement metric (step E1 of the M3 pre-run brief): single-token-word rate, which checks exactly whether the word's surface form exists as one vocabulary entry, and per-string NLL under the text checkpoints, which is behavioural. The test names are recorded in the note added with that commit. |
+| commit | The commit that adds this entry records the defect. The metric is replaced in the next commit (E1). |
+
+---
+
 ## The seven defects reported for the Gate 6 run, classified
 
 Gate 6's section 9 lists five defects and two further fixes. The seventh "fix", the
@@ -214,3 +257,22 @@ quantity that matters:
 The rule this pattern leads to: **budget in the unit the comparison is about, and report
 the other units as observations.** Tokens seen for pretraining arms. Positives seen for
 risk heads.
+
+### Entry 11 corrects the lesson of entry 9
+
+Entry 9's rule, "measure in the unit the mechanism acts on", was right about the unit and
+not sufficient. The token id is the unit, but a frequency floor on token ids cannot fail
+for an absent word, because byte-level BPE falls back to shorter and more frequent pieces
+exactly when a word is missing. **A metric has to be able to fail for the reason the claim
+names.** Before a count is read as evidence, ask what input would make it come out low, and
+check that the input is the thing the claim is about. For "the model knows this word", the
+answer is behavioural: its NLL under the pretrained model (entry 11, and the E1 step that
+replaces the metric).
+
+### Entry 10: the check on the checks
+
+The practices listed above find instrument defects by reading. They are only worth
+anything if a red test stops a commit. Entry 10 is the one place where the harness itself
+let a failure through, and it was caught by reading output, the same practice as entries
+3 and 4. The gate chain is now a file (`scripts/gates.sh`) with a test that feeds it a
+failure, not a line retyped before each commit.

@@ -1,0 +1,221 @@
+{
+ "config": {
+  "version": 0,
+  "mixture_config": "configs/train/joint_v0.yaml",
+  "ladder_config": "configs/train/telemetry_v1.yaml",
+  "arm": "tel_only",
+  "rung": "S2",
+  "seed": 1,
+  "tokens": 50000000,
+  "batch_windows": 4,
+  "accumulate": 8,
+  "learning_rate": 0.0006,
+  "evaluations": 6,
+  "selection_windows": 500,
+  "held_out_source": "hill_of_towie",
+  "bootstrap": {
+   "block_steps": 288,
+   "replicates": 10000,
+   "seed": 20260916,
+   "confidence": 0.95,
+   "max_discarded_share": 0.01
+  },
+  "half_budget_probe_config": "configs/train/variance_probe_v0.yaml"
+ },
+ "config_hash": "9697a266",
+ "probe_config_hash": "5d9ff5c0",
+ "seconds": 727.3919344999886,
+ "device": "cuda",
+ "seeds": [
+  {
+   "seed": 1,
+   "recorded_auprc": 0.035296983958066366,
+   "probe": {
+    "positives_seen": 16000,
+    "seconds": 226.8976937999978,
+    "selected": [
+     830,
+     0.05923782150650145
+    ],
+    "prior_offset": -3.7921449117457753,
+    "natural_rate": 0.022050022218159642,
+    "test": [
+     {
+      "source": "hill_of_towie",
+      "windows": 12000,
+      "positives": 399,
+      "auprc": 0.035296983958066366,
+      "base_rate": 0.03325,
+      "lift": 1.0615634273102665,
+      "loss": 0.15066602186289613,
+      "nan_share": 4.4801311728395064e-05
+     },
+     {
+      "source": "kelmarsh",
+      "windows": 12000,
+      "positives": 438,
+      "auprc": 0.06791965988377208,
+      "base_rate": 0.0365,
+      "lift": 1.8608125995553995,
+      "loss": 0.1608054452193246,
+      "nan_share": 0.0011313175154320989
+     },
+     {
+      "source": "penmanshiel",
+      "windows": 12000,
+      "positives": 481,
+      "auprc": 0.053538308293282974,
+      "base_rate": 0.04008333333333333,
+      "lift": 1.3356750509758746,
+      "loss": 0.1738398322568809,
+      "nan_share": 0.003326244212962963
+     }
+    ],
+    "held_out_calibration": {
+     "mean_predicted_rate": 0.02185926850223413,
+     "base_rate": 0.033250000327825546,
+     "expected_calibration_error": 0.01232872213005739,
+     "uncorrected_mean_predicted_rate": 0.47419585660711405
+    },
+    "step_log": "reports/data/variance_probe_v0_intervals_steps/S2_tel_only_seed1_probe.steps.csv"
+   },
+   "test_scores": "checkpoints/variance_probe_v0_5d9ff5c0/S2_tel_only_seed1_rerun_test_scores.npz",
+   "block": {
+    "unit": "block",
+    "auprc": 0.035296983958066366,
+    "low": 0.029884856505043484,
+    "high": 0.04220407595797748,
+    "lift_low": -0.0011487509477197627,
+    "lift_high": 0.006887157848267233,
+    "base_rate": 0.03325,
+    "windows": 12000,
+    "positives": 399,
+    "blocks": 5983,
+    "positive_blocks": 274,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "window": {
+    "unit": "window",
+    "auprc": 0.035296983958066366,
+    "low": 0.031207052477920872,
+    "high": 0.04056870718301439,
+    "lift_low": -0.0005132394508980117,
+    "lift_high": 0.005916352400648762,
+    "base_rate": 0.03325,
+    "windows": 12000,
+    "positives": 399,
+    "blocks": 12000,
+    "positive_blocks": 399,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "rule_if_it_applied": {
+    "evaluable": false,
+    "lower_bound": 0.029884856505043484,
+    "base_rate": 0.03325,
+    "discarded_share": 0.0,
+    "reason": "the lower bound 0.0299 is not above the base rate 0.03325"
+   }
+  },
+  {
+   "seed": 2,
+   "recorded_auprc": 0.043280978675158496,
+   "probe": {
+    "positives_seen": 16000,
+    "seconds": 224.23653480000212,
+    "selected": [
+     664,
+     0.05594512019707286
+    ],
+    "prior_offset": -3.7921449117457753,
+    "natural_rate": 0.022050022218159642,
+    "test": [
+     {
+      "source": "hill_of_towie",
+      "windows": 12000,
+      "positives": 399,
+      "auprc": 0.043280978675158496,
+      "base_rate": 0.03325,
+      "lift": 1.3016835691776991,
+      "loss": 0.14628179073769307,
+      "nan_share": 4.4801311728395064e-05
+     },
+     {
+      "source": "kelmarsh",
+      "windows": 12000,
+      "positives": 438,
+      "auprc": 0.05060409647827489,
+      "base_rate": 0.0365,
+      "lift": 1.3864136021445177,
+      "loss": 0.15891014366503944,
+      "nan_share": 0.0011313175154320989
+     },
+     {
+      "source": "penmanshiel",
+      "windows": 12000,
+      "positives": 481,
+      "auprc": 0.06237726649650993,
+      "base_rate": 0.04008333333333333,
+      "lift": 1.5561896007445306,
+      "loss": 0.16964997343159247,
+      "nan_share": 0.003326244212962963
+     }
+    ],
+    "held_out_calibration": {
+     "mean_predicted_rate": 0.027382300314173644,
+     "base_rate": 0.033250000327825546,
+     "expected_calibration_error": 0.008111637603481565,
+     "uncorrected_mean_predicted_rate": 0.5297673455246751
+    },
+    "step_log": "reports/data/variance_probe_v0_intervals_steps/S2_tel_only_seed2_probe.steps.csv"
+   },
+   "test_scores": "checkpoints/variance_probe_v0_5d9ff5c0/S2_tel_only_seed2_rerun_test_scores.npz",
+   "block": {
+    "unit": "block",
+    "auprc": 0.043280978675158496,
+    "low": 0.035635330439591585,
+    "high": 0.05541830160489932,
+    "lift_low": 0.0044536180541602955,
+    "lift_high": 0.020719607424612346,
+    "base_rate": 0.03325,
+    "windows": 12000,
+    "positives": 399,
+    "blocks": 5983,
+    "positive_blocks": 274,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "window": {
+    "unit": "window",
+    "auprc": 0.043280978675158496,
+    "low": 0.03749073621818339,
+    "high": 0.05294081295898345,
+    "lift_low": 0.005440849740670664,
+    "lift_high": 0.01879242174930094,
+    "base_rate": 0.03325,
+    "windows": 12000,
+    "positives": 399,
+    "blocks": 12000,
+    "positive_blocks": 399,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "rule_if_it_applied": {
+    "evaluable": true,
+    "lower_bound": 0.035635330439591585,
+    "base_rate": 0.03325,
+    "discarded_share": 0.0,
+    "reason": "the lower bound 0.0356 is above the base rate 0.03325"
+   }
+  }
+ ]
+}

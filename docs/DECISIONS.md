@@ -2904,3 +2904,61 @@ probe's 382 steps instead of rounding the full budget up. 50,000,000 tokens roun
 steps, 50,003,968 tokens**, and that is what `configs/train/gate_check_v0.yaml` runs
 (`tests/evaluation/test_gate_check.py` pins it). The rule, the interval and the fallback are
 unchanged. ADR-0020's projection of 557.5 seconds of steps becomes 556.7.
+
+### Outcome, 2026-09-16 -- NOT EVALUABLE; leave-site-out is a reported negative, and the fallback is chosen under ADR-0022
+
+**Verdict: NOT EVALUABLE.** The rule was registered in commit **`ce9c8ad`**, before the
+configuration, the code (`e7ab586`) and the run existed. `faultline model gate-check`
+(`configs/train/gate_check_v0.yaml`, hash 9697a266; `reports/data/gate_check_v0_20260916.md`,
+git_sha `e7ab586`) put the block-bootstrap lower bound on Hill of Towie test AUPRC at **0.0306**,
+not above the base rate **0.03325**. No replicate was discarded (0 of 10,000). As registered,
+**leave-site-out on Hill of Towie is demoted to a reported negative result**: every arm's Hill of
+Towie AUPRC and interval are still reported, labelled not evaluable under ADR-0021, and no arm
+claim rests on them. The demotion is not reversed by a later, better Hill of Towie result.
+
+**All three runs, one table.** Every row reads the same 12,000 seeded Hill of Towie test windows
+(stride 1, seed 20260912): **399 positive windows, base rate 0.03325, 274 of 5,983 occupied
+48-hour blocks holding a positive**. Intervals are 10,000 block-bootstrap replicates, seed
+20260916, 95% percentile. The two half-budget rows come from `faultline model probe-intervals`
+(`reports/data/variance_probe_v0_intervals_20260916.md`): the frozen probe was re-run on each
+saved ADR-0020 backbone, and both re-runs reproduced the recorded AUPRC to four decimals.
+
+| run | pretraining tokens | AUPRC | block 95% interval | width | lower bound above 0.03325 |
+| --- | --- | --- | --- | --- | --- |
+| half budget, seed 1 (ADR-0020) | 25,034,752 | 0.0353 | [0.0299, 0.0422] | 0.0123 | no |
+| half budget, seed 2 (ADR-0020) | 25,034,752 | 0.0433 | [0.0356, 0.0554] | 0.0198 | yes |
+| **full budget, seed 1 (this gate)** | **50,003,968** | **0.0393** | **[0.0306, 0.0553]** | 0.0247 | **no** |
+
+Only the last row is the registered run. The half-budget rows are reported under the rule, and
+the rule does not apply to them.
+
+**Robust to the resampling unit.** Resampling windows instead of blocks treats the 399 clustered
+positives as independent and narrows the interval to [0.0328, 0.0509]. Its lower bound, **0.0328**,
+is still below the base rate. The verdict does not depend on the choice of unit.
+
+**The site is marginal, not null.** Seed 2 at half budget would have cleared the rule (lower
+bound 0.0356), and the registered full-budget run did not. Two of three runs sit below the line,
+one sits above it, and all three point estimates are above chance (lift 1.06 to 1.30). Hill of
+Towie carries a small signal that this evaluation cannot resolve from chance at one seed. It does
+not show that the site carries no signal.
+
+**The noise finding.** Each half-budget seed's own interval, **0.0123 and 0.0198 wide**, is wider
+than the **0.0080** gap between the two seeds that ADR-0020 read. That gap is inside the
+evaluation's own sampling noise at a fixed model. E5's comparison could not have told a seed
+effect from a resample of the same 12,000 windows, which confirms the third reason in ADR-0020's
+ruling (conflated noise) with a measurement.
+
+**Recorded beside the verdict, deciding nothing.** Doubling pretraining lowered selected
+validation loss from 4.21 (half budget, seed 1, step 382) to **3.3172** (step 763). Hill of Towie
+AUPRC did not move outside either interval, and neither did Kelmarsh (0.0518) or Penmanshiel
+(0.0504). The probe selected its **first** validation measurement, step 166 of 1,000. Its
+prior-corrected mean prediction on Hill of Towie is **0.0138**, below the training natural rate
+of 0.0221 that the correction targets. Both facts are carried into the next brief (F1, F2).
+
+**The fallback is not chosen here.** The choice between CARE (ADR-0010) and a temporal holdout at
+the training sites is deferred to **ADR-0022**, under a selection rule registered there before
+either candidate is scored for any seed.[^0021-lift]
+
+[^0021-lift]: The window-resampling interval on lift over chance is [+0.0004, +0.0172]. Its lower
+bound is above zero. That row is not the registered unit and decides nothing. The block
+interval on lift, the registered unit, is [-0.0012, +0.0211].

@@ -1,0 +1,172 @@
+{
+ "config": {
+  "version": 0,
+  "mixture_config": "configs/train/joint_v0.yaml",
+  "ladder_config": "configs/train/telemetry_v1.yaml",
+  "arm": "tel_only",
+  "rung": "S2",
+  "seed": 1,
+  "tokens": 50000000,
+  "batch_windows": 4,
+  "accumulate": 8,
+  "learning_rate": 0.0006,
+  "evaluations": 6,
+  "selection_windows": 500,
+  "held_out_source": "hill_of_towie",
+  "bootstrap": {
+   "block_steps": 288,
+   "replicates": 10000,
+   "seed": 20260916,
+   "confidence": 0.95,
+   "max_discarded_share": 0.01
+  },
+  "half_budget_probe_config": "configs/train/variance_probe_v0.yaml"
+ },
+ "config_hash": "9697a266",
+ "spec": {
+  "name": "S2",
+  "d_model": 192,
+  "n_layer": 8,
+  "n_head": 8,
+  "context": 2048,
+  "vocab_size": 33952,
+  "dropout": 0.0
+ },
+ "seconds": 977.9138034999924,
+ "device": "cuda",
+ "verdict": {
+  "evaluable": false,
+  "lower_bound": 0.030595520094542243,
+  "base_rate": 0.03325,
+  "discarded_share": 0.0,
+  "reason": "the lower bound 0.0306 is not above the base rate 0.03325"
+ },
+ "intervals": {
+  "block": {
+   "unit": "block",
+   "auprc": 0.039272862252739016,
+   "low": 0.030595520094542243,
+   "high": 0.055324784671859084,
+   "lift_low": -0.0011792525356885517,
+   "lift_high": 0.02108605186323651,
+   "base_rate": 0.03325,
+   "windows": 12000,
+   "positives": 399,
+   "blocks": 5983,
+   "positive_blocks": 274,
+   "replicates": 10000,
+   "discarded": 0,
+   "confidence": 0.95,
+   "seed": 20260916
+  },
+  "window": {
+   "unit": "window",
+   "auprc": 0.039272862252739016,
+   "low": 0.03278668799990775,
+   "high": 0.05092703317510296,
+   "lift_low": 0.0004438340542922154,
+   "lift_high": 0.017197529831655047,
+   "base_rate": 0.03325,
+   "windows": 12000,
+   "positives": 399,
+   "blocks": 12000,
+   "positive_blocks": 399,
+   "replicates": 10000,
+   "discarded": 0,
+   "confidence": 0.95,
+   "seed": 20260916
+  }
+ },
+ "pretraining": {
+  "lm_tokens": 50003968,
+  "lm_steps": 763,
+  "lm_seconds": 620.6238449000084,
+  "lm_selected": [
+   763,
+   3.3171999950408937
+  ],
+  "lm_history": [
+   [
+    127,
+    4.89413327884674
+   ],
+   [
+    254,
+    4.2226159448623655
+   ],
+   [
+    381,
+    3.7693021841049195
+   ],
+   [
+    508,
+    3.504619825363159
+   ],
+   [
+    635,
+    3.3814569873809814
+   ],
+   [
+    762,
+    3.317232065200806
+   ],
+   [
+    763,
+    3.3171999950408937
+   ]
+  ],
+  "lm_final_train_loss": 3.142591258412913,
+  "checkpoint": "checkpoints/gate_check_v0_9697a266/S2_tel_only_seed1.pt",
+  "step_log": "reports/data/gate_check_v0_steps/S2_tel_only_seed1_lm.steps.csv"
+ },
+ "probe": {
+  "positives_seen": 16000,
+  "seconds": 222.44948440000007,
+  "selected": [
+   166,
+   0.044064528459646285
+  ],
+  "prior_offset": -3.7921449117457753,
+  "natural_rate": 0.022050022218159642,
+  "test": [
+   {
+    "source": "hill_of_towie",
+    "windows": 12000,
+    "positives": 399,
+    "auprc": 0.039272862252739016,
+    "base_rate": 0.03325,
+    "lift": 1.1811387143680907,
+    "loss": 0.15699500626547072,
+    "nan_share": 4.4801311728395064e-05
+   },
+   {
+    "source": "kelmarsh",
+    "windows": 12000,
+    "positives": 438,
+    "auprc": 0.05180249497717785,
+    "base_rate": 0.0365,
+    "lift": 1.4192464377309002,
+    "loss": 0.168795658846238,
+    "nan_share": 0.0011313175154320989
+   },
+   {
+    "source": "penmanshiel",
+    "windows": 12000,
+    "positives": 481,
+    "auprc": 0.05036595026778095,
+    "base_rate": 0.04008333333333333,
+    "lift": 1.256530983811583,
+    "loss": 0.1841611110366577,
+    "nan_share": 0.003326244212962963
+   }
+  ],
+  "held_out_calibration": {
+   "mean_predicted_rate": 0.013785333842773438,
+   "base_rate": 0.033250000327825546,
+   "expected_calibration_error": 0.019477364564353703,
+   "uncorrected_mean_predicted_rate": 0.37591109100588704
+  },
+  "step_log": "reports/data/gate_check_v0_steps/S2_tel_only_seed1_probe.steps.csv"
+ },
+ "test_scores": "checkpoints/gate_check_v0_9697a266/S2_tel_only_seed1_test_scores.npz"
+}

@@ -2762,7 +2762,7 @@ Recorded beside the verdict, deciding nothing:
 - **A residual under-read remains that the prior does not explain.** Even re-centred, both heads
   put a corrected mean of 0.018 to 0.019 on every test set, below the training natural rate of
   0.0221 that the correction targets. On test windows, the head's scores sit lower than on
-  training windows. That is a shift between the 2019-2021 training windows and the 2022-2024 test
+  training windows. That is a shift between the 2016-2020 training windows and the 2022-2024 test
   windows, in the covariates or in what is labelled (ADR-0009). It is not a prior-correction
   error, and under ADR-0019 it is reported as measured, not absorbed.
 - **The training sites' test base rate (0.0388) is 1.8 times the training natural rate

@@ -3269,6 +3269,76 @@ re-tokenization that masks absent channels instead of emitting `<nan>`. Either w
 confound and need a new version of the axis-gate configuration. A measurement showing that the F3
 thinning misses an event would also change it: today every one of the 45 events is scored.
 
+### Addendum, registered 2026-09-18 before any bootstrap of it is run -- arm-run checkpoint selection
+
+**What §5 says, verbatim.**
+
+> Whether the arm runs use selected-step or fixed-final-step selection is decided in a **dated
+> addendum to this record**, after the `b2ad4a7` F3 report exists, on a criterion registered now:
+> **if the final-step read agrees with the selected read within the paired interval on all three
+> seeds on the pooled split, arm runs use fixed-final-step selection. Otherwise the ADR-0024 rule
+> stays.** The addendum is written before any arm is pretrained.
+
+**Why it is clarified.** Read literally, "agreement within the paired interval" is a two-sided
+test, and it fails in the direction that argues *for* the change. A final step significantly
+**better** than the selected one would not agree, so the criterion would retain the worse rule.
+That is not the question §5 was written to ask. The question is whether fixed-final-step selection
+**costs** anything: whether selecting on a 6,000-window validation split buys any test AUPRC over
+simply taking the last step. Only a final step significantly **worse** than the selected one is
+evidence against the change. The criterion below is the one-sided reading, and it adds the
+condition that the pretraining effect itself must survive the switch.
+
+**What was seen before this registration, stated plainly.** The point estimates in the F3 report
+§5 were read before this text was written: the final step is at or above the selected step on
+**every one of the six probes**, and on the trained seeds the gaps are **+0.0040** (seed 1,
+0.0540 to 0.0580) and **+0.0007** (seed 3, 0.0508 to 0.0515), with seed 2 identical because it
+selected the last step. Those are unpaired point differences read off two independent intervals.
+**The paired intervals on Δ registered below did not exist when this was written, and neither did
+the nine-cell final-versus-final table.** Nothing here is computed from them.
+
+**The criterion, registered.**
+
+> Fixed-final-step selection is adopted for the arm runs unless, on any trained seed, the paired
+> 95% block-bootstrap interval of Δ = AUPRC(final) − AUPRC(selected) on the pooled stride-12 split
+> lies entirely below zero; and only if the ADR-0024 F3 criterion, recomputed with final-step
+> checkpoints on BOTH sides (trained final vs each random-init final), passes nine of nine.
+> Otherwise the ADR-0024 selected-checkpoint rule stays for the arm runs. Whichever rule is
+> adopted is the rule F5 scores under, and every probe in every arm from then on.
+
+**How it is read, fixed here.** Δ is the paired block bootstrap of ADR-0024 §2 with the final-step
+scores as the reference and the selected-step scores as the other: two-day blocks (288 steps within
+each shard) drawn once per replicate, both reads taken on the identical resampled rows, **10,000
+replicates, bootstrap seed 20260916, 95% percentile**, the discard rule at 1%. The windows are the
+pooled Kelmarsh + Penmanshiel stride-12 split of ADR-0024 §4 (137,025 windows, 5,312 positive).
+**Trained seed 2 selected step 1,000**, so its final checkpoint *is* its selected checkpoint and
+Δ ≡ 0 identically; it is stated, not bootstrapped, and it cannot fail the condition. The nine-cell
+recomputation is ADR-0024's criterion unchanged in every other respect, with each trained seed's
+final-step scores against each random-init seed's final-step scores. Every score read is already
+on disk under `checkpoints/seed_replication_v0_424c4f33/`. **Nothing is retrained and nothing is
+re-scored on a GPU.**
+
+**The evidence that motivates the change** (report §4 and §7 of the F3 outcome, all seen before
+this registration, none of it the criterion):
+
+| seed | selected step | selection AUPRC | 95% block interval | the untrained head's 0.0447 inside it |
+| --- | --- | --- | --- | --- |
+| 1 | 200 | 0.0471 | [0.0289, 0.0902] | yes |
+| 2 | 1,000 | 0.0382 | [0.0255, 0.0607] | yes |
+| 3 | 700 | 0.0382 | [0.0243, 0.0708] | yes |
+
+The selection split holds 6,000 windows, 117 positive, in 2,789 occupied 48-hour blocks of which
+78 hold a positive. Every interval is about as wide as the quantity being ranked, and **the step-0
+untrained head's 0.0447 lies inside all three**. Validation-AUPRC selection on this split cannot
+distinguish the checkpoints it is choosing between; it is selection on noise, and it costs a saved
+checkpoint per measurement and a re-run whenever a final state is wanted. Fixed-final-step
+selection removes a free parameter from every arm run. That is the case for the change. Whether it
+is paid for in test AUPRC is what the criterion above measures.
+
+**What this addendum does not change.** ADR-0022 §4's axis rule, the CARE scoring protocol, the
+base rates, the interval and the stride all stand. §5's first paragraph stands for F5's reporting:
+whichever checkpoint gates, the other is scored beside it on both axes and reported. F5 is not
+authorised by this addendum.
+
 ---
 
 ## ADR-0023 The random-init probe control: can the frozen probe see backbone quality?

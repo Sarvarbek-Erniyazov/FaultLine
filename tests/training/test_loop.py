@@ -251,3 +251,42 @@ def test_a_scaled_parameter_gets_its_own_groups_and_a_plain_module_keeps_two() -
     assert [g["lr_scale"] for g in groups] == [1.0, 1.0, 0.25, 0.25]
     scaled = {id(p) for g in groups if g["lr_scale"] == 0.25 for p in g["params"]}
     assert scaled == {id(p) for p in model.backbone.blocks[-1].parameters()}
+
+
+def test_named_measurement_steps_replace_the_even_spacing_and_step_zero_is_never_selected() -> None:
+    # ADR-0024 G3: measure at chosen steps, and at step 0 as a reference that cannot win.
+    def run(steps: list[int] | None, initial: bool) -> tuple[list[int], int, list[Tensor]]:
+        torch.manual_seed(0)
+        model = TelemetryDecoder(spec())
+        scripted = iter([0.99, 0.1, 0.5, 0.2, 0.25, 0.4, 0.15])
+
+        def loss_fn(module: nn.Module, tokens: Tensor, _: Tensor) -> Tensor:
+            return module.loss(tokens)
+
+        def measure(_: nn.Module) -> Measurement:
+            return Measurement(step=0, windows=0, value=next(scripted))
+
+        result = train(
+            module=model,
+            batches=batches(),
+            budget=Budget(windows=80, batch_windows=4, learning_rate=1e-3, evaluations=4),
+            optimiser=Optimiser(),
+            device=torch.device("cpu"),
+            loss_fn=loss_fn,
+            measure=measure,
+            higher_is_better=True,
+            tokens_per_window=CONTEXT,
+            label="test",
+            measure_steps=steps,
+            measure_initial=initial,
+        )
+        return [m.step for m in result.history], result.best.step, list(model.parameters())
+
+    steps, best, dense = run([2, 4, 6, 10, 20], initial=True)
+    assert steps == [0, 2, 4, 6, 10, 20]
+    assert best == 4  # 0.99 at step 0 is the highest and is not selectable
+    _, _, even = run(None, initial=False)
+    # measuring more often does not change the trajectory
+    assert all(torch.equal(a, b) for a, b in zip(dense, even, strict=True))
+    with pytest.raises(ValueError, match="measurement steps"):
+        run([0, 5], initial=False)

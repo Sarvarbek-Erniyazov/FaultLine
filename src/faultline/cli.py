@@ -1253,6 +1253,28 @@ def model_bag_of_tokens(
 
 
 @model_app.command(
+    "probe-cadence",
+    help="Re-train the in-force probe under ADR-0024's G3 cadence (step 0 as a reference, every "
+    "25 steps to 300, every 100 after) and score the selected checkpoint with block intervals.",
+)
+def model_probe_cadence(
+    config: ConfigOption = Path("configs/train/probe_cadence_v0.yaml"),
+    device: Annotated[str | None, typer.Option("--device", help="Torch device.")] = None,
+) -> None:
+    """Run the cadence re-train and write its report.
+
+    Args:
+        config: The cadence configuration.
+        device: Torch device; chosen automatically when omitted.
+    """
+    from faultline.evaluation.probe_cadence import run_probe_cadence
+
+    paths = ProjectPaths.resolve()
+    report, record = run_probe_cadence(paths, paths.repo_root / config, device)
+    typer.echo(f"wrote {report} and {record}")
+
+
+@model_app.command(
     "mixture-shards",
     help="Write the M3 mixture's txt and tel+status shards and every stream's run index, "
     "and report per-stream token counts and per-arm token budgets. Trains nothing.",

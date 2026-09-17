@@ -1,0 +1,17 @@
+# The in-force probe's evaluation cadence, version 0: ADR-0024's G3 addendum, registered in 577592f
+# BEFORE this file, the code that reads it, or any run of it existed.
+#
+# The probe in force (§a under G1) is re-trained on the gate run's backbone with its seed and
+# measured at step 0 (a reference, never selected), every 25 steps through 300, then every 100:
+# 20 measurements in a 1,000-step probe (the addendum said 23; see its erratum). Selection is on
+# the probes' selection split (kelmarsh__val + penmanshiel__val, 3,000 windows each). Everything
+# else is the §a probe.
+
+version: 0
+
+paired_config: "configs/train/paired_control_v0.yaml"
+
+measure_initial: true
+dense_every: 25
+dense_until: 300
+sparse_every: 100

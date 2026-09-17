@@ -3539,3 +3539,53 @@ subsample beside it; and Hill of Towie on its 12,000-window subsample, deciding 
 record, and the checkpoint selected here is the one F2 measures. If it is not step 166, ADR-0024's
 paired verdict was read on the step-166 head, and that is stated beside F2's result. The
 verdict is not re-run.
+
+**Erratum to the G3 addendum, 2026-09-17, with the code that reads it (no run made).** "23
+measurements, step 0 included" and "the best of the 22 measurements from step 25 onward" are
+arithmetic slips. Every 25 steps through 300 is 12 measurements, and every 100 from 400 to 1,000
+is 7. With step 0 that makes **20 measurements, and the selected checkpoint is the best of 19**.
+The steps themselves are as registered, and nothing else changes
+(`tests/evaluation/test_probe_cadence.py` pins them).
+
+### Outcome of the G3 addendum, 2026-09-17 -- the in-force probe selects step 200; F2 measures that checkpoint
+
+`faultline model probe-cadence` (`configs/train/probe_cadence_v0.yaml`, hash c9646288;
+`reports/data/probe_cadence_v0_20260917.md`, git_sha `577592f`) re-trained the §a probe on the gate
+backbone with seed 1 in 17.9 minutes. **Its 1,000-step training log is identical to G1's re-run**:
+loss and gradient norm differ by 0.0 at every step. Measuring more often did not change the
+trajectory.
+
+**Selected: step 200, validation AUPRC 0.0471.** It is the best of the 19 selectable measurements.
+That step was not measured under the old cadence, so it is not the step-166 checkpoint. As the
+addendum registered, **ADR-0024's G1 verdict was read on the step-166 head, and it is not re-run.**
+The step-200 checkpoint is the one F2 measures.
+
+| step | 0 (reference) | 25 | 50 | 75 | 100 | 125 | 150 | 175 | **200** | 225 | 250 | 275 | 300 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| validation AUPRC | 0.0447 | 0.0465 | 0.0332 | 0.0287 | 0.0400 | 0.0404 | 0.0459 | 0.0465 | **0.0471** | 0.0434 | 0.0406 | 0.0307 | 0.0395 |
+
+| step | 400 | 500 | 600 | 700 | 800 | 900 | 1,000 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| validation AUPRC | 0.0436 | 0.0420 | 0.0413 | 0.0377 | 0.0401 | 0.0426 | 0.0399 |
+
+The step-200 checkpoint's test AUPRC, with ADR-0021's block interval (10,000 replicates, seed
+20260916):
+
+| test set | windows / positive | base rate | AUPRC | 95% block interval |
+| --- | --- | --- | --- | --- |
+| pooled Kelmarsh + Penmanshiel, stride 12 | 137,025 / 5,312 | 0.0388 | 0.0540 | [0.0474, 0.0618] |
+| pooled, 24,000-window subsample | 24,000 / 919 | 0.0383 | 0.0510 | [0.0439, 0.0599] |
+| Hill of Towie, 12,000-window subsample (reported) | 12,000 / 399 | 0.0333 | 0.0390 | [0.0304, 0.0548] |
+
+Recorded, deciding nothing:
+
+- **The untrained head at step 0 already scores 0.0447 on validation.** That is above 15 of the 19
+  trained measurements. Validation AUPRC swings between 0.0287 and 0.0471 across neighbouring
+  checkpoints, with no trend. On 6,000 selection windows, selection among these checkpoints is
+  mostly selection on noise. "Best at 166" and "best at 200" are not distinguishable from each
+  other on this evidence.
+- Test AUPRC at step 200 (0.0540 at stride 12) is within noise of step 166 (0.0532), and so is its
+  Hill of Towie score.
+- Hill of Towie calibration at step 200: prior-corrected mean predicted rate **0.0178**, against a
+  base rate of 0.0333 and a training natural rate of 0.0221 (ECE 0.0155). The uncorrected mean is
+  0.439. F2 reads these, and nothing is judged here.

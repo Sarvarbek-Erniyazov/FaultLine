@@ -32,7 +32,7 @@ from __future__ import annotations
 import json
 import math
 import time
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -488,6 +488,7 @@ class ProbeResult:
         logits: Every test window's logit, before the offset.
         labels: Every test window's label.
         which: Every test window's window-set index into the test split's sources.
+        probe_history: Every validation measurement, as (step, AUPRC); step 0 is a reference.
     """
 
     probe_positives_seen: int
@@ -501,6 +502,7 @@ class ProbeResult:
     logits: np.ndarray
     labels: np.ndarray
     which: np.ndarray
+    probe_history: list[tuple[int, float]] = field(default_factory=list)
 
 
 def pretrain_tel(
@@ -583,6 +585,8 @@ def probe_and_score(
     pooling: Literal["last", "mean"] = "last",
     head_layers: Literal[1, 2] = 1,
     unfrozen_blocks: int = 0,
+    measure_steps: Sequence[int] | None = None,
+    measure_initial: bool = False,
 ) -> ProbeResult:
     """Train the frozen probe on a backbone and score every test source.
 
@@ -606,6 +610,9 @@ def probe_and_score(
         head_layers: Hidden layers in the head (ADR-0023 §c): one, or two.
         unfrozen_blocks: Final backbone blocks that train (ADR-0023 §d), at the ladder's
             fine-tune rate, while the head keeps the probe's rate.
+        measure_steps: Steps to measure validation after, in place of the budget's even
+            spacing (ADR-0024 G3).
+        measure_initial: Also measure the untrained head, as a reference that is never selected.
 
     Returns:
         The probe's result, with every test window's logit.
@@ -661,6 +668,8 @@ def probe_and_score(
         higher_is_better=True,
         tokens_per_window=telemetry.context_tokens,
         label=label,
+        measure_steps=measure_steps,
+        measure_initial=measure_initial,
     )
     probe_seconds = time.perf_counter() - started
     probe_log = write_step_log(probe.step_log, step_log)
@@ -717,6 +726,7 @@ def probe_and_score(
         logits=logits,
         labels=labels,
         which=which,
+        probe_history=[(m.step, m.value) for m in probe.history],
     )
 
 

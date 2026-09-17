@@ -198,6 +198,8 @@ def train(
     higher_is_better: bool,
     tokens_per_window: int,
     label: str = "",
+    measure_steps: Sequence[int] | None = None,
+    measure_initial: bool = False,
 ) -> TrainingResult:
     """Train one model to its budget, selecting on periodic validation measurements.
 
@@ -212,9 +214,16 @@ def train(
         higher_is_better: Whether a larger measurement is a better one.
         tokens_per_window: Tokens a window contributes, for the token count.
         label: Name of the run, for the log.
+        measure_steps: The optimiser steps (counted from one) after which to measure, in place
+            of ``budget.evaluations`` evenly spaced ones (ADR-0024's G3 cadence).
+        measure_initial: Also measure before the first step. That measurement is kept in the
+            history as a reference and can never be selected.
 
     Returns:
         The run's history, its selected checkpoint and what it spent.
+
+    Raises:
+        ValueError: If a measurement step lies outside the run.
     """
     module.train()
     groups = parameter_groups(module, optimiser.weight_decay)
@@ -228,6 +237,9 @@ def train(
     )
     total = budget.steps
     measure_every = max(1, total // budget.evaluations)
+    if measure_steps is not None and any(not 1 <= s <= total for s in measure_steps):
+        raise ValueError(f"measurement steps must lie in 1..{total}: {sorted(measure_steps)}")
+    chosen_steps = None if measure_steps is None else set(measure_steps)
     trainable = [p for group in groups for p in group["params"]]
 
     history: list[Measurement] = []
@@ -238,6 +250,17 @@ def train(
     started = time.perf_counter()
     windows = 0
     step_log: list[StepLog] = []
+
+    if measure_initial:
+        # A measurement is an evaluation-mode pass: it takes no step and draws no training
+        # randomness, so looking earlier does not change the trajectory.
+        module.eval()
+        initial = measure(module)
+        initial.step, initial.windows = 0, 0
+        initial.extra["reference"] = 1.0
+        module.train()
+        history.append(initial)
+        logger.info("%s step 0/%d validation %.4f (reference)", label, total, initial.value)
 
     for step in range(total):
         rate = learning_rate(step, total, budget.learning_rate, optimiser.warmup_fraction)
@@ -269,7 +292,12 @@ def train(
             recent = recent[-tail * budget.accumulate :]
 
         last = step == total - 1
-        if (step + 1) % measure_every == 0 or last:
+        due = (
+            (step + 1) % measure_every == 0 or last
+            if chosen_steps is None
+            else step + 1 in chosen_steps
+        )
+        if due:
             module.eval()
             taken = measure(module)
             taken.step, taken.windows = step + 1, windows

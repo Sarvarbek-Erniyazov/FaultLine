@@ -3482,3 +3482,26 @@ Recorded beside the verdict, deciding nothing:
 - **The §a re-run's validation curve** peaked at its first measurement (0.0441 at step 166). It
   then held between 0.0393 and 0.0422 through step 1,000. On this run, early selection took a
   measurement no later one beat.
+
+### Outcome, 2026-09-17 (G2) -- the bag-of-tokens comparator is within noise of the probe in force
+
+`faultline model bag-of-tokens` (`configs/train/bag_of_tokens_v0.yaml`, hash 2b2827a9;
+`reports/data/bag_of_tokens_v0_20260917.md`, git_sha `f6c2df0`) trained the §6 comparator as
+registered, on the CPU in 8.7 minutes.
+
+| test set | windows / positive | §a probe, 95% block interval | bag of tokens, 95% block interval | Δ probe − bag, paired 95% interval |
+| --- | --- | --- | --- | --- |
+| stride 12 (deciding split) | 137,025 / 5,312 | 0.0532 [0.0468, 0.0607] | 0.0523 [0.0445, 0.0619] | +0.0008 [-0.0067, +0.0075] |
+| 24,000-window subsample | 24,000 / 919 | 0.0502 [0.0434, 0.0587] | 0.0520 [0.0419, 0.0660] | -0.0018 [-0.0137, +0.0074] |
+
+**A logistic regression on the token histogram, which ignores order, scores within noise of the
+frozen final-position probe on the pretrained backbone: on the training sites' test windows, the
+sequence model does not measurably beat a classifier that ignores order.** The arm comparison
+remains the registered study, and the F-brief write-up carries this framing.
+
+Recorded, deciding nothing. The comparator selected its last full validation measurement (0.0261
+at step 996). Its validation AUPRC rose from 0.0249 to 0.0261 over the run, and its training loss
+ended at 0.664. The fit was still slowly improving, so the registered budget, if anything,
+understates it. Its validation AUPRC is well below the §a probe's 0.0441 at step 166, while their
+test AUPRCs match. The selection split (2021) and the test split (2022-2024) do not rank these two
+classifiers the same way.

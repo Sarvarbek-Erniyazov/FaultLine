@@ -1,0 +1,153 @@
+{
+ "config": {
+  "version": 0,
+  "paired_config": "configs/train/paired_control_v0.yaml",
+  "seed": 1,
+  "device": "cpu"
+ },
+ "config_hash": "2b2827a9",
+ "design_in_force": "final_position",
+ "seconds": 519.3917707999935,
+ "selected": [
+  996,
+  0.026140407162535816
+ ],
+ "history": [
+  [
+   166,
+   0.024885825736430212
+  ],
+  [
+   332,
+   0.0242999022863407
+  ],
+  [
+   498,
+   0.02533177141658117
+  ],
+  [
+   664,
+   0.02601189812266126
+  ],
+  [
+   830,
+   0.026002408838613895
+  ],
+  [
+   996,
+   0.026140407162535816
+  ],
+  [
+   1000,
+   0.026138190574794343
+  ]
+ ],
+ "final_train_loss": 0.6643889990448951,
+ "prior_offset": -3.7921449117457753,
+ "rows": {
+  "stride 12": {
+   "bag": {
+    "unit": "block",
+    "auprc": 0.052320925652317336,
+    "low": 0.04449037046523968,
+    "high": 0.06189619710503135,
+    "lift_low": 0.006925311748508978,
+    "lift_high": 0.02222863864106703,
+    "base_rate": 0.038766648421820836,
+    "windows": 137025,
+    "positives": 5312,
+    "blocks": 5799,
+    "positive_blocks": 497,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "probe": {
+    "unit": "block",
+    "auprc": 0.053160385541645844,
+    "low": 0.04682580798235267,
+    "high": 0.060740865289663604,
+    "lift_low": 0.009818449044345198,
+    "lift_high": 0.020498155890226438,
+    "base_rate": 0.038766648421820836,
+    "windows": 137025,
+    "positives": 5312,
+    "blocks": 5799,
+    "positive_blocks": 497,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "delta": {
+    "unit": "block",
+    "delta": 0.0008394598893285074,
+    "low": -0.006704280417583095,
+    "high": 0.007461561443599032,
+    "first_auprc": 0.053160385541645844,
+    "second_auprc": 0.052320925652317336,
+    "windows": 137025,
+    "positives": 5312,
+    "blocks": 5799,
+    "positive_blocks": 497,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   }
+  },
+  "24,000-window subsample": {
+   "bag": {
+    "unit": "block",
+    "auprc": 0.05197672982945557,
+    "low": 0.041857134936475256,
+    "high": 0.06600556021037887,
+    "lift_low": 0.004972444826308482,
+    "lift_high": 0.026894159797110122,
+    "base_rate": 0.03829166666666667,
+    "windows": 24000,
+    "positives": 919,
+    "blocks": 5705,
+    "positive_blocks": 373,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "probe": {
+    "unit": "block",
+    "auprc": 0.05016862782728619,
+    "low": 0.04343861084699664,
+    "high": 0.058721364426637015,
+    "lift_low": 0.007000047414129178,
+    "lift_high": 0.01893780788071528,
+    "base_rate": 0.03829166666666667,
+    "windows": 24000,
+    "positives": 919,
+    "blocks": 5705,
+    "positive_blocks": 373,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "delta": {
+    "unit": "block",
+    "delta": -0.0018081020021693817,
+    "low": -0.01367992173950955,
+    "high": 0.007350216744827096,
+    "first_auprc": 0.05016862782728619,
+    "second_auprc": 0.05197672982945557,
+    "windows": 24000,
+    "positives": 919,
+    "blocks": 5705,
+    "positive_blocks": 373,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   }
+  }
+ }
+}

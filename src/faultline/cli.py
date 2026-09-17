@@ -1232,6 +1232,27 @@ def model_paired_control(
 
 
 @model_app.command(
+    "bag-of-tokens",
+    help="The bag-of-tokens comparator (ADR-0024 §6): logistic regression on each window's token "
+    "histogram, trained as the probe is, on the CPU, and set beside the probe in force with a "
+    "paired interval. Reported, deciding nothing.",
+)
+def model_bag_of_tokens(
+    config: ConfigOption = Path("configs/train/bag_of_tokens_v0.yaml"),
+) -> None:
+    """Train and score the comparator and write its report.
+
+    Args:
+        config: The comparator configuration.
+    """
+    from faultline.evaluation.bag_of_tokens import run_bag_of_tokens
+
+    paths = ProjectPaths.resolve()
+    report, record = run_bag_of_tokens(paths, paths.repo_root / config)
+    typer.echo(f"wrote {report} and {record}")
+
+
+@model_app.command(
     "mixture-shards",
     help="Write the M3 mixture's txt and tel+status shards and every stream's run index, "
     "and report per-stream token counts and per-arm token budgets. Trains nothing.",

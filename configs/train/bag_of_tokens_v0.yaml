@@ -1,0 +1,21 @@
+# The bag-of-tokens comparator, version 0: ADR-0024 §6. Decision record: docs/DECISIONS.md,
+# ADR-0024, registered in 79d4e97 BEFORE this file, the code that reads it, or any run of it
+# existed. Reported beside the probe in force; it decides nothing.
+#
+# WHAT IT IS: logistic regression (1,184 -> 1, zero init) on each window's telemetry token counts
+# divided by its 144 steps. It is trained by the probe stage of configs/train/telemetry_v1.yaml:
+# the balanced sampler, 16,000 positives, 16 x 2, peak rate 2e-3, the optimiser's schedule, weight
+# decay and clipping, validation on the probes' selection split, best measurement selected, and
+# the prior correction. None of those values is repeated here: they are read through the gate
+# configuration that the paired control names.
+
+version: 0
+
+# The paired control (ADR-0024): its design in force, its stride and its trained-probe scores.
+paired_config: "configs/train/paired_control_v0.yaml"
+
+# The trained probe's seed: the balanced sampler draws the same windows in the same order.
+seed: 1
+
+# Registered: CPU only.
+device: "cpu"

@@ -1,0 +1,258 @@
+{
+ "config": {
+  "version": 0,
+  "gate_config": "configs/train/gate_check_v0.yaml",
+  "paired_config": "configs/train/paired_control_v0.yaml",
+  "cadence_config": "configs/train/probe_cadence_v0.yaml",
+  "prior_band_config": "configs/train/prior_band_v0.yaml",
+  "bag_of_tokens_dir": "checkpoints/bag_of_tokens_v0_2b2827a9",
+  "design": "final_position",
+  "new_seeds": [
+   2,
+   3
+  ],
+  "init_seeds": [
+   1,
+   2,
+   3
+  ],
+  "pooled_sources": [
+   "kelmarsh",
+   "penmanshiel"
+  ]
+ },
+ "config_hash": "424c4f33",
+ "bootstrap": {
+  "block_steps": 288,
+  "replicates": 10000,
+  "seed": 20260916,
+  "confidence": 0.95,
+  "max_discarded_share": 0.01
+ },
+ "seconds": 0.03054339997470379,
+ "bootstraps_computed": [],
+ "bootstraps_resumed": [
+  "S2_trained_seed1_final_minus_selected_delta",
+  "S2_trained_seed3_final_minus_selected_delta",
+  "S2_trained_seed1_final_vs_random_final_delta",
+  "S2_trained_seed2_final_vs_random_final_delta",
+  "S2_trained_seed3_final_vs_random_final_delta"
+ ],
+ "delta_final_minus_selected": {
+  "1": {
+   "unit": "block",
+   "delta": 0.004064236252019855,
+   "low": 0.0021561777353884945,
+   "high": 0.006573078092813689,
+   "first_auprc": 0.05801695661143389,
+   "second_auprc": 0.053952720359414036,
+   "windows": 137025,
+   "positives": 5312,
+   "blocks": 5799,
+   "positive_blocks": 497,
+   "replicates": 10000,
+   "discarded": 0,
+   "confidence": 0.95,
+   "seed": 20260916
+  },
+  "2": null,
+  "3": {
+   "unit": "block",
+   "delta": 0.0006748813939829804,
+   "low": 0.00018416380991641314,
+   "high": 0.001113285842165182,
+   "first_auprc": 0.0515071144461182,
+   "second_auprc": 0.05083223305213522,
+   "windows": 137025,
+   "positives": 5312,
+   "blocks": 5799,
+   "positive_blocks": 497,
+   "replicates": 10000,
+   "discarded": 0,
+   "confidence": 0.95,
+   "seed": 20260916
+  }
+ },
+ "identical_checkpoint": {
+  "1": false,
+  "2": true,
+  "3": false
+ },
+ "final_vs_final": {
+  "1": {
+   "cells": [
+    {
+     "unit": "block",
+     "delta": 0.01642441807000076,
+     "low": 0.01135983573787882,
+     "high": 0.023006968020256525,
+     "first_auprc": 0.05801695661143389,
+     "second_auprc": 0.04159253854143313,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    },
+    {
+     "unit": "block",
+     "delta": 0.016129134180507133,
+     "low": 0.011102578529699234,
+     "high": 0.022596963981511897,
+     "first_auprc": 0.05801695661143389,
+     "second_auprc": 0.04188782243092676,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    },
+    {
+     "unit": "block",
+     "delta": 0.016261267683590312,
+     "low": 0.01127021447750981,
+     "high": 0.022592809433323726,
+     "first_auprc": 0.05801695661143389,
+     "second_auprc": 0.04175568892784358,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    }
+   ],
+   "verdict": {
+    "sensitive": true,
+    "lowest": 0.011102578529699234,
+    "reason": "every paired lower bound is above zero (lowest +0.0111)"
+   }
+  },
+  "2": {
+   "cells": [
+    {
+     "unit": "block",
+     "delta": 0.01602569348325074,
+     "low": 0.011538429000673124,
+     "high": 0.022480690933779083,
+     "first_auprc": 0.05761823202468387,
+     "second_auprc": 0.04159253854143313,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    },
+    {
+     "unit": "block",
+     "delta": 0.015730409593757114,
+     "low": 0.010947308855959795,
+     "high": 0.022383547164048827,
+     "first_auprc": 0.05761823202468387,
+     "second_auprc": 0.04188782243092676,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    },
+    {
+     "unit": "block",
+     "delta": 0.015862543096840293,
+     "low": 0.011332223424972174,
+     "high": 0.022026980003720564,
+     "first_auprc": 0.05761823202468387,
+     "second_auprc": 0.04175568892784358,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    }
+   ],
+   "verdict": {
+    "sensitive": true,
+    "lowest": 0.010947308855959795,
+    "reason": "every paired lower bound is above zero (lowest +0.0109)"
+   }
+  },
+  "3": {
+   "cells": [
+    {
+     "unit": "block",
+     "delta": 0.009914575904685065,
+     "low": 0.005010092326377885,
+     "high": 0.015480399992993372,
+     "first_auprc": 0.0515071144461182,
+     "second_auprc": 0.04159253854143313,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    },
+    {
+     "unit": "block",
+     "delta": 0.00961929201519144,
+     "low": 0.004852058858828547,
+     "high": 0.01502410605810951,
+     "first_auprc": 0.0515071144461182,
+     "second_auprc": 0.04188782243092676,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    },
+    {
+     "unit": "block",
+     "delta": 0.009751425518274619,
+     "low": 0.0047186172937915246,
+     "high": 0.015196779821076775,
+     "first_auprc": 0.0515071144461182,
+     "second_auprc": 0.04175568892784358,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    }
+   ],
+   "verdict": {
+    "sensitive": true,
+    "lowest": 0.0047186172937915246,
+    "reason": "every paired lower bound is above zero (lowest +0.0047)"
+   }
+  }
+ },
+ "verdict": {
+  "rule": "final_step",
+  "reason": "no trained seed's paired interval lies below zero and the final-vs-final recomputation passes nine of nine (lowest lower bound +0.0047): fixed-final-step selection is adopted for the arm runs"
+ }
+}

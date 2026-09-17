@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -46,12 +47,38 @@ def test_the_chance_level_is_the_scored_sets_own_rate_on_two_of_three_seeds() ->
     # ADR-0021's rule reads the base rate on the scored windows, never the training natural rate.
     assert shipped["base_rate_source"] == "scored_set"
     assert shipped["seeds"] == [1, 2, 3] and shipped["seeds_required"] == 2
-    assert shipped["checkpoints"] == {"gating": "selected", "reported": ["final_step"]}
+    # Which of the two gates is ADR-0022's addendum's to decide; the pair is always both.
+    assert set(shipped["checkpoints"]) == {"gating", "reported"}
+    assert {shipped["checkpoints"]["gating"], *shipped["checkpoints"]["reported"]} == {
+        "selected",
+        "final_step",
+    }
     for axis in shipped["axes"].values():
         assert axis["base_rate"] == round(axis["positives"] / axis["windows"], 4)
     care = shipped["axes"]["care"]
     assert care["full_positives"] == 144 * care["events"] == 6480
     assert round(care["full_positives"] / care["full_windows"], 4) == care["base_rate"]
+
+
+def test_the_selection_rule_is_the_one_the_adr_0022_addendum_decided() -> None:
+    """The shipped gating checkpoint is read out of ADR-0022's addendum, not pinned here.
+
+    The addendum's outcome is the registered decision; this configuration is what F5 and every
+    arm run actually read. Pinning the string in the test would let the two drift apart and
+    still pass, so the expected value is parsed from ``docs/DECISIONS.md``.
+    """
+    decisions = (REPO / "docs/DECISIONS.md").read_text(encoding="utf-8")
+    assert "### Addendum, registered 2026-09-18" in decisions
+    stated = re.findall(r"The rule in force for the arm runs and for F5: `([a-z_]+)`", decisions)
+    assert len(stated) == 1, f"the addendum must state the rule exactly once, found {stated}"
+    shipped = _shipped()
+    assert shipped["checkpoints"]["gating"] == stated[0]
+    assert stated[0] not in shipped["checkpoints"]["reported"]
+    # The addendum's commit hash is in the configuration's comment, so the value it states is
+    # traceable to the record that decided it. The hash itself is not pinned here.
+    assert re.search(
+        r"addendum of 2026-09-18, registered in [0-9a-f]{7,40}", SHIPPED.read_text(encoding="utf-8")
+    )
 
 
 def _count(shards: ShardSet, keys: list[str], label: str, stride: int) -> dict[str, int]:

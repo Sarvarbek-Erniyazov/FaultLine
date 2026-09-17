@@ -3339,6 +3339,77 @@ base rates, the interval and the stride all stand. §5's first paragraph stands 
 whichever checkpoint gates, the other is scored beside it on both axes and reported. F5 is not
 authorised by this addendum.
 
+### Outcome of the addendum, 2026-09-18 -- fixed-final-step selection is adopted; the final step is better, not merely equal
+
+`faultline model checkpoint-selection` (`configs/train/seed_replication_v0.yaml`, hash `424c4f33`;
+`reports/data/checkpoint_selection_v0_20260917.md` and `.json`, git_sha `4622564`, the registration
+commit) read F3's saved stride-12 scores under
+`checkpoints/seed_replication_v0_424c4f33/` and ran the five paired block bootstraps on the CPU in
+**24.6 minutes**. **No model was loaded, nothing was pretrained, nothing was re-scored, and no GPU
+was used.** Each bootstrap writes its intervals to a JSON beside the scores as it completes, so a
+crash costs the one in flight; the report names how many of the five an invocation computed and how
+many it resumed.
+
+**1. Δ = AUPRC(final) − AUPRC(selected), paired, on the pooled stride-12 split** (137,025 windows,
+5,312 positive, 497 of 5,799 blocks holding a positive; 10,000 replicates, seed 20260916, none
+discarded):
+
+| trained seed | selected | final | Δ final − selected, 95% paired interval | entirely below zero |
+| --- | --- | --- | --- | --- |
+| 1 | step 200 | step 1,000 | **+0.0041 [+0.0022, +0.0066]** | no |
+| 2 | step 1,000 | step 1,000 | **0 exactly** -- one checkpoint, not bootstrapped | no |
+| 3 | step 700 | step 1,000 | **+0.0007 [+0.0002, +0.0011]** | no |
+
+**Both intervals lie entirely ABOVE zero.** The final step is not merely as good as the selected
+step; on both seeds where the two differ it is **significantly better**, paired. This is the case
+the clarification above was registered for: read as a two-sided test of "agreement", §5 would have
+failed on both seeds and retained the rule that selects the **worse** checkpoint. Seed 1's paired
+point estimate is +0.0041 against the +0.0040 the report §5 point estimates give; the difference is
+rounding in the two 4-decimal figures, and the paired computation takes the exact difference.
+
+**2. ADR-0024's criterion, recomputed with final-step checkpoints on BOTH sides** (trained final
+against each random-init final; every other term of the criterion unchanged). Random-init final
+steps are all step 1,000; seeds 2 and 3 had selected steps 300 and 225, so for them this is a
+different checkpoint from the F3 row:
+
+| trained seed (final) | Δ vs random 1 (final) | Δ vs random 2 (final) | Δ vs random 3 (final) | verdict |
+| --- | --- | --- | --- | --- |
+| 1 | +0.0164 [+0.0114, +0.0230] | +0.0161 [+0.0111, +0.0226] | +0.0163 [+0.0113, +0.0226] | **PASS** |
+| 2 | +0.0160 [+0.0115, +0.0225] | +0.0157 [+0.0109, +0.0224] | +0.0159 [+0.0113, +0.0220] | **PASS** |
+| 3 | +0.0099 [+0.0050, +0.0155] | +0.0096 [+0.0049, +0.0150] | +0.0098 [+0.0047, +0.0152] | **PASS** |
+
+**Nine of nine.** Every paired lower bound is above zero and the lowest is **+0.0047** (seed 3
+against random 3), against **+0.0045** for the selected-checkpoint reading in the F3 outcome. The
+pretraining effect measured final-against-final is **+0.0096 to +0.0164**, against +0.0092 to
++0.0186 selected-against-selected. **The effect survives the switch and is, if anything, slightly
+better resolved: no cell is weaker, and the three cells within a seed now agree closely with one
+another** (seed 1 spans 0.0003 across its three random-init seeds, where the selected reading spans
+0.0025). Removing a noisy per-probe selection removes a per-probe nuisance term from the
+comparison, which is what the arm runs need.
+
+**3. Verdict under the registered criterion: FIXED-FINAL-STEP SELECTION IS ADOPTED.** Neither
+condition to retain the ADR-0024 rule is met: no trained seed's Δ interval lies entirely below
+zero, and the nine-cell recomputation passes nine of nine.
+
+**The rule in force for the arm runs and for F5: `final_step`.** Every probe in every arm, from
+this record onward, is read at its last probe step. No validation-split checkpoint selection is
+performed, and none of the machinery for it -- the G3 cadence measurements, the saved selected
+head, the seeded re-run that recovers a final state -- is needed to decide which checkpoint scores.
+The G3 cadence stays in force as **reporting**: the validation curve is still measured and still
+reported, and it no longer chooses anything. The **selected-step** checkpoint is now the one scored
+beside the gating checkpoint on both axes and reported, not gating; §5's two roles are exchanged
+and nothing else in §5 changes.
+
+`configs/eval/axis_gate_v0.yaml` states the rule by value (`checkpoints.gating: "final_step"`,
+`reported: ["selected"]`) with this addendum's registration hash in its comment.
+`tests/evaluation/test_axis_gate.py` parses the rule out of the sentence above and fails if the
+shipped configuration disagrees with it, so the record and the file F5 reads cannot drift apart.
+
+**What this does not decide.** ADR-0022 §4's axis rule, the two axes' base rates, the interval, the
+stride and the CARE protocol are untouched. ADR-0024's F3 verdicts stand as recorded on the
+selected checkpoints; they are not restated on final checkpoints, and §2 above is a recomputation
+registered for this decision, not a re-judging of F3. **F5 is not authorised by this addendum.**
+
 ---
 
 ## ADR-0023 The random-init probe control: can the frozen probe see backbone quality?

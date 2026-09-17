@@ -1321,6 +1321,27 @@ def model_seed_replication(
 
 
 @model_app.command(
+    "checkpoint-selection",
+    help="ADR-0022's addendum: on F3's saved scores, the paired Delta of the final-step against "
+    "the selected checkpoint per trained seed, and ADR-0024's criterion recomputed with "
+    "final-step checkpoints on both sides. CPU only; trains and scores nothing. Resume-safe.",
+)
+def model_checkpoint_selection(
+    config: ConfigOption = Path("configs/train/seed_replication_v0.yaml"),
+) -> None:
+    """Measure the addendum's two quantities and write its report.
+
+    Args:
+        config: The F3 configuration, which names the checkpoints and the interval.
+    """
+    from faultline.evaluation.checkpoint_selection import run_checkpoint_selection
+
+    paths = ProjectPaths.resolve()
+    report, record = run_checkpoint_selection(paths, paths.repo_root / config)
+    typer.echo(f"wrote {report} and {record}")
+
+
+@model_app.command(
     "mixture-shards",
     help="Write the M3 mixture's txt and tel+status shards and every stream's run index, "
     "and report per-stream token counts and per-arm token budgets. Trains nothing.",

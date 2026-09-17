@@ -42,11 +42,19 @@ bootstrap:
 seeds: [1, 2, 3]
 seeds_required: 2
 
-# ADR-0022 §5: the ADR-0024-selected checkpoint gates; the final-step checkpoint is scored beside it
-# on both axes and reported, not gating.
+# ADR-0022 §5 AS AMENDED by the addendum of 2026-09-18, registered in 4622564 BEFORE any bootstrap
+# of it ran, and decided on F3's saved scores in the commit that records this line. FIXED-FINAL-STEP
+# SELECTION IS IN FORCE: every probe in every arm, and F5, is gated at its last probe step. On the
+# pooled stride-12 split the final step was not worse than the selected step on any trained seed
+# (paired Delta +0.0041 [+0.0022, +0.0066] on seed 1, +0.0007 [+0.0002, +0.0011] on seed 3, and 0
+# exactly on seed 2, which selected its last step), and ADR-0024's criterion recomputed with
+# final-step checkpoints on BOTH sides passes nine of nine (lowest lower bound +0.0047). The
+# selected-step checkpoint is scored beside it on both axes and reported, not gating -- the two
+# roles of §5 are exchanged, and nothing else in §5 changes.
+# tests/evaluation/test_axis_gate.py reads the rule out of the addendum and refuses a mismatch.
 checkpoints:
-  gating: "selected"
-  reported: ["final_step"]
+  gating: "final_step"
+  reported: ["selected"]
 
 axes:
   # ADR-0022 §2: in-distribution temporal test split, NOT a shift axis. Carries ADR-0009's caveat on

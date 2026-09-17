@@ -201,6 +201,43 @@ def paired_rows(
     )
 
 
+def paired_rows_cached(
+    cache: Path,
+    trained: ScoredWindows,
+    random: list[ScoredWindows],
+    sources: list[str],
+    bootstrap: BootstrapConfig,
+) -> list[DeltaInterval]:
+    """``paired_rows``, resumed from a JSON written beside the scores when it completed.
+
+    A bootstrap of 10,000 replicates over 137,025 windows costs minutes, and a run that does
+    several of them should not pay for the ones it already finished. Each set of intervals is
+    written whole, once, after it is computed, so a crash costs the one in flight and no more
+    (ADR-0024 F3 verdict; ADR-0022's addendum runs eleven of them).
+
+    Args:
+        cache: The JSON to read the intervals from, or to write them to.
+        trained: The reference scorer's scores.
+        random: Each scorer compared with it, on the same windows.
+        sources: The sources pooled.
+        bootstrap: Blocks, replicates, seed and coverage.
+
+    Returns:
+        Per compared scorer, the interval on the reference minus it.
+    """
+    if cache.exists():
+        saved: list[dict[str, Any]] = json.loads(cache.read_text(encoding="utf-8"))
+        return [DeltaInterval(**row) for row in saved]
+    deltas = paired_rows(trained, random, sources, bootstrap)
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    cache.write_text(
+        json.dumps([asdict(d) for d in deltas], indent=1) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    return deltas
+
+
 # =====================================================================================
 # scoring a saved probe
 # =====================================================================================

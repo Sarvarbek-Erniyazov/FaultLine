@@ -158,3 +158,18 @@ matching behaviour is what makes the port checkable against the original.
 That still holds after `text_v1.yaml`. The v0 regexes are unchanged and remain the
 default in code; v1 adds an alternative next to them and a configuration key that
 selects it. Nothing in the port was edited to make the fix possible.
+
+## Lesson 7 — model design
+
+The course's three Lesson 7 templates describe a generic GPT-2-style model in eight fields. Here
+they describe FaultLine's S2 backbone as the ADR-0021 gate run built it (`tel_only`, seed 1,
+50,003,968 tokens). The size ladder has no ADR of its own. Its source of record is
+`configs/model/ladder_v0.yaml` with `docs/ROADMAP.md` and ADR-0018.
+
+| template file | FaultLine file | source of each value | test | semantic change |
+| --- | --- | --- | --- | --- |
+| `model_config.py` | `src/faultline/model/design.py` | `n_embd`, `n_layer`, `n_head` ← `configs/model/ladder_v0.yaml` rung S2 (`d_model`, `n_layer`, `n_head`); `dropout` ← `ladder_v0.yaml` `dropout`; `block_size` ← `configs/train/joint_v0.yaml` `context_tokens` (2,048, not the 144 × 13 = 1,872 probe window); `vocab_size` ← ADR-0003 v2 layout capacity (`src/faultline/tokenizers/layout.py`, 33,952); `ffn_mult`, `tie_weights` ← `src/faultline/model/transformer.py` (no configuration key) | `tests/model/test_course_design.py` | **Defaults changed; the arithmetic is unchanged.** Same dataclass, field names, `check()`, `estimate_parameters()` and `estimate_training_memory_mb()`. It adds `ladder_table()` over `ladder_v0.yaml` and the recorded figures as cited constants, and it builds nothing: the model is `TelemetryDecoder` |
+| `design_model.py` | `scripts/design_model.py` | parameter count ← the gate checkpoint's state dict (10,454,208; the 3,264 gap to the rough formula is the RMSNorm weights); token counts ← `reports/data/shards_v2_20260912.md`, `reports/data/m2_gate6_20260916.md`; cost ← `reports/data/gate_check_v0_20260916.md` and ADR-0018 | same (smoke run) | **The tokens-per-parameter check is replaced by the project's own finding.** The ~20 heuristic comes from natural-language text, and no record here sets a ratio for quantised telemetry. So the script prints the measured ratios (5.9 over all parameters, 17.4 over the backbone), the 6.5M-parameter joint embedding that `tel_only` never uses, and the recorded text-ladder result that 10M tokens cannot demonstrate scaling |
+| `run_01.yaml` | `configs/model/course/run_01.yaml` | as `design.py`, each key commented with its source | same (every field equal to its source) | **Not a run config.** Nothing trains from it; the eight values are the S2 record's, not placeholders |
+
+These files are course-deliverable views derived from ADR-0003 v2 and the ladder's source of record (`configs/model/ladder_v0.yaml`, `docs/ROADMAP.md`, ADR-0018). They record no decision, and any conflict with those sources is a bug in these files, not a design change.

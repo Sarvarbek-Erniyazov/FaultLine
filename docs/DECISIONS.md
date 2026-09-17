@@ -3505,3 +3505,37 @@ ended at 0.664. The fit was still slowly improving, so the registered budget, if
 understates it. Its validation AUPRC is well below the §a probe's 0.0441 at step 166, while their
 test AUPRCs match. The selection split (2021) and the test split (2022-2024) do not rank these two
 classifiers the same way.
+
+### Addendum, registered 2026-09-17 (G3) before its code or run -- the in-force probe's evaluation cadence
+
+**Why.** All four trained probes of ADR-0023, and the §a re-run under G1, selected their first
+validation measurement, step 166 of 1,000. A rule that first looks at step 166 cannot tell "best at
+166" from "best at 40", and it never sees whether the probe was still improving before 166. F2
+measures the prior band on the in-force probe, so the cadence is fixed first.
+
+**The change.** Only when the §a probe is measured, nothing else:
+
+- **Measured at step 0** (the head as initialised, before any optimiser step), **every 25 steps
+  through step 300** (25, 50, ..., 300), **then every 100 steps** (400, 500, ..., 1,000): 23
+  measurements, step 0 included.
+- **Step 0 is a reference point and cannot be selected.** It is reported beside the others. The
+  selected checkpoint is the best of the 22 measurements from step 25 onward, the earliest on a
+  tie, as before.
+- **The selection split is unchanged and named:** `splits["selection"]` of `open_probe_inputs`,
+  that is `build_split(telemetry, "val", 3000, stride 1, seed 20260912)` over `kelmarsh__val` and
+  `penmanshiel__val` (2021, 6,000 windows). It is disjoint from test (§5).
+- **Everything else is the §a probe as G1 reproduced it:** the gate run's saved backbone, seed 1,
+  frozen, final position, one hidden layer, balanced sampling, 16,000 positives, 16 x 2, rate
+  2e-3, the optimiser's schedule and the prior correction. A measurement is an evaluation-mode pass
+  under `no_grad` that consumes no training randomness. The optimiser trajectory is therefore the
+  one G1 reproduced, and only where it is looked at changes.
+
+**Reported:** every measurement (step, validation AUPRC); the selected step and its validation
+AUPRC; that checkpoint's pooled Kelmarsh + Penmanshiel test AUPRC with ADR-0021's block interval
+(10,000 replicates, seed 20260916) on the stride-12 split of §4, and on the 24,000-window
+subsample beside it; and Hill of Towie on its 12,000-window subsample, deciding nothing.
+
+**What it decides.** Nothing is re-judged. The step-166 checkpoint remains the ADR-0021 and G1
+record, and the checkpoint selected here is the one F2 measures. If it is not step 166, ADR-0024's
+paired verdict was read on the step-166 head, and that is stated beside F2's result. The
+verdict is not re-run.

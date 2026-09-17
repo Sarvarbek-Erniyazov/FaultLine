@@ -206,19 +206,16 @@ def paired_rows(
 # =====================================================================================
 
 
-def score_saved_probe(
-    probe_path: Path, design: str, inputs: ProbeInputs, split: SplitEval
-) -> tuple[np.ndarray, np.ndarray]:
-    """Load a selected probe, whole, and score a split with it. No optimiser step is taken.
+def load_saved_probe(probe_path: Path, design: str, inputs: ProbeInputs) -> RiskModel:
+    """Load a selected probe, whole, on the inputs' device, in evaluation mode.
 
     Args:
         probe_path: The probe's saved state (``save_to`` of ``probe_and_score``).
         design: The ADR-0023 design it was trained under.
         inputs: The opened shards and rung.
-        split: The windows to score.
 
     Returns:
-        Every window's logit before the prior offset, and its label, in the split's order.
+        The probe.
 
     Raises:
         ValueError: If the saved probe was trained under another design.
@@ -246,6 +243,24 @@ def score_saved_probe(
     )
     model.load_state_dict({k: v.to(inputs.device) for k, v in payload["state"].items()})
     model.eval()
+    return model
+
+
+def score_saved_probe(
+    probe_path: Path, design: str, inputs: ProbeInputs, split: SplitEval
+) -> tuple[np.ndarray, np.ndarray]:
+    """Load a selected probe, whole, and score a split with it. No optimiser step is taken.
+
+    Args:
+        probe_path: The probe's saved state (``save_to`` of ``probe_and_score``).
+        design: The ADR-0023 design it was trained under.
+        inputs: The opened shards and rung.
+        split: The windows to score.
+
+    Returns:
+        Every window's logit before the prior offset, and its label, in the split's order.
+    """
+    model = load_saved_probe(probe_path, design, inputs)
     autocast_on = inputs.ladder.optimiser.precision == "bf16"
     with torch.inference_mode():
         logits, labels, _ = risk_logits(model, split.sampler, inputs.device, autocast_on)

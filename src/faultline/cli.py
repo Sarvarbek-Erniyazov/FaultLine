@@ -1275,6 +1275,29 @@ def model_probe_cadence(
 
 
 @model_app.command(
+    "prior-band",
+    help="ADR-0019 F2: the in-force probe's mean uncorrected prediction on balanced training "
+    "windows against the registered band, the pi_train its correction uses, and calibration "
+    "under the declared and measured offsets.",
+)
+def model_prior_band(
+    config: ConfigOption = Path("configs/train/prior_band_v0.yaml"),
+    device: Annotated[str | None, typer.Option("--device", help="Torch device.")] = None,
+) -> None:
+    """Run the F2 check and write its report.
+
+    Args:
+        config: The F2 configuration.
+        device: Torch device; chosen automatically when omitted.
+    """
+    from faultline.evaluation.prior_band import run_prior_band
+
+    paths = ProjectPaths.resolve()
+    report, record = run_prior_band(paths, paths.repo_root / config, device)
+    typer.echo(f"wrote {report} and {record}")
+
+
+@model_app.command(
     "mixture-shards",
     help="Write the M3 mixture's txt and tel+status shards and every stream's run index, "
     "and report per-stream token counts and per-arm token budgets. Trains nothing.",

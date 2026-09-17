@@ -1,0 +1,37 @@
+# The balanced mean rate and π_train, version 0: ADR-0019's F2 addendum, registered in 38fef95
+# BEFORE this file, the code that reads it, or any run of it existed.
+#
+# The in-force probe (§a, step 200 under ADR-0024 G3) decides. The step-166 head G1 re-ran is
+# measured the same way and reported. Balanced mean rate inside [0.45, 0.55]: the declared
+# pi_train = 0.5 stands. Outside: the measured re-centring shift is applied before the correction.
+
+version: 0
+gate_config: "configs/train/gate_check_v0.yaml"
+design: final_position
+
+probes:
+  - name: "step 200 (G3, in force)"
+    probe: "checkpoints/probe_cadence_v0_c9646288/S2_trained_seed1_probe.pt"
+    stride_scores: "checkpoints/probe_cadence_v0_c9646288/S2_trained_seed1_stride12_scores.npz"
+    subsample_scores: "checkpoints/probe_cadence_v0_c9646288/S2_trained_seed1_test_scores.npz"
+    decides: true
+  - name: "step 166 (G1 re-run)"
+    probe: "checkpoints/paired_control_v0_b446304a/final_position/S2_trained_seed1_probe.pt"
+    stride_scores: "checkpoints/paired_control_v0_b446304a/final_position/S2_trained_seed1_stride12_scores.npz"
+    subsample_scores: "checkpoints/gate_check_v0_9697a266/S2_tel_only_seed1_test_scores.npz"
+    decides: false
+
+# 1,000 balanced batches of 16 from the training split: 16,000 windows, 8,000 positive.
+sampler_seed: 20260917
+batches: 1000
+
+band_low: 0.45
+band_high: 0.55
+
+bootstrap_resamples: 2000
+bootstrap_seed: 20260916
+
+held_out_source: hill_of_towie
+pooled_sources:
+  - kelmarsh
+  - penmanshiel

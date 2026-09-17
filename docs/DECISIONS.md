@@ -2727,6 +2727,48 @@ labelled.
 **Carried from G3.** The in-force checkpoint is step 200, not step 166. ADR-0024's G1 verdict was
 read on the step-166 head, and it is not re-run.
 
+### F2 outcome, 2026-09-17 -- inside the band: the declared π_train = 0.5 stands for the in-force probe
+
+`faultline model prior-band` (`configs/train/prior_band_v0.yaml`; `reports/data/prior_band_v0_20260917.md`,
+git_sha `38fef95`, 1.6 minutes) drew 16,000 balanced training windows (8,000 positive, sampler
+seed 20260917) through each head.
+
+| head | balanced mean rate | 95% interval | on positives / negatives | shift to 0.5 | band [0.45, 0.55] |
+| --- | --- | --- | --- | --- | --- |
+| **step 200, G3, in force (decides)** | **0.4876** | [0.4857, 0.4894] | 0.5198 / 0.4553 | +0.0528 nats | **inside** |
+| step 166, G1 re-run (reported) | 0.4375 | [0.4355, 0.4396] | 0.4725 / 0.4025 | +0.2702 nats | outside |
+
+**Verdict: inside. The declared `pi_train` = 0.5 and the offset -3.7921 stand for the step-200
+probe.** No shift is applied, and F5 reads this checkpoint's calibration under the declared
+offset. As G3 recorded, ADR-0024's G1 verdict was read on the step-166 head, and it is not re-run.
+
+Corrected calibration under both offsets (reported, deciding nothing; training natural rate 0.0221):
+
+| head | windows | base rate | declared: mean rate / ECE | measured shift: mean rate / ECE |
+| --- | --- | --- | --- | --- |
+| step 200 | pooled training-site test, stride 12 | 0.0388 | 0.0176 / 0.0212 | 0.0186 / 0.0203 |
+| step 200 | Kelmarsh test, stride 12 | 0.0368 | 0.0171 / 0.0198 | 0.0180 / 0.0189 |
+| step 200 | Penmanshiel test, stride 12 | 0.0413 | 0.0183 / 0.0230 | 0.0193 / 0.0221 |
+| step 200 | Hill of Towie, 12,000-window subsample | 0.0333 | 0.0178 / 0.0155 | 0.0188 / 0.0145 |
+| step 166 | pooled training-site test, stride 12 | 0.0388 | 0.0139 / 0.0248 | 0.0181 / 0.0209 |
+| step 166 | Hill of Towie, 12,000-window subsample | 0.0333 | 0.0138 / 0.0195 | 0.0180 / 0.0153 |
+
+Recorded beside the verdict, deciding nothing:
+
+- **The step-166 head had not learned the balanced prior.** Its mean of 0.4375 is a 0.27-nat
+  under-read, and re-centring it moves its Hill of Towie corrected mean from 0.0138 to 0.0180.
+  That accounts for most of the gap ADR-0021 recorded between 0.0138 and the natural rate of
+  0.0221.
+- **A residual under-read remains that the prior does not explain.** Even re-centred, both heads
+  put a corrected mean of 0.018 to 0.019 on every test set, below the training natural rate of
+  0.0221 that the correction targets. On test windows, the head's scores sit lower than on
+  training windows. That is a shift between the 2019-2021 training windows and the 2022-2024 test
+  windows, in the covariates or in what is labelled (ADR-0009). It is not a prior-correction
+  error, and under ADR-0019 it is reported as measured, not absorbed.
+- **The training sites' test base rate (0.0388) is 1.8 times the training natural rate
+  (0.0221).** A correction that reads scores at the training prior under-reads it by construction.
+  The temporal split's positive share moved, which is ADR-0009's caveat, measured.
+
 ---
 
 ## ADR-0020 The seed-variance probe, and the smallest held-out-site AUPRC difference worth claiming

@@ -1,0 +1,200 @@
+{
+ "config": {
+  "version": 0,
+  "gate_config": "configs/train/gate_check_v0.yaml",
+  "design": "final_position",
+  "probes": [
+   {
+    "name": "step 200 (G3, in force)",
+    "probe": "checkpoints/probe_cadence_v0_c9646288/S2_trained_seed1_probe.pt",
+    "stride_scores": "checkpoints/probe_cadence_v0_c9646288/S2_trained_seed1_stride12_scores.npz",
+    "subsample_scores": "checkpoints/probe_cadence_v0_c9646288/S2_trained_seed1_test_scores.npz",
+    "decides": true
+   },
+   {
+    "name": "step 166 (G1 re-run)",
+    "probe": "checkpoints/paired_control_v0_b446304a/final_position/S2_trained_seed1_probe.pt",
+    "stride_scores": "checkpoints/paired_control_v0_b446304a/final_position/S2_trained_seed1_stride12_scores.npz",
+    "subsample_scores": "checkpoints/gate_check_v0_9697a266/S2_tel_only_seed1_test_scores.npz",
+    "decides": false
+   }
+  ],
+  "sampler_seed": 20260917,
+  "batches": 1000,
+  "band_low": 0.45,
+  "band_high": 0.55,
+  "bootstrap_resamples": 2000,
+  "bootstrap_seed": 20260916,
+  "held_out_source": "hill_of_towie",
+  "pooled_sources": [
+   "kelmarsh",
+   "penmanshiel"
+  ]
+ },
+ "config_hash": "25f1f212",
+ "seconds": 94.98168289999012,
+ "rows": [
+  {
+   "name": "step 200 (G3, in force)",
+   "probe": "checkpoints/probe_cadence_v0_c9646288/S2_trained_seed1_probe.pt",
+   "decides": true,
+   "balanced_windows": 16000,
+   "balanced_positives": 8000,
+   "balanced_mean_rate": 0.4875598312948896,
+   "interval": [
+    0.485727106352775,
+    0.48939383808513914
+   ],
+   "mean_on_positives": 0.5197754720074386,
+   "mean_on_negatives": 0.45534419058234066,
+   "measured_shift": 0.05280241370201111,
+   "verdict": {
+    "inside": true,
+    "shift": 0.0,
+    "reason": "balanced mean rate 0.4876 is inside [0.45, 0.55]"
+   },
+   "natural_rate": 0.022050022218159642,
+   "train_rate": 0.5,
+   "declared_offset": -3.7921449117457753,
+   "calibration": {
+    "pooled training-site test, stride 12": {
+     "declared": {
+      "mean_predicted_rate": 0.01764762443357488,
+      "expected_calibration_error": 0.021204017161869464,
+      "base_rate": 0.03876664862036705,
+      "windows": 137025.0
+     },
+     "measured": {
+      "mean_predicted_rate": 0.018582493156890135,
+      "expected_calibration_error": 0.0203001410020068,
+      "base_rate": 0.03876664862036705,
+      "windows": 137025.0
+     }
+    },
+    "kelmarsh test, stride 12": {
+     "declared": {
+      "mean_predicted_rate": 0.017133332774824178,
+      "expected_calibration_error": 0.019792114921219288,
+      "base_rate": 0.03679908812046051,
+      "windows": 77203.0
+     },
+     "measured": {
+      "mean_predicted_rate": 0.018041795163924342,
+      "expected_calibration_error": 0.018916225615818825,
+      "base_rate": 0.03679908812046051,
+      "windows": 77203.0
+     }
+    },
+    "penmanshiel test, stride 12": {
+     "declared": {
+      "mean_predicted_rate": 0.01831134110855282,
+      "expected_calibration_error": 0.02302614094049464,
+      "base_rate": 0.04130587354302406,
+      "windows": 59822.0
+     },
+     "measured": {
+      "mean_predicted_rate": 0.01928028840196616,
+      "expected_calibration_error": 0.02208614647758219,
+      "base_rate": 0.04130587354302406,
+      "windows": 59822.0
+     }
+    },
+    "hill_of_towie test, 12,000-window subsample": {
+     "declared": {
+      "mean_predicted_rate": 0.01783014816937357,
+      "expected_calibration_error": 0.015457152359820793,
+      "base_rate": 0.033250000327825546,
+      "windows": 12000.0
+     },
+     "measured": {
+      "mean_predicted_rate": 0.01877746109566788,
+      "expected_calibration_error": 0.014511702444587696,
+      "base_rate": 0.033250000327825546,
+      "windows": 12000.0
+     }
+    }
+   }
+  },
+  {
+   "name": "step 166 (G1 re-run)",
+   "probe": "checkpoints/paired_control_v0_b446304a/final_position/S2_trained_seed1_probe.pt",
+   "decides": false,
+   "balanced_windows": 16000,
+   "balanced_positives": 8000,
+   "balanced_mean_rate": 0.4375119525723004,
+   "interval": [
+    0.43547384386302773,
+    0.43956489292711093
+   ],
+   "mean_on_positives": 0.47247593337069776,
+   "mean_on_negatives": 0.402547971773903,
+   "measured_shift": 0.2701552212238312,
+   "verdict": {
+    "inside": false,
+    "shift": 0.2701552212238312,
+    "reason": "balanced mean rate 0.4375 is outside [0.45, 0.55]; the measured shift +0.2702 nats is applied"
+   },
+   "natural_rate": 0.022050022218159642,
+   "train_rate": 0.5,
+   "declared_offset": -3.7921449117457753,
+   "calibration": {
+    "pooled training-site test, stride 12": {
+     "declared": {
+      "mean_predicted_rate": 0.013925778920169624,
+      "expected_calibration_error": 0.024844942556781397,
+      "base_rate": 0.03876664862036705,
+      "windows": 137025.0
+     },
+     "measured": {
+      "mean_predicted_rate": 0.01814362333687747,
+      "expected_calibration_error": 0.020916492835040053,
+      "base_rate": 0.03876664862036705,
+      "windows": 137025.0
+     }
+    },
+    "kelmarsh test, stride 12": {
+     "declared": {
+      "mean_predicted_rate": 0.013450307920519955,
+      "expected_calibration_error": 0.02337414686806604,
+      "base_rate": 0.03679908812046051,
+      "windows": 77203.0
+     },
+     "measured": {
+      "mean_predicted_rate": 0.017528837657156047,
+      "expected_calibration_error": 0.01964719254861908,
+      "base_rate": 0.03679908812046051,
+      "windows": 77203.0
+     }
+    },
+    "penmanshiel test, stride 12": {
+     "declared": {
+      "mean_predicted_rate": 0.014539395776609624,
+      "expected_calibration_error": 0.026766478316533376,
+      "base_rate": 0.04130587354302406,
+      "windows": 59822.0
+     },
+     "measured": {
+      "mean_predicted_rate": 0.018937032096723906,
+      "expected_calibration_error": 0.022554582334096563,
+      "base_rate": 0.04130587354302406,
+      "windows": 59822.0
+     }
+    },
+    "hill_of_towie test, 12,000-window subsample": {
+     "declared": {
+      "mean_predicted_rate": 0.013785333842773438,
+      "expected_calibration_error": 0.019477364564353703,
+      "base_rate": 0.033250000327825546,
+      "windows": 12000.0
+     },
+     "measured": {
+      "mean_predicted_rate": 0.017977678072115283,
+      "expected_calibration_error": 0.01532707226278948,
+      "base_rate": 0.033250000327825546,
+      "windows": 12000.0
+     }
+    }
+   }
+  }
+ ]
+}

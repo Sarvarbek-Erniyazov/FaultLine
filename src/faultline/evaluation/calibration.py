@@ -63,7 +63,7 @@ class NaturalRateScores:
 
 
 def at_natural_rate(
-    logits: np.ndarray, train_rate: float, natural_rate: float
+    logits: np.ndarray, train_rate: float, natural_rate: float, balanced_shift: float = 0.0
 ) -> NaturalRateScores:
     """Correct logits from the training prior to the natural prior.
 
@@ -72,17 +72,55 @@ def at_natural_rate(
         train_rate: The positive share of its training batches; the natural rate itself for
             a head trained without rebalancing, which makes the offset zero.
         natural_rate: The positive share of the training windows at the natural rate.
+        balanced_shift: A measured shift that first re-centres the head on ``train_rate``
+            (ADR-0019 F2, :func:`balanced_shift`); zero keeps the declared correction.
 
     Returns:
         The corrected scores.
     """
-    offset = prior_correction(train_rate, natural_rate)
+    offset = balanced_shift + prior_correction(train_rate, natural_rate)
     return NaturalRateScores(
         logits=np.asarray(logits, dtype=np.float64) + offset,
         train_rate=train_rate,
         natural_rate=natural_rate,
         offset=offset,
     )
+
+
+def balanced_shift(logits: np.ndarray, target: float, tolerance: float = 1e-6) -> float:
+    """The constant ``c`` with ``mean(sigmoid(logits + c)) == target``, by bisection.
+
+    ADR-0019 F2: a head trained on batches at ``target`` should put its mean prediction there.
+    If it does not, ``c`` is the shift that makes it, measured on the balanced windows.
+
+    Args:
+        logits: The head's uncorrected logits over balanced windows.
+        target: The positive share of those windows.
+        tolerance: Width of the final bracket, in nats.
+
+    Returns:
+        The shift.
+
+    Raises:
+        ValueError: If there are no logits or the target is not strictly between 0 and 1.
+    """
+    if logits.size == 0:
+        raise ValueError("no logits to re-centre")
+    if not 0.0 < target < 1.0:
+        raise ValueError(f"target must be strictly between 0 and 1, got {target}")
+    z = np.asarray(logits, dtype=np.float64)
+
+    def mean_at(shift: float) -> float:
+        return float(np.mean(0.5 * (1.0 + np.tanh(0.5 * (z + shift)))))
+
+    low, high = -60.0, 60.0
+    while high - low > tolerance:
+        middle = 0.5 * (low + high)
+        if mean_at(middle) < target:
+            low = middle
+        else:
+            high = middle
+    return 0.5 * (low + high)
 
 
 def _require(scores: object) -> NaturalRateScores:

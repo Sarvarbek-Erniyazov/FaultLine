@@ -2976,7 +2976,8 @@ seed. Nothing is decided under this number yet.
 ## ADR-0023 The random-init probe control: can the frozen probe see backbone quality?
 
 **Status:** Accepted; **pre-registered 2026-09-16, before any code, configuration or run of the
-control exists** · **Date:** 2026-09-16
+control exists** · **Date:** 2026-09-16 · **Criterion superseded by ADR-0024 (2026-09-17). The
+§a-§d FAIL verdicts below stand as recorded.**
 
 **Context.** H1 is read entirely through the frozen probe (ADR-0020). Doubling pretraining lowered
 selected validation loss from 4.21 to 3.317, about 0.9 nats, and no site's probe AUPRC moved
@@ -3266,3 +3267,150 @@ Recorded beside the stop, deciding nothing:
   1,000.** Of the twelve random-init probes, eleven selected later steps. The prior-band question
   that F2 would have asked of such an early checkpoint is still open.
 - Probe compute for the whole control, §a to §d: 0.27 + 0.36 + 0.35 + 0.44 = 1.42 GPU-hours.
+
+---
+
+## ADR-0024 The probe-sensitivity criterion is a paired test, and a bag-of-tokens comparator is reported beside it
+
+**Status:** Accepted; **pre-registered 2026-09-17, after ADR-0023's four results were seen,
+before any paired interval, any re-scoring or any comparator code or run exists** · **Date:**
+2026-09-17 · Supersedes ADR-0023's criterion, not its verdicts.
+
+### 1. Why ADR-0023's criterion is superseded
+
+ADR-0023 required the trained backbone's block-bootstrap interval to lie entirely above each
+random-init backbone's interval, **each interval bootstrapped on its own**. Both models are scored
+on the same test windows, so their bootstrap estimates are strongly positively correlated. The
+variance of their difference is Var(A) + Var(B) - 2 Cov(A, B), not Var(A) + Var(B). Requiring two
+independent 95% intervals not to overlap is a far stricter test than a 5% one (the
+overlapping-confidence-intervals fallacy). Each interval is about 0.015 wide, and the point gap is
+about +0.009 at best (§a). The registered rule could not have passed at any of the four designs.
+The rule was specified in the F-brief's Hill of Towie ruling (§3) and reproduced faithfully in
+`c9489a2`, so the error is in the specification. **The four FAIL verdicts are retained as
+recorded.** This record registers the test the question needed, a paired block bootstrap of the
+difference. It is registered **after** ADR-0023's results were seen. No paired interval had been
+computed when it was written.
+
+### 2. The criterion
+
+> The probe is judged sensitive to backbone quality if and only if, on the pooled Kelmarsh +
+> Penmanshiel test split, the paired block-bootstrap 95% percentile interval of ΔAUPRC =
+> AUPRC(trained, full-budget `tel_only` seed 1) − AUPRC(random-init seed k), computed by
+> resampling two-day blocks once per replicate and scoring both models on the identical resampled
+> set, has a lower bound strictly greater than zero for **each** of k = 1, 2, 3. Same number of
+> replicates as ADR-0021. Hill of Towie is reported alongside and does not decide.
+
+**How it is read, fixed here.**
+
+- **Blocks and replicates are ADR-0021's.** A block is a window's end step integer-divided by 288
+  (48 hours), within its source's shard. Each replicate draws as many blocks as are occupied, with
+  replacement, and takes every window of each drawn block each time it is drawn. **10,000
+  replicates, bootstrap seed 20260916, 95% percentile interval.** The trained and the random-init
+  scores are read on the same drawn rows, and Δ is computed per replicate. The same seed serves
+  every k, so all three comparisons draw identical blocks.
+- **Discards.** A replicate with no positive window is discarded and counted. If more than 1% of
+  a comparison's replicates are discarded, that comparison's interval is untrusted, and the
+  comparison fails.
+- **Scores** are each probe's test logits plus its prior offset. AUPRC reads only the order, so
+  the offset does not change Δ.
+- **Each design is compared within itself.** Its trained probe is compared with the three
+  random-init probes read through the same design.
+
+### 3. The order of application, fixed before any paired interval exists
+
+1. **§a** (final position, one hidden layer, frozen) first. It is the original design, the one
+   every prior result used, and the one with the largest point gap. **If §a passes, §a is the probe
+   for every arm**, and §b-§d are reported for the record only.
+2. If §a fails, **§d**, the only other design with a point gap materially above zero.
+3. Then **§b**, then **§c**.
+
+The first design to pass is the probe. If none passes on the deciding split (§4), the work stops
+and is reported: the pretraining effect cannot be resolved on this project's test set.
+
+### 4. The test set: the full split thinned to stride 12, by the user's choice
+
+**Measured 2026-09-17 from the window index, labels only, before any score.** The 24,000-window
+set ADR-0023 read is a **seeded subsample** (12,000 per source, `configs/train/telemetry_v1.yaml`)
+of the pooled test split:
+
+| set | windows | positive windows | base rate | occupied 48-hour blocks | blocks holding a positive |
+| --- | --- | --- | --- | --- | --- |
+| full pooled split, stride 1 | 1,644,286 | 63,760 | 0.03878 | 5,800 | 506 |
+| **stride 12 (deciding)** | **137,025** | **5,312** | 0.03877 | **5,799** | **497** |
+| ADR-0023 subsample | 24,000 | 919 | 0.03829 | 5,705 | 373 |
+
+By source, the full split is Kelmarsh 926,430 windows (34,065 positive, 3,268 blocks, 251 of them
+positive) and Penmanshiel 717,856 (29,695; 2,532; 255). At stride 12 it is Kelmarsh 77,203
+(2,841; 3,268; 248) and Penmanshiel 59,822 (2,471; 2,531; 249).
+
+**Why not stride 1.** The F-brief directed the full split. Its reasoning was that interval width
+falls with the square root of the positive count. Under a block bootstrap, the resampled unit is
+the block, and the full split adds few blocks: positive blocks go from 373 to 506 while positive
+windows go up about 69x. Scoring throughput, measured on the S2 backbone on this machine, is **343
+windows a second**, the same for the final-position and the mean-pooled read-outs. One model on the
+full split would take **1.33 GPU-hours**: 5.3 for §a's four models, and about 21 if every design
+were scored. The brief estimated under 0.3 for G0-G3. **On 2026-09-17 the user chose the full split
+thinned to stride 12**: every 12th admissible window of each shard's index, taken as
+`load_windows(..., stride=12)` takes it, with no cap and no random subsample. It keeps 5,799 of
+5,800 blocks and 497 of 506 positive blocks, at about 24 windows a block, and it costs about **6.7
+minutes a model**.
+
+**What decides and what is reported.**
+
+- **Deciding:** the stride-12 pooled Kelmarsh + Penmanshiel test split, for each design tested in
+  §3's order, and only for those designs.
+- **Reported beside it:** the paired Δ on ADR-0023's 24,000-window subsample for **all four
+  designs**, from the scores already saved. Hill of Towie's paired Δ is reported on its saved
+  12,000-window subsample. It is not re-scored at stride 12.
+- **A design not tested** in §3's order is not re-scored at stride 12. Its record is the
+  subsample row.
+
+**Re-scoring, not retraining.** Every selected random-init probe of §a-§d, and the trained probes
+of §b-§d, were saved whole under `checkpoints/probe_control_v*_*/`. They are loaded and scored on
+the stride-12 windows, with no optimiser step. **The §a trained probe is the one exception: the
+ADR-0021 gate run did not save its head** (`faultline.evaluation.gate_check` passed no `save_to`).
+Its probe stage is re-run on the saved gate backbone, seeded exactly as before, and this time the
+head is saved. The re-run is accepted as the gate run's probe **only if it reproduces the record
+to four decimals**: selected at step 166 with validation AUPRC 0.0441, and pooled 24,000-window
+test AUPRC 0.0502. The same check passed for both ADR-0020 probes (ADR-0021 outcome). If the re-run
+does not reproduce the record, nothing is scored, and the discrepancy is reported.
+
+### 5. The selection split, confirmed disjoint from test
+
+Every probe in ADR-0021 and ADR-0023 selects its checkpoint on `splits["selection"]` from
+`open_probe_inputs` (`src/faultline/evaluation/variance_probe.py`), which `probe_measure` in
+`probe_and_score` reads. That split is `build_split(telemetry, "val", 3000, stride 1, seed
+20260912)`. The only `val` shards are `kelmarsh__val` and `penmanshiel__val`, and every window in
+them has year 2021. The test shards `kelmarsh__test` (2022-2024) and `penmanshiel__test` (2022)
+are separate files, so no window spans the two splits (`configs/data/splits_v1.yaml`, `val_until`
+2021-12-31). Hill of Towie and CARE have no `val` shard. **No probe was selected on test windows.**
+Only a `val` window's label reaches past the cut: its 24-hour horizon may read an event on
+2022-01-01. That is a label, not a test window, and nothing from it enters a test score. G1
+proceeds.
+
+### 6. The bag-of-tokens comparator (reported, not gating)
+
+A classifier that ignores token order, to measure whether the sequence model beats one.
+
+- **Features.** For each window, the count of each telemetry token id over its 1,872 tokens,
+  across the tokenizer's full vocabulary (**1,184 ids**, `quantile_bins_v2_9cd52b65`, `<sep>` and
+  `<nan>` included), divided by the window's 144 steps. Each channel's bins then sum to 1. Nothing
+  else is fitted to the data: no standardisation and no feature selection.
+- **Model.** Logistic regression: one linear layer, 1,184 → 1, with a bias, initialised to zero.
+- **Training: the probe stage's, on CPU.** The same balanced sampler seeded with **1**, 16,000
+  positives, 16 windows x 2 accumulation, peak rate 2e-3 with the optimiser's warmup, cosine
+  schedule, weight decay and clipping, **six validation measurements on the same selection split
+  (§5), and the best one selected.** The prior correction is applied as it is for the probe. None
+  of these values is tuned. The comparator's training loss and selected step are reported, so a
+  fit still improving at the end is visible.
+- **Scored** on the deciding stride-12 split and on the 24,000-window subsample, each with the
+  ADR-0021 block bootstrap. The G1 table reports its AUPRC and interval, and the paired Δ (the
+  trained probe of the design in force minus bag-of-tokens) with its paired interval under §2's
+  procedure.
+- **It decides nothing.** If the comparator is within noise of the trained probe, the outcome says
+  so in one sentence, and the arm comparison stays the registered study.
+
+### 7. What this record does not change
+
+The three-arm x three-seed design and S2-only stand. ADR-0021's NOT EVALUABLE verdict stands.
+ADR-0022 stays reserved. F2-F5 of the F-brief wait on G1, and F6 is not authorised.

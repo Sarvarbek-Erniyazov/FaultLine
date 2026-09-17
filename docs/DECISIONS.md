@@ -3065,7 +3065,9 @@ interval on lift, the registered unit, is [-0.0012, +0.0211].
 
 **Status:** Accepted; **registered 2026-09-17, before either candidate axis is scored for any seed**
 · **Date:** 2026-09-17 · Number reserved 2026-09-16. Amends ADR-0010 in one respect (§3).
-**Commit:** recorded below, in the commit that follows this one. F5 may not start until it is.
+**Commit:** this record, `configs/eval/axis_gate_v0.yaml`, its test and the CARE card's channel
+mapping were committed in **`801ab71`**, before either axis was scored for any seed. The hash is
+recorded here by the commit after it. F5 may start only on the user's authorisation.
 
 **Sources of every number.** Counts, rates and `<nan>` shares come from the F4 measurement of
 2026-09-17: the window index and token stream of `data/shards/telemetry/quantile_bins_v2_9cd52b65/`

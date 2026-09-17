@@ -87,6 +87,55 @@ UNVERIFIED - nothing has been measured for this source yet. Run `faultline inspe
 
 **Known limits of this card.** Every field marked `UNVERIFIED` is an open question, not an absence of a problem.
 
+## Channel mapping in the token stream (added by hand, 2026-09-17; not produced by `faultline cards build`)
+
+This section is written by hand, because the generator has no field for it. A regeneration of
+this card must carry it forward. It is the record ADR-0022 reads (F4). Every figure below was
+measured on 2026-09-17 from `configs/data/channel_map/care.yaml`, the shard manifest and the
+token stream of `data/shards/telemetry/quantile_bins_v2_9cd52b65/` (the shards in force:
+`quantile_bins_v2.yaml`, `telemetry_v4.yaml`, `splits_v3.yaml`). No model was loaded.
+
+**The counts.** `schemas.CANONICAL_CHANNELS` holds **14 canonical channels**. **12 are core**
+and **2 are extended** (`wind_direction_deg` and `gearbox_bearing_temp_c`). The tokenizer is
+fitted on the 12 core channels only, so every source's stream carries those 12, as 13 tokens a
+step (`<sep>` and one bin token per core channel, manifest `tokens_per_step: 13`). Both training
+sites (Kelmarsh, Penmanshiel) populate all 12 core channels. The two extended channels are never
+tokenized at any source, whether mapped or not.
+
+**How an absent channel enters the stream: as `<nan>` tokens, never masked.** The manifest's
+`masked` and the tokenizer's `excluded` are both empty. An unmapped core channel keeps its
+position in every step and reads `<nan>` on every step: its measured `<nan>` share is 1.0000 at
+its farm. No window drops an absent channel.
+
+| farm | canonical channels mapped (of 14) | canonical channels absent | core channels in the stream (of 12) | core channels absent from the stream, emitted as `<nan>` | `<nan>` share of value tokens |
+| --- | --- | --- | --- | --- | --- |
+| farm A | 13 | `main_bearing_temp_c` (verified absent) | 11 | `main_bearing_temp_c` | 8.35% |
+| farm B | 10 | `nacelle_temp_c`, `generator_winding_temp_c` (verified absent); `gearbox_bearing_temp_c`, `generator_bearing_temp_c` (ambiguous, left unmapped) | 9 | `nacelle_temp_c`, `generator_bearing_temp_c`, `generator_winding_temp_c` | 25.01% |
+| farm C | 9 | `nacelle_position_deg`, `wind_direction_deg`, `nacelle_temp_c` (verified absent); `gearbox_bearing_temp_c`, `generator_bearing_temp_c` (ambiguous, left unmapped) | 9 | `nacelle_position_deg`, `nacelle_temp_c`, `generator_bearing_temp_c` | 25.22% |
+
+The `<nan>` shares are over the steps the known CARE evaluation windows cover (label
+`narrow_within_24h`). All of CARE reads **21.34%**. Beside them, per the M1c reporting rule
+(`configs/eval/README.md`, rule 1): the training sites' test splits read **0.15%** (Kelmarsh) and
+**0.36%** (Penmanshiel), and their pretraining windows (the training index at stride 6) read
+**4.45%** and **6.41%**.
+
+### Caveats discovered during inspection
+
+- **Correction: the core set is 12 channels, not 13.** "13" comes from `configs/data/splits_v1.yaml`
+  ("thirteen channels", frozen before wind direction was demoted at M1b step 10) and from the 13
+  tokens a step. The F0–F6 brief's "13 canonical channels" is wrong: there are 14 canonical channels
+  and 12 core channels. The G-series CARE report's "1 of the 12" counts core channels in the stream,
+  and it is right.
+- **The pretraining stream never shows a CARE farm's absence pattern.** `<nan>` is not rare in
+  pretraining. But of 749,847 pretraining windows (both training sites, index at stride 6), **0**
+  have exactly farm A's, farm B's or farm C's set of fully-`<nan>` channels. The 12,816 windows
+  (1.71%) in which those channels are all `<nan>` lose other channels with them (whole-turbine gaps
+  at Kelmarsh). A channel that is permanently absent while its neighbours report is new to the
+  backbone at every CARE farm.
+- **The 29.7% CARE `<nan>` share in `configs/eval/README.md` is historical.** It was measured on
+  the M1b shards, where CARE power was also `<nan>` (ADR-0011). Power returned at M1c (ADR-0013),
+  and the share on the shards in force is 21.34%.
+
 ## Generation
 
 | field | value |

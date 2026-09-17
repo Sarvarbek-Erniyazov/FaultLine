@@ -126,3 +126,28 @@ def test_a_regenerated_hill_of_towie_card_keeps_the_275_message_gap(
     regenerated = build_card("hill_of_towie", _spec(), tmp_paths).read_text(encoding="utf-8")
     assert HILL_OF_TOWIE_GAP in regenerated
     assert "added by hand" in regenerated
+
+
+def _care_channel_mapping(card: str) -> str:
+    """The CARE card's channel-mapping field, the generated section and the hand-written one."""
+    generated = card[card.index("## Channels") : card.index("## Use in FaultLine")]
+    start = card.index("## Channel mapping in the token stream (added by hand")
+    return generated + card[start : card.index("## Generation", start)]
+
+
+def test_the_tracked_care_card_states_the_channel_mapping_of_every_farm() -> None:
+    card = (REPO / "data" / "cards" / "care.md").read_text(encoding="utf-8")
+    mapping = _care_channel_mapping(card)
+    assert "UNVERIFIED" not in mapping
+    for farm in ("farm A", "farm B", "farm C"):
+        assert f"| {farm} |" in mapping
+    assert "**14 canonical channels**" in mapping and "**12 are core**" in mapping
+    assert "as `<nan>` tokens, never masked" in mapping
+
+
+def test_a_regenerated_care_card_keeps_its_channel_mapping(tmp_paths: ProjectPaths) -> None:
+    tracked = (REPO / "data" / "cards" / "care.md").read_text(encoding="utf-8")
+    (tmp_paths.cards_dir / "care.md").write_text(tracked, encoding="utf-8")
+    regenerated = build_card("care", _spec(), tmp_paths).read_text(encoding="utf-8")
+    assert "## Channel mapping in the token stream (added by hand" in regenerated
+    assert "### Caveats discovered during inspection" in regenerated

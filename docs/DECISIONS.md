@@ -3061,11 +3061,211 @@ interval on lift, the registered unit, is [-0.0012, +0.0211].
 
 ---
 
-## ADR-0022 The primary evaluation axis after ADR-0021 (number reserved)
+## ADR-0022 The primary evaluation axis after ADR-0021: the selection rule, the CARE facts and scoring protocol, and the temporal split named in-distribution
 
-**Status:** Reserved 2026-09-16. The axis selection rule and the two CARE facts are written here
-in their own commit, before either candidate (CARE or the temporal holdout) is scored for any
-seed. Nothing is decided under this number yet.
+**Status:** Accepted; **registered 2026-09-17, before either candidate axis is scored for any seed**
+· **Date:** 2026-09-17 · Number reserved 2026-09-16. Amends ADR-0010 in one respect (§3).
+**Commit:** recorded below, in the commit that follows this one. F5 may not start until it is.
+
+**Sources of every number.** Counts, rates and `<nan>` shares come from the F4 measurement of
+2026-09-17: the window index and token stream of `data/shards/telemetry/quantile_bins_v2_9cd52b65/`
+(`splits_v3.yaml`, label `narrow_within_24h`), read with no model loaded. Model results come from
+`reports/data/seed_replication_v0_20260917.md` **as it existed when this record was written: the
+first F3 run's report** (configuration hash 424c4f33, generated 2026-09-17T12:57:37Z, git_sha
+`7497aaa`). The `b2ad4a7` resume run's report will supersede it **for the three F3 additions only**
+(validation-split calibration, the selection-split interval, final-step checkpoints). It does not
+supersede any number used here.
+
+### 0. What is known before the axis is chosen
+
+1. **Pretraining moves the frozen §a probe by +0.009 to +0.019 AUPRC over random init on three
+   seeds.** All nine paired lower bounds are above zero, and the lowest is +0.0045 (ADR-0024 F3; the
+   report, §1).
+2. **The probe is at parity with a bag-of-tokens classifier on all three seeds.** Δ probe − bag is
+   +0.0016, +0.0053 and −0.0015, and every interval spans zero (the report, §2; ADR-0024 G2).
+3. **Therefore H1's claim is that the text pathway carries signal the telemetry tokens do not, not
+   that the sequence model's representation helps.** H2 is unaffected (H1 and H2 as in
+   `docs/ROADMAP.md`).
+
+The seed spread on the pooled split, 0.0508 to 0.0576 (0.0068), is the size of one seed's interval
+half-width: seed 1 reads [0.0474, 0.0618], half-width 0.0072. Every arm comparison is therefore
+paired and three-seeded. At best it can resolve differences of order 0.005.
+
+### 1. The two CARE facts, measured
+
+**Fact 1: the positives and the rate.** At the project horizon H (144 steps, `narrow_within_24h`),
+compared with the figures recorded before this measurement:
+
+| quantity | previously recorded | measured 2026-09-17 |
+| --- | --- | --- |
+| labelled events | 45 | **45**: 12 / 6 / 27 at farms A / B / C, each a run of exactly 144 consecutive positive windows |
+| known windows | — | **5,166,066** (of 5,179,569 index rows) |
+| positive windows | 6,480, 144 per event | **6,480**, 144 per event |
+| positive rate | 0.125% | **0.1254%** (0.001254) |
+| two-day blocks (end step // 288, within the shard) | — | **18,196** |
+| blocks holding a positive | — | **72** |
+
+Every recorded figure agrees with the measurement. ADR-0010's "0.123% at 24 h" was a per-step rate
+from the M1a label report, a different denominator, and it is not this rate. The 45 events are
+also the 45 anomalous datasets of ADR-0010.
+
+**Fact 2: the channel set.** There are 14 canonical channels, 12 of them core. Every stream carries
+the 12 core channels as 13 tokens a step. **An unmapped core channel is emitted as `<nan>` on every
+step, never masked** (`data/cards/care.md`, "Channel mapping in the token stream"):
+
+| farm | canonical channels mapped (of 14) | core channels in the stream (of 12) | absent from the stream, as `<nan>` | `<nan>` share |
+| --- | --- | --- | --- | --- |
+| A | 13 | 11 | `main_bearing_temp_c` | 8.35% |
+| B | 10 | 9 | `nacelle_temp_c`, `generator_bearing_temp_c`, `generator_winding_temp_c` | 25.01% |
+| C | 9 | 9 | `nacelle_position_deg`, `nacelle_temp_c`, `generator_bearing_temp_c` | 25.22% |
+
+All of CARE reads 21.34%. The training sites read 0.15% (Kelmarsh) and 0.36% (Penmanshiel) on their
+test splits, and 4.45% and 6.41% on their pretraining windows.
+
+**CARE is scored on a reduced channel set, and the cross-OEM claim is made on that set.** The absent
+channels are emitted as `<nan>`. The brief anticipated that the backbone saw few or no `<nan>`
+tokens in pretraining. The measurement corrects that. `<nan>` is common in pretraining, but **not
+one of 749,847 pretraining windows** (both training sites, index at stride 6) has any CARE farm's
+set of fully-`<nan>` channels. The 12,816 windows (1.71%) in which those channels are all `<nan>`
+lose other channels with them, in whole-turbine gaps. A channel permanently absent while its
+neighbours report is outside everything the backbone was pretrained on, at every CARE farm. **The
+evaluation cannot remove this confound.** It is stated beside every CARE result, with the farm's
+`<nan>` share.
+
+### 2. The training-site temporal test split, named
+
+**The pooled Kelmarsh + Penmanshiel test split, 2022–2024, cut at 2021-12-31T23:59:59Z; the same
+windows as the F3 stride-12 set. It is the in-distribution temporal test set, not a shift axis. It
+can carry H2 (degradation under modality dropout, in-distribution); it cannot support a shift
+claim.**
+
+The cut is `time.val_until` in `configs/data/splits_v3.yaml`, the split specification the shards in
+force were built with. Train is 2016–2020 (`train_until` 2020-12-31T23:59:59Z) at both sites, and
+validation is 2021. Test is 2022–2024 at Kelmarsh and 2022 only at Penmanshiel, whose test shard holds
+no later year.
+
+ADR-0009's caveat, verbatim (evidence note of 2026-09-11):
+
+> **The late split is a temporal hold-out with a change in what is labelled, not a drift
+> test.**
+
+> **Standing requirement: every late-test result is reported both with and without the
+> anemometer-defect events.**
+
+**Every result reported on this split carries that caveat**, and every result is given both with
+and without those events.
+
+**Base rate at stride 12:** 5,312 of 137,025 windows, **0.0388**, confirmed from the shards
+(0.03877). That matches the F2 record. Without the anemometer-defect events, it is 3,331 of 137,015
+windows, 0.0243. There are 5,799 blocks, and 497 of them hold a positive.
+
+### 3. The CARE scoring protocol
+
+- **Uniform stride-12 thinning over the whole CARE evaluation set.** Every 12th known window of the
+  `care__test` index at offset 0, as `load_windows(..., stride=12)` takes it. It is deterministic
+  and identical for every model scored: the F3 protocol (ADR-0024 §4).
+- **The scored set:** **430,506 windows, 540 positive** (12 per event; all 45 events represented),
+  **for 45 events**. By farm: A 96,694 (144), B 70,803 (72), C 263,009 (324).
+- **Block coverage, measured, and it is not complete.** The brief described the protocol as covering
+  every block. F3's thinning does not. It covers **18,193 of 18,196 blocks** and **67 of 72
+  positive blocks**. The three missed blocks hold 1 to 3 known windows each. The
+  five missed positive blocks hold 1 to 8 positive windows at the edge of an event whose other
+  windows are scored. The same thinning at the training sites covers 5,799 of 5,800 blocks and 497
+  of 506 positive blocks (ADR-0024 §4). The protocol stays F3's as written, because changing it
+  would make the two axes' scored sets differ in construction. One CARE block spans two datasets,
+  because datasets are concatenated in the shard.
+- **The base rate the rule reads is the scored set's own positive rate.** Under uniform thinning it
+  equals the true rate. **Scored set: 540 / 430,506 = 0.0013. Full set: 6,480 / 5,166,066 = 0.0013.
+  They agree to the fourth decimal (0.001254 both).**
+- **The independent unit is the event.** The 45-event count is stated beside every CARE window
+  count. Event-level metrics, if ever reported, have n = 45.
+- **Interval:** ADR-0021's block bootstrap over two-day blocks (288 steps within the shard), 10,000
+  replicates, seed 20260916, 95% percentile, max discarded share 0.01, as in
+  `configs/train/gate_check_v0.yaml`.
+- **Positive enrichment is rejected.** An evaluation set with all positives and sampled negatives
+  changes the chance level, and its AUPRC cannot be compared with the true base rate.
+
+**The amendment to ADR-0010.** ADR-0010 reports no per-step base rate for CARE beside the other
+sites. That stands for reporting. Here, CARE's own scored-set rate is used only as the chance level
+of its own rule, and it is never printed as a rate comparable with another site's. CARE is still
+never pooled with another source (`configs/eval/README.md`, rule 2).
+
+The values are in `configs/eval/axis_gate_v0.yaml`, written with this record.
+`tests/evaluation/test_axis_gate.py` pins them to ADR-0021's interval and F3's stride, and it
+re-counts them from the window index when the shards are present.
+
+### 4. The selection rule
+
+> A candidate axis is evaluable if the ADR-0021 rule — block-
+> bootstrap 95% lower bound on tel_only test AUPRC strictly above
+> that axis's OWN test-split base rate, never the training rate —
+> holds on at least two of the three full-budget tel_only seeds,
+> each scored at the checkpoint ADR-0024 selected for it. Both
+> candidates are scored and both are reported in full regardless of
+> outcome. If both are evaluable: H1 is evaluated on CARE, H2 on the
+> training-site temporal test split, because CARE carries no status
+> strings and cannot exercise the text pathway. If only the temporal
+> split is evaluable, it carries both hypotheses and CARE is
+> reported as a second negative beside Hill of Towie. If only CARE
+> is evaluable, H1 is evaluated there and H2 is reported as
+> untestable on an evaluable shift axis. If neither, stop and
+> report.
+
+The base rates the rule reads: **temporal split 0.0388** (137,025 windows); **CARE 0.0013**
+(430,506 windows, 45 events).
+
+### 5. Checkpoint and selection
+
+F5 scores the **ADR-0024-selected checkpoint** of each seed, which is the rule in force. The
+**final-step checkpoint** of each seed is scored beside it on both axes and reported. It does not
+gate.
+
+Whether the arm runs use selected-step or fixed-final-step selection is decided in a **dated
+addendum to this record**, after the `b2ad4a7` F3 report exists, on a criterion registered now:
+**if the final-step read agrees with the selected read within the paired interval on all three
+seeds on the pooled split, arm runs use fixed-final-step selection. Otherwise the ADR-0024 rule
+stays.** The addendum is written before any arm is pretrained.
+
+### 6. Hill of Towie, retro-application
+
+From the F3 report, on Hill of Towie's 12,000-window subsample with base rate 0.03325:
+
+| seed | AUPRC | 95% block interval | lower bound above 0.03325 |
+| --- | --- | --- | --- |
+| 1 | 0.0390 | [0.0304, 0.0548] | no |
+| 2 | 0.0510 | [0.0371, 0.0741] | yes |
+| 3 | 0.0359 | [0.0276, 0.0508] | no |
+
+The site clears on one seed of three. **Under rule §4 it is NOT EVALUABLE**, the same verdict
+ADR-0021 reached on one seed. The demotion stands and is not reopened. The site is marginal, not
+null. This paragraph exists so that ADR-0021 and ADR-0022 agree on what "evaluable" means.
+
+### 7. What F5 is
+
+F5 scores `tel_only` seeds 1–3, at the selected and final-step checkpoints, on both axes at stride
+12, and reports:
+
+- one table of axis × seed: AUPRC, interval, base rate, and whether the interval clears it;
+- the verdict for each axis;
+- the hypothesis assignment;
+- the outcome section of this record.
+
+Nothing is pretrained. F5 is not authorised by this record.
+
+**Rejected.**
+
+| alternative | why rejected |
+| --- | --- |
+| Positive-enriched CARE set (all 6,480 positives, sampled negatives) | Changes the chance level; its AUPRC cannot be compared with the true base rate (§3). |
+| The training natural rate as the chance level on either axis | ADR-0021's rule reads the scored windows' own rate; a training rate is not what a no-signal scorer reaches on another set. |
+| A per-block offset thinning that covers every block | Not the F3 protocol; the two axes' scored sets would differ in construction. The coverage it would add is 3 blocks and 5 positive blocks (§3). |
+| The temporal split as a shift axis | Same sites, same instruments, a change in what is labelled (ADR-0009): in-distribution, not shift. |
+| One seed deciding an axis | Seed spread equals one seed's interval half-width (§0); ADR-0021's one-seed verdict on Hill of Towie flips on seed 2. |
+
+**What would change this decision.** A CARE release publishing the absent channels, or a
+re-tokenization that masks absent channels instead of emitting `<nan>`. Either would remove the §1
+confound and need a new version of the axis-gate configuration. A measurement showing that the F3
+thinning misses an event would also change it: today every one of the 45 events is scored.
 
 ---
 

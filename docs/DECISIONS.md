@@ -2673,6 +2673,60 @@ residual miscalibration of about 3% relative, confirmed on a held-out interval, 
 difference between the two synthetic sets. That interval does not include the uncertainty of the
 training rate itself (40,000 windows, standard error about 0.085 pp).
 
+### Addendum (F2), registered 2026-09-17 before its code or run -- the balanced mean rate, and π_train
+
+**Why.** The correction's `pi_train` is the **declared** positive fraction, 0.5. That is right
+only if the head has actually learned a 50% prior on the balanced batches it was trained on. Every
+trained probe here selected an early checkpoint: step 166 under ADR-0021 and ADR-0023, and step
+200 under ADR-0024's G3 cadence, a fifth of the way into a 1,000-step run. On Hill of Towie, the
+step-166 head's corrected mean prediction was 0.0138. The step-200 head's is 0.0178. Both are below
+the training natural rate of 0.0221 that the correction targets. An early head whose mean
+prediction on balanced batches sits below 0.5 would produce exactly that under-read, and the
+declared correction would not remove it. This addendum measures it.
+
+**Where the band comes from.** The F-brief's text for F2 is not in this repository. The band and
+the rule below are fixed **by this registration**, before any number from the measurement exists.
+The user can supersede them.
+
+**The checkpoint.** The in-force probe as G3 selected it: §a, step 200
+(`checkpoints/probe_cadence_v0_c9646288/S2_trained_seed1_probe.pt`). The step-166 head that G1
+re-ran (`checkpoints/paired_control_v0_b446304a/final_position/S2_trained_seed1_probe.pt`) is
+measured beside it the same way. That row is reported, and it decides nothing.
+
+**The measurement.**
+
+- **The balanced set:** `balanced_training_sampler` over the training split (stride 6, Kelmarsh +
+  Penmanshiel, positive fraction 0.5, 16 windows a batch), drawn with its own seed **20260917**,
+  **1,000 batches: 16,000 windows, 8,000 of them positive.** This is the distribution the head was
+  trained on. It is not a held-out set, and it does not need to be: the question is what prior the
+  head learned on the data it saw.
+- **The balanced mean rate `m`:** the mean of `sigmoid(z)` over those windows, where `z` is the
+  head's logit with **no** offset. Reported with a window-bootstrap 95% interval (2,000
+  resamples, seed 20260916), and separately over the positive and the negative windows.
+
+**The rule.**
+
+- **If `m` lies in [0.45, 0.55]**, the declared `pi_train` = 0.5 stands, and the offset stays
+  -3.7921 (`logit(natural_rate) - logit(0.5)`). A head mean of 0.45 is a logit shift of about 0.2
+  nats. At a 2% prior that moves the corrected mean prediction by about a fifth. A shift inside the
+  band is not corrected.
+- **If `m` lies outside it**, the correction uses the **measured** balanced prior. `c` is the
+  constant solving `mean(sigmoid(z + c)) = 0.5` over the balanced set (bisection to 1e-6), and the
+  offset becomes `c + logit(natural_rate) - logit(0.5)`. From F2 on, every calibration read of
+  this checkpoint (F5 included) uses that offset, with the declared offset reported beside it.
+- **Either way, nothing ranked changes.** The offset is one constant, so AUPRC, every interval
+  on it and ADR-0024's verdicts are untouched.
+
+**Reported under both offsets, deciding nothing:** the corrected mean predicted rate and ECE on the
+pooled Kelmarsh + Penmanshiel test split at stride 12 (and per source), and on Hill of Towie's
+12,000-window subsample. Beside each: that set's base rate and the training natural rate 0.0221.
+Under ADR-0019, the gap to a held-out set's base rate is a measured shift, not a correction
+target. The training sites' test split is 2022-2024, and it carries ADR-0009's caveat on what is
+labelled.
+
+**Carried from G3.** The in-force checkpoint is step 200, not step 166. ADR-0024's G1 verdict was
+read on the step-166 head, and it is not re-run.
+
 ---
 
 ## ADR-0020 The seed-variance probe, and the smallest held-out-site AUPRC difference worth claiming

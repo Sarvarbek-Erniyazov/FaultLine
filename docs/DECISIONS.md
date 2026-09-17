@@ -3685,3 +3685,51 @@ Recorded, deciding nothing:
 - Hill of Towie calibration at step 200: prior-corrected mean predicted rate **0.0178**, against a
   base rate of 0.0333 and a training natural rate of 0.0221 (ECE 0.0155). The uncorrected mean is
   0.439. F2 reads these, and nothing is judged here.
+
+### Addendum (F3), registered 2026-09-17 before its code or run -- `tel_only` seeds 2 and 3, each paired against random init under the in-force protocol
+
+**Why.** G1's pass is on one pretraining seed. The effect it measured, about +0.012 AUPRC, is the
+size of every arm comparison to come. Before any arm runs, it has to hold on the two further seeds
+that the three-arm x three-seed design already requires.
+
+**The pretraining.** `tel_only` at S2, **seeds 2 and 3**, each exactly as the ADR-0021 gate run
+pretrained seed 1 (`configs/train/gate_check_v0.yaml`): 763 steps, 50,003,968 tokens, 4 x 8, peak
+rate 6e-4, six validation passes over 500 windows a source, and the lowest validation loss
+selected. Only the seed differs.
+
+**The in-force protocol, identical on both sides of every comparison.** §a (final position, one
+hidden layer, frozen), with the probe seeded by the backbone's seed. Every probe is measured under
+**G3's cadence** (step 0 as a reference, every 25 steps through 300, every 100 after) and selected
+on the same `val` split. Every probe is scored on the stride-12 pooled Kelmarsh + Penmanshiel test
+split of §4.
+
+- **Trained side:** seed 1 is G3's step-200 probe, already scored, not re-run. Seeds 2 and 3 are
+  probed after their pretraining.
+- **Random-init side: the three §a random-init probes are re-trained under G3's cadence** (seeds
+  1-3, pretraining's initialisation, no optimiser step on the backbone) and scored at stride 12. The
+  G1 random-init probes were selected under the old cadence, and pairing a G3-selected trained
+  probe against them would mix two protocols. The G1 probes are kept as the G1 record.
+- **ADR-0019 F2 per trained seed:** each new trained head is measured on the same balanced draw
+  (seed 20260917, 16,000 windows) against the same [0.45, 0.55] band, and the rule is applied as
+  registered. This touches only calibration, never AUPRC.
+
+**The criterion, per trained seed.** ADR-0024's criterion, unchanged: for trained seed s in
+{1, 2, 3}, the paired block-bootstrap 95% interval of AUPRC(trained s) - AUPRC(random-init k),
+10,000 replicates, seed 20260916, blocks of 288 steps within each shard, has a lower bound strictly
+above zero for **each** k in {1, 2, 3}. Each trained seed gets its own verdict: 3 verdicts from 9
+comparisons.
+
+**What the verdicts do.** F3 reports them and stops, as the user directed. **No automatic
+consequence is registered.** §a stays the probe in force whatever F3 shows. A seed that fails is
+recorded as the evidence it is, for the user's ruling before F4.
+
+**Reported, deciding nothing:**
+
+- per seed, the selected pretraining validation loss and step, the probe's selected step and
+  validation AUPRC, and the pooled stride-12 test AUPRC with its block interval;
+- Hill of Towie AUPRC with its block interval on the 12,000-window subsample (ADR-0021's demotion
+  stands);
+- the spread of pooled stride-12 AUPRC across the three trained seeds;
+- per seed, the paired Δ against the bag-of-tokens comparator at stride 12, from its saved scores
+  (§6);
+- the corrected mean predicted rate under the F2 rule.

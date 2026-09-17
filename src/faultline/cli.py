@@ -1298,6 +1298,29 @@ def model_prior_band(
 
 
 @model_app.command(
+    "seed-replication",
+    help="ADR-0024 F3: pretrain tel_only seeds 2 and 3 at full budget, probe every trained and "
+    "random-init backbone under the G3 cadence, and apply the paired criterion per trained seed. "
+    "Resume-safe.",
+)
+def model_seed_replication(
+    config: ConfigOption = Path("configs/train/seed_replication_v0.yaml"),
+    device: Annotated[str | None, typer.Option("--device", help="Torch device.")] = None,
+) -> None:
+    """Run the seed replication and write its report.
+
+    Args:
+        config: The F3 configuration.
+        device: Torch device; chosen automatically when omitted.
+    """
+    from faultline.evaluation.seed_replication import run_seed_replication
+
+    paths = ProjectPaths.resolve()
+    report, record = run_seed_replication(paths, paths.repo_root / config, device)
+    typer.echo(f"wrote {report} and {record}")
+
+
+@model_app.command(
     "mixture-shards",
     help="Write the M3 mixture's txt and tel+status shards and every stream's run index, "
     "and report per-stream token counts and per-arm token budgets. Trains nothing.",

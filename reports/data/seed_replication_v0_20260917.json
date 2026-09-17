@@ -1,0 +1,761 @@
+{
+ "config": {
+  "version": 0,
+  "gate_config": "configs/train/gate_check_v0.yaml",
+  "paired_config": "configs/train/paired_control_v0.yaml",
+  "cadence_config": "configs/train/probe_cadence_v0.yaml",
+  "prior_band_config": "configs/train/prior_band_v0.yaml",
+  "bag_of_tokens_dir": "checkpoints/bag_of_tokens_v0_2b2827a9",
+  "design": "final_position",
+  "new_seeds": [
+   2,
+   3
+  ],
+  "init_seeds": [
+   1,
+   2,
+   3
+  ],
+  "pooled_sources": [
+   "kelmarsh",
+   "penmanshiel"
+  ]
+ },
+ "config_hash": "424c4f33",
+ "seconds": 7931.8093676000135,
+ "trained": [
+  {
+   "seed": 1,
+   "pretraining": null,
+   "selected": [
+    200,
+    0.047051860933398075
+   ],
+   "natural_rate": 0.022050022218159642,
+   "pooled": {
+    "unit": "block",
+    "auprc": 0.053952720359414036,
+    "low": 0.04740600180171197,
+    "high": 0.06183320233377814,
+    "lift_low": 0.010382419897590275,
+    "lift_high": 0.021627514152658112,
+    "base_rate": 0.038766648421820836,
+    "windows": 137025,
+    "positives": 5312,
+    "blocks": 5799,
+    "positive_blocks": 497,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "held_out": {
+    "unit": "block",
+    "auprc": 0.038972772898284866,
+    "low": 0.03043694937957038,
+    "high": 0.05482374155653081,
+    "lift_low": -0.0012617497512513879,
+    "lift_high": 0.02056086916889221,
+    "base_rate": 0.03325,
+    "windows": 12000,
+    "positives": 399,
+    "blocks": 5983,
+    "positive_blocks": 274,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "paired": [
+    {
+     "unit": "block",
+     "delta": 0.012360181817980903,
+     "low": 0.008356722713329065,
+     "high": 0.01751742526406443,
+     "first_auprc": 0.053952720359414036,
+     "second_auprc": 0.04159253854143313,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    },
+    {
+     "unit": "block",
+     "delta": 0.012963277392644523,
+     "low": 0.00843716287941285,
+     "high": 0.018671884127681945,
+     "first_auprc": 0.053952720359414036,
+     "second_auprc": 0.04098944296676951,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    },
+    {
+     "unit": "block",
+     "delta": 0.01492020946675103,
+     "low": 0.010423858934716052,
+     "high": 0.02078063622122633,
+     "first_auprc": 0.053952720359414036,
+     "second_auprc": 0.039032510892663005,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    }
+   ],
+   "verdict": {
+    "sensitive": true,
+    "lowest": 0.008356722713329065,
+    "reason": "every paired lower bound is above zero (lowest +0.0084)"
+   },
+   "versus_bag_of_tokens": {
+    "unit": "block",
+    "delta": 0.0016317947070966995,
+    "low": -0.005903305584037614,
+    "high": 0.008382820227291497,
+    "first_auprc": 0.053952720359414036,
+    "second_auprc": 0.052320925652317336,
+    "windows": 137025,
+    "positives": 5312,
+    "blocks": 5799,
+    "positive_blocks": 497,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "prior_band": {
+    "balanced_mean_rate": 0.4875598312948896,
+    "inside": true,
+    "shift": 0.0,
+    "reason": "balanced mean rate 0.4876 is inside [0.45, 0.55]"
+   },
+   "calibration": {
+    "test": {
+     "windows": 137025.0,
+     "base_rate": 0.03876664862036705,
+     "corrected_mean_rate": 0.01764762443357488
+    },
+    "val": {
+     "windows": 85529.0,
+     "base_rate": 0.021103953942656517,
+     "corrected_mean_rate": 0.018491129051904236
+    }
+   },
+   "selection": {
+    "unit": "block",
+    "auprc": 0.047051860933398075,
+    "low": 0.028867003247875472,
+    "high": 0.09023556894857197,
+    "lift_low": 0.01149083254976002,
+    "lift_high": 0.06939082212913328,
+    "base_rate": 0.0195,
+    "windows": 6000,
+    "positives": 117,
+    "blocks": 2789,
+    "positive_blocks": 78,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "final": {
+    "step": 1000,
+    "validation_auprc": 0.03992761158378655,
+    "note": "recovered by a seeded re-run that reproduced",
+    "pooled": {
+     "unit": "block",
+     "auprc": 0.05801695661143389,
+     "low": 0.05051689496383778,
+     "high": 0.0672150292821771,
+     "lift_low": 0.013376184788390973,
+     "lift_high": 0.027065307093769204,
+     "base_rate": 0.038766648421820836,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    }
+   }
+  },
+  {
+   "seed": 2,
+   "pretraining": {
+    "tokens": 50003968,
+    "steps": 763,
+    "seconds": 612.7389688000258,
+    "selected": [
+     763,
+     3.27644113111496
+    ],
+    "history": [
+     [
+      127,
+      4.831933056831359
+     ],
+     [
+      254,
+      4.234862990379334
+     ],
+     [
+      381,
+      3.757093949317932
+     ],
+     [
+      508,
+      3.476191595077515
+     ],
+     [
+      635,
+      3.3381071710586547
+     ],
+     [
+      762,
+      3.277875542163849
+     ],
+     [
+      763,
+      3.27644113111496
+     ]
+    ],
+    "final_train_loss": 3.1386487687888898,
+    "checkpoint": "checkpoints/seed_replication_v0_424c4f33/S2_tel_only_seed2.pt"
+   },
+   "selected": [
+    1000,
+    0.038243411165741356
+   ],
+   "natural_rate": 0.022050022218159642,
+   "pooled": {
+    "unit": "block",
+    "auprc": 0.05761823202468387,
+    "low": 0.050288978609984034,
+    "high": 0.06702717609230632,
+    "lift_low": 0.01326491172802321,
+    "lift_high": 0.026847600918510062,
+    "base_rate": 0.038766648421820836,
+    "windows": 137025,
+    "positives": 5312,
+    "blocks": 5799,
+    "positive_blocks": 497,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "held_out": {
+    "unit": "block",
+    "auprc": 0.05096947820403383,
+    "low": 0.03706777506819204,
+    "high": 0.07411810476366282,
+    "lift_low": 0.005400528745742483,
+    "lift_high": 0.03984695153616648,
+    "base_rate": 0.03325,
+    "windows": 12000,
+    "positives": 399,
+    "blocks": 5983,
+    "positive_blocks": 274,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "paired": [
+    {
+     "unit": "block",
+     "delta": 0.01602569348325074,
+     "low": 0.011538429000673124,
+     "high": 0.022480690933779083,
+     "first_auprc": 0.05761823202468387,
+     "second_auprc": 0.04159253854143313,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    },
+    {
+     "unit": "block",
+     "delta": 0.01662878905791436,
+     "low": 0.011370161829567302,
+     "high": 0.023840345610276613,
+     "first_auprc": 0.05761823202468387,
+     "second_auprc": 0.04098944296676951,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    },
+    {
+     "unit": "block",
+     "delta": 0.018585721132020866,
+     "low": 0.01339341380538689,
+     "high": 0.025851109374358073,
+     "first_auprc": 0.05761823202468387,
+     "second_auprc": 0.039032510892663005,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    }
+   ],
+   "verdict": {
+    "sensitive": true,
+    "lowest": 0.011370161829567302,
+    "reason": "every paired lower bound is above zero (lowest +0.0114)"
+   },
+   "versus_bag_of_tokens": {
+    "unit": "block",
+    "delta": 0.005297306372366535,
+    "low": -0.0017090372540652051,
+    "high": 0.01281668670172992,
+    "first_auprc": 0.05761823202468387,
+    "second_auprc": 0.052320925652317336,
+    "windows": 137025,
+    "positives": 5312,
+    "blocks": 5799,
+    "positive_blocks": 497,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "prior_band": {
+    "balanced_mean_rate": 0.48997269141856337,
+    "inside": true,
+    "shift": 0.0,
+    "reason": "balanced mean rate 0.4900 is inside [0.45, 0.55]"
+   },
+   "calibration": {
+    "test": {
+     "windows": 137025.0,
+     "base_rate": 0.03876664862036705,
+     "corrected_mean_rate": 0.01728302583921064
+    },
+    "val": {
+     "windows": 85529.0,
+     "base_rate": 0.021103953942656517,
+     "corrected_mean_rate": 0.018338728991118755
+    }
+   },
+   "selection": {
+    "unit": "block",
+    "auprc": 0.038243411165741356,
+    "low": 0.025545609715391934,
+    "high": 0.06070575421122477,
+    "lift_low": 0.008275255732103994,
+    "lift_high": 0.039807110019955155,
+    "base_rate": 0.0195,
+    "windows": 6000,
+    "positives": 117,
+    "blocks": 2789,
+    "positive_blocks": 78,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "final": {
+    "step": 1000,
+    "validation_auprc": 0.038243411165741356,
+    "note": "selected the last step",
+    "pooled": {
+     "unit": "block",
+     "auprc": 0.05761823202468387,
+     "low": 0.050288978609984034,
+     "high": 0.06702717609230632,
+     "lift_low": 0.01326491172802321,
+     "lift_high": 0.026847600918510062,
+     "base_rate": 0.038766648421820836,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    }
+   }
+  },
+  {
+   "seed": 3,
+   "pretraining": {
+    "tokens": 50003968,
+    "steps": 763,
+    "seconds": 607.1395735999977,
+    "selected": [
+     762,
+     3.315828026771545
+    ],
+    "history": [
+     [
+      127,
+      4.8780772485733035
+     ],
+     [
+      254,
+      4.256088106155396
+     ],
+     [
+      381,
+      3.758731502532959
+     ],
+     [
+      508,
+      3.5133062562942503
+     ],
+     [
+      635,
+      3.3795048942565917
+     ],
+     [
+      762,
+      3.315828026771545
+     ],
+     [
+      763,
+      3.315923120498657
+     ]
+    ],
+    "final_train_loss": 3.1710391428909803,
+    "checkpoint": "checkpoints/seed_replication_v0_424c4f33/S2_tel_only_seed3.pt"
+   },
+   "selected": [
+    700,
+    0.038178595185878156
+   ],
+   "natural_rate": 0.022050022218159642,
+   "pooled": {
+    "unit": "block",
+    "auprc": 0.05083223305213522,
+    "low": 0.044652156743458786,
+    "high": 0.05797385874798741,
+    "lift_low": 0.0074732628933847165,
+    "lift_high": 0.017776866186197716,
+    "base_rate": 0.038766648421820836,
+    "windows": 137025,
+    "positives": 5312,
+    "blocks": 5799,
+    "positive_blocks": 497,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "held_out": {
+    "unit": "block",
+    "auprc": 0.035929270786203095,
+    "low": 0.02756721339937205,
+    "high": 0.05075370390024662,
+    "lift_low": -0.00419274805420585,
+    "lift_high": 0.017041157644024814,
+    "base_rate": 0.03325,
+    "windows": 12000,
+    "positives": 399,
+    "blocks": 5983,
+    "positive_blocks": 274,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "paired": [
+    {
+     "unit": "block",
+     "delta": 0.009239694510702084,
+     "low": 0.0044806524877820525,
+     "high": 0.014816208795048158,
+     "first_auprc": 0.05083223305213522,
+     "second_auprc": 0.04159253854143313,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    },
+    {
+     "unit": "block",
+     "delta": 0.009842790085365705,
+     "low": 0.005055697257596654,
+     "high": 0.015304475511722579,
+     "first_auprc": 0.05083223305213522,
+     "second_auprc": 0.04098944296676951,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    },
+    {
+     "unit": "block",
+     "delta": 0.011799722159472212,
+     "low": 0.007173442269673223,
+     "high": 0.017387823039517705,
+     "first_auprc": 0.05083223305213522,
+     "second_auprc": 0.039032510892663005,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    }
+   ],
+   "verdict": {
+    "sensitive": true,
+    "lowest": 0.0044806524877820525,
+    "reason": "every paired lower bound is above zero (lowest +0.0045)"
+   },
+   "versus_bag_of_tokens": {
+    "unit": "block",
+    "delta": -0.001488692600182119,
+    "low": -0.009374352585306346,
+    "high": 0.005284676887576972,
+    "first_auprc": 0.05083223305213522,
+    "second_auprc": 0.052320925652317336,
+    "windows": 137025,
+    "positives": 5312,
+    "blocks": 5799,
+    "positive_blocks": 497,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "prior_band": {
+    "balanced_mean_rate": 0.5100707467670137,
+    "inside": true,
+    "shift": 0.0,
+    "reason": "balanced mean rate 0.5101 is inside [0.45, 0.55]"
+   },
+   "calibration": {
+    "test": {
+     "windows": 137025.0,
+     "base_rate": 0.03876664862036705,
+     "corrected_mean_rate": 0.01887937880055733
+    },
+    "val": {
+     "windows": 85529.0,
+     "base_rate": 0.021103953942656517,
+     "corrected_mean_rate": 0.021708635110089684
+    }
+   },
+   "selection": {
+    "unit": "block",
+    "auprc": 0.038178595185878156,
+    "low": 0.024253902002380853,
+    "high": 0.07080816799789373,
+    "lift_low": 0.0069279868878913365,
+    "lift_high": 0.0503274811114876,
+    "base_rate": 0.0195,
+    "windows": 6000,
+    "positives": 117,
+    "blocks": 2789,
+    "positive_blocks": 78,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "final": {
+    "step": 1000,
+    "validation_auprc": 0.03733002962742445,
+    "note": "recovered by a seeded re-run that reproduced",
+    "pooled": {
+     "unit": "block",
+     "auprc": 0.0515071144461182,
+     "low": 0.045259066284712206,
+     "high": 0.058641024869439506,
+     "lift_low": 0.008093144652622905,
+     "lift_high": 0.01844681534329707,
+     "base_rate": 0.038766648421820836,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    }
+   }
+  }
+ ],
+ "random": [
+  {
+   "seed": 1,
+   "selected": [
+    1000,
+    0.029001449444458413
+   ],
+   "pooled": {
+    "unit": "block",
+    "auprc": 0.04159253854143313,
+    "low": 0.03701660621923486,
+    "high": 0.04665996630504693,
+    "lift_low": 0.0004915911789627942,
+    "lift_high": 0.005928302173877686,
+    "base_rate": 0.038766648421820836,
+    "windows": 137025,
+    "positives": 5312,
+    "blocks": 5799,
+    "positive_blocks": 497,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "final": {
+    "step": 1000,
+    "validation_auprc": 0.029001449444458413,
+    "note": "selected the last step",
+    "pooled": {
+     "unit": "block",
+     "auprc": 0.04159253854143313,
+     "low": 0.03701660621923486,
+     "high": 0.04665996630504693,
+     "lift_low": 0.0004915911789627942,
+     "lift_high": 0.005928302173877686,
+     "base_rate": 0.038766648421820836,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    }
+   }
+  },
+  {
+   "seed": 2,
+   "selected": [
+    300,
+    0.021963146145768286
+   ],
+   "pooled": {
+    "unit": "block",
+    "auprc": 0.04098944296676951,
+    "low": 0.03676174517853781,
+    "high": 0.045754373477744234,
+    "lift_low": 0.0006108320006714658,
+    "lift_high": 0.0046335833992267594,
+    "base_rate": 0.038766648421820836,
+    "windows": 137025,
+    "positives": 5312,
+    "blocks": 5799,
+    "positive_blocks": 497,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "final": {
+    "step": 1000,
+    "validation_auprc": 0.021048919340005336,
+    "note": "recovered by a seeded re-run that reproduced",
+    "pooled": {
+     "unit": "block",
+     "auprc": 0.04188782243092676,
+     "low": 0.03744728383440139,
+     "high": 0.04675068299667627,
+     "lift_low": 0.0010881660871970545,
+     "lift_high": 0.00570914225764845,
+     "base_rate": 0.038766648421820836,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    }
+   }
+  },
+  {
+   "seed": 3,
+   "selected": [
+    225,
+    0.028201023572000064
+   ],
+   "pooled": {
+    "unit": "block",
+    "auprc": 0.039032510892663005,
+    "low": 0.03509744343993349,
+    "high": 0.04328863054353039,
+    "lift_low": -0.00111336217726722,
+    "lift_high": 0.0020148530592835954,
+    "base_rate": 0.038766648421820836,
+    "windows": 137025,
+    "positives": 5312,
+    "blocks": 5799,
+    "positive_blocks": 497,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "final": {
+    "step": 1000,
+    "validation_auprc": 0.02747142561955882,
+    "note": "recovered by a seeded re-run that reproduced",
+    "pooled": {
+     "unit": "block",
+     "auprc": 0.04175568892784358,
+     "low": 0.03710371282340605,
+     "high": 0.04701709494836886,
+     "lift_low": 0.0006578741007341254,
+     "lift_high": 0.006275863124395786,
+     "base_rate": 0.038766648421820836,
+     "windows": 137025,
+     "positives": 5312,
+     "blocks": 5799,
+     "positive_blocks": 497,
+     "replicates": 10000,
+     "discarded": 0,
+     "confidence": 0.95,
+     "seed": 20260916
+    }
+   }
+  }
+ ]
+}

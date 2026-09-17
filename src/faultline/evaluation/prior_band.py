@@ -37,6 +37,7 @@ from faultline.logging_utils import get_logger
 from faultline.model.checkpoints import read_checkpoint
 from faultline.paths import ProjectPaths
 from faultline.runs import git_sha
+from faultline.training.windows import BalancedWindowSampler
 
 logger = get_logger(__name__)
 
@@ -143,6 +144,39 @@ def decide_band(mean_rate: float, measured_shift: float, low: float, high: float
     )
 
 
+def balanced_logits(
+    model: torch.nn.Module,
+    sampler: BalancedWindowSampler,
+    seed: int,
+    batches: int,
+    device: torch.device,
+    autocast: torch.autocast,
+) -> tuple[np.ndarray, np.ndarray]:
+    """A head's uncorrected logits and the labels over a seeded balanced draw.
+
+    Args:
+        model: The probe, in evaluation mode.
+        sampler: The balanced training sampler.
+        seed: Seed of the draw; the same seed gives every head the same windows.
+        batches: Batches drawn.
+        device: Where the model lives.
+        autocast: The precision context of a forward pass.
+
+    Returns:
+        Per window, its logit and its label.
+    """
+    logits, labels = [], []
+    draws = sampler.forever(seed)
+    with torch.inference_mode():
+        for _ in range(batches):
+            tokens, batch_labels, _ = next(draws)
+            with autocast:
+                scored = model(tokens.to(device))
+            logits.append(scored.float().cpu().numpy())
+            labels.append(batch_labels.numpy())
+    return np.concatenate(logits), np.concatenate(labels)
+
+
 def _calibration(
     logits: np.ndarray, labels: np.ndarray, train_rate: float, natural_rate: float, shift: float
 ) -> dict[str, float]:
@@ -199,18 +233,14 @@ def run_prior_band(
     for under in config.probes:
         probe_path = paths.repo_root / under.probe
         natural_rate = float(read_checkpoint(probe_path)["natural_rate"])
-        model = load_saved_probe(probe_path, config.design, inputs)
-        logits_list, labels_list = [], []
-        draws = sampler.forever(config.sampler_seed)
-        with torch.inference_mode():
-            for _ in range(config.batches):
-                tokens, batch_labels, _ = next(draws)
-                with autocast:
-                    scored = model(tokens.to(inputs.device))
-                logits_list.append(scored.float().cpu().numpy())
-                labels_list.append(batch_labels.numpy())
-        del model
-        logits, labels = np.concatenate(logits_list), np.concatenate(labels_list)
+        logits, labels = balanced_logits(
+            load_saved_probe(probe_path, config.design, inputs),
+            sampler,
+            config.sampler_seed,
+            config.batches,
+            inputs.device,
+            autocast,
+        )
         probabilities = 1.0 / (1.0 + np.exp(-logits.astype(np.float64)))
         generator = np.random.default_rng(config.bootstrap_seed)
         resampled = [

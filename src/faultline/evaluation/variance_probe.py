@@ -587,6 +587,7 @@ def probe_and_score(
     unfrozen_blocks: int = 0,
     measure_steps: Sequence[int] | None = None,
     measure_initial: bool = False,
+    save_final_to: Path | None = None,
 ) -> ProbeResult:
     """Train the frozen probe on a backbone and score every test source.
 
@@ -613,6 +614,7 @@ def probe_and_score(
         measure_steps: Steps to measure validation after, in place of the budget's even
             spacing (ADR-0024 G3).
         measure_initial: Also measure the untrained head, as a reference that is never selected.
+        save_final_to: Where to write the last step's whole state as well, when given.
 
     Returns:
         The probe's result, with every test window's logit.
@@ -670,6 +672,7 @@ def probe_and_score(
         label=label,
         measure_steps=measure_steps,
         measure_initial=measure_initial,
+        keep_final=save_final_to is not None,
     )
     probe_seconds = time.perf_counter() - started
     probe_log = write_step_log(probe.step_log, step_log)
@@ -690,6 +693,28 @@ def probe_and_score(
                 "state": probe.state,
             },
             save_to,
+        )
+
+    if save_final_to is not None and probe.final_state is not None:
+        last = probe.history[-1]
+        save_final_to.parent.mkdir(parents=True, exist_ok=True)
+        torch.save(
+            {
+                "spec": inputs.spec.__dict__,
+                "kind": "probe",
+                "pooling": pooling,
+                "head_layers": head_layers,
+                "unfrozen_blocks": unfrozen_blocks,
+                "seed": seed,
+                "backbone": None if checkpoint is None else checkpoint.as_posix(),
+                "selected": (probe.best.step, probe.best.value),
+                "final": (last.step, last.value),
+                "history": [(m.step, m.value) for m in probe.history],
+                "train_rate": train_rate,
+                "natural_rate": sampler.natural_rate,
+                "state": probe.final_state,
+            },
+            save_final_to,
         )
 
     # -- test, the held-out site included ----------------------------------------------

@@ -1,0 +1,22 @@
+# tel_only seed replication, version 0: ADR-0024's F3 addendum, registered in 0d6d6b4 BEFORE this
+# file, the code that reads it, or any run of it existed.
+#
+# Seeds 2 and 3 are pretrained exactly as the gate run pretrained seed 1 (gate_check_v0: 763 steps,
+# 50,003,968 tokens). Every probe on both sides is §a under G3's cadence, scored at stride 12. The
+# three random-init probes are re-trained under that cadence. ADR-0024's criterion is applied per
+# trained seed (seed 1 is G3's step-200 probe). Reported and stopped: no automatic consequence.
+
+version: 0
+gate_config: "configs/train/gate_check_v0.yaml"
+paired_config: "configs/train/paired_control_v0.yaml"
+cadence_config: "configs/train/probe_cadence_v0.yaml"
+prior_band_config: "configs/train/prior_band_v0.yaml"
+bag_of_tokens_dir: "checkpoints/bag_of_tokens_v0_2b2827a9"
+design: final_position
+
+new_seeds: [2, 3]
+init_seeds: [1, 2, 3]
+
+pooled_sources:
+  - kelmarsh
+  - penmanshiel

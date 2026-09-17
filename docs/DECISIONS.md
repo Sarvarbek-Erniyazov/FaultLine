@@ -3966,3 +3966,132 @@ log. Three reported additions, deciding nothing:
    does not reproduce, that seed's final-step row is reported as unavailable, with the mismatch.
 
 The criterion, the random-init re-training under G3's cadence, and "report and stop" are unchanged.
+
+### Outcome of the F3 addendum, 2026-09-18 -- PASS on all three seeds; the effect is a quarter to a half of the base rate
+
+`faultline model seed-replication` (`configs/train/seed_replication_v0.yaml`, hash `424c4f33`;
+`reports/data/seed_replication_v0_20260917.md` and `.json`, git_sha `92ee875`) pretrained
+`tel_only` at S2 on seeds 2 and 3, probed both under §a at G3's cadence, re-trained the three §a
+random-init probes under that same cadence, and computed the nine paired intervals.
+
+**1. Verdict: PASS on all three trained seeds.** Every one of the nine paired block-bootstrap 95%
+intervals of ΔAUPRC -- 10,000 replicates, seed 20260916, blocks of 288 steps within each shard,
+both models scored on the identical resampled rows of the pooled Kelmarsh + Penmanshiel stride-12
+split -- has a lower bound strictly above zero.
+
+| trained seed | Δ vs random 1 | Δ vs random 2 | Δ vs random 3 | verdict |
+| --- | --- | --- | --- | --- |
+| 1 | +0.0124 [+0.0084, +0.0175] | +0.0130 [+0.0084, +0.0187] | +0.0149 [+0.0104, +0.0208] | PASS |
+| 2 | +0.0160 [+0.0115, +0.0225] | +0.0166 [+0.0114, +0.0238] | +0.0186 [+0.0134, +0.0259] | PASS |
+| 3 | +0.0092 [+0.0045, +0.0148] | +0.0098 [+0.0051, +0.0153] | +0.0118 [+0.0072, +0.0174] | PASS |
+
+The lowest lower bound across the nine cells is **+0.0045** (seed 3 against random 1). The
+pretraining effect is **+0.009 to +0.019 AUPRC**, against a pooled test base rate of 0.0388:
+**a quarter to a half of the base rate**. ADR-0024's criterion is met for each trained seed, and
+G1's single-seed pass is not a seed artefact.
+
+**2. The bag-of-tokens parity replicates on three seeds.** Paired Δ at stride 12 against the §6
+comparator, read from its saved scores:
+
+| trained seed | Δ vs bag of tokens |
+| --- | --- |
+| 1 | +0.0016 [-0.0059, +0.0084] |
+| 2 | +0.0053 [-0.0017, +0.0128] |
+| 3 | -0.0015 [-0.0094, +0.0053] |
+
+Every interval spans zero and the point estimate changes sign across seeds. **The pretrained
+sequence model does not measurably beat a classifier that ignores token order.**
+
+**3. The seed spread, read beside one seed's own interval.** Pooled stride-12 AUPRC across the
+three trained seeds runs **0.0508 to 0.0576, a spread of 0.0068**, against a half-width of about
+**0.007** on a single seed's block interval (seed 1: 0.0540 [0.0474, 0.0618]). Seed-to-seed
+variation is the size of the sampling interval it sits inside, which is why arm comparisons are
+paired and three-seeded. **Differences resolvable at this budget are of order 0.005.**
+
+**4. Hill of Towie (reported, deciding nothing).** On the 12,000-window subsample, base rate
+0.03325:
+
+| seed | AUPRC | 95% block interval | lower bound above 0.03325 |
+| --- | --- | --- | --- |
+| 1 | 0.0390 | [0.0304, 0.0548] | no |
+| 2 | 0.0510 | [0.0371, 0.0741] | yes |
+| 3 | 0.0359 | [0.0276, 0.0508] | no |
+
+The site clears on **one seed of three**. Under ADR-0022's two-of-three rule it is **NOT
+EVALUABLE** -- the same verdict ADR-0021 reached on one seed. **The demotion stands and is not
+reopened.** The site is marginal, not null.
+
+**5. ADR-0019 F2 per trained seed.** On the same balanced draw (seed 20260917, 16,000 windows),
+the mean predicted rates are **0.4876, 0.4900 and 0.5101**, all inside the [0.45, 0.55] band. The
+declared π_train stands for every seed; no correction changes.
+
+**6. Calibration on the 2021 validation split (report §3).** Each seed's selected probe, scored on
+`kelmarsh__val` + `penmanshiel__val` at stride 12 (85,529 windows):
+
+| seed | val corrected mean | val base rate | training natural rate | test corrected mean | test base rate |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 0.0185 | 0.0211 | 0.0221 | 0.0176 | 0.0388 |
+| 2 | 0.0183 | 0.0211 | 0.0221 | 0.0173 | 0.0388 |
+| 3 | 0.0217 | 0.0211 | 0.0221 | 0.0189 | 0.0388 |
+
+**Two of the three seeds under-read in-time**, on a split the correction targets. The residual
+under-read is therefore **a property of the probe, and is not attributable to the 2022-2024 shift
+alone** -- which is the reading this measurement was registered to separate. Separately, the test
+base rate is **1.8x the training natural rate** (0.0388 against 0.0221). That is the ADR-0009
+shift, **recorded as such, not a correction error**.
+
+**7. The selection split and an interval on selection AUPRC (report §4).** The split holds
+**6,000 windows, 117 positive, 78 of 2,789 occupied 48-hour blocks holding a positive**.
+
+| seed | selected step | selection AUPRC | 95% block interval |
+| --- | --- | --- | --- |
+| 1 | 200 | 0.0471 | [0.0289, 0.0902] |
+| 2 | 1,000 | 0.0382 | [0.0255, 0.0607] |
+| 3 | 700 | 0.0382 | [0.0243, 0.0708] |
+
+**The untrained head's 0.0447 lies inside all three intervals.** Validation-AUPRC selection cannot
+rank checkpoints on this split.
+
+**8. Selected against final-step checkpoints (report §5).** Pooled stride-12 test AUPRC:
+
+| probe | selected (val AUPRC) | selected test AUPRC | final (val AUPRC) | final test AUPRC | note |
+| --- | --- | --- | --- | --- | --- |
+| trained seed 1 | step 200 (0.0471) | 0.0540 [0.0474, 0.0618] | step 1,000 (0.0399) | 0.0580 [0.0505, 0.0672] | recovered by a seeded re-run that reproduced |
+| trained seed 2 | step 1,000 (0.0382) | 0.0576 [0.0503, 0.0670] | step 1,000 (0.0382) | 0.0576 [0.0503, 0.0670] | selected the last step |
+| trained seed 3 | step 700 (0.0382) | 0.0508 [0.0447, 0.0580] | step 1,000 (0.0373) | 0.0515 [0.0453, 0.0586] | recovered by a seeded re-run that reproduced |
+| random seed 1 | step 1,000 (0.0290) | 0.0416 [0.0370, 0.0467] | step 1,000 (0.0290) | 0.0416 [0.0370, 0.0467] | selected the last step |
+| random seed 2 | step 300 (0.0220) | 0.0410 [0.0368, 0.0458] | step 1,000 (0.0210) | 0.0419 [0.0374, 0.0468] | recovered by a seeded re-run that reproduced |
+| random seed 3 | step 225 (0.0282) | 0.0390 [0.0351, 0.0433] | step 1,000 (0.0275) | 0.0418 [0.0371, 0.0470] | recovered by a seeded re-run that reproduced |
+
+**The final step is never worse than the selected one, on either side of the comparison.** Whether
+the arm runs use selected-step or fixed-final-step selection **is decided in the ADR-0022
+addendum**, written next, under the criterion registered there. Nothing is decided here.
+
+**9. Provenance.** Two complete F3 invocations exist, and the second superseded the first in place.
+
+- **First run, 19:17:49-21:57:37 KST on 2026-09-17 (2.66 h),
+  `checkpoints/logs/seed_replication_v0_20260917.log`.** It ran on pre-`b2ad4a7` code -- the F3
+  addendum as first registered in `0d6d6b4` (19:15:09) -- and carried out both pretrainings, all
+  six probes and the nine paired intervals, reaching the same three PASS verdicts and the same
+  lowest lower bound of +0.0045. **Its report had no §3, §4 or §5**, because the three additions
+  that produce them were registered at 20:09:09 in `b2ad4a7`, while it was still running.
+- **An aborted resume, PID 19056, 20:15:17-20:16:07 KST.** Launched on the `b2ad4a7` code while
+  the first run still held the checkpoints directory. It logged two lines, began re-running
+  trained seed 1's probe stage, wrote no result and stopped. It is recorded because it rewrote
+  `S2_trained_seed1_probe.json` at 20:15:19; the second run read that record and reproduced the
+  selection it holds exactly (step 200, validation AUPRC 0.0471).
+- **Second run, PID 22980, 21:58:03 KST on 2026-09-17 to 00:10:21 KST on 2026-09-18 (2.20 h),
+  `checkpoints/logs/seed_replication_v0_20260917_215803.log`.** It ran on `b2ad4a7` code, read
+  every saved backbone and selected probe rather than re-training any, and rewrote both report
+  files in place with §3, §4 and §5. **It is the report this outcome reads.**
+- **The four final states were recovered by seeded re-runs** (trained seeds 1 and 3, random seeds
+  2 and 3). Each reproduced the saved selection -- step and validation AUPRC -- and matched the
+  saved per-step training log row for row, which is the only condition under which the addendum
+  admits them. No `_final_mismatch.txt` was written. Trained seed 2 and random seed 1 selected the
+  last step, so their final state is their selected state.
+- **Total F3 GPU wall clock: 2.66 h + 2.20 h.** No pretraining was run twice.
+
+**10. Pretraining, seeds 2 and 3 (recorded, no claim).** Selected validation loss **3.2764 at step
+763** (seed 2) and **3.3158 at step 762** (seed 3), against seed 1's **3.317** from the ADR-0021
+gate run. The three sit within 0.04 of each other. Nothing is claimed from this: LM validation
+loss is not a quantity any criterion in this record reads.

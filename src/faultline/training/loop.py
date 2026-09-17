@@ -169,6 +169,7 @@ class TrainingResult:
         seconds: Wall-clock seconds spent, measurement included.
         final_train_loss: Mean training loss over the last tenth of the run.
         step_log: Every optimiser step's training loss, rate and gradient norm, in order.
+        final_state: The parameters after the last step, on the CPU, when asked for.
     """
 
     history: list[Measurement]
@@ -180,6 +181,7 @@ class TrainingResult:
     seconds: float
     final_train_loss: float
     step_log: list[StepLog] = field(default_factory=list)
+    final_state: dict[str, Tensor] | None = None
 
 
 def _snapshot(module: nn.Module) -> dict[str, Tensor]:
@@ -200,6 +202,7 @@ def train(
     label: str = "",
     measure_steps: Sequence[int] | None = None,
     measure_initial: bool = False,
+    keep_final: bool = False,
 ) -> TrainingResult:
     """Train one model to its budget, selecting on periodic validation measurements.
 
@@ -218,6 +221,7 @@ def train(
             of ``budget.evaluations`` evenly spaced ones (ADR-0024's G3 cadence).
         measure_initial: Also measure before the first step. That measurement is kept in the
             history as a reference and can never be selected.
+        keep_final: Also return the parameters after the last step, beside the selected ones.
 
     Returns:
         The run's history, its selected checkpoint and what it spent.
@@ -331,6 +335,7 @@ def train(
         seconds=time.perf_counter() - started,
         final_train_loss=float(np.mean(recent)) if recent else math.nan,
         step_log=step_log,
+        final_state=_snapshot(module) if keep_final else None,
     )
 
 

@@ -1,0 +1,31 @@
+# The paired probe-sensitivity test, version 0: ADR-0024. Decision record: docs/DECISIONS.md,
+# ADR-0024, registered in 79d4e97 BEFORE this file, the code that reads it, or any paired interval
+# existed. It supersedes ADR-0023's criterion; ADR-0023's four FAIL verdicts stand.
+#
+# THE CRITERION: on the pooled Kelmarsh + Penmanshiel test windows at the stride below, the paired
+# block-bootstrap 95% interval of AUPRC(trained) - AUPRC(random-init seed k) must have a lower bound
+# strictly above zero for each of k = 1, 2, 3. Blocks, replicates, seed and the discard rule are
+# the gate configuration's (ADR-0021), read through the controls below.
+
+version: 0
+
+# ADR-0024 §3: the order of application. The first design to pass is the probe; designs after it
+# are reported on ADR-0023's 24,000-window subsample only.
+control_configs:
+  - "configs/train/probe_control_v0.yaml" # §a final position
+  - "configs/train/probe_control_v3.yaml" # §d blocks 6-7 unfrozen
+  - "configs/train/probe_control_v1.yaml" # §b mean-pooled
+  - "configs/train/probe_control_v2.yaml" # §c two hidden layers
+
+# ADR-0024 §4, the user's choice on 2026-09-17: every 12th admissible window of each test shard,
+# uncapped. 137,025 pooled windows, 5,312 positive, 5,799 of 5,800 blocks, 497 of 506 positive.
+stride: 12
+
+# ADR-0024 §4: the gate run never saved its head. Its probe stage is re-run seeded and accepted
+# only if it matches the gate run's record (reports/data/gate_check_v0_20260916.json) to four
+# decimals: selected step 166 at validation AUPRC 0.0441, pooled subsample AUPRC 0.0502.
+reproduction:
+  selected_step: 166
+  selected_auprc: 0.044064528459646285
+  pooled_auprc: 0.05016862782728619
+  decimals: 4

@@ -3414,3 +3414,71 @@ A classifier that ignores token order, to measure whether the sequence model bea
 
 The three-arm x three-seed design and S2-only stand. ADR-0021's NOT EVALUABLE verdict stands.
 ADR-0022 stays reserved. F2-F5 of the F-brief wait on G1, and F6 is not authorised.
+
+### Outcome, 2026-09-17 (G1) -- PASS: the final-position frozen probe sees the pretrained backbone; §a is the probe in force
+
+The criterion was registered in **`79d4e97`**, before `faultline model paired-control`,
+`configs/train/paired_control_v0.yaml` (hash b446304a) or any paired interval existed
+(`reports/data/paired_control_v0_20260917.md`, git_sha `79d4e97`). The run took 0.84 hours:
+0.06 for the §a re-run probe, about 0.53 for re-scoring its four probes, and the rest on CPU
+bootstraps.
+
+**The §a re-run reproduced the gate run exactly.** It selected step 166 at validation AUPRC
+0.0441, and its pooled subsample AUPRC is 0.0502. Its test logits on all 36,000 subsample windows
+equal the gate run's saved logits: the largest absolute difference is 0.0. Each of the four
+re-scored probes gave its recorded pooled subsample AUPRC to four decimals, so the stride-12
+scores come from the same heads.
+
+**Deciding: §a, pooled Kelmarsh + Penmanshiel test at stride 12** (137,025 windows, 5,312
+positive, 497 of 5,799 blocks holding a positive; 10,000 paired replicates, seed 20260916, none
+discarded):
+
+| random-init seed | trained AUPRC | random-init AUPRC | Δ | paired 95% interval | lower bound above 0 |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 0.0532 | 0.0416 | +0.0116 | [+0.0078, +0.0163] | yes |
+| 2 | 0.0532 | 0.0406 | +0.0126 | [+0.0083, +0.0180] | yes |
+| 3 | 0.0532 | 0.0409 | +0.0123 | [+0.0085, +0.0170] | yes |
+
+**Verdict: PASS. Every paired lower bound is above zero; the lowest is +0.0078. As registered, §a
+(final position, one hidden layer, frozen) is the probe for every arm.** §b, §d and §c were not
+tested and were not re-scored at stride 12. Their record is the subsample rows below. The step-166
+early-selection question (F2, and G3's cadence change) applies to §a and is not waived.
+
+**Reported beside it: paired Δ on ADR-0023's 24,000-window subsample** (373 of 5,705 blocks
+holding a positive):
+
+| design | Δ vs seed 1 | Δ vs seed 2 | Δ vs seed 3 |
+| --- | --- | --- | --- |
+| §a final position | +0.0097 [+0.0049, +0.0154] | +0.0100 [+0.0049, +0.0165] | +0.0074 [+0.0025, +0.0128] |
+| §d blocks 6-7 unfrozen | +0.0045 [-0.0028, +0.0119] | +0.0080 [+0.0017, +0.0151] | +0.0078 [+0.0020, +0.0147] |
+| §b mean-pooled | +0.0027 [-0.0080, +0.0100] | +0.0032 [-0.0037, +0.0092] | +0.0070 [+0.0018, +0.0125] |
+| §c two hidden layers | +0.0059 [-0.0018, +0.0117] | +0.0007 [-0.0071, +0.0067] | +0.0050 [-0.0004, +0.0099] |
+
+**Hill of Towie (12,000 windows, reported, deciding nothing):**
+
+| design | Δ vs seed 1 | Δ vs seed 2 | Δ vs seed 3 |
+| --- | --- | --- | --- |
+| §a final position | -0.0034 [-0.0158, +0.0092] | -0.0013 [-0.0111, +0.0136] | -0.0030 [-0.0174, +0.0094] |
+| §d blocks 6-7 unfrozen | +0.0109 [+0.0022, +0.0218] | +0.0108 [+0.0012, +0.0207] | +0.0056 [-0.0066, +0.0182] |
+| §b mean-pooled | +0.0012 [-0.0037, +0.0082] | +0.0002 [-0.0070, +0.0066] | -0.0019 [-0.0141, +0.0067] |
+| §c two hidden layers | +0.0030 [-0.0023, +0.0110] | +0.0022 [-0.0031, +0.0093] | -0.0015 [-0.0140, +0.0076] |
+
+Recorded beside the verdict, deciding nothing:
+
+- **The effect is about +0.012 AUPRC at stride 12, about 0.3 times the pooled base rate of 0.0388.**
+  On the subsample it is +0.0074 to +0.0100. Pretraining `tel_only` at S2 for 50M tokens moves
+  the frozen final-position probe by this much over an untrained backbone on the training sites'
+  test windows. Every arm comparison is a comparison of effects of this size or smaller.
+- **The subsample alone would also have passed §a** (lowest lower bound +0.0025), so the verdict
+  does not depend on the stride-12 choice. The stride-12 intervals are 0.0085 to 0.0097 wide,
+  against 0.0103 to 0.0116 on the subsample.
+- **Pooling weakened the contrast, as the ruling read it.** On the subsample, no pooled design
+  clears zero against all three seeds. §b and §c each fail against two seeds, and §d fails against
+  one.
+- **On Hill of Towie, the §a trained probe scores below every random-init probe** (Δ -0.0013 to
+  -0.0034, every interval spanning zero). The pretraining effect §a sees at the training sites does
+  not appear at the held-out site. Only §d shows a Hill of Towie gap, and ADR-0021's demotion is not
+  reversed by it.
+- **The §a re-run's validation curve** peaked at its first measurement (0.0441 at step 166). It
+  then held between 0.0393 and 0.0422 through step 1,000. On this run, early selection took a
+  measurement no later one beat.

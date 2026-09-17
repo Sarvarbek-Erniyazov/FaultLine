@@ -188,7 +188,7 @@ class RunRecord:
 def build_split(
     shards: ShardSet,
     split: str,
-    per_source: int,
+    per_source: int | None,
     stride: int,
     seed: int,
     batch_windows: int,
@@ -206,7 +206,7 @@ def build_split(
     Args:
         shards: The shard set.
         split: The split to open.
-        per_source: The most windows to keep per source.
+        per_source: The most windows to keep per source; every window at the stride when ``None``.
         stride: The stride windows are taken at before the cap.
         seed: Seed of the subsample.
         batch_windows: Windows per forward pass.

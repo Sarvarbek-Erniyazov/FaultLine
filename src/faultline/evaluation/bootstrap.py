@@ -16,6 +16,7 @@ positive window makes the interval untrusted, and the verdict is then not evalua
 from __future__ import annotations
 
 import math
+from collections.abc import Iterator
 from dataclasses import dataclass
 
 import numpy as np
@@ -44,6 +45,46 @@ def window_blocks(ends: np.ndarray, sets: np.ndarray, block_steps: int) -> np.nd
     pairs = np.stack([sets.astype(np.int64), ends.astype(np.int64) // block_steps], axis=1)
     _, ids = np.unique(pairs, axis=0, return_inverse=True)
     return ids.reshape(-1).astype(np.int64)
+
+
+class BlockDraws:
+    """Whole-block resampling with replacement: each replicate's rows, as many blocks as occupied.
+
+    Every window of a drawn block comes along, each time the block is drawn. The same seed gives
+    the same rows, so scorers read through one ``BlockDraws`` see identical replicates.
+
+    Attributes:
+        blocks: Occupied blocks, the number drawn per replicate.
+    """
+
+    def __init__(self, blocks: np.ndarray) -> None:
+        """Index the windows by block.
+
+        Args:
+            blocks: Per window, its block id (``window_blocks``).
+        """
+        self._order = np.argsort(blocks, kind="stable")
+        ids, self._starts, self._lengths = np.unique(
+            blocks[self._order], return_index=True, return_counts=True
+        )
+        self.blocks = int(ids.size)
+
+    def replicates(self, count: int, seed: int) -> Iterator[np.ndarray]:
+        """Yield each replicate's window rows.
+
+        Args:
+            count: Replicates to draw.
+            seed: Seed of the resampling.
+
+        Yields:
+            One replicate's rows: each drawn block's windows, once per draw.
+        """
+        generator = np.random.default_rng(seed)
+        for _ in range(count):
+            drawn = generator.integers(0, self.blocks, self.blocks)
+            sizes = self._lengths[drawn]
+            offsets = np.repeat(self._starts[drawn] - (np.cumsum(sizes) - sizes), sizes)
+            yield self._order[np.arange(int(sizes.sum())) + offsets]
 
 
 @dataclass(frozen=True)
@@ -125,18 +166,12 @@ def bootstrap_auprc(
     truth = labels.astype(np.float64)
     if truth.sum() == 0:
         raise ValueError("no positive window: AUPRC is undefined")
-    order = np.argsort(blocks, kind="stable")
-    ids, starts, lengths = np.unique(blocks[order], return_index=True, return_counts=True)
+    draws = BlockDraws(blocks)
     positive_blocks = int(np.unique(blocks[truth > 0]).size)
-    generator = np.random.default_rng(seed)
     values: list[float] = []
     lifts: list[float] = []
     discarded = 0
-    for _ in range(replicates):
-        drawn = generator.integers(0, ids.size, ids.size)
-        sizes = lengths[drawn]
-        offsets = np.repeat(starts[drawn] - (np.cumsum(sizes) - sizes), sizes)
-        rows = order[np.arange(int(sizes.sum())) + offsets]
+    for rows in draws.replicates(replicates, seed):
         sample = truth[rows]
         if sample.sum() == 0:
             discarded += 1
@@ -157,13 +192,139 @@ def bootstrap_auprc(
         base_rate=float(truth.mean()),
         windows=int(truth.size),
         positives=int(truth.sum()),
-        blocks=int(ids.size),
+        blocks=draws.blocks,
         positive_blocks=positive_blocks,
         replicates=replicates,
         discarded=discarded,
         confidence=confidence,
         seed=seed,
     )
+
+
+@dataclass(frozen=True)
+class DeltaInterval:
+    """A paired bootstrap interval on one scorer's AUPRC minus another's, on shared replicates.
+
+    Attributes:
+        unit: What was resampled, ``block`` or ``window``.
+        delta: The first scorer's AUPRC minus the second's, on the windows as scored.
+        low: The interval's lower bound.
+        high: Its upper bound.
+        first_auprc: The first scorer's AUPRC on the windows as scored.
+        second_auprc: The second scorer's.
+        windows: Windows scored.
+        positives: Positive windows.
+        blocks: Units resampled.
+        positive_blocks: Units holding at least one positive window.
+        replicates: Replicates drawn.
+        discarded: Replicates with no positive window, left out of the interval.
+        confidence: The interval's coverage.
+        seed: The bootstrap seed.
+    """
+
+    unit: str
+    delta: float
+    low: float
+    high: float
+    first_auprc: float
+    second_auprc: float
+    windows: int
+    positives: int
+    blocks: int
+    positive_blocks: int
+    replicates: int
+    discarded: int
+    confidence: float
+    seed: int
+
+    @property
+    def discarded_share(self) -> float:
+        """Share of replicates discarded for holding no positive window."""
+        return self.discarded / self.replicates
+
+
+def paired_bootstrap_deltas(
+    reference: np.ndarray,
+    others: list[np.ndarray],
+    labels: np.ndarray,
+    blocks: np.ndarray,
+    replicates: int,
+    seed: int,
+    confidence: float = 0.95,
+    unit: str = "block",
+) -> list[DeltaInterval]:
+    """Paired percentile bootstrap of AUPRC(reference) minus AUPRC(other), per other scorer.
+
+    ADR-0024: the blocks are resampled **once** per replicate and every scorer is read on those
+    rows, so each interval is on the difference and carries the two scorers' covariance. The
+    draws are ``bootstrap_auprc``'s at the same seed, so each side's marginal replicates are the
+    ones its own interval reads.
+
+    Args:
+        reference: Per window, the reference scorer's score (the trained probe).
+        others: Per scorer compared with it, its scores on the same windows in the same order.
+        labels: Per window, 1 if positive.
+        blocks: Per window, its block id (``window_blocks``).
+        replicates: Replicates to draw.
+        seed: Seed of the resampling.
+        confidence: Coverage of each interval.
+        unit: The name of what ``blocks`` groups, for the record.
+
+    Returns:
+        Per other scorer, the interval on the reference minus it.
+
+    Raises:
+        ValueError: On no other scorer, mismatched arrays, no positive window, or a confidence
+            outside (0, 1).
+    """
+    if not others:
+        raise ValueError("a paired bootstrap needs at least one scorer to compare with")
+    if any(not other.shape == reference.shape == labels.shape == blocks.shape for other in others):
+        raise ValueError("every scorer, the labels and the blocks must have one entry per window")
+    if not 0.0 < confidence < 1.0:
+        raise ValueError(f"confidence must be strictly between 0 and 1, got {confidence}")
+    if replicates < 1:
+        raise ValueError(f"replicates must be at least 1, got {replicates}")
+    truth = labels.astype(np.float64)
+    if truth.sum() == 0:
+        raise ValueError("no positive window: AUPRC is undefined")
+    draws = BlockDraws(blocks)
+    deltas: list[list[float]] = [[] for _ in others]
+    discarded = 0
+    for rows in draws.replicates(replicates, seed):
+        sample = truth[rows]
+        if sample.sum() == 0:
+            discarded += 1
+            continue
+        anchor = average_precision(reference[rows], sample)
+        for values, other in zip(deltas, others, strict=True):
+            values.append(anchor - average_precision(other[rows], sample))
+    tail = (1.0 - confidence) / 2.0
+    reference_auprc = average_precision(reference, truth)
+    positive_blocks = int(np.unique(blocks[truth > 0]).size)
+    intervals = []
+    for values, other in zip(deltas, others, strict=True):
+        low, high = _quantiles(values, tail)
+        other_auprc = average_precision(other, truth)
+        intervals.append(
+            DeltaInterval(
+                unit=unit,
+                delta=reference_auprc - other_auprc,
+                low=low,
+                high=high,
+                first_auprc=reference_auprc,
+                second_auprc=other_auprc,
+                windows=int(truth.size),
+                positives=int(truth.sum()),
+                blocks=draws.blocks,
+                positive_blocks=positive_blocks,
+                replicates=replicates,
+                discarded=discarded,
+                confidence=confidence,
+                seed=seed,
+            )
+        )
+    return intervals
 
 
 def _quantiles(values: list[float], tail: float) -> tuple[float, float]:

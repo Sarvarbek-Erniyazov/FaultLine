@@ -1209,6 +1209,29 @@ def model_probe_control(
 
 
 @model_app.command(
+    "paired-control",
+    help="The paired probe-sensitivity test (ADR-0024): trained minus random-init AUPRC on shared "
+    "block-bootstrap replicates, in the registered design order, re-scoring saved probes on the "
+    "stride-12 pooled training-site test split. Resume-safe.",
+)
+def model_paired_control(
+    config: ConfigOption = Path("configs/train/paired_control_v0.yaml"),
+    device: Annotated[str | None, typer.Option("--device", help="Torch device.")] = None,
+) -> None:
+    """Run the paired control and write its report.
+
+    Args:
+        config: The paired-control configuration.
+        device: Torch device; chosen automatically when omitted.
+    """
+    from faultline.evaluation.paired_control import run_paired_control
+
+    paths = ProjectPaths.resolve()
+    report, record = run_paired_control(paths, paths.repo_root / config, device)
+    typer.echo(f"wrote {report} and {record}")
+
+
+@model_app.command(
     "mixture-shards",
     help="Write the M3 mixture's txt and tel+status shards and every stream's run index, "
     "and report per-stream token counts and per-arm token budgets. Trains nothing.",

@@ -3733,3 +3733,34 @@ recorded as the evidence it is, for the user's ruling before F4.
 - per seed, the paired Δ against the bag-of-tokens comparator at stride 12, from its saved scores
   (§6);
 - the corrected mean predicted rate under the F2 rule.
+
+**F3 additions and resume, registered 2026-09-17 after the first F3 invocation stopped and before any paired interval exists.**
+The first invocation stopped without an error line during seed 3's stride-12 scoring. By then it
+had completed and saved both pretrainings (seeds 2 and 3), both trained probes, seed 2's
+stride-12 scores and both 24,000-window subsample score files. No random-init probe had been
+re-trained, and no F3 paired interval or AUPRC interval had been computed. **Saved backbones and
+selected probes are read, never re-trained.** Seed 3's probe record was never written. Its
+selected step and rates are read from the saved probe, and its validation history from the run
+log. Three reported additions, deciding nothing:
+
+1. **Corrected mean on the 2021 validation split.** Each trained seed's selected probe is scored
+   on `kelmarsh__val` + `penmanshiel__val` at stride 12, uncapped. Its corrected mean predicted rate
+   (the offset F2's rule puts in force) is reported beside that split's base rate and the training
+   natural rate. The val split is later than training and earlier than test. A corrected mean near
+   the rate the correction targets there, with the under-read appearing only on 2022-2024 test,
+   points to shift. An under-read there too points to the probe itself.
+2. **The selection split's size, and an interval on selection AUPRC.** The 6,000 selection windows
+   (3,000 a source), their positives and their occupied 48-hour blocks. Each trained seed's selected
+   checkpoint gets a block-bootstrap interval on its selection AUPRC (ADR-0021's procedure: 10,000
+   replicates, seed 20260916), seed 1's step-200 first.
+3. **The final-step checkpoint beside the selected one, for every F3 probe.** Pooled stride-12 test
+   AUPRC with its block interval, and the final step's validation AUPRC. The three random-init
+   probes save both states when they are trained. The trained probes saved only the selected
+   state. Seed 2 selected step 1,000, so its final state is its selected state. **For seeds 1
+   (step 200) and 3 (step 700), the probe stage is re-run seeded to recover the step-1,000 state.**
+   The re-run is accepted only if it reproduces the saved selection exactly (step and validation
+   AUPRC) and its per-step training log matches the saved one row for row. It writes a separate
+   final-state file and never replaces the selected probe. No pretraining is re-run. If a re-run
+   does not reproduce, that seed's final-step row is reported as unavailable, with the mismatch.
+
+The criterion, the random-init re-training under G3's cadence, and "report and stop" are unchanged.

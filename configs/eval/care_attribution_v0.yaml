@@ -18,7 +18,7 @@ version: 0
 
 # The registration commit of the F6-0 addendum. "pending" in that commit; the commit after it
 # writes the hash here and in the addendum, and changes nothing else.
-registered_in: "pending"
+registered_in: "ad1b7a3"
 
 # The axis configuration in force: its shards, label, stride, seeds, bootstrap and counts.
 axis_config: "configs/eval/axis_gate_v0.yaml"

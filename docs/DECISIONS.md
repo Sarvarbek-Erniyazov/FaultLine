@@ -3536,9 +3536,10 @@ be paired and three-seeded to say anything at all. **F6 is not authorised by thi
 
 ### Addendum (F6-0), registered 2026-09-18 before its code or run -- attribution of the CARE null
 
-**Commit:** this addendum, `configs/eval/care_attribution_v0.yaml` and its test are committed
-together, before any code that scores either diagnostic exists and before either is run. The hash
-is recorded here by the commit after it. F6-0a and F6-0b may run only on the user's authorisation.
+**Commit:** this addendum, `configs/eval/care_attribution_v0.yaml` and its test were committed
+together in **`ad1b7a3`**, before any code that scores either diagnostic existed and before either was
+run. The hash is recorded here by the commit after it. F6-0a and F6-0b may run only on the user's
+authorisation.
 
 **1. The two readings, and what the per-farm rows already say.** The F5 outcome above found CARE at
 chance on every seed, every farm and both checkpoints. Two readings predict that measurement

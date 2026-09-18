@@ -4556,8 +4556,8 @@ loss is not a quantity any criterion in this record reads.
 **Status:** Accepted; **registered 2026-09-18, before any F6 arm code, shard, pretraining or probe
 exists** · **Date:** 2026-09-18.
 **Commit:** this record, `configs/train/joint_v1.yaml`, `configs/train/h1_arms_v0.yaml`,
-`configs/eval/h1_gate_v0.yaml`, their configuration classes and their test are committed together
-in **`pending`**, before any code that builds, trains or scores the joint arm exists. The hash is
+`configs/eval/h1_gate_v0.yaml`, their configuration classes and their test were committed together
+in **`3e29202`**, before any code that builds, trains or scores the joint arm existed. The hash is
 recorded here by the commit after it. **Nothing in this record authorises a run** (§8).
 
 **Sources of every count.** Unless a line says otherwise, every count comes from the F6-R

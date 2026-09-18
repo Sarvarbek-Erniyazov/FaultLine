@@ -3410,6 +3410,130 @@ stride and the CARE protocol are untouched. ADR-0024's F3 verdicts stand as reco
 selected checkpoints; they are not restated on final checkpoints, and §2 above is a recomputation
 registered for this decision, not a re-judging of F3. **F5 is not authorised by this addendum.**
 
+
+### Outcome, 2026-09-18 -- CARE is NOT EVALUABLE at chance on all three seeds; the in-distribution temporal split is EVALUABLE on all three and carries both hypotheses
+
+`faultline model axis-gate` (`configs/eval/axis_gate_v0.yaml`, hash `4dce1a1c`;
+`reports/data/axis_gate_v0_20260918.md` and `.json`) scored **the whole CARE evaluation set for the
+first time in this project**: the five distinct probe checkpoints of `tel_only` seeds 1-3, at the
+registered stride-12 thinning, **1.72 hours of GPU over five scorings** at 20.7 minutes each.
+Nothing was pretrained and no probe was trained. The training-site temporal split and Hill of Towie
+were **read, not re-scored**: F3's saved logits are the same checkpoints on the same windows.
+
+**Five scorings, not six.** Trained seed 2 selected step 1,000, its last, so its final-step
+checkpoint **is** its selected checkpoint. It is scored once and reported under both role names;
+its two rows are bit-identical because they are one set of weights, not two.
+
+**The counts were re-asserted from the window index before a single window was scored**, and every
+ADR-0022 Part B number holds exactly: **430,506 windows, 540 positive, rate 0.001254, 18,193 of
+18,196 blocks and 67 of 72 positive blocks**, over **45 events** (12 / 6 / 27 at farms A / B / C,
+all 45 represented at this stride). Per farm: A 96,694 windows (144 positive), B 70,803 (72),
+C 263,009 (324).
+
+**1. The axis x seed x checkpoint table.** The gating checkpoint is `final_step`; the selected
+checkpoint is scored beside it and reported. Every base rate is the scored set's own, never the
+training rate. 10,000 replicates, two-day blocks, seed 20260916, **no replicate discarded on either
+axis's deciding rows** (the highest share anywhere is 0.11%, on farm B's reported rows).
+
+| axis | seed | checkpoint | AUPRC, 95% block interval | own base rate | lower bound strictly above |
+| --- | --- | --- | --- | --- | --- |
+| CARE | 1 | final_step (step 1,000, **gates**) | 0.0013 [0.0009, 0.0019] | 0.001254 | **no** |
+| CARE | 1 | selected (step 200, reported) | 0.0015 [0.0010, 0.0021] | 0.001254 | no |
+| CARE | 2 | final_step (step 1,000, **gates**) | 0.0012 [0.0009, 0.0016] | 0.001254 | **no** |
+| CARE | 2 | selected (step 1,000, reported) | 0.0012 [0.0009, 0.0016] | 0.001254 | no |
+| CARE | 3 | final_step (step 1,000, **gates**) | 0.0012 [0.0008, 0.0017] | 0.001254 | **no** |
+| CARE | 3 | selected (step 700, reported) | 0.0012 [0.0009, 0.0018] | 0.001254 | no |
+| temporal | 1 | final_step (step 1,000, **gates**) | 0.0580 [0.0505, 0.0672] | 0.0388 | **yes** |
+| temporal | 1 | selected (step 200, reported) | 0.0540 [0.0474, 0.0618] | 0.0388 | yes |
+| temporal | 2 | final_step (step 1,000, **gates**) | 0.0576 [0.0503, 0.0670] | 0.0388 | **yes** |
+| temporal | 2 | selected (step 1,000, reported) | 0.0576 [0.0503, 0.0670] | 0.0388 | yes |
+| temporal | 3 | final_step (step 1,000, **gates**) | 0.0515 [0.0453, 0.0586] | 0.0388 | **yes** |
+| temporal | 3 | selected (step 700, reported) | 0.0508 [0.0447, 0.0580] | 0.0388 | yes |
+
+**Every temporal row carries ADR-0009's caveat verbatim and the sentence naming the split
+in-distribution**, in the report and in the JSON, per row and not once per table.
+
+**CARE is at chance, not merely wide.** The point estimate is 0.0012 to 0.0015 against a base rate
+of 0.001254, and every interval **contains** the base rate rather than sitting above or below it.
+This is not a case of an interval too wide to resolve a real effect: the probe orders 430,506 CARE
+windows no better than a scorer with no signal. The same holds farm by farm (§2 of the report):
+A 0.0013-0.0018 against 0.001489, B 0.0008-0.0009 against 0.001017, C 0.0011-0.0016 against
+0.001232, every interval spanning its farm's own rate.
+
+**The confound stands beside every CARE row, and it is stated, not resolved: 0 of 749,847
+pretraining windows carry any CARE farm's missing-channel pattern.** Farm A is missing
+`main_bearing_temp_c` (8.35% `<nan>`), farm B `nacelle_temp_c`, `generator_bearing_temp_c` and
+`generator_winding_temp_c` (25.01%), farm C `nacelle_position_deg`, `nacelle_temp_c` and
+`generator_bearing_temp_c` (25.22%); all of CARE reads 21.34% against 0.15% (Kelmarsh) and 0.36%
+(Penmanshiel) on the temporal split. F5 re-measured these from the token stream and reproduces the
+F4 figures exactly on their basis, which counts each covered step once. **This null therefore
+cannot be attributed**: a channel permanently absent while its neighbours report is outside
+everything the backbone was pretrained on, so "the representation does not transfer across OEMs"
+and "the stream is outside the pretraining distribution" predict the same measurement here, and
+this evaluation cannot separate them. ADR-0022 §1 anticipated exactly this and it is why the
+confound is reported on every row.
+
+**2. The verdicts under §4, on the final-step checkpoint.**
+
+| axis | seeds clearing | verdict |
+| --- | --- | --- |
+| CARE | **0 of 3** | **NOT EVALUABLE** |
+| temporal test split at the training sites (in-distribution) | **3 of 3** | **EVALUABLE** |
+
+**The selected checkpoint's rows produce the same verdict on both axes**, so which checkpoint gates
+does not change the outcome of this gate. Hill of Towie, read from F3 and reported for comparison,
+reproduces ADR-0022 §6 exactly (0.0390, 0.0510, 0.0359; clears on seed 2 alone): **NOT EVALUABLE**,
+and the demotion is not reopened.
+
+**3. The assignment §4 produces.** Only the temporal split is evaluable, so **it carries both
+hypotheses, and CARE is reported as a second negative beside Hill of Towie.**
+
+**What that costs, stated plainly.** Both of the project's shift axes are now measured and neither
+is evaluable: leave-site-out (ADR-0021, Hill of Towie) and cross-OEM dataset transfer (CARE, here).
+**The project has no evaluable shift axis.** H2 is written as graceful degradation under modality
+shift; on the axis that carries it, modality dropout is applied **in-distribution**, at the same two
+sites and the same instruments the backbone was pretrained on. Every H2 result from here is a
+statement about in-distribution modality dropout and may not be reported as a shift result. §4
+foresaw the branch where CARE alone is evaluable and H2 is "untestable on an evaluable shift axis";
+the branch that actually obtained leaves H2 testable, but not on shift.
+
+**The anemometer-defect variant, and where it comes from.** `Anemometer defect` is a **Senvion
+status string** in the `equipment_fault` category of `configs/data/events_v2.yaml`, for sources
+`kelmarsh` and `penmanshiel` only, named by `configs/data/splits_v3.yaml`'s
+`report_without_messages` under ADR-0009's standing requirement. **It is not a CARE label
+category.** CARE's labels come from `event_info` with the single fault label `anomaly`, and on
+`care__test` the two label columns are identical: the variant removes **0 of the 45 CARE events, 0
+of its 430,506 windows and 0 of its 540 positives, and touches no farm**. It is a temporal-axis
+variant only, which is where the configuration puts it. Reported beside the full-set rows, on the
+same scored windows relabelled (3,330 of 137,016 windows, base rate 0.0243), the temporal split
+reads **0.0492 / 0.0483 / 0.0383** at the gating checkpoint on seeds 1 / 2 / 3, against 0.0580 /
+0.0576 / 0.0515 with the events. **The verdict above is computed on the full label set**, as §4
+requires; the variant is reported and decides nothing. The variant's counts differ from §2's 3,331
+of 137,015 by one window and one positive, because §2 strides the variant label's own admissible
+set while F5 must relabel the windows its logits were already computed on.
+
+**4. What F6 is now authorised to test, and on which axis.** The remaining arms are gated on the
+**training-site temporal test split at stride 12** (137,025 windows, 5,312 positive, base rate
+0.0388), at the **final-step checkpoint**, on **three pretraining seeds**, paired against `tel_only`
+on the identical windows and reported with and without the anemometer-defect events. **CARE is not
+an axis F6 may read a positive result on**; it is reported as a negative. On that axis F6 may test:
+
+- **H1** -- that the joint model beats both single-modality baselines. ADR-0022 §0 already narrowed
+  this: the §a probe is at parity with a bag-of-tokens classifier on all three seeds, so H1's
+  claim is that the **text pathway carries signal the telemetry tokens do not**, not that the
+  sequence model's representation helps. The temporal split can carry that comparison because it is
+  the only axis that separates `tel_only` from chance.
+- **H2** -- graceful degradation under modality dropout, **in-distribution**, with the limitation
+  above attached to every result.
+
+**Two things F6 must settle before it runs, and this record does not settle them.** First,
+`configs/train/joint_v0.yaml` carries three arms -- `joint`, `joint_status_raw` (ablation) and
+`tel_only` (control) -- and **no `txt_only` arm**. A text-only baseline is required by H1 as stated
+and does not exist in the mixture in force, so F6 needs a new mixture-configuration version rather
+than an edit (`configs/README.md` rule 3). Second, the resolvable difference on this axis is about
+0.005 AUPRC (ADR-0022 §0), and each seed's interval is about 0.008 wide, so F6's comparisons must
+be paired and three-seeded to say anything at all. **F6 is not authorised by this record.**
+
 ---
 
 ## ADR-0023 The random-init probe control: can the frozen probe see backbone quality?

@@ -1,0 +1,1269 @@
+{
+ "config": {
+  "version": 0,
+  "shards": "data/shards/telemetry/quantile_bins_v2_9cd52b65",
+  "splits_config": "configs/data/splits_v3.yaml",
+  "label": "narrow_within_24h",
+  "stride": 12,
+  "base_rate_source": "scored_set",
+  "bootstrap": {
+   "block_steps": 288,
+   "replicates": 10000,
+   "seed": 20260916,
+   "confidence": 0.95,
+   "max_discarded_share": 0.01
+  },
+  "seeds": [
+   1,
+   2,
+   3
+  ],
+  "seeds_required": 2,
+  "checkpoints": {
+   "gating": "final_step",
+   "reported": [
+    "selected"
+   ]
+  },
+  "axes": {
+   "temporal": {
+    "shard_keys": [
+     "kelmarsh__test",
+     "penmanshiel__test"
+    ],
+    "cut": "2021-12-31T23:59:59Z",
+    "windows": 137025,
+    "positives": 5312,
+    "base_rate": 0.0388,
+    "blocks": 5799,
+    "positive_blocks": 497,
+    "without_messages_label": "narrow_within_24h_without",
+    "without_messages_windows": 137015,
+    "without_messages_positives": 3331
+   },
+   "care": {
+    "shard_keys": [
+     "care__test"
+    ],
+    "events": 45,
+    "full_windows": 5166066,
+    "full_positives": 6480,
+    "full_blocks": 18196,
+    "full_positive_blocks": 72,
+    "windows": 430506,
+    "positives": 540,
+    "base_rate": 0.0013,
+    "blocks": 18193,
+    "positive_blocks": 67
+   }
+  }
+ },
+ "config_hash": "4dce1a1c",
+ "gating": "final_step",
+ "rows": [
+  {
+   "axis": "care",
+   "seed": 1,
+   "checkpoint": "final_step",
+   "gating": true,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.001331137783796594,
+    "low": 0.0009347437888222093,
+    "high": 0.0018685040492651352,
+    "lift_low": -0.0001487824459900382,
+    "lift_high": 0.0004748529720848396,
+    "base_rate": 0.0012543379186352804,
+    "windows": 430506,
+    "positives": 540,
+    "blocks": 18193,
+    "positive_blocks": 67,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "verdict": {
+    "evaluable": false,
+    "lower_bound": 0.0009347437888222093,
+    "base_rate": 0.0012543379186352804,
+    "discarded_share": 0.0,
+    "reason": "the lower bound 0.0009 is not above the base rate 0.00125"
+   }
+  },
+  {
+   "axis": "temporal",
+   "seed": 1,
+   "checkpoint": "final_step",
+   "gating": true,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.05801695661143389,
+    "low": 0.05051689496383778,
+    "high": 0.0672150292821771,
+    "lift_low": 0.013376184788390973,
+    "lift_high": 0.027065307093769204,
+    "base_rate": 0.038766648421820836,
+    "windows": 137025,
+    "positives": 5312,
+    "blocks": 5799,
+    "positive_blocks": 497,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "verdict": {
+    "evaluable": true,
+    "lower_bound": 0.05051689496383778,
+    "base_rate": 0.038766648421820836,
+    "discarded_share": 0.0,
+    "reason": "the lower bound 0.0505 is above the base rate 0.03877"
+   }
+  },
+  {
+   "axis": "care",
+   "seed": 1,
+   "checkpoint": "selected",
+   "gating": false,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0014721106473028916,
+    "low": 0.0009960324114099452,
+    "high": 0.0021449339068821834,
+    "lift_low": -9.202900883445735e-05,
+    "lift_high": 0.0007635144703365021,
+    "base_rate": 0.0012543379186352804,
+    "windows": 430506,
+    "positives": 540,
+    "blocks": 18193,
+    "positive_blocks": 67,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "verdict": {
+    "evaluable": false,
+    "lower_bound": 0.0009960324114099452,
+    "base_rate": 0.0012543379186352804,
+    "discarded_share": 0.0,
+    "reason": "the lower bound 0.0010 is not above the base rate 0.00125"
+   }
+  },
+  {
+   "axis": "temporal",
+   "seed": 1,
+   "checkpoint": "selected",
+   "gating": false,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.053952720359414036,
+    "low": 0.04740600180171197,
+    "high": 0.06183320233377814,
+    "lift_low": 0.010382419897590275,
+    "lift_high": 0.021627514152658112,
+    "base_rate": 0.038766648421820836,
+    "windows": 137025,
+    "positives": 5312,
+    "blocks": 5799,
+    "positive_blocks": 497,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "verdict": {
+    "evaluable": true,
+    "lower_bound": 0.04740600180171197,
+    "base_rate": 0.038766648421820836,
+    "discarded_share": 0.0,
+    "reason": "the lower bound 0.0474 is above the base rate 0.03877"
+   }
+  },
+  {
+   "axis": "care",
+   "seed": 2,
+   "checkpoint": "final_step",
+   "gating": true,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0011829018210442784,
+    "low": 0.0008502661125821716,
+    "high": 0.001609580425528571,
+    "lift_low": -0.00026048077755019285,
+    "lift_high": 0.00020137864583309894,
+    "base_rate": 0.0012543379186352804,
+    "windows": 430506,
+    "positives": 540,
+    "blocks": 18193,
+    "positive_blocks": 67,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "verdict": {
+    "evaluable": false,
+    "lower_bound": 0.0008502661125821716,
+    "base_rate": 0.0012543379186352804,
+    "discarded_share": 0.0,
+    "reason": "the lower bound 0.0009 is not above the base rate 0.00125"
+   }
+  },
+  {
+   "axis": "temporal",
+   "seed": 2,
+   "checkpoint": "final_step",
+   "gating": true,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.05761823202468387,
+    "low": 0.050288978609984034,
+    "high": 0.06702717609230632,
+    "lift_low": 0.01326491172802321,
+    "lift_high": 0.026847600918510062,
+    "base_rate": 0.038766648421820836,
+    "windows": 137025,
+    "positives": 5312,
+    "blocks": 5799,
+    "positive_blocks": 497,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "verdict": {
+    "evaluable": true,
+    "lower_bound": 0.050288978609984034,
+    "base_rate": 0.038766648421820836,
+    "discarded_share": 0.0,
+    "reason": "the lower bound 0.0503 is above the base rate 0.03877"
+   }
+  },
+  {
+   "axis": "care",
+   "seed": 2,
+   "checkpoint": "selected",
+   "gating": false,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0011829018210442784,
+    "low": 0.0008502661125821716,
+    "high": 0.001609580425528571,
+    "lift_low": -0.00026048077755019285,
+    "lift_high": 0.00020137864583309894,
+    "base_rate": 0.0012543379186352804,
+    "windows": 430506,
+    "positives": 540,
+    "blocks": 18193,
+    "positive_blocks": 67,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "verdict": {
+    "evaluable": false,
+    "lower_bound": 0.0008502661125821716,
+    "base_rate": 0.0012543379186352804,
+    "discarded_share": 0.0,
+    "reason": "the lower bound 0.0009 is not above the base rate 0.00125"
+   }
+  },
+  {
+   "axis": "temporal",
+   "seed": 2,
+   "checkpoint": "selected",
+   "gating": false,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.05761823202468387,
+    "low": 0.050288978609984034,
+    "high": 0.06702717609230632,
+    "lift_low": 0.01326491172802321,
+    "lift_high": 0.026847600918510062,
+    "base_rate": 0.038766648421820836,
+    "windows": 137025,
+    "positives": 5312,
+    "blocks": 5799,
+    "positive_blocks": 497,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "verdict": {
+    "evaluable": true,
+    "lower_bound": 0.050288978609984034,
+    "base_rate": 0.038766648421820836,
+    "discarded_share": 0.0,
+    "reason": "the lower bound 0.0503 is above the base rate 0.03877"
+   }
+  },
+  {
+   "axis": "care",
+   "seed": 3,
+   "checkpoint": "final_step",
+   "gating": true,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0012111192709401337,
+    "low": 0.0008497740649017456,
+    "high": 0.0017469238372741247,
+    "lift_low": -0.00025530813104682914,
+    "lift_high": 0.00038568898745529594,
+    "base_rate": 0.0012543379186352804,
+    "windows": 430506,
+    "positives": 540,
+    "blocks": 18193,
+    "positive_blocks": 67,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "verdict": {
+    "evaluable": false,
+    "lower_bound": 0.0008497740649017456,
+    "base_rate": 0.0012543379186352804,
+    "discarded_share": 0.0,
+    "reason": "the lower bound 0.0008 is not above the base rate 0.00125"
+   }
+  },
+  {
+   "axis": "temporal",
+   "seed": 3,
+   "checkpoint": "final_step",
+   "gating": true,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0515071144461182,
+    "low": 0.045259066284712206,
+    "high": 0.058641024869439506,
+    "lift_low": 0.008093144652622905,
+    "lift_high": 0.01844681534329707,
+    "base_rate": 0.038766648421820836,
+    "windows": 137025,
+    "positives": 5312,
+    "blocks": 5799,
+    "positive_blocks": 497,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "verdict": {
+    "evaluable": true,
+    "lower_bound": 0.045259066284712206,
+    "base_rate": 0.038766648421820836,
+    "discarded_share": 0.0,
+    "reason": "the lower bound 0.0453 is above the base rate 0.03877"
+   }
+  },
+  {
+   "axis": "care",
+   "seed": 3,
+   "checkpoint": "selected",
+   "gating": false,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.001219471790701141,
+    "low": 0.000853541848196917,
+    "high": 0.0017792488315156612,
+    "lift_low": -0.00025081356731517055,
+    "lift_high": 0.00042383548884052124,
+    "base_rate": 0.0012543379186352804,
+    "windows": 430506,
+    "positives": 540,
+    "blocks": 18193,
+    "positive_blocks": 67,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "verdict": {
+    "evaluable": false,
+    "lower_bound": 0.000853541848196917,
+    "base_rate": 0.0012543379186352804,
+    "discarded_share": 0.0,
+    "reason": "the lower bound 0.0009 is not above the base rate 0.00125"
+   }
+  },
+  {
+   "axis": "temporal",
+   "seed": 3,
+   "checkpoint": "selected",
+   "gating": false,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.05083223305213522,
+    "low": 0.044652156743458786,
+    "high": 0.05797385874798741,
+    "lift_low": 0.0074732628933847165,
+    "lift_high": 0.017776866186197716,
+    "base_rate": 0.038766648421820836,
+    "windows": 137025,
+    "positives": 5312,
+    "blocks": 5799,
+    "positive_blocks": 497,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "verdict": {
+    "evaluable": true,
+    "lower_bound": 0.044652156743458786,
+    "base_rate": 0.038766648421820836,
+    "discarded_share": 0.0,
+    "reason": "the lower bound 0.0447 is above the base rate 0.03877"
+   }
+  }
+ ],
+ "reported": [
+  {
+   "group": "farm_a",
+   "axis": "care",
+   "seed": 1,
+   "checkpoint": "final_step",
+   "base_rate": 0.001489234040491283,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0013749307980010282,
+    "low": 0.0007325286429790915,
+    "high": 0.0023661096278928978,
+    "lift_low": -0.00040989431973334354,
+    "lift_high": 0.0005671867885372352,
+    "base_rate": 0.0014892340786398328,
+    "windows": 96694,
+    "positives": 144,
+    "blocks": 4147,
+    "positive_blocks": 20,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "one CARE farm; the rule is applied to the pooled CARE set, not here. <nan> share 8.35%"
+  },
+  {
+   "group": "farm_b",
+   "axis": "care",
+   "seed": 1,
+   "checkpoint": "final_step",
+   "base_rate": 0.0010169061133638024,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0007845401626199011,
+    "low": 0.0002523535147302472,
+    "high": 0.0016304383621170812,
+    "lift_low": -0.0004937712045382493,
+    "lift_high": 0.00021802461529717843,
+    "base_rate": 0.0010169060633024025,
+    "windows": 70803,
+    "positives": 72,
+    "blocks": 2980,
+    "positive_blocks": 7,
+    "replicates": 10000,
+    "discarded": 11,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "one CARE farm; the rule is applied to the pooled CARE set, not here. <nan> share 25.01%"
+  },
+  {
+   "group": "farm_c",
+   "axis": "care",
+   "seed": 1,
+   "checkpoint": "final_step",
+   "base_rate": 0.001231897040270269,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0015267312368829607,
+    "low": 0.0009367405233000473,
+    "high": 0.002430053633815394,
+    "lift_low": -6.827122318411808e-05,
+    "lift_high": 0.001033153551413498,
+    "base_rate": 0.0012318970073267456,
+    "windows": 263009,
+    "positives": 324,
+    "blocks": 11066,
+    "positive_blocks": 40,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "one CARE farm; the rule is applied to the pooled CARE set, not here. <nan> share 25.22%"
+  },
+  {
+   "group": "without_anemometer_defect",
+   "axis": "temporal",
+   "seed": 1,
+   "checkpoint": "final_step",
+   "base_rate": 0.024303730951129796,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0491754558486894,
+    "low": 0.040590295007323876,
+    "high": 0.06046205984584738,
+    "lift_low": 0.017744740184494744,
+    "lift_high": 0.035141973145735236,
+    "base_rate": 0.024303730951129796,
+    "windows": 137016,
+    "positives": 3330,
+    "blocks": 5799,
+    "positive_blocks": 330,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "the temporal split relabelled with narrow_within_24h_without; The late split is a temporal hold-out with a change in what is labelled, not a drift test. Standing requirement: every late-test result is reported both with and without the anemometer-defect events. This split is the in-distribution temporal test set, not a shift axis: same sites, same instruments, a change in what is labelled."
+  },
+  {
+   "group": "farm_a",
+   "axis": "care",
+   "seed": 1,
+   "checkpoint": "selected",
+   "base_rate": 0.001489234040491283,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.001830918863669278,
+    "low": 0.0008156832364321921,
+    "high": 0.0044670284143603,
+    "lift_low": -0.00037574210830491705,
+    "lift_high": 0.002877694941749415,
+    "base_rate": 0.0014892340786398328,
+    "windows": 96694,
+    "positives": 144,
+    "blocks": 4147,
+    "positive_blocks": 20,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "one CARE farm; the rule is applied to the pooled CARE set, not here. <nan> share 8.35%"
+  },
+  {
+   "group": "farm_b",
+   "axis": "care",
+   "seed": 1,
+   "checkpoint": "selected",
+   "base_rate": 0.0010169061133638024,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0008973701915220446,
+    "low": 0.0002868917089087315,
+    "high": 0.0017870615078854754,
+    "lift_low": -0.0003603800013093313,
+    "lift_high": 0.00021288779896808666,
+    "base_rate": 0.0010169060633024025,
+    "windows": 70803,
+    "positives": 72,
+    "blocks": 2980,
+    "positive_blocks": 7,
+    "replicates": 10000,
+    "discarded": 11,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "one CARE farm; the rule is applied to the pooled CARE set, not here. <nan> share 25.01%"
+  },
+  {
+   "group": "farm_c",
+   "axis": "care",
+   "seed": 1,
+   "checkpoint": "selected",
+   "base_rate": 0.001231897040270269,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.001630466026435031,
+    "low": 0.0009896713935419097,
+    "high": 0.0026186904821479417,
+    "lift_low": -1.832962028830383e-05,
+    "lift_high": 0.0011996503786597691,
+    "base_rate": 0.0012318970073267456,
+    "windows": 263009,
+    "positives": 324,
+    "blocks": 11066,
+    "positive_blocks": 40,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "one CARE farm; the rule is applied to the pooled CARE set, not here. <nan> share 25.22%"
+  },
+  {
+   "group": "without_anemometer_defect",
+   "axis": "temporal",
+   "seed": 1,
+   "checkpoint": "selected",
+   "base_rate": 0.024303730951129796,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.04342743010103724,
+    "low": 0.03632589965037808,
+    "high": 0.05261055436469309,
+    "lift_low": 0.013571127770093349,
+    "lift_high": 0.027159340594546617,
+    "base_rate": 0.024303730951129796,
+    "windows": 137016,
+    "positives": 3330,
+    "blocks": 5799,
+    "positive_blocks": 330,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "the temporal split relabelled with narrow_within_24h_without; The late split is a temporal hold-out with a change in what is labelled, not a drift test. Standing requirement: every late-test result is reported both with and without the anemometer-defect events. This split is the in-distribution temporal test set, not a shift axis: same sites, same instruments, a change in what is labelled."
+  },
+  {
+   "group": "hill_of_towie",
+   "axis": "held_out",
+   "seed": 1,
+   "checkpoint": "selected",
+   "base_rate": 0.03325,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.038972772898284866,
+    "low": 0.03043694937957038,
+    "high": 0.05482374155653081,
+    "lift_low": -0.0012617497512513879,
+    "lift_high": 0.02056086916889221,
+    "base_rate": 0.03325,
+    "windows": 12000,
+    "positives": 399,
+    "blocks": 5983,
+    "positive_blocks": 274,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "F3's 12,000-window subsample, read not re-scored; reported for comparison and demoted by ADR-0021 and ADR-0022 \u00a76"
+  },
+  {
+   "group": "farm_a",
+   "axis": "care",
+   "seed": 2,
+   "checkpoint": "final_step",
+   "base_rate": 0.001489234040491283,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0012826270323284014,
+    "low": 0.0006980345311938018,
+    "high": 0.0021285301158564364,
+    "lift_low": -0.0004651524351590858,
+    "lift_high": 0.00026985449449346585,
+    "base_rate": 0.0014892340786398328,
+    "windows": 96694,
+    "positives": 144,
+    "blocks": 4147,
+    "positive_blocks": 20,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "one CARE farm; the rule is applied to the pooled CARE set, not here. <nan> share 8.35%"
+  },
+  {
+   "group": "farm_b",
+   "axis": "care",
+   "seed": 2,
+   "checkpoint": "final_step",
+   "base_rate": 0.0010169061133638024,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0007574639331190121,
+    "low": 0.00024536458346388976,
+    "high": 0.0015785937910112104,
+    "lift_low": -0.0005679953632905826,
+    "lift_high": 0.00017841343265550787,
+    "base_rate": 0.0010169060633024025,
+    "windows": 70803,
+    "positives": 72,
+    "blocks": 2980,
+    "positive_blocks": 7,
+    "replicates": 10000,
+    "discarded": 11,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "one CARE farm; the rule is applied to the pooled CARE set, not here. <nan> share 25.01%"
+  },
+  {
+   "group": "farm_c",
+   "axis": "care",
+   "seed": 2,
+   "checkpoint": "final_step",
+   "base_rate": 0.001231897040270269,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0011476673521088263,
+    "low": 0.0007460616451734289,
+    "high": 0.0016802012087298072,
+    "lift_low": -0.00029540444467119974,
+    "lift_high": 0.00026982390565883307,
+    "base_rate": 0.0012318970073267456,
+    "windows": 263009,
+    "positives": 324,
+    "blocks": 11066,
+    "positive_blocks": 40,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "one CARE farm; the rule is applied to the pooled CARE set, not here. <nan> share 25.22%"
+  },
+  {
+   "group": "without_anemometer_defect",
+   "axis": "temporal",
+   "seed": 2,
+   "checkpoint": "final_step",
+   "base_rate": 0.024303730951129796,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.04829514719423775,
+    "low": 0.03997903835646392,
+    "high": 0.06007368459873539,
+    "lift_low": 0.017096919393558497,
+    "lift_high": 0.034909147041675866,
+    "base_rate": 0.024303730951129796,
+    "windows": 137016,
+    "positives": 3330,
+    "blocks": 5799,
+    "positive_blocks": 330,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "the temporal split relabelled with narrow_within_24h_without; The late split is a temporal hold-out with a change in what is labelled, not a drift test. Standing requirement: every late-test result is reported both with and without the anemometer-defect events. This split is the in-distribution temporal test set, not a shift axis: same sites, same instruments, a change in what is labelled."
+  },
+  {
+   "group": "farm_a",
+   "axis": "care",
+   "seed": 2,
+   "checkpoint": "selected",
+   "base_rate": 0.001489234040491283,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0012826270323284014,
+    "low": 0.0006980345311938018,
+    "high": 0.0021285301158564364,
+    "lift_low": -0.0004651524351590858,
+    "lift_high": 0.00026985449449346585,
+    "base_rate": 0.0014892340786398328,
+    "windows": 96694,
+    "positives": 144,
+    "blocks": 4147,
+    "positive_blocks": 20,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "one CARE farm; the rule is applied to the pooled CARE set, not here. <nan> share 8.35%"
+  },
+  {
+   "group": "farm_b",
+   "axis": "care",
+   "seed": 2,
+   "checkpoint": "selected",
+   "base_rate": 0.0010169061133638024,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0007574639331190121,
+    "low": 0.00024536458346388976,
+    "high": 0.0015785937910112104,
+    "lift_low": -0.0005679953632905826,
+    "lift_high": 0.00017841343265550787,
+    "base_rate": 0.0010169060633024025,
+    "windows": 70803,
+    "positives": 72,
+    "blocks": 2980,
+    "positive_blocks": 7,
+    "replicates": 10000,
+    "discarded": 11,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "one CARE farm; the rule is applied to the pooled CARE set, not here. <nan> share 25.01%"
+  },
+  {
+   "group": "farm_c",
+   "axis": "care",
+   "seed": 2,
+   "checkpoint": "selected",
+   "base_rate": 0.001231897040270269,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0011476673521088263,
+    "low": 0.0007460616451734289,
+    "high": 0.0016802012087298072,
+    "lift_low": -0.00029540444467119974,
+    "lift_high": 0.00026982390565883307,
+    "base_rate": 0.0012318970073267456,
+    "windows": 263009,
+    "positives": 324,
+    "blocks": 11066,
+    "positive_blocks": 40,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "one CARE farm; the rule is applied to the pooled CARE set, not here. <nan> share 25.22%"
+  },
+  {
+   "group": "without_anemometer_defect",
+   "axis": "temporal",
+   "seed": 2,
+   "checkpoint": "selected",
+   "base_rate": 0.024303730951129796,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.04829514719423775,
+    "low": 0.03997903835646392,
+    "high": 0.06007368459873539,
+    "lift_low": 0.017096919393558497,
+    "lift_high": 0.034909147041675866,
+    "base_rate": 0.024303730951129796,
+    "windows": 137016,
+    "positives": 3330,
+    "blocks": 5799,
+    "positive_blocks": 330,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "the temporal split relabelled with narrow_within_24h_without; The late split is a temporal hold-out with a change in what is labelled, not a drift test. Standing requirement: every late-test result is reported both with and without the anemometer-defect events. This split is the in-distribution temporal test set, not a shift axis: same sites, same instruments, a change in what is labelled."
+  },
+  {
+   "group": "hill_of_towie",
+   "axis": "held_out",
+   "seed": 2,
+   "checkpoint": "selected",
+   "base_rate": 0.03325,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.05096947820403383,
+    "low": 0.03706777506819204,
+    "high": 0.07411810476366282,
+    "lift_low": 0.005400528745742483,
+    "lift_high": 0.03984695153616648,
+    "base_rate": 0.03325,
+    "windows": 12000,
+    "positives": 399,
+    "blocks": 5983,
+    "positive_blocks": 274,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "F3's 12,000-window subsample, read not re-scored; reported for comparison and demoted by ADR-0021 and ADR-0022 \u00a76"
+  },
+  {
+   "group": "farm_a",
+   "axis": "care",
+   "seed": 3,
+   "checkpoint": "final_step",
+   "base_rate": 0.001489234040491283,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0013369892099599706,
+    "low": 0.0007067184253612699,
+    "high": 0.00233068231123723,
+    "lift_low": -0.0005468456755969625,
+    "lift_high": 0.0006282656846296294,
+    "base_rate": 0.0014892340786398328,
+    "windows": 96694,
+    "positives": 144,
+    "blocks": 4147,
+    "positive_blocks": 20,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "one CARE farm; the rule is applied to the pooled CARE set, not here. <nan> share 8.35%"
+  },
+  {
+   "group": "farm_b",
+   "axis": "care",
+   "seed": 3,
+   "checkpoint": "final_step",
+   "base_rate": 0.0010169061133638024,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0008183581173606437,
+    "low": 0.0002636950183993557,
+    "high": 0.0017749406164437468,
+    "lift_low": -0.00047750024335904364,
+    "lift_high": 0.0003489653303848672,
+    "base_rate": 0.0010169060633024025,
+    "windows": 70803,
+    "positives": 72,
+    "blocks": 2980,
+    "positive_blocks": 7,
+    "replicates": 10000,
+    "discarded": 11,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "one CARE farm; the rule is applied to the pooled CARE set, not here. <nan> share 25.01%"
+  },
+  {
+   "group": "farm_c",
+   "axis": "care",
+   "seed": 3,
+   "checkpoint": "final_step",
+   "base_rate": 0.001231897040270269,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0013270784549917387,
+    "low": 0.0008305056873412706,
+    "high": 0.0021427992201549957,
+    "lift_low": -0.00019688834813778633,
+    "lift_high": 0.0007883409425427782,
+    "base_rate": 0.0012318970073267456,
+    "windows": 263009,
+    "positives": 324,
+    "blocks": 11066,
+    "positive_blocks": 40,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "one CARE farm; the rule is applied to the pooled CARE set, not here. <nan> share 25.22%"
+  },
+  {
+   "group": "without_anemometer_defect",
+   "axis": "temporal",
+   "seed": 3,
+   "checkpoint": "final_step",
+   "base_rate": 0.024303730951129796,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.03834414104535194,
+    "low": 0.03216678255393711,
+    "high": 0.04541097923740223,
+    "lift_low": 0.009346844909933939,
+    "lift_high": 0.019958312125591012,
+    "base_rate": 0.024303730951129796,
+    "windows": 137016,
+    "positives": 3330,
+    "blocks": 5799,
+    "positive_blocks": 330,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "the temporal split relabelled with narrow_within_24h_without; The late split is a temporal hold-out with a change in what is labelled, not a drift test. Standing requirement: every late-test result is reported both with and without the anemometer-defect events. This split is the in-distribution temporal test set, not a shift axis: same sites, same instruments, a change in what is labelled."
+  },
+  {
+   "group": "farm_a",
+   "axis": "care",
+   "seed": 3,
+   "checkpoint": "selected",
+   "base_rate": 0.001489234040491283,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0014274856087735576,
+    "low": 0.0007592763066695449,
+    "high": 0.0024877762759868455,
+    "lift_low": -0.00045884449680549407,
+    "lift_high": 0.0007745376617554621,
+    "base_rate": 0.0014892340786398328,
+    "windows": 96694,
+    "positives": 144,
+    "blocks": 4147,
+    "positive_blocks": 20,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "one CARE farm; the rule is applied to the pooled CARE set, not here. <nan> share 8.35%"
+  },
+  {
+   "group": "farm_b",
+   "axis": "care",
+   "seed": 3,
+   "checkpoint": "selected",
+   "base_rate": 0.0010169061133638024,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0008241793575210529,
+    "low": 0.00026518230073793893,
+    "high": 0.0017559604367545294,
+    "lift_low": -0.0004694703749922569,
+    "lift_high": 0.00030375707468561315,
+    "base_rate": 0.0010169060633024025,
+    "windows": 70803,
+    "positives": 72,
+    "blocks": 2980,
+    "positive_blocks": 7,
+    "replicates": 10000,
+    "discarded": 11,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "one CARE farm; the rule is applied to the pooled CARE set, not here. <nan> share 25.01%"
+  },
+  {
+   "group": "farm_c",
+   "axis": "care",
+   "seed": 3,
+   "checkpoint": "selected",
+   "base_rate": 0.001231897040270269,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.0013247019630873332,
+    "low": 0.0008279046869009078,
+    "high": 0.0021802173735405044,
+    "lift_low": -0.00020423151936781777,
+    "lift_high": 0.0008318593643965013,
+    "base_rate": 0.0012318970073267456,
+    "windows": 263009,
+    "positives": 324,
+    "blocks": 11066,
+    "positive_blocks": 40,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "one CARE farm; the rule is applied to the pooled CARE set, not here. <nan> share 25.22%"
+  },
+  {
+   "group": "without_anemometer_defect",
+   "axis": "temporal",
+   "seed": 3,
+   "checkpoint": "selected",
+   "base_rate": 0.024303730951129796,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.03735099043140102,
+    "low": 0.03141239103323613,
+    "high": 0.04431739845517663,
+    "lift_low": 0.008567306234555792,
+    "lift_high": 0.018928884342695802,
+    "base_rate": 0.024303730951129796,
+    "windows": 137016,
+    "positives": 3330,
+    "blocks": 5799,
+    "positive_blocks": 330,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "the temporal split relabelled with narrow_within_24h_without; The late split is a temporal hold-out with a change in what is labelled, not a drift test. Standing requirement: every late-test result is reported both with and without the anemometer-defect events. This split is the in-distribution temporal test set, not a shift axis: same sites, same instruments, a change in what is labelled."
+  },
+  {
+   "group": "hill_of_towie",
+   "axis": "held_out",
+   "seed": 3,
+   "checkpoint": "selected",
+   "base_rate": 0.03325,
+   "interval": {
+    "unit": "block",
+    "auprc": 0.035929270786203095,
+    "low": 0.02756721339937205,
+    "high": 0.05075370390024662,
+    "lift_low": -0.00419274805420585,
+    "lift_high": 0.017041157644024814,
+    "base_rate": 0.03325,
+    "windows": 12000,
+    "positives": 399,
+    "blocks": 5983,
+    "positive_blocks": 274,
+    "replicates": 10000,
+    "discarded": 0,
+    "confidence": 0.95,
+    "seed": 20260916
+   },
+   "note": "F3's 12,000-window subsample, read not re-scored; reported for comparison and demoted by ADR-0021 and ADR-0022 \u00a76"
+  }
+ ],
+ "verdicts": {
+  "care": {
+   "axis": "care",
+   "evaluable": false,
+   "clearing": [],
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "required": 2,
+   "reason": "the lower bound is strictly above the scored-set base rate on 0 of 3 seeds (no seed), fewer than the 2 the rule requires: NOT EVALUABLE"
+  },
+  "temporal": {
+   "axis": "temporal",
+   "evaluable": true,
+   "clearing": [
+    1,
+    2,
+    3
+   ],
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "required": 2,
+   "reason": "the lower bound is strictly above the scored-set base rate on 3 of 3 seeds (1, 2, 3), at least the 2 the rule requires: EVALUABLE"
+  }
+ },
+ "reported_verdicts": {
+  "care": {
+   "axis": "care",
+   "evaluable": false,
+   "clearing": [],
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "required": 2,
+   "reason": "the lower bound is strictly above the scored-set base rate on 0 of 3 seeds (no seed), fewer than the 2 the rule requires: NOT EVALUABLE"
+  },
+  "temporal": {
+   "axis": "temporal",
+   "evaluable": true,
+   "clearing": [
+    1,
+    2,
+    3
+   ],
+   "seeds": [
+    1,
+    2,
+    3
+   ],
+   "required": 2,
+   "reason": "the lower bound is strictly above the scored-set base rate on 3 of 3 seeds (1, 2, 3), at least the 2 the rule requires: EVALUABLE"
+  }
+ },
+ "assignment": {
+  "h1": "temporal",
+  "h2": "temporal",
+  "stop": false,
+  "sentence": "Only the temporal split is evaluable: it carries both hypotheses, and CARE is reported as a second negative beside Hill of Towie."
+ },
+ "absence": {
+  "care": {
+   "group": "care",
+   "windows": 430506,
+   "absent": [],
+   "nan_share_steps": 0.213441121816746,
+   "nan_share_windows": 0.21379463261018775
+  },
+  "farm_a": {
+   "group": "farm_a",
+   "windows": 96694,
+   "absent": [
+    "main_bearing_temp_c"
+   ],
+   "nan_share_steps": 0.0835228107232991,
+   "nan_share_windows": 0.08346823891367115
+  },
+  "farm_b": {
+   "group": "farm_b",
+   "windows": 70803,
+   "absent": [
+    "nacelle_temp_c",
+    "generator_bearing_temp_c",
+    "generator_winding_temp_c"
+   ],
+   "nan_share_steps": 0.25005198768184006,
+   "nan_share_windows": 0.2500523753701585
+  },
+  "farm_c": {
+   "group": "farm_c",
+   "windows": 263009,
+   "absent": [
+    "nacelle_position_deg",
+    "nacelle_temp_c",
+    "generator_bearing_temp_c"
+   ],
+   "nan_share_steps": 0.2522094731531949,
+   "nan_share_windows": 0.25194778840127
+  },
+  "kelmarsh": {
+   "group": "kelmarsh",
+   "windows": 77203,
+   "absent": [],
+   "nan_share_steps": 0.0014604893318001788,
+   "nan_share_windows": 0.001407079867842403
+  },
+  "penmanshiel": {
+   "group": "penmanshiel",
+   "windows": 59822,
+   "absent": [],
+   "nan_share_steps": 0.0036239613382954205,
+   "nan_share_windows": 0.003600960627639776
+  }
+ },
+ "counts": {
+  "care": {
+   "windows": 430506,
+   "positives": 540,
+   "blocks": 18193,
+   "positive_blocks": 67
+  },
+  "care_full": {
+   "windows": 5166066,
+   "positives": 6480,
+   "blocks": 18196,
+   "positive_blocks": 72
+  },
+  "temporal": {
+   "windows": 137025,
+   "positives": 5312,
+   "blocks": 5799,
+   "positive_blocks": 497
+  }
+ },
+ "without_messages": {
+  "label": "narrow_within_24h_without",
+  "category": "equipment_fault",
+  "message": "Anemometer defect",
+  "sources": [
+   "kelmarsh",
+   "penmanshiel"
+  ],
+  "named_in": "configs/data/splits_v3.yaml, report_without_messages",
+  "temporal_windows": 137016,
+  "temporal_positives": 3330,
+  "care_label_source": "event_info, the single fault label `anomaly`",
+  "care_events_removed": 0,
+  "care_windows_lost": 0,
+  "care_positives_lost": 0,
+  "care_farms_affected": []
+ },
+ "seconds": 4.253073400002904,
+ "gpu_seconds": 6205.518617300026,
+ "computed": [],
+ "resumed": [
+  "S2_trained_seed1_final_care_stride12_scores",
+  "S2_trained_seed1_care_stride12_scores",
+  "S2_trained_seed2_care_stride12_scores",
+  "S2_trained_seed3_final_care_stride12_scores",
+  "S2_trained_seed3_care_stride12_scores"
+ ]
+}

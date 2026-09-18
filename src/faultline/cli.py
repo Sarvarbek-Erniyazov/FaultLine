@@ -1342,6 +1342,36 @@ def model_checkpoint_selection(
 
 
 @model_app.command(
+    "axis-gate",
+    help="ADR-0022 F5: score the whole CARE evaluation set at stride 12 with both checkpoints of "
+    "the three tel_only seeds, read F3's temporal-split and Hill of Towie scores without "
+    "re-scoring them, and apply the two-of-three axis rule. Pretrains nothing, trains no probe. "
+    "Resume-safe.",
+)
+def model_axis_gate(
+    config: ConfigOption = Path("configs/eval/axis_gate_v0.yaml"),
+    f3_config: Annotated[
+        Path, typer.Option("--f3-config", help="The F3 configuration naming the checkpoints.")
+    ] = Path("configs/train/seed_replication_v0.yaml"),
+    device: Annotated[str | None, typer.Option("--device", help="Torch device.")] = None,
+) -> None:
+    """Apply the axis gate and write its report.
+
+    Args:
+        config: The axis-gate configuration.
+        f3_config: The F3 configuration, which names the probe checkpoints.
+        device: Torch device; chosen automatically when omitted.
+    """
+    from faultline.evaluation.axis_gate import run_axis_gate
+
+    paths = ProjectPaths.resolve()
+    report, record = run_axis_gate(
+        paths, paths.repo_root / config, paths.repo_root / f3_config, device
+    )
+    typer.echo(f"wrote {report} and {record}")
+
+
+@model_app.command(
     "mixture-shards",
     help="Write the M3 mixture's txt and tel+status shards and every stream's run index, "
     "and report per-stream token counts and per-arm token budgets. Trains nothing.",

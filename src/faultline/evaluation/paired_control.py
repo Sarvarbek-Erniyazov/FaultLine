@@ -275,9 +275,13 @@ def load_saved_probe(probe_path: Path, design: str, inputs: ProbeInputs) -> Risk
         pooling=POOLING[design],
         layers=HEAD_LAYERS[design],
     )
-    model = RiskModel(inputs.spec, risk, frozen=True, unfrozen_blocks=UNFROZEN_BLOCKS[design]).to(
-        inputs.device
-    )
+    model = RiskModel(
+        inputs.spec,
+        risk,
+        frozen=True,
+        unfrozen_blocks=UNFROZEN_BLOCKS[design],
+        pad_id=payload.get("pad_id"),
+    ).to(inputs.device)
     model.load_state_dict({k: v.to(inputs.device) for k, v in payload["state"].items()})
     model.eval()
     return model

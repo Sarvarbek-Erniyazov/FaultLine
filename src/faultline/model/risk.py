@@ -112,6 +112,8 @@ class RiskModel(nn.Module):
         pooling: What the head reads, from the head's specification.
         unfrozen_blocks: Blocks at the end of a frozen backbone that train anyway (ADR-0023 §d).
         backbone_lr_scale: The unfrozen blocks' learning rate as a fraction of the head's.
+        pad_id: The padding id of right-padded windows (ADR-0025 §2), or ``None`` for windows
+            that are never padded, whose last position is read as before.
     """
 
     def __init__(
@@ -122,6 +124,7 @@ class RiskModel(nn.Module):
         fused: bool = True,
         unfrozen_blocks: int = 0,
         backbone_lr_scale: float = 1.0,
+        pad_id: int | None = None,
     ) -> None:
         """Build the risk model.
 
@@ -132,6 +135,8 @@ class RiskModel(nn.Module):
             fused: Use the fused attention kernel.
             unfrozen_blocks: With ``frozen``, this many final blocks train anyway (ADR-0023 §d).
             backbone_lr_scale: Those blocks' learning rate as a fraction of the run's.
+            pad_id: The padding id of right-padded windows; ``None`` when windows are never
+                padded.
 
         Raises:
             ValueError: If blocks are unfrozen in an unfrozen model, or more than exist.
@@ -147,6 +152,7 @@ class RiskModel(nn.Module):
             raise ValueError(f"unfrozen_blocks must be in 0..{spec.n_layer}, got {unfrozen_blocks}")
         self.unfrozen_blocks = unfrozen_blocks
         self.backbone_lr_scale = backbone_lr_scale
+        self.pad_id = pad_id
         if frozen:
             for parameter in self.backbone.parameters():
                 parameter.requires_grad_(False)
@@ -183,7 +189,18 @@ class RiskModel(nn.Module):
             hidden = hidden.detach()
         else:
             hidden = self.backbone(tokens)
-        pooled = hidden.mean(dim=1) if self.pooling == "mean" else hidden[:, -1]
+        if self.pad_id is None:
+            pooled = hidden.mean(dim=1) if self.pooling == "mean" else hidden[:, -1]
+        else:
+            # Right-padded windows (ADR-0025 §2): attention is causal, so no real position sees a
+            # pad, and the head reads the last real position (or the mean over real ones).
+            real = tokens != self.pad_id
+            if self.pooling == "mean":
+                weights = real.to(hidden.dtype).unsqueeze(-1)
+                pooled = (hidden * weights).sum(dim=1) / weights.sum(dim=1).clamp(min=1.0)
+            else:
+                last = real.sum(dim=1).clamp(min=1) - 1
+                pooled = hidden[torch.arange(hidden.shape[0], device=hidden.device), last]
         return cast(Tensor, self.head(pooled))
 
     def loss(self, tokens: Tensor, labels: Tensor, positive_weight: float = 1.0) -> Tensor:

@@ -53,7 +53,7 @@ from faultline.evaluation.calibration import (
     expected_calibration_error,
     mean_predicted_rate,
 )
-from faultline.evaluation.ladder import balanced_training_sampler, build_split
+from faultline.evaluation.ladder import SplitEval, balanced_training_sampler, build_split
 from faultline.evaluation.metrics import RiskScore, score_source
 from faultline.logging_utils import get_logger
 from faultline.model.checkpoints import read_checkpoint
@@ -69,9 +69,23 @@ from faultline.training.config import (
     Optimiser,
     PositiveAwareRiskStage,
 )
+from faultline.training.joint_windows import (
+    PAD_ID,
+    TAIL_ANCHORED,
+    JointBalancedSampler,
+    JointWindowSampler,
+    MixtureSampler,
+    StatusRows,
+    StreamWindows,
+    TelStatusStreams,
+    run_step_starts,
+    step_offsets,
+    stop_flags,
+    tile_starts,
+)
 from faultline.training.loop import Measurement, risk_logits, train, write_step_log
-from faultline.training.mixture import STREAM_DIRS, JointMixtureConfig
-from faultline.training.windows import Batch, ShardSet
+from faultline.training.mixture import STREAM_DIRS, STREAMS, Arm, JointMixtureConfig, StreamName
+from faultline.training.windows import BalancedWindowSampler, Batch, ShardSet
 
 logger = get_logger(__name__)
 
@@ -353,6 +367,119 @@ class ProbeInputs:
     mixture: JointMixtureConfig
     splits: dict[str, Any]
     device: torch.device
+    window_rule: str = "m1"
+    tel_status: TelStatusStreams | None = None
+
+    @property
+    def pad_id(self) -> int | None:
+        """The probe windows' padding id: ``None`` for M1 windows, which are never padded."""
+        return None if self.tel_status is None else PAD_ID
+
+    @property
+    def window_tokens(self) -> int:
+        """Tokens a probe window occupies: 1,872 for M1 windows, the context when padded."""
+        return self.telemetry.context_tokens if self.tel_status is None else self.tel_status.context
+
+    def frame(self, split: SplitEval) -> SplitEval:
+        """A split's windows under this input's rule: unchanged for M1, re-framed otherwise.
+
+        The re-framed split keeps the M1 split's sets, order, sources, shares, years and set
+        index, so its scores pair row for row with the M1 split's.
+        """
+        if self.tel_status is None:
+            return split
+        return frame_split(split, self.tel_status)
+
+
+def frame_split(split: SplitEval, streams: TelStatusStreams) -> SplitEval:
+    """Re-frame an M1 split over the ``tel+status`` stream by the tail-anchored rule.
+
+    Args:
+        split: The M1 split.
+        streams: The opened ``tel+status`` shards.
+
+    Returns:
+        The same windows, in the same order, read as ADR-0025 §2 windows.
+    """
+    old = split.sampler
+    sampler = JointWindowSampler(
+        [streams.frame(s) for s in old.sets],
+        batch_size=old.batch_size,
+        tokens_per_step=old.tokens_per_step,
+        context_steps=old.context_steps,
+        labelled=old.labelled,
+    )
+    return SplitEval(
+        sampler=sampler,
+        sources=list(split.sources),
+        shares=dict(split.shares),
+        years=split.years,
+        sets=split.sets,
+    )
+
+
+def probe_training_sampler(
+    inputs: ProbeInputs, stage: PositiveAwareRiskStage, batch_windows: int
+) -> BalancedWindowSampler:
+    """The probe's balanced training sampler, over the inputs' windows.
+
+    For M1 windows it is ``balanced_training_sampler``, unchanged. For tail-anchored windows it
+    is built from the same M1 sets in the same order and re-framed, so at the same seed it draws
+    the same (set, row) sequence.
+
+    Args:
+        inputs: The opened inputs.
+        stage: The positive-aware stage.
+        batch_windows: Windows per forward pass.
+
+    Returns:
+        The sampler.
+    """
+    m1 = balanced_training_sampler(inputs.telemetry, inputs.ladder, stage, batch_windows)
+    if inputs.tel_status is None:
+        return m1
+    return JointBalancedSampler(
+        [inputs.tel_status.frame(s) for s in m1.sets],
+        batch_size=batch_windows,
+        positives_per_batch=m1.positives_per_batch,
+        tokens_per_step=m1.tokens_per_step,
+        context_steps=m1.context_steps,
+    )
+
+
+def tel_status_streams(
+    paths: ProjectPaths,
+    joint_root: Path,
+    telemetry: ShardSet,
+    convention: str,
+    context: int,
+    status_rows: StatusRows,
+    status_sources: Sequence[str],
+) -> TelStatusStreams:
+    """Open the ``tel+status`` shards a tail-anchored window reads.
+
+    Args:
+        paths: Resolved project paths.
+        joint_root: The joint shard directory.
+        telemetry: The M1 shard set, for each key's step count.
+        convention: The status convention, ``normalized`` or ``raw``.
+        context: The window's token budget.
+        status_rows: ``all`` (R0) or ``no_stop`` (R2).
+        status_sources: Sources whose messages R2 filters.
+
+    Returns:
+        The opened streams.
+    """
+    root = joint_root / f"{STREAM_DIRS['tel+status']}_{convention}"
+    return TelStatusStreams(
+        root=root,
+        m1_steps={key: int(record["steps"]) for key, record in telemetry.files().items()},
+        context_steps=telemetry.context_steps,
+        tokens_per_step=telemetry.tokens_per_step,
+        context=context,
+        status_rows=status_rows,
+        dropped=stop_flags(paths, root, status_sources) if status_rows == "no_stop" else {},
+    )
 
 
 def open_probe_inputs(
@@ -364,31 +491,43 @@ def open_probe_inputs(
     selection_windows: int,
     held_out_source: str,
     device_name: str | None,
+    window_rule: str = "m1",
+    status_rows: StatusRows = "all",
 ) -> ProbeInputs:
-    """Open the shards, the rung and the evaluation windows a ``tel_only`` probe reads.
+    """Open the shards, the rung and the evaluation windows a probe reads.
+
+    Under ``m1`` (every probe before ADR-0025) the arm must be telemetry-only and the probe reads
+    M1's 1,872-token windows, exactly as before. Under ``tail_anchored_2048`` (ADR-0025 §2) any
+    arm of the mixture is accepted, the joint arm or ``tel_only`` (control (iii)), and the
+    probe's selection and test windows are the same M1 windows re-framed over the ``tel+status``
+    stream of the arm's status convention.
 
     Args:
         paths: Resolved project paths.
         mixture_config: The joint mixture configuration, relative to the repository.
         ladder_config: The ladder configuration, relative to the repository.
-        arm_name: The arm; only a telemetry-only arm is supported.
+        arm_name: The arm.
         rung_name: The rung.
         selection_windows: Validation ``tel`` windows per source for pretraining selection.
         held_out_source: The held-out site, scored on test beside the training sites.
         device_name: Torch device; chosen automatically when omitted.
+        window_rule: ``m1`` or ``tail_anchored_2048``.
+        status_rows: Under the tail-anchored rule, ``all`` (R0) or ``no_stop`` (R2).
 
     Returns:
         The opened inputs.
 
     Raises:
-        ValueError: If the arm is not telemetry-only or the ladder's risk stage is not the
-            positive-aware one.
+        ValueError: If the window rule is unknown, the arm is not telemetry-only under the M1
+            rule, or the ladder's risk stage is not the positive-aware one.
     """
     mixture = load_config(paths.repo_root / mixture_config, JointMixtureConfig)
     ladder = load_config(paths.repo_root / ladder_config, LadderConfig)
     ladder_model = load_config(paths.repo_root / ladder.model_config_path, LadderModel)
     arm = next(a for a in mixture.arms if a.name == arm_name)
-    if arm.mixture != {"tel": 1.0}:
+    if window_rule not in ("m1", TAIL_ANCHORED):
+        raise ValueError(f"unknown probe window rule {window_rule!r}")
+    if window_rule == "m1" and arm.mixture != {"tel": 1.0}:
         raise ValueError(f"{arm_name} is not a telemetry-only arm: {arm.mixture}")
     if not isinstance(ladder.risk, PositiveAwareRiskStage):
         raise ValueError(f"{ladder_config} is not the positive-aware risk stage")
@@ -435,6 +574,19 @@ def open_probe_inputs(
             sources=[*mixture.training_sources, held_out_source],
         ),
     }
+    streams = None
+    if window_rule == TAIL_ANCHORED:
+        streams = tel_status_streams(
+            paths,
+            joint_root,
+            telemetry,
+            arm.status_convention,
+            spec.context,
+            status_rows,
+            mixture.status_sources,
+        )
+        splits["selection"] = frame_split(splits["selection"], streams)
+        splits["test"] = frame_split(splits["test"], streams)
     return ProbeInputs(
         spec=spec,
         ladder=ladder,
@@ -444,6 +596,8 @@ def open_probe_inputs(
         mixture=mixture,
         splits=splits,
         device=device,
+        window_rule=window_rule,
+        tel_status=streams,
     )
 
 
@@ -520,7 +674,7 @@ def pretrain_tel(
     Returns:
         The pretraining record.
     """
-    spec, device = inputs.spec, inputs.device
+    spec = inputs.spec
     seed_everything(seed)
     torch.manual_seed(seed)
     train_windows = tel_windows(
@@ -531,6 +685,142 @@ def pretrain_tel(
         spec.context,
         inputs.mixture.window_stride_steps,
     )
+    budget = config.budget(spec.context)
+    return _pretrain(
+        seed, config, inputs, out_dir, log_dir, train_windows.forever(seed, budget.batch_windows)
+    )
+
+
+def mixture_pools(inputs: ProbeInputs, arm: Arm) -> dict[StreamName, StreamWindows]:
+    """Every stream an arm draws from, as fixed-length pretraining windows of its train split.
+
+    Args:
+        inputs: The opened shards and rung.
+        arm: The arm.
+
+    Returns:
+        Per stream with a positive share, its windows (:mod:`faultline.training.joint_windows`).
+    """
+    context, stride = inputs.spec.context, inputs.mixture.window_stride_steps
+    sources = inputs.mixture.training_sources
+    root = inputs.joint_root
+    pools: dict[StreamName, StreamWindows] = {}
+    if arm.share("tel"):
+        tel = tel_windows(root, inputs.telemetry, "train", sources, context, stride)
+        pools["tel"] = StreamWindows(
+            streams=dict(tel.streams),
+            keys=tel.keys,
+            index=tel.index,
+            context=context,
+            train_tokens=sum(int(s.size) for s in tel.streams.values()),
+        )
+    if arm.share("txt"):
+        files = sorted((root / STREAM_DIRS["txt"]).glob("*__train.bin"))
+        streams = {f.name[: -len(".bin")]: np.memmap(f, dtype=np.uint16, mode="r") for f in files}
+        keys = list(streams)
+        index = np.concatenate(
+            [
+                np.stack([np.full(t.size, i), t], axis=1)
+                for i, t in enumerate(tile_starts(int(streams[k].size), context) for k in keys)
+            ]
+        ).astype(np.int64)
+        pools["txt"] = StreamWindows(
+            streams=dict(streams),
+            keys=keys,
+            index=index,
+            context=context,
+            train_tokens=sum(int(s.size) for s in streams.values()),
+        )
+    if arm.share("tel+status"):
+        directory = root / f"{STREAM_DIRS['tel+status']}_{arm.status_convention}"
+        keys = [f"{source}__train" for source in sources]
+        streams = {k: np.memmap(directory / f"{k}.bin", dtype=np.uint16, mode="r") for k in keys}
+        rows = []
+        for i, key in enumerate(keys):
+            offsets = step_offsets(streams[key])
+            runs = pq.read_table(directory / f"{key}.runs.parquet").to_pandas()
+            starts = np.concatenate(
+                [
+                    run_step_starts(offsets, int(first), int(tokens), stride, context)
+                    for first, tokens in zip(runs["first_token"], runs["tokens"], strict=True)
+                ]
+            )
+            rows.append(np.stack([np.full(starts.size, i), starts], axis=1))
+        pools["tel+status"] = StreamWindows(
+            streams=dict(streams),
+            keys=keys,
+            index=np.concatenate(rows).astype(np.int64),
+            context=context,
+            train_tokens=sum(int(s.size) for s in streams.values()),
+        )
+    return pools
+
+
+def joint_sampler(
+    seed: int, config: TelPretraining, inputs: ProbeInputs, arm_name: str
+) -> MixtureSampler:
+    """The mixture sampler of one arm, refusing a budget under which any stream repeats."""
+    arm = next(a for a in inputs.mixture.arms if a.name == arm_name)
+    budget = config.budget(inputs.spec.context)
+    sampler = MixtureSampler(
+        pools=mixture_pools(inputs, arm),
+        shares={s: arm.share(s) for s in STREAMS if arm.share(s)},
+        seed=seed,
+        batch=budget.batch_windows,
+    )
+    sampler.refuse_repeats(budget.windows)
+    return sampler
+
+
+def pretrain_joint(
+    seed: int, config: TelPretraining, inputs: ProbeInputs, out_dir: Path, log_dir: Path
+) -> tuple[PretrainRecord, dict[str, dict[str, float]]]:
+    """Pretrain a mixture arm exactly as ``pretrain_tel``, windows drawn from its streams.
+
+    The seed, the initialisation, the optimiser, the schedule, the budget and the validation
+    measurement (``tel`` validation windows) are ``pretrain_tel``'s. Only where the training
+    windows come from differs.
+
+    Args:
+        seed: The seed.
+        config: The rung, arm and budget.
+        inputs: The opened shards, rung and evaluation windows.
+        out_dir: Where the checkpoint is written.
+        log_dir: Where the per-step training log is written.
+
+    Returns:
+        The pretraining record, and per stream the windows and tokens drawn and the passes.
+    """
+    seed_everything(seed)
+    torch.manual_seed(seed)
+    sampler = joint_sampler(seed, config, inputs, config.arm)
+    record = _pretrain(seed, config, inputs, out_dir, log_dir, sampler.forever())
+    context = inputs.spec.context
+    streams: dict[str, dict[str, float]] = {
+        stream: {
+            "windows": count,
+            "tokens": count * context,
+            "share": count / max(1, sum(sampler.drawn.values())),
+            "windows_per_pass": len(sampler.pools[stream]),
+            "passes_by_windows": count / len(sampler.pools[stream]),
+            "train_tokens": sampler.pools[stream].train_tokens,
+            "passes_by_tokens": count * context / sampler.pools[stream].train_tokens,
+        }
+        for stream, count in sampler.drawn.items()
+    }
+    return record, streams
+
+
+def _pretrain(
+    seed: int,
+    config: TelPretraining,
+    inputs: ProbeInputs,
+    out_dir: Path,
+    log_dir: Path,
+    batches: Iterator[Batch],
+) -> PretrainRecord:
+    """The pretraining both arms share, from the decoder's construction on."""
+    spec, device = inputs.spec, inputs.device
     budget = config.budget(spec.context)
     decoder = TelemetryDecoder(spec).to(device)
 
@@ -545,7 +835,7 @@ def pretrain_tel(
     started = time.perf_counter()
     lm = train(
         module=decoder,
-        batches=train_windows.forever(seed, budget.batch_windows),
+        batches=batches,
         budget=budget,
         optimiser=inputs.ladder.optimiser,
         device=device,
@@ -588,6 +878,7 @@ def probe_and_score(
     measure_steps: Sequence[int] | None = None,
     measure_initial: bool = False,
     save_final_to: Path | None = None,
+    score_test: bool = True,
 ) -> ProbeResult:
     """Train the frozen probe on a backbone and score every test source.
 
@@ -615,6 +906,8 @@ def probe_and_score(
             spacing (ADR-0024 G3).
         measure_initial: Also measure the untrained head, as a reference that is never selected.
         save_final_to: Where to write the last step's whole state as well, when given.
+        score_test: Score the test split with the selected state. Off, no test window is read
+            and the result carries empty test arrays (F6-2 trains probes; F6-3 scores them).
 
     Returns:
         The probe's result, with every test window's logit.
@@ -622,7 +915,7 @@ def probe_and_score(
     assert isinstance(inputs.ladder.risk, PositiveAwareRiskStage)
     stage = inputs.ladder.risk
     optimiser: Optimiser = inputs.ladder.optimiser
-    telemetry, device, splits = inputs.telemetry, inputs.device, inputs.splits
+    device, splits = inputs.device, inputs.splits
     seed_everything(seed)
     torch.manual_seed(seed)
     probe_budget = stage.budget("probe")
@@ -639,11 +932,12 @@ def probe_and_score(
         frozen=True,
         unfrozen_blocks=unfrozen_blocks,
         backbone_lr_scale=stage.budget("finetune").learning_rate / probe_budget.learning_rate,
+        pad_id=inputs.pad_id,
     ).to(device)
     if checkpoint is not None:
         backbone = read_checkpoint(checkpoint)["state"]
         model.backbone.load_state_dict({k: v.to(device) for k, v in backbone.items()})
-    sampler = balanced_training_sampler(telemetry, inputs.ladder, stage, probe_budget.batch_windows)
+    sampler = probe_training_sampler(inputs, stage, probe_budget.batch_windows)
     train_rate = sampler.positives_per_batch / probe_budget.batch_windows
     offset = prior_correction(train_rate, sampler.natural_rate)
     autocast_on = optimiser.precision == "bf16"
@@ -668,7 +962,7 @@ def probe_and_score(
         loss_fn=probe_loss,
         measure=probe_measure,
         higher_is_better=True,
-        tokens_per_window=telemetry.context_tokens,
+        tokens_per_window=inputs.window_tokens,
         label=label,
         measure_steps=measure_steps,
         measure_initial=measure_initial,
@@ -685,6 +979,8 @@ def probe_and_score(
                 "pooling": pooling,
                 "head_layers": head_layers,
                 "unfrozen_blocks": unfrozen_blocks,
+                "window_rule": inputs.window_rule,
+                "pad_id": inputs.pad_id,
                 "seed": seed,
                 "backbone": None if checkpoint is None else checkpoint.as_posix(),
                 "selected": (probe.best.step, probe.best.value),
@@ -705,6 +1001,8 @@ def probe_and_score(
                 "pooling": pooling,
                 "head_layers": head_layers,
                 "unfrozen_blocks": unfrozen_blocks,
+                "window_rule": inputs.window_rule,
+                "pad_id": inputs.pad_id,
                 "seed": seed,
                 "backbone": None if checkpoint is None else checkpoint.as_posix(),
                 "selected": (probe.best.step, probe.best.value),
@@ -715,6 +1013,23 @@ def probe_and_score(
                 "state": probe.final_state,
             },
             save_final_to,
+        )
+
+    if not score_test:
+        empty = np.zeros(0, dtype=np.float32)
+        return ProbeResult(
+            probe_positives_seen=sampler.positives_seen,
+            probe_seconds=probe_seconds,
+            probe_selected=(probe.best.step, probe.best.value),
+            prior_offset=offset,
+            natural_rate=sampler.natural_rate,
+            test=[],
+            held_out_calibration={},
+            step_log=probe_log,
+            logits=empty,
+            labels=empty,
+            which=np.zeros(0, dtype=np.int64),
+            probe_history=[(m.step, m.value) for m in probe.history],
         )
 
     # -- test, the held-out site included ----------------------------------------------

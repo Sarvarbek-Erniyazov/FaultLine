@@ -1396,6 +1396,80 @@ def model_care_attribution(
 
 
 @model_app.command(
+    "h1-controls",
+    help="ADR-0025 §4 controls (i) and (ii) on the CPU: the tail-anchored tel+status window "
+    "index, both bag-of-tokens controls fitted on R0 and scored under R0 and R2 against the tel "
+    "bag-of-tokens, and the joint mixture's draw at the registered budget. Reported, no "
+    "verdict. Resume-safe.",
+)
+def model_h1_controls(
+    config: ConfigOption = Path("configs/train/bag_of_tokens_v1.yaml"),
+) -> None:
+    """Run the H1 controls and write their report.
+
+    Args:
+        config: The controls' configuration.
+    """
+    from faultline.evaluation.h1_controls import run_h1_controls
+
+    paths = ProjectPaths.resolve()
+    report, record = run_h1_controls(paths, paths.repo_root / config)
+    typer.echo(f"wrote {report} and {record}")
+
+
+@model_app.command(
+    "h1-arms",
+    help="ADR-0025 F6-2 (GPU): per seed, pretrain the joint arm, probe it on tail-anchored R0 "
+    "windows under the G3 cadence, and probe tel_only's backbone on the same windows (control "
+    "(iii)). Scores nothing. Resume-safe per artefact. --preflight checks and reports only.",
+)
+def model_h1_arms(
+    config: ConfigOption = Path("configs/train/h1_arms_v0.yaml"),
+    gate: Annotated[
+        Path, typer.Option("--gate", help="The H1 gate configuration (tel_only's runs).")
+    ] = Path("configs/eval/h1_gate_v0.yaml"),
+    seed: Annotated[
+        list[int] | None, typer.Option("--seed", help="A seed to run; repeat for several.")
+    ] = None,
+    device: Annotated[str | None, typer.Option("--device", help="Torch device.")] = None,
+    check: Annotated[
+        bool, typer.Option("--preflight", help="Check inputs and report each seed's stage.")
+    ] = False,
+) -> None:
+    """Run F6-2, or check that it can run.
+
+    Args:
+        config: The F6-2 runner configuration.
+        gate: The H1 gate configuration.
+        seed: Seeds to run; every configured seed when omitted.
+        device: Torch device; chosen automatically when omitted.
+        check: Only check the inputs and print each seed's stage.
+
+    Raises:
+        typer.Exit: With code 1 when the pre-flight finds a problem.
+    """
+    from faultline.evaluation.h1_arms import arms_layout, preflight, run_h1_arms
+
+    paths = ProjectPaths.resolve()
+    if check:
+        layout = arms_layout(paths, paths.repo_root / config, paths.repo_root / gate)
+        problems, status = preflight(paths, layout)
+        typer.echo(f"output: {layout.out_dir.relative_to(paths.repo_root).as_posix()}")
+        for line in status:
+            typer.echo(line)
+        for problem in problems:
+            typer.echo(f"PROBLEM: {problem}")
+        typer.echo("PREFLIGHT OK" if not problems else "PREFLIGHT FAILED")
+        if problems:
+            raise typer.Exit(code=1)
+        return
+    status_file = run_h1_arms(
+        paths, paths.repo_root / config, paths.repo_root / gate, seed or None, device
+    )
+    typer.echo(f"wrote {status_file}")
+
+
+@model_app.command(
     "mixture-shards",
     help="Write the M3 mixture's txt and tel+status shards and every stream's run index, "
     "and report per-stream token counts and per-arm token budgets. Trains nothing.",

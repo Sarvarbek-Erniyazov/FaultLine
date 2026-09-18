@@ -18,10 +18,11 @@ import time
 from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 import torch
 import torch.nn.functional as F
+from pydantic import Field
 from torch import Tensor, nn
 
 from faultline.config import StrictModel, config_hash, load_config
@@ -53,7 +54,9 @@ from faultline.model.risk import prior_correction
 from faultline.paths import ProjectPaths
 from faultline.runs import git_sha
 from faultline.seed import seed_everything
+from faultline.tokenizers.layout import TEXT_OFFSET
 from faultline.training.config import PositiveAwareRiskStage
+from faultline.training.joint_windows import SEP_ID, TXT_CLOSE_ID, TXT_OPEN_ID
 from faultline.training.loop import Measurement, risk_logits, train, write_step_log
 
 logger = get_logger(__name__)
@@ -76,31 +79,105 @@ class BagOfTokensConfig(StrictModel):
     device: str
 
 
+class BagControl(StrictModel):
+    """One ADR-0025 §4 bag-of-tokens control.
+
+    Attributes:
+        name: The control's name in reports and file names.
+        mode: What it counts.
+    """
+
+    name: str
+    mode: BagMode
+
+
+class BagOfTokensV1Config(StrictModel):
+    """Top level of ``configs/train/bag_of_tokens_v1.yaml``: ADR-0025 §4 controls (i) and (ii).
+
+    v0's recipe (the probe stage's balanced sampler, budget, rate, schedule and selection) with the
+    vocabulary and the window reader as parameters. v0 and its schema are unchanged.
+
+    Attributes:
+        version: Version of this configuration.
+        registered_in: ADR-0025's registration commit.
+        runner_config: The F6-2 runner: its mixture, arm, window rule and window counts.
+        h1_gate_config: The H1 rule: its stride, bootstrap and variants.
+        reference_config: v0's configuration, whose stride-12 scores are the ``tel`` comparator.
+        seed: Seeds the sampler and the run, as v0's.
+        device: Where it trains: the CPU.
+        vocab_size: Ids counted: the joint vocabulary, checked against the shards' manifest.
+        controls: The controls, each fitted once.
+        status_rows: Window variants every control is scored on; ``all`` (R0) and ``no_stop``
+            (R2). A control is fitted on R0 windows only.
+    """
+
+    version: int = 1
+    registered_in: str
+    runner_config: str
+    h1_gate_config: str
+    reference_config: str
+    seed: int
+    device: str
+    vocab_size: int = Field(gt=0)
+    controls: list[BagControl] = Field(min_length=1)
+    status_rows: list[Literal["all", "no_stop"]] = Field(min_length=1)
+
+
+#: What a bag of tokens counts: every id, or the status region only (ADR-0025 §4 (ii)).
+BagMode = Literal["all", "status_only"]
+
+
 class BagOfTokens(nn.Module):
     """Logistic regression on a window's token histogram, counts per step.
 
+    ADR-0024 §6's comparator is ``BagOfTokens(1184, 144)``: every id of a fixed-length M1 window,
+    divided by its 144 steps. ADR-0025 §4's controls read padded tail-anchored windows over the
+    33,952-id joint vocabulary: ``<pad>`` is not counted, and the divisor is each window's own
+    retained steps, its ``<sep>`` count (at least 1; a head-cut window may hold none).
+
     Attributes:
         vocab_size: Token ids counted.
-        steps: Steps in a window; the counts are divided by it, so each channel's bins sum to 1.
+        steps: Steps in a window, or ``None`` to divide each window by its own ``<sep>`` count.
+        mode: ``all``, or ``status_only``: ids at or above the text offset plus ``<txt>`` and
+            ``</txt>``. An empty status region is a zero histogram.
+        pad_id: The padding id, never counted; ``None`` for windows that are never padded.
         linear: The one layer, ``vocab_size`` to 1, initialised to zero.
     """
 
-    def __init__(self, vocab_size: int, steps: int) -> None:
+    def __init__(
+        self,
+        vocab_size: int,
+        steps: int | None,
+        mode: BagMode = "all",
+        pad_id: int | None = None,
+    ) -> None:
         """Build the classifier.
 
         Args:
             vocab_size: Token ids counted.
-            steps: Steps in a window.
+            steps: Steps in a window, or ``None`` for each window's own ``<sep>`` count.
+            mode: ``all`` or ``status_only``.
+            pad_id: The padding id, or ``None``.
         """
         super().__init__()
         self.vocab_size = vocab_size
         self.steps = steps
+        self.mode = mode
+        self.pad_id = pad_id
         self.linear = nn.Linear(vocab_size, 1)
         nn.init.zeros_(self.linear.weight)
         nn.init.zeros_(self.linear.bias)
+        # Not saved with the state: v0's checkpoint holds the linear layer only, and so does v1's.
+        keep = torch.ones(vocab_size)
+        if mode == "status_only":
+            keep[:TEXT_OFFSET] = 0.0
+            keep[[TXT_OPEN_ID, TXT_CLOSE_ID]] = 1.0
+        if pad_id is not None:
+            keep[pad_id] = 0.0
+        self.register_buffer("keep", keep, persistent=False)
 
     def features(self, tokens: Tensor) -> Tensor:
-        """Per window, each token id's count divided by the window's steps.
+        """Per window, each counted token id's count divided by the window's steps.
 
         Args:
             tokens: Token identifiers of shape ``(batch, time)``.
@@ -112,7 +189,14 @@ class BagOfTokens(nn.Module):
             tokens.shape[0], self.vocab_size, device=tokens.device, dtype=torch.float32
         )
         counts.scatter_add_(1, tokens.long(), torch.ones_like(tokens, dtype=torch.float32))
-        return counts / self.steps
+        if self.steps is not None and self.mode == "all" and self.pad_id is None:
+            return counts / self.steps
+        steps = (
+            counts[:, SEP_ID : SEP_ID + 1].clamp(min=1.0)
+            if self.steps is None
+            else torch.full_like(counts[:, :1], float(self.steps))
+        )
+        return counts * cast(Tensor, self.keep) / steps
 
     def forward(self, tokens: Tensor) -> Tensor:
         """One risk logit per window, of shape ``(batch,)``."""

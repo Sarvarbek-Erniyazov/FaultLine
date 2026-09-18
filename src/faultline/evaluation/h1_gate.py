@@ -5,10 +5,13 @@ same-seed paired AUPRC difference between the ``joint`` arm of ``configs/train/j
 the three existing ``tel_only`` seeds, on the pooled Kelmarsh + Penmanshiel stride-12 test split.
 The joint probe reads ADR-0025 §2's ``tail_anchored_2048`` window over every status row (R0).
 
-**This module holds the configuration only.** It was written in the registration commit, before
-any code that builds, trains or scores the joint arm existed. That code is added only once the user
-has authorised F6-1b. It reads ``configs/train/h1_arms_v*.yaml`` (the F6-2 runner) and
-``configs/eval/h1_gate_v*.yaml`` (the rule by value).
+**This module holds the configuration only.** It was written in the registration commit
+(``3e29202``), before any code that builds, trains or scores the joint arm existed. That code
+arrived in F6-1b: the windows and the mixture sampler in :mod:`faultline.training.joint_windows`,
+the controls in :mod:`faultline.evaluation.h1_controls` and the F6-2 runner in
+:mod:`faultline.evaluation.h1_arms`. It reads ``configs/train/h1_arms_v*.yaml`` (the F6-2 runner)
+and ``configs/eval/h1_gate_v*.yaml`` (the rule by value). ``H1ArmsConfig.budget`` is the gate
+run's rounding (``GateCheckConfig.budget``), so the joint arm pretrains on the same 763 steps.
 """
 
 from __future__ import annotations
@@ -19,6 +22,7 @@ from pydantic import Field
 
 from faultline.config import StrictModel
 from faultline.evaluation.gate_check import BootstrapConfig
+from faultline.training.config import Budget
 
 
 class OptimiserConfig(StrictModel):
@@ -131,6 +135,23 @@ class H1ArmsConfig(StrictModel):
     optimiser: OptimiserConfig
     probe: JointProbeConfig
     window_index: WindowIndexCounts
+
+    @property
+    def batch_windows(self) -> int:
+        """Windows per forward pass while pretraining."""
+        return self.optimiser.batch_windows
+
+    def budget(self, context_tokens: int) -> Budget:
+        """The pretraining window budget: the token target, rounded up to a whole step."""
+        per_step = self.optimiser.batch_windows * self.optimiser.accumulate
+        steps = -(-self.tokens // (per_step * context_tokens))
+        return Budget(
+            windows=steps * per_step,
+            batch_windows=self.optimiser.batch_windows,
+            accumulate=self.optimiser.accumulate,
+            learning_rate=self.optimiser.learning_rate,
+            evaluations=self.optimiser.evaluations,
+        )
 
 
 class Comparison(StrictModel):

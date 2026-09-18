@@ -245,6 +245,84 @@ class _Writer:
             pq.write_table(pa.Table.from_pylist(rows), self.root / f"{key}.runs.parquet")
 
 
+@dataclass
+class StreamMessages:
+    """Every written message of one ``tel+status`` shard, in the order the builder wrote it.
+
+    Attributes:
+        steps: Per message, the step (within the shard) it follows.
+        columns: Per requested status-stream column, its value per message.
+    """
+
+    steps: np.ndarray
+    columns: dict[str, np.ndarray]
+
+
+def messages_in_stream_order(
+    paths: ProjectPaths, source: str, columns: list[str]
+) -> dict[str, StreamMessages]:
+    """Re-derive, per shard key of one source, the messages ``build_mixture_shards`` wrote.
+
+    The walk is the builder's: the same final turbine-years in the same order, the same runs,
+    the same attachment and the same order within a step. Only the columns it needs are read.
+    ADR-0025's R2 reads ``provider_status`` through it. The caller checks the result against
+    the stream (:func:`faultline.training.joint_windows.step_message_counts`) before using it.
+
+    Args:
+        paths: Resolved project paths.
+        source: A status source.
+        columns: Status-stream columns to carry per message.
+
+    Returns:
+        Per ``<source>__<split>`` key, the messages in stream order.
+    """
+    path = paths.source_dir("cleaned", "telemetry", source) / "labels" / "status_stream.parquet"
+    stream = pd.read_parquet(path, columns=["turbine_id", "start_utc", "message", *columns])
+    stream = stream.dropna(subset=["message"]).sort_values(
+        ["turbine_id", "start_utc"], kind="stable"
+    )
+    by_turbine = dict(tuple(stream.groupby("turbine_id", sort=False)))
+    steps: dict[str, list[np.ndarray]] = {}
+    values: dict[str, dict[str, list[np.ndarray]]] = {}
+    position: Counter[str] = Counter()
+    wanted = ["timestamp_utc", "turbine_id", "split", "segment_id"]
+    for file in parquet_files(stage_source_dir(paths, "final", source)):
+        if "split" not in pq.read_schema(file).names:
+            continue
+        frame = pd.read_parquet(file, columns=wanted)
+        if frame.empty:
+            continue
+        frame = frame.sort_values("timestamp_utc", kind="stable").reset_index(drop=True)
+        turbine = str(frame["turbine_id"].iloc[0])
+        messages = by_turbine.get(turbine)
+        attached = (
+            attach_steps(messages["start_utc"], nanoseconds(frame["timestamp_utc"]))
+            if messages is not None
+            else np.full(0, -1, dtype=np.int64)
+        )
+        for split, _segment, rows in contiguous_runs(frame):
+            key = f"{source}__{split}"
+            chosen = np.flatnonzero((attached >= rows[0]) & (attached <= rows[-1]))
+            order = chosen[np.argsort(attached[chosen], kind="stable")]
+            steps.setdefault(key, []).append(position[key] + attached[order] - rows[0])
+            for column in columns:
+                assert messages is not None or not order.size
+                cells = (
+                    messages[column].to_numpy()[order]
+                    if messages is not None
+                    else np.zeros(0, dtype=object)
+                )
+                values.setdefault(key, {}).setdefault(column, []).append(cells)
+            position[key] += int(rows.size)
+    return {
+        key: StreamMessages(
+            steps=np.concatenate(parts).astype(np.int64),
+            columns={c: np.concatenate(values[key][c]) for c in columns},
+        )
+        for key, parts in steps.items()
+    }
+
+
 def build_mixture_shards(paths: ProjectPaths, config_path: Path) -> tuple[Path, Path]:
     """Write the ``txt`` and ``tel+status`` shards and every stream's run index, and report.
 

@@ -1,0 +1,41 @@
+# The bag-of-tokens controls, version 1: ADR-0025 §4 controls (i) and (ii). Decision record:
+# docs/DECISIONS.md, ADR-0025, registered in 3e29202 BEFORE this file, the code that reads it, or any
+# run of it existed. REPORTED CONTROLS: they decide nothing, and no H1 verdict is read from them.
+#
+# WHAT CHANGES FROM v0 (bag_of_tokens_v0.yaml, untouched): the vocabulary and the window reader are
+# parameters. v0 counted the 1,184 M1 ids of a 1,872-token M1 window and divided by 144 steps. Here
+# the windows are ADR-0025 §2's tail-anchored tel+status windows (h1_arms_v0.yaml, probe), padded to
+# 2,048 with <pad>, which is not counted. Each window is divided by its own retained steps (its
+# <sep> count, at least 1). The recipe is v0's: the probe stage of the ladder the runner names
+# (balanced sampler, 16,000 positives, rate 2e-3, schedule, clipping, selection on the probes'
+# selection split, best measurement selected, prior correction), seed 1, CPU.
+#
+#   tel_status   (i)  every id of the joint vocabulary: does status carry order-blind signal?
+#   status_only  (ii) ids >= 1,184 plus <txt>/</txt>: the text-only baseline. An empty status region
+#                     is a zero histogram, so presence is read by the bias alone.
+#
+# Each control is fitted once, on R0 training windows. It is scored on the stride-12 test windows
+# under R0 and under R2 (every provider Stop row removed; the fitted classifier is not refit),
+# and each score is paired against v0's stride-12 tel scores on the identical rows.
+
+version: 1
+registered_in: "3e29202" # ADR-0025
+
+runner_config: "configs/train/h1_arms_v0.yaml"
+h1_gate_config: "configs/eval/h1_gate_v0.yaml"
+reference_config: "configs/train/bag_of_tokens_v0.yaml"
+
+seed: 1 # v0's
+device: "cpu" # v0's, and ADR-0025 §7: the controls cost no GPU
+
+# The joint vocabulary: joint_v1 manifest vocabulary_size (layout total size). The run refuses a
+# manifest that disagrees.
+vocab_size: 33952
+
+controls:
+  - name: tel_status
+    mode: all
+  - name: status_only
+    mode: status_only
+
+status_rows: ["all", "no_stop"]

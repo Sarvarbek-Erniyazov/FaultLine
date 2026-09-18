@@ -1,0 +1,48 @@
+# The M3 joint mixture, version 1: the F6 arm set. Decision record: docs/DECISIONS.md, ADR-0025,
+# written in the same commit as this file, BEFORE any code reads it, any shard of it is built or
+# any arm of it is pretrained. Nothing here has been run.
+#
+# WHY A NEW VERSION. joint_v0.yaml is frozen: every M3 run read it (gate_check_v0.yaml,
+# mixture_config) and open_probe_inputs derives its shard directory from it. A config read by a run
+# is never edited, so a changed arm set is a new version (F6-R recon, Q3b). Any change to this file
+# changes its config_hash, and open_probe_inputs names the shard directory joint_v1_<hash>. THAT
+# DIRECTORY DOES NOT EXIST until `faultline model mixture-shards` is re-run for this file (CPU).
+#
+# WHAT CHANGED FROM v0. Only the arm list:
+#   - joint_status_raw is NOT carried into v1. The ADR-0017 convention ablation is deferred to F7,
+#     conditional on H1 not being refuted by ADR-0025 (ADR-0025 §1).
+#   - There is no txt_only arm. It is neither pretrained nor probed (ADR-0025 §1: the txt stream
+#     holds no wind strings and would run 4.98 passes; a status-only input is empty for 39,215 of
+#     137,025 H1 windows; presence alone splits the base rate 4.32% / 2.77%). The text-only
+#     baseline is ADR-0025 §4 control (ii), a CPU bag-of-tokens.
+# Every other value is joint_v0's, with its reasons (see joint_v0.yaml's header): the three
+# streams, the sources, the 2,048-token context, the 6-step stride and the 50,000,000-token budget
+# under which no stream repeats (txt at 20% = 0.996 passes over 10,043,874 train tokens).
+
+version: 1
+telemetry_tokenizer_config: "configs/tokenizer/quantile_bins_v2.yaml"
+text_shards_config: "configs/tokenizer/text_shards_v1.yaml"
+
+# As joint_v0: Hill of Towie's described messages are written (test split only); CARE has none.
+status_sources: [kelmarsh, penmanshiel, hill_of_towie]
+training_sources: [kelmarsh, penmanshiel]
+
+context_tokens: 2048
+window_stride_steps: 6
+
+# Rounded up to whole optimiser steps by the runner: 763 x 32 x 2,048 = 50,003,968 (ADR-0021
+# erratum; configs/train/h1_arms_v0.yaml).
+tokens_per_arm: 50000000
+
+arms:
+  # joint_v0's default arm, unchanged: tel+status is the largest share because it is the only
+  # paired signal; txt is sized to one pass; tel takes the remainder. Strings normalized (H3').
+  - name: joint
+    role: default
+    mixture: {tel: 0.30, txt: 0.20, "tel+status": 0.50}
+    status_convention: normalized
+  # The same tokens, telemetry only. Already pretrained on three seeds under joint_v0 (ADR-0024
+  # F3); its mixture is identical here, and it is not re-run (ADR-0025 §1).
+  - name: tel_only
+    role: control
+    mixture: {tel: 1.0}

@@ -1,0 +1,70 @@
+# The H1 arm runs, version 0: the F6-2 runner. Decision record: docs/DECISIONS.md, ADR-0025,
+# written in the same commit as this file, BEFORE any code reads it or any run of it exists.
+# Nothing here has been run, and ADR-0025 §8 does not authorise running it.
+#
+# WHAT IT RUNS. The joint arm of joint_v1.yaml, pretrained on three seeds exactly as the gate run
+# pretrained tel_only seed 1 (gate_check_v0.yaml: S2, 763 steps, 50,003,968 tokens), then probed
+# under the protocol in force: §a (ADR-0024 §3), G3's cadence (probe_cadence_v0.yaml), read at the
+# final step (ADR-0022 addendum outcome, axis_gate_v0.yaml checkpoints.gating). The probe reads the
+# ADR-0025 §2 window, "tail_anchored_2048", over every status row (R0).
+#
+# tests/evaluation/test_h1_gate.py checks every restated value below against the file it comes from.
+
+version: 0
+
+# The mixture (arm list) and the ladder (the S2 spec and the probe stage's positive-aware recipe:
+# balanced sampler, 16,000 positives, 1,000 steps, peak 2e-3, prior correction).
+mixture_config: "configs/train/joint_v1.yaml"
+ladder_config: "configs/train/telemetry_v1.yaml"
+# The gate run, whose pretraining protocol and bootstrap every arm shares.
+gate_config: "configs/train/gate_check_v0.yaml"
+
+arm: joint
+rung: S2 # gate_check_v0.yaml, rung
+seeds: [1, 2, 3] # tel_only's three seeds (gate_check_v0 seed 1; seed_replication_v0 new_seeds 2, 3)
+
+# gate_check_v0.yaml's tokens, rounded UP to a whole optimiser step by the runner:
+# 763 steps x (4 x 8) windows x 2,048 tokens = 50,003,968 (ADR-0021 erratum; F6-R recon Q3a).
+tokens: 50000000
+
+# gate_check_v0.yaml, value for value. The test refuses any difference.
+optimiser:
+  batch_windows: 4 # gate_check_v0.yaml, batch_windows
+  accumulate: 8 # gate_check_v0.yaml, accumulate
+  learning_rate: 0.0006 # gate_check_v0.yaml, learning_rate (peak; the ladder's schedule)
+  evaluations: 6 # gate_check_v0.yaml, evaluations
+  selection_windows: 500 # gate_check_v0.yaml, selection_windows (per source, pretraining read)
+
+probe:
+  # §a: final position, one hidden layer, frozen backbone (ADR-0024 §3; paired_control_v0.yaml).
+  design: "final_position"
+  # G3: step 0, every 25 through 300, then every 100; 20 measurements in 1,000 steps.
+  cadence_config: "configs/train/probe_cadence_v0.yaml"
+  # Fixed-final-step selection (ADR-0022 addendum outcome, 267147d; axis_gate_v0.yaml).
+  checkpoint: "final_step"
+  label: "narrow_within_24h" # axis_gate_v0.yaml, label
+  # ADR-0025 §2, by name. At most the M1 window's 144 steps, whole leading steps dropped until
+  # <= 2,048 tokens, right-padded with <pad>, read at the last real index.
+  window_rule: "tail_anchored_2048"
+  context_tokens: 2048 # joint_v1.yaml, context_tokens
+  # ADR-0025 §3: every status row (R0). R2 is a reported re-scoring, not a run of this file.
+  status_rows: "all"
+  # The probes' selection split, drawn as F3 drew it (ADR-0024 §5):
+  # build_split(telemetry, "val", 3000, stride 1, seed 20260912).
+  selection:
+    shard_keys: ["kelmarsh__val", "penmanshiel__val"]
+    windows_per_source: 3000
+    stride: 1
+    seed: 20260912
+
+# ADR-0025 §2: the tel+status window index must reproduce M1's exactly, asserted by test before any
+# probe is trained. Counts from the F6-R recon (preamble, Q1c) and axis_gate_v0.yaml.
+window_index:
+  test_shard_keys: ["kelmarsh__test", "penmanshiel__test"]
+  test_stride: 12
+  test_windows: 137025 # 77,203 + 59,822
+  test_positives: 5312 # 2,841 + 2,471
+  train_shard_keys: ["kelmarsh__train", "penmanshiel__train"]
+  train_stride: 6 # telemetry_v1.yaml train_stride
+  train_windows: 749387 # 247,463 + 501,924
+  train_positives: 16524 # 3,907 + 12,617

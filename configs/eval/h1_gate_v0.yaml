@@ -1,0 +1,70 @@
+# The H1 gate, version 0. Decision record: docs/DECISIONS.md, ADR-0025, written in the same commit
+# as this file, BEFORE any code reads it and before any joint arm exists. That commit's hash is
+# recorded below and inside ADR-0025 by the commit after it.
+#
+# THE RULE (ADR-0025 §5). Same-seed paired Delta = AUPRC(joint) - AUPRC(tel_only), pooled Kelmarsh
+# + Penmanshiel stride-12 forward-in-time test split, paired block bootstrap as ADR-0024, final-step
+# probes, R0 windows. Smallest effect of interest 0.005 AUPRC. SUPPORTED if all three paired lower
+# bounds exceed zero and the median Delta exceeds 0.005; REFUTED if all three paired upper bounds
+# are below 0.005; otherwise INCONCLUSIVE at this budget. Read on R0 only. Any outcome the clauses
+# do not name is reported as measured; no clause is added afterwards.
+#
+# tests/evaluation/test_h1_gate.py checks every restated value below against the file it comes from.
+
+version: 0
+
+# The registration commit of ADR-0025. "pending" in that commit; the commit after it writes the
+# hash here and in ADR-0025, and changes nothing else.
+registered_in: "pending"
+
+axis_config: "configs/eval/axis_gate_v0.yaml" # the temporal axis: shards, label, counts
+runner_config: "configs/train/h1_arms_v0.yaml" # the joint arm's runs
+reference_config: "configs/train/seed_replication_v0.yaml" # tel_only's saved final-step scores
+
+label: "narrow_within_24h"
+axis: "temporal" # axis_gate_v0.yaml axes.temporal: in-distribution, forward in time, not shift
+stride: 12
+windows: 137025
+positives: 5312
+
+# ADR-0021's interval as ADR-0024 pairs it, unchanged (configs/train/gate_check_v0.yaml, bootstrap).
+bootstrap:
+  block_steps: 288 # two-day blocks: a window's end step // 288 within its shard
+  replicates: 10000
+  seed: 20260916
+  confidence: 0.95
+  max_discarded_share: 0.01 # above this, a comparison is untrusted and counts toward no clause
+
+comparison:
+  arm: "joint"
+  reference: "tel_only"
+  pairing: "same_seed" # seed k with seed k, on identical (turbine, year, end step) rows
+  seeds: [1, 2, 3]
+  checkpoint: "final_step"
+  windows: "R0" # every status row; ADR-0025 §3
+
+rule:
+  smallest_effect: 0.005
+  # SUPPORTED: every paired lower bound > 0, and the median of the three point Deltas > 0.005.
+  supported_lower_bound_above: 0.0
+  supported_median_above: 0.005
+  # REFUTED: every paired upper bound < 0.005.
+  refuted_upper_bound_below: 0.005
+  otherwise: "inconclusive"
+
+# Reported beside the verdict; none decides anything (ADR-0025 §3, §4).
+reported_variants:
+  # Every provider Stop row removed from the probe windows; pretraining and probes unchanged.
+  - "R2"
+  # AUPRC and paired Delta within the has-status and no-status strata of the R0 windows.
+  - "strata_has_status"
+  - "strata_no_status"
+controls:
+  - "bag_of_tokens_tel_status" # (i) 33,952 ids on the ADR-0025 §2 windows, CPU
+  - "bag_of_tokens_status_only" # (ii) ids >= 1,184 plus <txt>/</txt>; empty = zero histogram, CPU
+  - "tel_only_backbone_on_joint_windows" # (iii) new §a probe per seed, G3 cadence, final step
+
+# Carried on every H1 row (ADR-0025 §3): Kelmarsh positives average 67.2 status tokens in train
+# (stride 6) and 190.1 in test (stride 12).
+caveats:
+  - "message_volume_shift"

@@ -4548,3 +4548,265 @@ addendum**, written next, under the criterion registered there. Nothing is decid
 763** (seed 2) and **3.3158 at step 762** (seed 3), against seed 1's **3.317** from the ADR-0021
 gate run. The three sit within 0.04 of each other. Nothing is claimed from this: LM validation
 loss is not a quantity any criterion in this record reads.
+
+---
+
+## ADR-0025 H1: the joint arm against `tel_only`, forward-in-time on the training sites
+
+**Status:** Accepted; **registered 2026-09-18, before any F6 arm code, shard, pretraining or probe
+exists** · **Date:** 2026-09-18.
+**Commit:** this record, `configs/train/joint_v1.yaml`, `configs/train/h1_arms_v0.yaml`,
+`configs/eval/h1_gate_v0.yaml`, their configuration classes and their test are committed together
+in **`pending`**, before any code that builds, trains or scores the joint arm exists. The hash is
+recorded here by the commit after it. **Nothing in this record authorises a run** (§8).
+
+**Sources of every count.** Unless a line says otherwise, every count comes from the F6-R
+reconnaissance of 2026-09-18 at `0bcbd01`, `checkpoints/scratch/f6_recon_20260918.md`
+(git-ignored), cited below as *recon* with its section. The recon re-derived the builder's
+attachment rule and checked it element-wise against every `tel_status_normalized/*.bin` file: step
+counts, message counts, per-step message counts and total tokens all matched (recon, preamble).
+
+### 0. What H1 now claims
+
+From ADR-0022 §0: pretraining moves the frozen §a probe above random init on three seeds, but **the
+probe is at parity with a bag-of-tokens classifier on all three** (ADR-0024 G2: Δ probe − bag
++0.0016, +0.0053, −0.0015, every interval spanning zero). **H1 therefore claims that the text
+pathway carries signal the telemetry tokens do not. It does not claim that the sequence model's
+representation helps.** This record tests that claim and nothing more. A supported H1 says the
+joint arm's input and pretraining add risk signal over `tel_only` on the same windows. It does not
+say why.
+
+### 1. Arms
+
+| arm | status | mixture (joint_v1.yaml) | seeds | tokens | rung, optimiser |
+| --- | --- | --- | --- | --- | --- |
+| `tel_only` | **exists**: three seeds, final-step probes, read in ADR-0024 F3 | tel 1.0 | 1, 2, 3 | 50,003,968 | S2, gate run |
+| `joint` | **to be built** | tel 0.30 · txt 0.20 · tel+status 0.50, `status_convention: normalized` | 1, 2, 3 | 50,003,968 | S2, gate run |
+
+- **Budget.** Both arms see 50,003,968 tokens: `tokens: 50000000` rounded up to whole optimiser
+  steps, 763 × (4 × 8) windows × 2,048 (recon Q3a; ADR-0021 erratum). At joint_v1's ratio the txt
+  share is 0.996 passes over its 10,043,874 train tokens (joint_v0.yaml header), so the joint arm
+  sees narrative once.
+- **Optimiser and schedule** are the gate run's (`configs/train/gate_check_v0.yaml`): 4 windows ×
+  8 accumulation, peak learning rate 6e-4, 6 evaluations, 500 selection windows per source. The
+  runner configuration restates them and the test asserts that they are equal.
+- **`tel_only` is not re-run.** Its final-step pooled stride-12 AUPRCs are 0.0580 (seed 1), 0.0576
+  (seed 2) and 0.0515 (seed 3) (ADR-0022 addendum outcome table). Its saved final-step scores are
+  the reference side of every Δ.
+- **`txt_only` is neither pretrained nor probed.** Three recon facts decide it:
+  1. The only text stream a `txt_only` arm could pretrain on is `txt`. It holds NRC and PHMSA
+     narrative with **no wind status strings**. At 50,000,000 tokens that is **4.98 passes** over
+     its train tokens (recon Q3b, Q1d (i)). The probe would read strings the backbone never saw.
+  2. A status-only probe input is **empty for 39,215 of 137,025 H1-split windows and 1,088 of 5,312
+     positives** (recon Q1d). A decoder cannot read an empty sequence.
+  3. **Presence alone is a label-correlated feature:** the base rate is 4.32% on non-empty windows
+     and 2.77% on empty ones (recon Q1d). Any stand-in token for "empty" would carry that split.
+
+  The text-only baseline is control (ii) of §4, which handles an empty window as a zero histogram.
+- **Deferred to F7, conditional on H1 not being refuted here:** `joint_status_raw` (ADR-0017's
+  convention ablation) and a `joint_no_txt` ablation (no narrative stream, to separate narrative
+  from status strings). Neither is in joint_v1.
+
+### 2. The joint arm's probe window
+
+**No probe window exists for the tel+status stream today.** The stream has no 144-step framing, no
+window index and no labels. Every probe reads M1's 1,872-token telemetry-only windows, and
+`open_probe_inputs` refuses any arm other than `{tel: 1.0}` (recon Q1a, Q3a). With 144 steps and
+their messages, **44,864 of 137,025 H1-split windows (32.7%) exceed 2,048 tokens, and so do 2,081
+of 5,312 positives (39.2%)** (recon Q1c). `TelemetryDecoder.forward` raises above 2,048 tokens
+(recon Q3c). The rule:
+
+> A joint probe window ends at step t's last token (the M1 window's end step, same label
+> narrow_within_24h) and holds the tel+status stream (every status row — no exclusion) back from t.
+> Whole leading steps, with their attached messages, are dropped until the window holds at most
+> 2,048 tokens; the window therefore always begins at a <sep>. If step t's own messages plus the
+> step exceed 2,048, the window is the last 2,048 tokens and is counted as head-cut. The number of
+> telemetry steps retained is recorded per window. Windows are right-padded to 2,048 with <pad>;
+> attention is causal; the probe reads the hidden state at the last real index.
+
+**Name:** `tail_anchored_2048`. The rule is read as follows, fixed here:
+
+- **"Back from t" starts at the M1 window's first step, t − 143.** A joint window holds at most the
+  M1 window's 144 steps, and fewer when messages displace leading steps. There are two reasons.
+  The M1 index guarantees only that `[t − 143, t]` lies inside one contiguous run. The 32.7% above
+  was also measured on exactly that framing (recon Q1c). A joint window never reaches further back
+  than `tel_only`'s window does.
+- **Step t's messages are in the window.** Every message attached to step t started at or before t,
+  because attachment ceils a message's start to the grid (recon Q2a). Nothing after t enters.
+- **"Last real index"** is the window's last non-`<pad>` position. The current `RiskModel` `last`
+  pooling reads `hidden[:, -1]`, which is a pad under right-padding (recon Q3c). F6-1b changes how
+  the index is read. The rule does not change.
+- **Recorded per window:** telemetry steps retained, status tokens and the head-cut flag. The
+  head-cut count is reported. F6-R did not measure it.
+
+**The window index must reproduce M1's exactly.** The index for the tel+status stream is keyed by
+the same (turbine, year, end step) as M1's, with the same labels and the same counts:
+
+| split | stride | windows | positives | source |
+| --- | ---: | ---: | ---: | --- |
+| test (Kelmarsh + Penmanshiel) | 12 | 137,025 | 5,312 | recon preamble, Q1c; `axis_gate_v0.yaml` |
+| train (Kelmarsh + Penmanshiel) | 6 | 749,387 | 16,524 | recon preamble, Q1c (247,463 + 501,924; 3,907 + 12,617) |
+| selection (`kelmarsh__val` + `penmanshiel__val`) | 1 | 6,000 | as drawn | drawn as F3 drew them: `build_split(telemetry, "val", 3000, stride 1, seed 20260912)` (ADR-0024 §5) |
+
+**A test asserts these before any probe is trained.** Only the framing of each window changes.
+`tel_only` keeps its 1,872-token window and its existing final-step scores.
+
+### 3. Leakage, decided
+
+The recon measured leakage on the Kelmarsh and Penmanshiel test splits (strides 12 and 1) and train
+splits (strides 6 and 1) (recon Q2b, Q2c):
+
+> **Zero** messages starting at or after the labelled event's onset are in any window, in every row
+> of both tables. "Carries event's own code", "… as a Stop row" and own message text are equal in
+> every cell: **every own-code occurrence is an earlier Stop row**, i.e. recurrence. At stride 12 on
+> test that is 1,060 of 2,841 Kelmarsh positives and 418 of 2,471 Penmanshiel positives, tracking
+> "another narrow event started inside the window" (1,097 and 565).
+
+Read-through is structurally impossible. The label counts only events starting strictly after t.
+Event starts are floored to the grid, and messages are ceiled onto it (recon Q2a).
+
+**Ruling.** Recurrence is information available at t, and the telemetry shows every earlier stop to
+every arm, `tel_only` included. **The primary read uses every status row (R0).**
+
+**Registered decompositions.** Both are reported only and decide nothing (§5).
+
+- **R2.** Every provider `Stop` row is removed from the probe windows, and pretraining is
+  unchanged. Each seed's R0 joint probe, not retrained, is scored on the R2 test windows. These are
+  framed by the §2 rule applied to the stream with those rows deleted. R2 removes every own-code
+  occurrence that was measured (recon Q2d). Under R2 the H1 split still has 1,088 status-empty
+  positives, the same as R0 (recon Q2d).
+- **Strata.** AUPRC of both arms, and the paired Δ, within the **has-status** and **no-status**
+  strata of the R0 windows as framed by §2. The recon's 97,810 / 39,215 split (recon Q1d) uses the
+  144-step framing. The §2 framing can empty a window whose only messages sat in dropped steps, so
+  F6-1b counts the strata again and reports them.
+
+**A caveat carried on every H1 row.** Message volume differs between train and test. Kelmarsh
+positives average **67.2 status tokens in train (stride 6) and 190.1 in test (stride 12)** (recon
+Q1c). The share of Kelmarsh positives carrying a technical Stop row is 9.2% in train (stride 6) and
+38.5% in test (stride 12) (recon Q2c). The joint probe learns on the train mix and is scored on the
+test mix.
+
+### 4. Controls: reported, not gating
+
+All run on §2's exact windows unless a line says otherwise.
+
+- **(i) Bag-of-tokens on tel+status.** ADR-0024 §6's comparator is refit over the full 33,952-id
+  vocabulary on the §2 windows. Its features are the counts of every real (non-`<pad>`) id,
+  divided by the window's retained telemetry steps. It is trained by the same recipe: balanced
+  sampler, the telemetry_v1 probe stage, seed 1, CPU. Compared with the existing bag-of-tokens on
+  `tel` (ADR-0024 §6), it asks **whether status carries order-blind signal**. The runner hard-wires
+  the 1,184-id M1 vocabulary today (recon Q3d); F6-1b changes that.
+- **(ii) Bag-of-tokens over the status region only.** Ids ≥ 1,184 plus `<txt>` (4) and `</txt>`
+  (5), with the same divisor and recipe. **An empty window is a zero histogram**, so for an empty
+  window the classifier reads only its bias. **This is the text-only baseline** that replaces
+  `txt_only` (§1).
+- **(iii) `tel_only` backbones probed on the joint windows.** For each seed, a new §a probe is
+  trained on the frozen `tel_only` final-step backbone under the G3 cadence (1,000 steps, 20
+  measurements), read at its final step and scored on the §2 windows. **What this control can
+  see:** in `tel_only` the 32,768 text embedding rows were trained only through the tied output
+  head, and they have **collapsed onto one shared vector**. On seed 2 the text-row norm is 1.695 ±
+  0.011, and the norm of their mean vector is 1.675 (recon Q3c). This control therefore sees
+  **text presence and amount**, not string identity, plus the same truncated telemetry the joint
+  arm sees.
+  - **Δ(joint − iii)** isolates joint pretraining at identical input.
+  - **Δ(iii − tel_only)** isolates the input change: truncation plus text presence, on a backbone
+    that never read text.
+
+**There is no random-init joint control.** H1 compares two pretrained arms. It does not compare a
+backbone with the absence of one. Whether the tokens alone carry the signal is (i)'s question,
+answered order-blind at no GPU cost. ADR-0024 already established that the probe moves off random
+init at this rung.
+
+### 5. The H1 rule
+
+> Same-seed paired Δ = AUPRC(joint) − AUPRC(tel_only), pooled Kelmarsh + Penmanshiel stride-12
+> forward-in-time test split, paired block bootstrap as ADR-0024 (two-day blocks, 10,000
+> replicates, seed 20260916, discard rule 1%), final-step probes, R0 windows. Smallest effect of
+> interest: 0.005 AUPRC. H1 is SUPPORTED if all three paired lower bounds exceed zero and the
+> median Δ exceeds 0.005; REFUTED if all three paired upper bounds are below 0.005; otherwise
+> INCONCLUSIVE at this budget, reported as such. The verdict is read on R0 only; R2, strata and
+> controls are reported beside it and decide nothing.
+
+The rule is read as follows, fixed here:
+
+- **Pairing.** Seed k of `joint` is paired with seed k of `tel_only`. A joint window and a
+  `tel_only` window with the same (turbine, year, end step) are one row, so both scores sit on the
+  same drawn rows in every replicate (§2 guarantees that the keys match). A block is a window's end
+  step // 288 within its shard, as in ADR-0024 §2.
+- **The median Δ** is the median of the three seeds' full-sample point estimates.
+- **A comparison whose discard share exceeds 1% is untrusted.** Its bounds count as neither above
+  zero nor below 0.005, so it cannot contribute to SUPPORTED or REFUTED.
+- **Why 0.005.** On this split the seed spread is 0.0068 and one seed's interval half-width is
+  0.0072. Paired three-seed comparisons can therefore resolve differences of order 0.005 at best
+  (ADR-0022 §0).
+
+**Any outcome the three clauses do not name is reported as measured, and no clause is added
+afterwards.** One such case is SUPPORTED and REFUTED holding together. That can happen only if a
+point Δ lies outside its own percentile interval.
+
+### 6. H2 in F6: reported only
+
+This section measures the joint arm under modality loss, **forward in time at the same sites. It
+is never a site-shift result** (ADR-0022 F6-0 outcome: the project has no evaluable shift axis).
+
+- **Text withheld.** Each seed's R0 joint probe, not retrained, is scored through the joint
+  backbone on `tel_only`'s **1,872-token M1 windows**, with the same keys and labels. **This is a
+  different window from §2** (144 full steps, no messages, no truncation), and it is reported as
+  such.
+- **Channel loss.** The three F6-0a CARE-farm masks (`configs/eval/care_attribution_v0.yaml`,
+  `masking.patterns`) are imposed as `<nan>` on the telemetry steps of §2's windows, with text
+  present. They are reported beside the F6-0a `tel_only` masked rows, whose windows are the
+  1,872-token ones.
+- **Metric.** AUPRC with ADR-0024 intervals, paired against the unmasked joint read. **Coverage and
+  selective risk are deferred until an abstention path exists. None exists today.** The only
+  abstention code is `abstention_threshold` in `src/faultline/evaluation/calibration.py`, a
+  confidence quantile that only its unit test calls. There is no risk-coverage curve, AURC or
+  conformal procedure, and `configs/eval/selective_v0.yaml` is still listed as planned in
+  `configs/eval/README.md`.
+
+### 7. Cost
+
+The table uses recon Q4's per-item rates, adjusted to three pretrainings. The factor
+1.094 = 2,048 / 1,872 accounts for padding to 2,048.
+
+| item | count | seconds each | seconds |
+| --- | ---: | ---: | ---: |
+| joint pretraining, 50,003,968 tokens (S2, 763 steps) | 3 | 609.9 | 1,829.7 |
+| joint §a probes, G3 cadence | 3 | 447.2 × 1.094 | 1,467.7 |
+| control (iii) probes | 3 | 447.2 × 1.094 | 1,467.7 |
+| scorings, 137,025 windows (3 joint + 3 control (iii)) | 6 | 407.9 × 1.094 | 2,677.5 |
+| **H1 verdict and control (iii)** | | | **7,442.6 s ≈ 2.1 GPU-h** |
+
+Controls (i) and (ii) and the joint_v1 shard build (`faultline model mixture-shards`) run on CPU.
+`tel_only` is not re-run or re-scored.
+
+**Three items are not in the 2.1 h.** They are itemised here so that they are not discovered
+later:
+
+- **R2 scorings:** 3 × 407.9 × 1.094 = 1,338.7 s.
+- **H2, text withheld:** 3 × 407.9 = 1,223.7 s.
+- **H2, channel masks:** 9 × 407.9 × 1.094 = 4,016.2 s.
+
+Together they add 6,578.6 s ≈ 1.8 GPU-h, for **≈ 3.9 GPU-h in all**. The pretraining rate is
+`tel_only`'s. The joint data path does not exist yet, so that rate is assumed, not measured (recon
+Q4). **The author launches the pretraining and probe runs. Claude Code prepares the commands and
+reads the results.**
+
+### 8. What this record does not authorise
+
+**It does not authorise pretraining.** The order is below. Each step needs the user's
+authorisation.
+
+1. **F6-1b.** Code: the joint mixture sampler and pretraining path, the joint_v1 shards, the §2
+   window index with its reproduction test, the padded probe with its last-real-index read, and
+   the bag-of-tokens runner over 33,952 ids. The CPU controls (i) and (ii) are run in this step.
+2. **F6-2.** Joint pretraining on three seeds, the joint probes and the control (iii) probes.
+3. **F6-3.** Scoring, R2, strata, H2 rows and the H1 verdict under §5.
+
+**Configurations.**
+
+- `configs/train/joint_v1.yaml`: the mixture.
+- `configs/train/h1_arms_v0.yaml`: the F6-2 runner.
+- `configs/eval/h1_gate_v0.yaml`: this rule, by value.
+
+joint_v1's shard directory `joint_v1_<hash>` does not exist until `mixture-shards` is re-run.

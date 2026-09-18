@@ -493,6 +493,7 @@ def run_one(
         higher_is_better=higher_is_better,
         tokens_per_window=shards.context_tokens,
         label=label,
+        initial_loss_vocab=spec.vocab_size if kind == "lm" else None,
     )
     destination = checkpoints / f"{rung.name}_{kind}_seed{seed}.pt"
     torch.save(

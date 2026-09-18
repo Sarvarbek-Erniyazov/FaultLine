@@ -181,6 +181,18 @@ class RiskModel(nn.Module):
         Returns:
             One risk logit per window, of shape ``(batch,)``.
         """
+        return cast(Tensor, self.head(self.pool(tokens)))
+
+    def pool(self, tokens: Tensor) -> Tensor:
+        """The state the head reads: the backbone run over the windows, then pooled.
+
+        Args:
+            tokens: Token identifiers of shape ``(batch, time)``, right-padded with ``pad_id``
+                when it is set.
+
+        Returns:
+            One pooled state per window, of shape ``(batch, d_model)``.
+        """
         if self.frozen and self.unfrozen_blocks:
             hidden = self.backbone.forward_with_trainable_tail(tokens, self.unfrozen_blocks)
         elif self.frozen:
@@ -201,7 +213,7 @@ class RiskModel(nn.Module):
             else:
                 last = real.sum(dim=1).clamp(min=1) - 1
                 pooled = hidden[torch.arange(hidden.shape[0], device=hidden.device), last]
-        return cast(Tensor, self.head(pooled))
+        return pooled
 
     def loss(self, tokens: Tensor, labels: Tensor, positive_weight: float = 1.0) -> Tensor:
         """Binary cross entropy of the risk logits against the horizon labels.

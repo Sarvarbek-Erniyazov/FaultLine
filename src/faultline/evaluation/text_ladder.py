@@ -430,6 +430,7 @@ def run_rung(
         higher_is_better=False,
         tokens_per_window=shards.context_tokens,
         label=f"{rung.name}/calibrate",
+        initial_loss_vocab=spec.vocab_size,
     )
     calibration_seconds = time.perf_counter() - started
     windows_per_second = (
@@ -470,6 +471,7 @@ def run_rung(
         higher_is_better=False,
         tokens_per_window=shards.context_tokens,
         label=f"{rung.name}/lm",
+        initial_loss_vocab=spec.vocab_size,
     )
     module.load_state_dict({k: v.to(device) for k, v in result.state.items()})
     module.eval()

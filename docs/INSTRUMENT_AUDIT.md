@@ -209,6 +209,29 @@ entry 11 said it measured.
 | regression test | **None pins the retirement, for the reason given in entry 9: a test checks code against a rule, not a rule against a claim.** The two tests recorded under entry 11 still pin the rate's definition. They show that the code computes the rate it says it computes, not that the rate is the right instrument. |
 | commit | None in code. Recorded with the ADR-0017 ruling that retires the rate as a primary metric; the report still prints it. |
 
+## 13. Causality and the initial loss were asserted at toy scale, and padding never
+
+*Added 2026-09-18, before F6-2.* **No defect was found: every property below holds. The entry
+records that three properties the F6 arm rests on were asserted only where the F6 code does not
+run.**
+
+| field | |
+| --- | --- |
+| supposed to measure | That no output can see a later token, that an untrained decoder starts at ln(vocabulary), and (from F6-1b) that a right-padded probe window's pooled state is the unpadded window's. The F6 joint arm and control (iii) read these on the S2 rung, at the joint vocabulary (33,952 ids) and a 2,048-token context, through `RiskModel` with a padding id. |
+| actually measured | **Causality at one position (40), batch 1, forward only, on a toy decoder (context 64, vocabulary 64), fused path only** (`test_attention_is_causal`). The explicit path was checked only for agreement with the fused one, at context 64, and `forward_with_trainable_tail` was not checked at all. **The initial loss only on that toy decoder**: the loss had to be within 0.5 of ln(64), a band roughly ten times the S2 spread. **The padding-to-pool property was never tested, because no padded window existed before F6-1b.** F6-1b's own test compared the probe's logits, not the pooled state, on a 64-token toy. |
+| how found | The pre-F6-2 review asked which properties F6-2 spends GPU time on, and at what specification each was last asserted. |
+| reported result if undetected | Nothing observed. A defect at the real scale would have surfaced as an F6 result. Examples: a mask that leaks only beyond the fused kernel's tile size, or a pooled index off by one under padding. The H1 Δ would have been read as the text pathway's signal. |
+| regression test | `tests/model/test_real_spec.py`, on the S2 rung from `configs/model/ladder_v0.yaml` at 33,952 ids and context 2,048. **Causality:** positions {0, 1, 517, 2046}, batch 3, on the fused path, the explicit path and `forward_with_trainable_tail(2)`, 12 cases, atol 1e-6. **Padding:** `RiskModel.pool` on windows of 13, 1,872 and 2,000 real tokens, right-padded to 2,048 with `<pad>`. It equals the hidden state at L−1, the same window padded with another id, and the window run alone. **Initial loss:** within 0.05 of ln(33,952) = 10.4327 on seeds 1, 2 and 3, on the first batch `pretrain_tel` draws. **Loss side:** the pretraining loss has no ignore-index path, and `tests/training/test_pretraining_windows.py` shows why none is needed: no sampler yields a short or padded window. **At run time:** `train` refuses a pretraining run whose first batch loss is outside [ln V − 0.50, ln V + 0.10], logging at ERROR and stopping before the first update. The five recorded S2 first steps (10.4175 to 10.4639) pass. |
+| commit | This entry's commit, "test(model): causality under padding at the real spec; initial-loss assertion and fail-fast guard". |
+
+**A note on the new test's own instrument.** The initial-loss check first read eight windows at
+fixed offsets in the Kelmarsh training shard. It failed on seeds 2 and 3, at 10.33 and 10.37. The
+first of those windows starts in a stretch whose untrained loss is 9.5 to 9.9. The model was not
+at fault: the same decoders, on the 32 windows each run's first step drew, reproduce the recorded
+GPU step-1 losses to 1e-4 in fp32 on the CPU. The test now reads the batch pretraining actually
+draws first. **A fixed choice of windows is not a neutral sample, even for a loss at
+initialisation.**
+
 ---
 
 ## The seven defects reported for the Gate 6 run, classified

@@ -844,6 +844,7 @@ def _pretrain(
         higher_is_better=False,
         tokens_per_window=spec.context,
         label=f"{config.rung}/{config.arm}/seed{seed}/lm",
+        initial_loss_vocab=spec.vocab_size,
     )
     lm_seconds = time.perf_counter() - started
     checkpoint = out_dir / f"{config.rung}_{config.arm}_seed{seed}.pt"

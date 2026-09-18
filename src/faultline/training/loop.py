@@ -34,6 +34,43 @@ logger = get_logger(__name__)
 #: Fraction of the peak learning rate the cosine schedule decays to.
 LR_FLOOR = 0.1
 
+#: The fail-fast band on a pretraining run's first batch loss, around ln(vocabulary). Registered
+#: 2026-09-18 by "test(model): causality under padding at the real spec; initial-loss assertion and
+#: fail-fast guard". A decoder at initialisation (std 0.02, tied head) predicts almost uniformly,
+#: so its first loss sits at ln(V): ln(33,952) = 10.4327, and every recorded S2 first step lies in
+#: 10.4175..10.4639. Above ln(V) + 0.10 the logits are not near zero (a scale or tying defect).
+#: Below ln(V) - 0.50 the model predicts before it has learned (a leak, a shifted target, or a
+#: vocabulary smaller than the one declared).
+INITIAL_LOSS_ABOVE = 0.10
+INITIAL_LOSS_BELOW = 0.50
+
+
+class InitialLossError(RuntimeError):
+    """A pretraining run's first batch loss is outside the band around ln(vocabulary)."""
+
+
+def check_initial_loss(loss: float, vocab_size: int, label: str = "") -> None:
+    """Refuse a pretraining run whose first batch loss is not near ln(vocabulary).
+
+    Args:
+        loss: The first batch's mean next-token loss, before any update.
+        vocab_size: The decoder's vocabulary.
+        label: The run's name, for the log.
+
+    Raises:
+        InitialLossError: If the loss exceeds ``ln(V) + INITIAL_LOSS_ABOVE`` or falls below
+            ``ln(V) - INITIAL_LOSS_BELOW``, or is not finite. It is logged at ERROR first.
+    """
+    expected = math.log(vocab_size)
+    low, high = expected - INITIAL_LOSS_BELOW, expected + INITIAL_LOSS_ABOVE
+    if not (math.isfinite(loss) and low <= loss <= high):
+        message = (
+            f"{label}: first-batch loss {loss:.4f} is outside [{low:.4f}, {high:.4f}] around "
+            f"ln({vocab_size:,}) = {expected:.4f}; aborting before the first update"
+        )
+        logger.error(message)
+        raise InitialLossError(message)
+
 
 def learning_rate(step: int, total: int, peak: float, warmup_fraction: float) -> float:
     """The learning rate at one optimiser step: linear warmup, then cosine decay.
@@ -203,6 +240,7 @@ def train(
     measure_steps: Sequence[int] | None = None,
     measure_initial: bool = False,
     keep_final: bool = False,
+    initial_loss_vocab: int | None = None,
 ) -> TrainingResult:
     """Train one model to its budget, selecting on periodic validation measurements.
 
@@ -222,12 +260,15 @@ def train(
         measure_initial: Also measure before the first step. That measurement is kept in the
             history as a reference and can never be selected.
         keep_final: Also return the parameters after the last step, beside the selected ones.
+        initial_loss_vocab: For a pretraining run, the vocabulary its first batch loss is checked
+            against (:func:`check_initial_loss`) before the first update. ``None`` for a head.
 
     Returns:
         The run's history, its selected checkpoint and what it spent.
 
     Raises:
         ValueError: If a measurement step lies outside the run.
+        InitialLossError: If a pretraining run's first batch loss is outside its band.
     """
     module.train()
     groups = parameter_groups(module, optimiser.weight_decay)
@@ -277,6 +318,10 @@ def train(
             tokens, labels = tokens.to(device, non_blocking=True), labels.to(device)
             with autocast:
                 loss = loss_fn(module, tokens, labels) / budget.accumulate
+            if initial_loss_vocab is not None and step == 0 and not step_losses:
+                check_initial_loss(
+                    float(loss.detach()) * budget.accumulate, initial_loss_vocab, label
+                )
             loss.backward()  # type: ignore[no-untyped-call]
             windows += int(tokens.shape[0])
             step_losses.append(float(loss.detach()) * budget.accumulate)

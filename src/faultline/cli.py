@@ -1372,6 +1372,30 @@ def model_axis_gate(
 
 
 @model_app.command(
+    "care-attribution",
+    help="ADR-0022 F6-0: score the three tel_only final-step probes on the temporal split with "
+    "each CARE farm's absent channels imposed as <nan> (GPU), score the saved bag-of-tokens "
+    "comparator on CARE (CPU), bootstrap every row and apply both registered readings. "
+    "Pretrains nothing, trains no probe, refits nothing. Resume-safe.",
+)
+def model_care_attribution(
+    config: ConfigOption = Path("configs/eval/care_attribution_v0.yaml"),
+    device: Annotated[str | None, typer.Option("--device", help="Torch device.")] = None,
+) -> None:
+    """Run the CARE-null attribution diagnostics and write their report.
+
+    Args:
+        config: The CARE-attribution configuration.
+        device: Torch device for the masked scorings; chosen automatically when omitted.
+    """
+    from faultline.evaluation.care_attribution import run_care_attribution
+
+    paths = ProjectPaths.resolve()
+    report, record = run_care_attribution(paths, paths.repo_root / config, device)
+    typer.echo(f"wrote {report} and {record}")
+
+
+@model_app.command(
     "mixture-shards",
     help="Write the M3 mixture's txt and tel+status shards and every stream's run index, "
     "and report per-stream token counts and per-arm token budgets. Trains nothing.",

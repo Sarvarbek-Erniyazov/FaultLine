@@ -5,12 +5,28 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
+import pytest
 import yaml
 
 from faultline.config import load_config
 from faultline.evaluation.axis_gate import CARE_FARMS, AxisGateConfig
-from faultline.evaluation.care_attribution import CareAttributionConfig
+from faultline.evaluation.bootstrap import AuprcInterval
+from faultline.evaluation.care_attribution import (
+    CareAttributionConfig,
+    MaskedSampler,
+    interval_position,
+    mask_positions,
+    mask_tokens,
+    read_bag,
+    read_masking,
+)
 from faultline.evaluation.gate_check import GateCheckConfig
+from faultline.tokenizers.joint import JointVocab
+from faultline.tokenizers.layout import VocabLayout
+from faultline.tokenizers.quantile_bins import QuantileBinTokenizer
+from faultline.training.windows import WindowSampler, WindowSet
 
 REPO = Path(__file__).resolve().parents[2]
 SHIPPED = REPO / "configs/eval/care_attribution_v0.yaml"
@@ -113,3 +129,138 @@ def test_the_comparator_is_g2s_and_is_not_refit() -> None:
     assert (REPO / bag.config).is_file()
     assert bag.refit is False and bag.per_farm is True
     assert (REPO / _shipped().masking.seed_replication_config).is_file()
+
+
+# ------------------------------------------------------------------ the masking
+
+
+CHANNELS = ["wind_speed_ms", "power_pu", "nacelle_temp_c"]
+STEPS = 6
+
+
+def _vocab() -> JointVocab:
+    rng = np.random.default_rng(7)
+    fit = pd.DataFrame({name: rng.uniform(0, 100, 400) for name in CHANNELS})
+    bins = QuantileBinTokenizer.fit(fit, CHANNELS, n_bins=8)
+    return JointVocab(VocabLayout.from_sizes(0, 14, 8), bin_tokenizer=bins)
+
+
+def _window_frame() -> pd.DataFrame:
+    rng = np.random.default_rng(11)
+    return pd.DataFrame({name: rng.uniform(0, 100, STEPS) for name in CHANNELS})
+
+
+def test_masking_a_synthetic_window_changes_only_the_masked_channels_bin_positions() -> None:
+    vocab = _vocab()
+    step = ["<sep>", *CHANNELS]
+    unmasked = vocab.encode_steps(_window_frame()).astype(np.int64).ravel()
+    positions = mask_positions(step, ["nacelle_temp_c"], STEPS)
+    masked = mask_tokens(unmasked, positions, vocab.special("<nan>"))
+    # the stream differs from the unmasked one only at the masked channel's bin positions
+    changed = np.flatnonzero(masked != unmasked)
+    assert changed.tolist() == positions.tolist()
+    assert positions.tolist() == [3 + 4 * s for s in range(STEPS)]
+    # the replacement id is the tokenizer's <nan> id, and <sep> never moves
+    assert (masked[positions] == vocab.special("<nan>")).all()
+    assert (masked[0 :: len(step)] == vocab.special("<sep>")).all()
+    # and it is exactly what the adapter path emits for a channel the frame does not carry
+    adapter = vocab.encode_steps(_window_frame().drop(columns=["nacelle_temp_c"]))
+    assert np.array_equal(masked, adapter.astype(np.int64).ravel())
+    excluded = vocab.encode_steps(_window_frame(), masked=["nacelle_temp_c"])
+    assert np.array_equal(masked, excluded.astype(np.int64).ravel())
+
+
+def test_masking_several_channels_matches_the_adapter_too() -> None:
+    vocab = _vocab()
+    unmasked = vocab.encode_steps(_window_frame()).astype(np.int64).ravel()
+    positions = mask_positions(["<sep>", *CHANNELS], ["power_pu", "wind_speed_ms"], STEPS)
+    masked = mask_tokens(unmasked, positions, vocab.special("<nan>"))
+    adapter = vocab.encode_steps(_window_frame()[["nacelle_temp_c"]])
+    assert np.array_equal(masked, adapter.astype(np.int64).ravel())
+    assert len(positions) == 2 * STEPS
+
+
+def test_mask_positions_refuses_sep_unknown_and_repeated_channels() -> None:
+    step = ["<sep>", *CHANNELS]
+    with pytest.raises(ValueError, match="not channel positions"):
+        mask_positions(step, ["<sep>"], STEPS)
+    with pytest.raises(ValueError, match="not channel positions"):
+        mask_positions(step, ["main_bearing_temp_c"], STEPS)
+    with pytest.raises(ValueError, match="twice"):
+        mask_positions(step, ["power_pu", "power_pu"], STEPS)
+
+
+def test_the_masked_sampler_reads_the_same_windows_masked(tmp_path: Path) -> None:
+    per_step, steps = 4, 20
+    stream = (np.arange(steps * per_step) % 50 + 10).astype(np.uint16)
+    stream.tofile(tmp_path / "alpha__test.bin")
+    tokens = np.memmap(tmp_path / "alpha__test.bin", dtype=np.uint16, mode="r")
+    starts = np.arange(0, steps - STEPS + 1, 3, dtype=np.int64)
+    window_set = WindowSet(
+        key="alpha__test",
+        tokens=tokens,
+        starts=starts,
+        ends=starts + STEPS - 1,
+        labels=(starts % 2).astype(np.float32),
+        years=np.full(starts.size, 2020),
+    )
+    base = WindowSampler([window_set], 2, per_step, STEPS, labelled=True)
+    positions = mask_positions(["<sep>", *CHANNELS], ["power_pu"], STEPS)
+    masked = MaskedSampler(base, positions, 9)
+    for (plain, y, s), (hidden, my, ms) in zip(base.epoch(), masked.epoch(), strict=True):
+        assert np.array_equal(y.numpy(), my.numpy()) and np.array_equal(s, ms)
+        assert np.array_equal(hidden.numpy(), mask_tokens(plain.numpy(), positions, 9))
+    with pytest.raises(ValueError, match="outside a window"):
+        MaskedSampler(base, np.array([STEPS * per_step]), 9)
+
+
+# ------------------------------------------------------------------ the readings
+
+
+def _interval(auprc: float, low: float, high: float, discarded: int = 0) -> AuprcInterval:
+    return AuprcInterval(
+        unit="block",
+        auprc=auprc,
+        low=low,
+        high=high,
+        lift_low=0.0,
+        lift_high=0.0,
+        base_rate=0.03877,
+        windows=137025,
+        positives=5312,
+        blocks=5799,
+        positive_blocks=497,
+        replicates=10000,
+        discarded=discarded,
+        confidence=0.95,
+        seed=20260916,
+    )
+
+
+def test_interval_position_is_strict_and_honours_the_discard_rule() -> None:
+    assert interval_position(_interval(0.05, 0.0389, 0.06), 0.0388, 0.01) == "clears"
+    assert interval_position(_interval(0.05, 0.0388, 0.06), 0.0388, 0.01) == "contains"
+    assert interval_position(_interval(0.03, 0.02, 0.0387), 0.0388, 0.01) == "below"
+    untrusted = _interval(0.05, 0.045, 0.06, discarded=101)
+    assert interval_position(untrusted, 0.0388, 0.01) == "contains"
+
+
+def test_the_first_clause_belongs_to_farm_a_alone() -> None:
+    reading = read_masking("farm_a", {1: "clears", 2: "clears", 3: "contains"}, 2)
+    assert (reading.clause, reading.attribution) == ("first", "transfer failure")
+    other = read_masking("farm_b", {1: "clears", 2: "clears", 3: "contains"}, 2)
+    assert (other.clause, other.attribution) == ("neither", "unattributed")
+
+
+def test_the_second_clause_and_the_gap() -> None:
+    second = read_masking("farm_c", {1: "contains", 2: "contains", 3: "clears"}, 2)
+    assert (second.clause, second.attribution) == ("second", "unattributed")
+    one_seed = read_masking("farm_a", {1: "clears", 2: "below", 3: "below"}, 2)
+    assert one_seed.clause == "neither" and "neither registered clause" in one_seed.sentence
+    assert read_masking("farm_a", {1: "contains", 2: "below", 3: "clears"}, 2).clause == "neither"
+
+
+def test_the_bag_reading_has_two_clauses_and_a_gap() -> None:
+    assert read_bag(_interval(0.0013, 0.0009, 0.0019), 0.001254, 0.01).clause == "first"
+    assert read_bag(_interval(0.003, 0.0020, 0.004), 0.001254, 0.01).clause == "second"
+    assert read_bag(_interval(0.001, 0.0008, 0.0011), 0.001254, 0.01).clause == "neither"

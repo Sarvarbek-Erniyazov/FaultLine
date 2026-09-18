@@ -3632,6 +3632,96 @@ and the checkpoint rule (`final_step` gates) stand. Neither diagnostic can make 
 neither reading changes which axis carries H1 or H2. **F6 is not authorised by this addendum**, and
 neither is the execution of F6-0a or F6-0b.
 
+### Outcome of the F6-0 addendum, 2026-09-18 -- farm A's CARE null reads as failure to transfer; farms B and C stay unattributed
+
+**Run.** `faultline model care-attribution` with `configs/eval/care_attribution_v0.yaml` (hash
+`424956da`), on the user's authorisation of 2026-09-18. Report:
+`reports/data/care_attribution_v0_20260918.md` and its `.json`. The three final-step probes were
+read under the rule in force. Seed 2 selected its last step, so its selected probe
+(`S2_trained_seed2_probe.pt`) **is** its final probe, and that one file was read. The index held
+the registered counts: 137,025 temporal windows with 5,312 positive, and 430,506 CARE windows
+with 540 positive. The nine masked scorings cost **1.02 GPU-hours**. The comparator's CARE
+scoring cost 7 s of CPU. The scoring invocation computed all 10 scorings and all 13 bootstrap
+rows, and the committed report was re-rendered from those saved artefacts (0 computed, 10 and 13
+resumed).
+
+**The masking is the adapter's.** A CARE farm's absent core channel is a column its frame does
+not carry. `QuantileBinTokenizer.transform` emits `MISSING_BIN` for it, and
+`JointVocab.encode_steps` maps that to `<nan>` (id 9) at position `1 + channel_index` of every
+step. There are no channel tokens. F6-0a writes id 9 at exactly those positions and changes
+nothing else. This was checked three ways:
+
+- a unit test on a synthetic window: the masked stream differs from the unmasked one only at the
+  masked channels' bin positions, the replacement is the tokenizer's `<nan>` id, and the result
+  equals the adapter path's own encoding;
+- 256 real CARE windows per farm, which masking with their own farm's pattern leaves unchanged;
+- each seed's unmasked first batch, re-scored through this path, reproduces F3's saved logits
+  exactly (difference 0).
+
+**Table 1 -- F6-0a.** Pooled over the temporal split, against the registered 0.0388. Δ is
+AUPRC(masked) − AUPRC(unmasked), paired, and decides nothing. The unmasked read is F5's.
+
+| pattern | seed | masked AUPRC [95% block] | position | paired Δ [95%] | unmasked AUPRC [95% block] |
+| --- | --- | --- | --- | --- | --- |
+| farm A | 1 | 0.0625 [0.0536, 0.0729] | clears | +0.0045 [-0.0020, +0.0107] | 0.0580 [0.0505, 0.0672] |
+| farm A | 2 | 0.0539 [0.0466, 0.0625] | clears | -0.0037 [-0.0096, +0.0013] | 0.0576 [0.0503, 0.0670] |
+| farm A | 3 | 0.0523 [0.0459, 0.0594] | clears | +0.0008 [-0.0010, +0.0026] | 0.0515 [0.0453, 0.0586] |
+| farm B | 1 | 0.0604 [0.0524, 0.0695] | clears | +0.0024 [-0.0013, +0.0056] | 0.0580 [0.0505, 0.0672] |
+| farm B | 2 | 0.0585 [0.0506, 0.0682] | clears | +0.0008 [-0.0015, +0.0033] | 0.0576 [0.0503, 0.0670] |
+| farm B | 3 | 0.0550 [0.0475, 0.0637] | clears | +0.0035 [-0.0004, +0.0085] | 0.0515 [0.0453, 0.0586] |
+| farm C | 1 | 0.0525 [0.0457, 0.0606] | clears | -0.0056 [-0.0089, -0.0029] | 0.0580 [0.0505, 0.0672] |
+| farm C | 2 | 0.0488 [0.0421, 0.0574] | clears | -0.0088 [-0.0123, -0.0057] | 0.0576 [0.0503, 0.0670] |
+| farm C | 3 | 0.0517 [0.0451, 0.0590] | clears | +0.0002 [-0.0030, +0.0037] | 0.0515 [0.0453, 0.0586] |
+
+No interval discarded a replicate. The lowest masked lower bound is 0.0421, so the choice between
+the registered 0.0388 and the unrounded 0.03877 decides nothing.
+
+**The F6-0a reading, applied per farm.**
+
+- **Farm A: the first clause holds.** The lower bound clears 0.0388 on 3 of 3 seeds. A one-channel
+  gap does not null the probe, and **the CARE farm-A null is read as failure to transfer.**
+- **Farms B and C: neither clause holds.** Each clears 0.0388 on 3 of 3 seeds and contains it on
+  none. The first clause is registered for farm A's pattern only, and the second needs two seeds
+  containing the line. The addendum's gap sentence names two such outcomes (one seed clearing,
+  or two or more wholly below). This is a third, and it too meets neither clause. **Under the
+  addendum's "neither reading" sentence, each is reported as measured, and farm B's and farm C's
+  nulls stay unattributed.** No third clause is added.
+
+Reported only: farm C's pattern lowers AUPRC on seeds 1 and 2, with paired intervals wholly below
+zero (−0.0056 and −0.0088). Seed 3's interval straddles zero. Every other paired interval
+straddles zero.
+
+**Table 2 -- F6-0b.** The G2 comparator as saved (`bag_of_tokens.pt`, not refit; it reproduces
+G2's saved temporal logits exactly), on CARE at stride 12. F5's final-step probe rows are beside
+it.
+
+| group | `<nan>` share | own base rate | bag of tokens [95% block] | position | discarded | probe seeds 1 / 2 / 3 (F5, final step) |
+| --- | --- | --- | --- | --- | --- | --- |
+| CARE, pooled | 21.34% | 0.001254 | 0.001940 [0.001233, 0.003830] | contains 0.001254 | 0.00% | 0.001331 / 0.001183 / 0.001211 |
+| farm A | 8.35% | 0.001489 | 0.003602 [0.001111, 0.017206] | contains own rate | 0.00% | 0.001375 / 0.001283 / 0.001337 |
+| farm B | 25.01% | 0.001017 | 0.001562 [0.000262, 0.008887] | contains own rate | 0.11% | 0.000785 / 0.000757 / 0.000818 |
+| farm C | 25.22% | 0.001232 | 0.001995 [0.001204, 0.003162] | contains own rate | 0.00% | 0.001527 / 0.001148 / 0.001327 |
+
+**The F6-0b reading, applied to the pooled row.** The pooled lower bound is 0.001233, which is
+0.000021 below 0.001254, so the interval contains the line and **the first clause holds**. No
+order-blind classifier transfers either, and the null is a property of the token stream across
+OEMs. The margin is narrow and is reported as measured. The per-farm rows decide nothing.
+
+**What the CARE null is attributed to, by the registered readings only.**
+
+- **Farm A:** failure to transfer (F6-0a, first clause).
+- **Farm B:** unattributed (F6-0a meets neither clause).
+- **Farm C:** unattributed (F6-0a meets neither clause).
+
+No registered clause attributes any farm's null to the missing-channel pattern. F6-0b's reading is
+pooled and attributes no single farm.
+
+The nine F6-0a rows are the project's first H2 targeted-dropout measurement: forward in time, at
+the same sites. They are not a site-shift result.
+
+**ADR-0022's verdict and assignment are unchanged.** CARE stays NOT EVALUABLE, the temporal split
+carries both H1 and H2, and `final_step` stays the checkpoint rule.
+
 ---
 
 ## ADR-0023 The random-init probe control: can the frozen probe see backbone quality?

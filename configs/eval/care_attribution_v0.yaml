@@ -1,0 +1,67 @@
+# The CARE-null attribution diagnostics, version 0. Decision record: docs/DECISIONS.md, ADR-0022,
+# "Addendum (F6-0), registered 2026-09-18 before its code or run -- attribution of the CARE null",
+# written in the same commit as this file, BEFORE any code scores either diagnostic and before
+# either is run. That commit's hash is recorded below and inside the addendum by the commit after
+# it. Both diagnostics are REPORTED ONLY: neither is a gate, and neither changes ADR-0022's verdict,
+# its assignment or the checkpoint rule.
+#
+# F6-0a (masking transfer): the three tel_only final-step probes on the training-site temporal
+# split, each CARE farm's absent core channels replaced by <nan> on every step. 3 patterns x 3
+# seeds = 9 scorings, each paired against the seed's unmasked F3 read on the identical windows.
+# F6-0b (bag of tokens on CARE): the G2 comparator, unchanged and not refit, scored on the CARE
+# stride-12 set, pooled and per farm.
+#
+# tests/evaluation/test_care_attribution.py checks every restated value below against the file it
+# comes from, and the channel lists against data/cards/care.md's per-farm table.
+
+version: 0
+
+# The registration commit of the F6-0 addendum. "pending" in that commit; the commit after it
+# writes the hash here and in the addendum, and changes nothing else.
+registered_in: "pending"
+
+# The axis configuration in force: its shards, label, stride, seeds, bootstrap and counts.
+axis_config: "configs/eval/axis_gate_v0.yaml"
+
+# Restated from axis_config and from configs/train/gate_check_v0.yaml (ADR-0021's interval).
+label: "narrow_within_24h"
+stride: 12
+bootstrap:
+  block_steps: 288 # two-day blocks, a window's end step // 288 within its shard
+  replicates: 10000
+  seed: 20260916
+  confidence: 0.95
+  max_discarded_share: 0.01
+
+# The ADR-0022 addendum rule in force (outcome 267147d): every probe is read at its last step.
+checkpoint: "final_step"
+
+# Every chance level is the scored set's own positive rate, never the training rate.
+base_rate_source: "scored_set"
+
+seeds: [1, 2, 3]
+
+# F6-0a. The unmasked reference is F3's saved final-step read of each seed on the same windows
+# (seed_replication_config), not re-scored. The patterns are data/cards/care.md's "core channels
+# absent from the stream, emitted as <nan>", per farm, in the card's order.
+masking:
+  axis: "temporal"
+  seed_replication_config: "configs/train/seed_replication_v0.yaml"
+  windows: 137025
+  positives: 5312
+  base_rate: 0.0388 # 5,312 / 137,025 = 0.03877
+  seeds_required: 2 # of three, for either pre-registered reading
+  patterns:
+    farm_a: ["main_bearing_temp_c"]
+    farm_b: ["nacelle_temp_c", "generator_bearing_temp_c", "generator_winding_temp_c"]
+    farm_c: ["nacelle_position_deg", "nacelle_temp_c", "generator_bearing_temp_c"]
+
+# F6-0b. The G2 comparator as trained (ADR-0024 §6); refit is false and stays false.
+bag_of_tokens:
+  axis: "care"
+  config: "configs/train/bag_of_tokens_v0.yaml"
+  refit: false
+  windows: 430506
+  positives: 540
+  base_rate: 0.001254 # 540 / 430,506
+  per_farm: true

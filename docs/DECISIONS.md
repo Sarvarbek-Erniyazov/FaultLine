@@ -3534,6 +3534,103 @@ than an edit (`configs/README.md` rule 3). Second, the resolvable difference on 
 0.005 AUPRC (ADR-0022 §0), and each seed's interval is about 0.008 wide, so F6's comparisons must
 be paired and three-seeded to say anything at all. **F6 is not authorised by this record.**
 
+### Addendum (F6-0), registered 2026-09-18 before its code or run -- attribution of the CARE null
+
+**Commit:** this addendum, `configs/eval/care_attribution_v0.yaml` and its test are committed
+together, before any code that scores either diagnostic exists and before either is run. The hash
+is recorded here by the commit after it. F6-0a and F6-0b may run only on the user's authorisation.
+
+**1. The two readings, and what the per-farm rows already say.** The F5 outcome above found CARE at
+chance on every seed, every farm and both checkpoints. Two readings predict that measurement
+equally:
+
+- **(i) failure to transfer**: the probe on the pretrained backbone does not transfer across OEMs;
+- **(ii) out-of-distribution stream**: the CARE missing-channel pattern lies outside the
+  pretraining distribution, and **0 of 749,847 pretraining windows carry any CARE farm's
+  pattern** (`data/cards/care.md`, F4 of 2026-09-17).
+
+The per-farm table of the F5 report (`reports/data/axis_gate_v0_20260918.md` §2) narrows the
+question but does not decide it. The AUPRC range is taken over its six rows per farm (three seeds x
+the final-step and selected checkpoints):
+
+| farm | `<nan>` share | core channels absent, emitted as `<nan>` | windows | positives (events) | own base rate | AUPRC, six rows |
+| --- | --- | --- | --- | --- | --- | --- |
+| farm A | 8.35% | `main_bearing_temp_c` | 96,694 | 144 (12) | 0.001489 | 0.0013-0.0018 |
+| farm B | 25.01% | `nacelle_temp_c`, `generator_bearing_temp_c`, `generator_winding_temp_c` | 70,803 | 72 (6) | 0.001017 | 0.0008-0.0009 |
+| farm C | 25.22% | `nacelle_position_deg`, `nacelle_temp_c`, `generator_bearing_temp_c` | 263,009 | 324 (27) | 0.001232 | 0.0011-0.0016 |
+
+Farm A lacks a single core channel, carries the least `<nan>` of the three, holds 144 positive
+windows from 12 events, and is still at chance. That leans toward (i), but a single absent channel
+is still a pattern the backbone never saw, so (ii) is not excluded. The two diagnostics below
+separate the readings. **Nothing here re-opens the CARE verdict**: CARE stays NOT EVALUABLE, the
+temporal split carries both hypotheses, and neither diagnostic is a gate.
+
+**2. F6-0a -- masking transfer test.** Registered protocol:
+
+> The three tel_only final-step probes (the ADR-0022 addendum rule in force) are scored on the
+> training-site forward-in-time stride-12 test split (137,025 windows, 5,312 positive) with each
+> CARE farm's missing-channel pattern imposed at inference: the farm's absent core channels are
+> replaced by <nan> tokens on every step, exactly as the CARE adapter emits them, and nothing else
+> changes. Three patterns (A: main_bearing_temp_c; B: nacelle_temp_c, generator_bearing_temp_c,
+> generator_winding_temp_c; C: nacelle_position_deg, nacelle_temp_c, generator_bearing_temp_c)
+> × three seeds = nine scorings. Block bootstrap as ADR-0021 (two-day blocks, 10,000 replicates,
+> seed 20260916, discard rule 1%); each masked read also carries its paired Δ against the seed's
+> unmasked F3 read on the identical windows.
+
+Pre-registered reading:
+
+> If under farm A's pattern the pooled 95% lower bound stays above the split's base rate (0.0388)
+> on at least two of three seeds, a one-channel gap does not null the probe, and the CARE farm-A
+> null is read as failure to transfer. If under a farm's pattern the pooled interval contains
+> 0.0388 on at least two of three seeds, that pattern alone is sufficient to null the probe and
+> that farm's CARE null remains unattributed. The two readings may differ by farm and are reported
+> per farm.
+
+**This reading has a gap.** A masked read whose lower bound clears 0.0388 on exactly one seed, or
+whose interval lies wholly below 0.0388 on two or more, meets neither clause. It is reported as
+measured, and the farm's null stays unattributed. No third clause is added after the numbers
+exist.
+
+The unmasked reference is F3's saved final-step score for each seed on the same 137,025 windows
+(`checkpoints/seed_replication_v0_424c4f33/`), not re-scored. The paired Δ = AUPRC(masked) −
+AUPRC(unmasked) is ADR-0024 §2's paired block bootstrap: the blocks are drawn once per replicate
+and both reads are taken on the identical resampled rows. It is reported beside each masked
+interval and decides nothing.
+
+**These nine rows are also the project's first H2 measurement**: targeted channel dropout at
+inference, forward in time, at the same sites. They will be reused as such. **No H2 result is a
+site-shift result.** The masking here is in-distribution modality dropout at the two training
+sites, and the F5 outcome's limitation applies to every one of these rows.
+
+**3. F6-0b -- bag-of-tokens on CARE.** Registered protocol:
+
+> The G2 bag-of-tokens classifier (ADR-0024 (6), trained on the training sites, unchanged, no
+> refit) is scored on the CARE stride-12 set of ADR-0022 (430,506 windows, 540 positive), pooled
+> and per farm, same bootstrap, base rate the scored set's own.
+
+Pre-registered reading:
+
+> If its pooled interval contains 0.001254, no order-blind classifier transfers either and the
+> null is a property of the token stream across OEMs; if its pooled lower bound exceeds 0.001254,
+> the backbone specifically fails to transfer where an order-blind classifier does not. Reported
+> beside the F5 CARE rows; not a gate.
+
+**This reading has a gap too.** An interval wholly below 0.001254 meets neither clause and is
+reported as measured. Every per-farm row carries its farm's `<nan>` share
+(`configs/eval/README.md`, rule 1).
+
+**4. Cost and resume.** F6-0a is about **1 h of GPU**. That estimate scales F5's measured 20.7
+minutes per CARE scoring of 430,506 windows to this split's 137,025, about 7 minutes a scoring,
+nine scorings. F6-0b is under 30 minutes of CPU. Each scoring checks for its own output before it
+scores and skips it if present. Each row's bootstrap result is written to JSON as it completes.
+The report states how many rows were computed and how many resumed from disk, as the F5 report
+does.
+
+**5. What this addendum does not do.** No arm is pretrained. ADR-0022's verdict, its assignment
+and the checkpoint rule (`final_step` gates) stand. Neither diagnostic can make CARE evaluable, and
+neither reading changes which axis carries H1 or H2. **F6 is not authorised by this addendum**, and
+neither is the execution of F6-0a or F6-0b.
+
 ---
 
 ## ADR-0023 The random-init probe control: can the frozen probe see backbone quality?

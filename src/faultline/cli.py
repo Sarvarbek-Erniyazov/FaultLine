@@ -1470,6 +1470,52 @@ def model_h1_arms(
 
 
 @model_app.command(
+    "h1-score",
+    help="ADR-0025 F6-3 (GPU): score the saved joint and control (iii) probes on the pooled "
+    "stride-12 test split: final R0 (S1, S2), R2 (S3), text withheld on M1 windows (S4), the "
+    "three CARE-farm channel masks (S5), selected-step probes (S6), then the joint backbones' "
+    "validation loss. Trains nothing; no bootstrap. Resume-safe per scoring. --preflight checks "
+    "and reports only.",
+)
+def model_h1_score(
+    gate: Annotated[Path, typer.Option("--gate", help="The H1 gate configuration.")] = Path(
+        "configs/eval/h1_gate_v0.yaml"
+    ),
+    device: Annotated[str | None, typer.Option("--device", help="Torch device.")] = None,
+    check: Annotated[
+        bool, typer.Option("--preflight", help="Check inputs and report each scoring's state.")
+    ] = False,
+) -> None:
+    """Run F6-3's scorings, or check that they can run.
+
+    Args:
+        gate: The H1 gate configuration.
+        device: Torch device; chosen automatically when omitted.
+        check: Only check the inputs and print each scoring's state.
+
+    Raises:
+        typer.Exit: With code 1 when the pre-flight finds a problem.
+    """
+    from faultline.evaluation.h1_scoring import preflight, run_h1_scoring, scoring_layout
+
+    paths = ProjectPaths.resolve()
+    if check:
+        layout = scoring_layout(paths, paths.repo_root / gate)
+        problems, status = preflight(paths, layout)
+        typer.echo(f"output: {layout.out_dir.relative_to(paths.repo_root).as_posix()}")
+        for line in status:
+            typer.echo(line)
+        for problem in problems:
+            typer.echo(f"PROBLEM: {problem}")
+        typer.echo("PREFLIGHT OK" if not problems else "PREFLIGHT FAILED")
+        if problems:
+            raise typer.Exit(code=1)
+        return
+    status_file = run_h1_scoring(paths, paths.repo_root / gate, device)
+    typer.echo(f"wrote {status_file}")
+
+
+@model_app.command(
     "mixture-shards",
     help="Write the M3 mixture's txt and tel+status shards and every stream's run index, "
     "and report per-stream token counts and per-arm token budgets. Trains nothing.",

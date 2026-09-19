@@ -1607,3 +1607,25 @@ def check_naming() -> None:
 
 if __name__ == "__main__":  # pragma: no cover
     app()
+
+
+@model_app.command(
+    "h1-gate",
+    help="ADR-0025 F6-3 (CPU): bootstrap the saved h1-score scorings (B1-B6), apply the §5 rule "
+    "on B1, and write reports/data/h1_gate_v0_<date>.md/.json. Scores nothing. Resume-safe.",
+)
+def model_h1_gate(
+    gate: Annotated[Path, typer.Option("--gate", help="The H1 gate configuration.")] = Path(
+        "configs/eval/h1_gate_v0.yaml"
+    ),
+) -> None:
+    """Bootstrap F6-3's rows, apply the H1 rule and write the report.
+
+    Args:
+        gate: The H1 gate configuration.
+    """
+    from faultline.evaluation.h1_verdict import run_h1_verdict
+
+    paths = ProjectPaths.resolve()
+    report, record = run_h1_verdict(paths, paths.repo_root / gate)
+    typer.echo(f"wrote {report} and {record}")

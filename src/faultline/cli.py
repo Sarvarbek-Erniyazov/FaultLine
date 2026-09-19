@@ -1516,6 +1516,51 @@ def model_h1_score(
 
 
 @model_app.command(
+    "readout",
+    help="ADR-0026 F7'-2 (GPU): the four read-out runs of §3 on saved backbones, three seeds "
+    "each -- mean_all and last_plus_text on the joint backbones, last_plus_text on tel_only's "
+    "and on the random-init ones. Twelve probes under the G3 cadence on tail-anchored R0 "
+    "windows, then twelve scorings of their final-step states on the 137,025-window stride-12 "
+    "test split, with F6-3's window-alignment and selection-split checks. Pretrains nothing; no "
+    "bootstrap. Resume-safe per probe and per scoring. --preflight checks and reports only.",
+)
+def model_readout(
+    config: ConfigOption = Path("configs/eval/readout_v0.yaml"),
+    device: Annotated[str | None, typer.Option("--device", help="Torch device.")] = None,
+    check: Annotated[
+        bool, typer.Option("--preflight", help="Check inputs and report each item's state.")
+    ] = False,
+) -> None:
+    """Run F7'-2's probes and scorings, or check that they can run.
+
+    Args:
+        config: The read-out configuration.
+        device: Torch device; chosen automatically when omitted.
+        check: Only check the inputs and print each probe's and each scoring's state.
+
+    Raises:
+        typer.Exit: With code 1 when the pre-flight finds a problem.
+    """
+    from faultline.evaluation.readout_runs import preflight, readout_layout, run_readout
+
+    paths = ProjectPaths.resolve()
+    if check:
+        layout = readout_layout(paths, paths.repo_root / config)
+        problems, status = preflight(paths, layout)
+        typer.echo(f"output: {layout.out_dir.relative_to(paths.repo_root).as_posix()}")
+        for line in status:
+            typer.echo(line)
+        for problem in problems:
+            typer.echo(f"PROBLEM: {problem}")
+        typer.echo("PREFLIGHT OK" if not problems else "PREFLIGHT FAILED")
+        if problems:
+            raise typer.Exit(code=1)
+        return
+    status_file = run_readout(paths, paths.repo_root / config, device)
+    typer.echo(f"wrote {status_file}")
+
+
+@model_app.command(
     "mixture-shards",
     help="Write the M3 mixture's txt and tel+status shards and every stream's run index, "
     "and report per-stream token counts and per-arm token budgets. Trains nothing.",

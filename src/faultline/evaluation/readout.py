@@ -9,12 +9,15 @@ and joint pretraining's gain is spent recovering the window change's cost. H1' a
 backbone's representation holds that signal **elsewhere in the window**, read by ``mean_all`` and
 ``last_plus_text`` instead.
 
-**This module holds the configuration only.** It was written in ADR-0026's registration commit,
-before any code that builds, trains or scores a text-aware read-out existed. No probe code and no
-scoring code is in that commit (ADR-0026 §6). It reads ``configs/eval/readout_v*.yaml``: the
-read-out definitions, the four runs, the H1' rule and the random-init gate on the instrument, all
-by value. The bootstrap is the gate run's, and the reference side of every H1' difference is
-ADR-0025 §5's unchanged ``tel_only`` final-step read.
+**The configuration is ADR-0026's registration commit; the selector below is F7'-1's.** The
+registration commit held no code that builds, trains or scores a text-aware read-out (ADR-0026
+§6). This module reads ``configs/eval/readout_v*.yaml`` — the read-out definitions, the four
+runs, the H1' rule and the random-init gate on the instrument, all by value — and F7'-1 adds
+:func:`risk_spec`, which turns one registered read-out **name** into the head specification the
+risk model is built from. Nothing chooses a pooling by literal anywhere else: the name comes from
+the configuration, the text positions come from the configuration, and the width the head reads
+follows from both. The bootstrap is the gate run's, and the reference side of every H1' difference
+is ADR-0025 §5's unchanged ``tel_only`` final-step read.
 """
 
 from __future__ import annotations
@@ -26,9 +29,25 @@ from pydantic import Field
 from faultline.config import StrictModel
 from faultline.evaluation.gate_check import BootstrapConfig
 from faultline.evaluation.h1_gate import SelectionSplit
+from faultline.model.risk import RiskSpec, TextPositionRule
 
 #: The read-outs ADR-0026 §2 registers, by name. Nothing else may be probed under this record.
 READOUT_NAMES: frozenset[str] = frozenset({"final_position", "mean_all", "last_plus_text"})
+
+#: What the risk head reads under each registered read-out (ADR-0026 §2). ``final_position`` is
+#: the pooling in force, unchanged: a probe built through this map is the probe built before it.
+READOUT_POOLING: dict[str, Literal["last", "mean", "last_plus_text"]] = {
+    "final_position": "last",
+    "mean_all": "mean",
+    "last_plus_text": "last_plus_text",
+}
+
+#: Hidden layers in the head under every read-out. ADR-0026 §2: these are linear read-outs over a
+#: frozen representation, and ADR-0023 §c's deeper head "would answer a different question".
+READOUT_HEAD_LAYERS: Literal[1, 2] = 1
+
+#: Backbone blocks that train under every read-out: none. The backbones are read frozen (§3).
+READOUT_UNFROZEN_BLOCKS = 0
 
 
 class ProbeProtocol(StrictModel):
@@ -246,3 +265,66 @@ class ReadoutConfig(StrictModel):
     def probes(self) -> int:
         """Probes the runs ask for: one per seed of each run, and one scoring each."""
         return sum(len(run.seeds) for run in self.runs)
+
+
+def risk_spec(
+    config: ReadoutConfig, name: str, head_hidden: float, head_dropout: float, label: str
+) -> RiskSpec:
+    """The head specification one registered read-out is probed through.
+
+    This is the only place a read-out name becomes a pooling. The text positions are attached
+    for ``last_plus_text`` alone, from the configuration's ``text_positions``, and the width the
+    head will read is checked against the width the configuration declares for that read-out
+    (``d_model_blocks`` and ``scalars``), so the record and the module cannot drift apart.
+
+    Args:
+        config: The loaded read-out configuration.
+        name: A registered read-out name.
+        head_hidden: The head's hidden width as a multiple of ``d_model`` (the ladder's).
+        head_dropout: The head's dropout (the ladder's).
+        label: The label the head is trained on.
+
+    Returns:
+        The head specification.
+
+    Raises:
+        KeyError: If no read-out carries that name.
+    """
+    readout = config.readout(name)
+    pooling = READOUT_POOLING[readout.name]
+    positions = None
+    if readout.text_block:
+        positions = TextPositionRule(
+            special_ids=tuple(config.text_positions.special_ids),
+            min_id=config.text_positions.min_id,
+        )
+    spec = RiskSpec(
+        hidden=head_hidden,
+        dropout=head_dropout,
+        label=label,
+        pooling=pooling,
+        layers=READOUT_HEAD_LAYERS,
+        text_positions=positions,
+    )
+    _check_width(readout, spec)
+    return spec
+
+
+def _check_width(readout: Readout, spec: RiskSpec) -> None:
+    """Refuse a read-out whose head width is not the one the configuration registers.
+
+    Args:
+        readout: The registered read-out.
+        spec: The head specification built from it.
+
+    Raises:
+        ValueError: If the two widths disagree at any residual width.
+    """
+    for d_model in (1, 192):
+        declared, built = readout.head_input_width(d_model), spec.input_width(d_model)
+        if declared != built:
+            raise ValueError(
+                f"{readout.name}: the configuration registers a head input of {declared} at "
+                f"d_model {d_model} ({readout.d_model_blocks} blocks + {readout.scalars} "
+                f"scalars), the read-out builds {built}"
+            )

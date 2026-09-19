@@ -57,7 +57,7 @@ from faultline.evaluation.ladder import SplitEval, balanced_training_sampler, bu
 from faultline.evaluation.metrics import RiskScore, score_source
 from faultline.logging_utils import get_logger
 from faultline.model.checkpoints import read_checkpoint
-from faultline.model.risk import RiskModel, RiskSpec, prior_correction
+from faultline.model.risk import RiskModel, RiskSpec, TextPositionRule, prior_correction
 from faultline.model.transformer import ModelSpec, TelemetryDecoder
 from faultline.paths import ProjectPaths
 from faultline.runs import git_sha
@@ -873,9 +873,10 @@ def probe_and_score(
     step_log: Path,
     label: str,
     save_to: Path | None = None,
-    pooling: Literal["last", "mean"] = "last",
+    pooling: Literal["last", "mean", "last_plus_text"] = "last",
     head_layers: Literal[1, 2] = 1,
     unfrozen_blocks: int = 0,
+    text_positions: TextPositionRule | None = None,
     measure_steps: Sequence[int] | None = None,
     measure_initial: bool = False,
     save_final_to: Path | None = None,
@@ -899,7 +900,8 @@ def probe_and_score(
         step_log: Where the probe's per-step training log is written.
         label: The run's label in the training log.
         save_to: Where to write the selected probe's whole state, when given.
-        pooling: What the head reads (ADR-0023 §b): the final position or the window's mean.
+        pooling: What the head reads: the final position (ADR-0023 §a), the window's mean
+            (§b, ADR-0026 (b)), or ADR-0026 (d)'s three blocks.
         head_layers: Hidden layers in the head (ADR-0023 §c): one, or two.
         unfrozen_blocks: Final backbone blocks that train (ADR-0023 §d), at the ladder's
             fine-tune rate, while the head keeps the probe's rate.
@@ -909,6 +911,9 @@ def probe_and_score(
         save_final_to: Where to write the last step's whole state as well, when given.
         score_test: Score the test split with the selected state. Off, no test window is read
             and the result carries empty test arrays (F6-2 trains probes; F6-3 scores them).
+        text_positions: What counts as a text-token position, for ADR-0026's ``last_plus_text``
+            read-out; unused by every other pooling. Saved with the probe, so a scoring rebuilds
+            the head the probe was trained as without consulting a configuration.
 
     Returns:
         The probe's result, with every test window's logit.
@@ -926,6 +931,7 @@ def probe_and_score(
         label=stage.label,
         pooling=pooling,
         layers=head_layers,
+        text_positions=text_positions,
     )
     model = RiskModel(
         inputs.spec,
@@ -980,6 +986,7 @@ def probe_and_score(
                 "pooling": pooling,
                 "head_layers": head_layers,
                 "unfrozen_blocks": unfrozen_blocks,
+                "text_positions": None if text_positions is None else asdict(text_positions),
                 "window_rule": inputs.window_rule,
                 "pad_id": inputs.pad_id,
                 "seed": seed,
@@ -1002,6 +1009,7 @@ def probe_and_score(
                 "pooling": pooling,
                 "head_layers": head_layers,
                 "unfrozen_blocks": unfrozen_blocks,
+                "text_positions": None if text_positions is None else asdict(text_positions),
                 "window_rule": inputs.window_rule,
                 "pad_id": inputs.pad_id,
                 "seed": seed,

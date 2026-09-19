@@ -27,7 +27,7 @@ import time
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 import torch
@@ -47,10 +47,15 @@ from faultline.evaluation.probe_control import (
     ScoredWindows,
     trained_scores_path,
 )
+from faultline.evaluation.readout import (
+    READOUT_HEAD_LAYERS,
+    READOUT_POOLING,
+    READOUT_UNFROZEN_BLOCKS,
+)
 from faultline.evaluation.variance_probe import ProbeInputs, open_probe_inputs, probe_and_score
 from faultline.logging_utils import get_logger
 from faultline.model.checkpoints import read_checkpoint
-from faultline.model.risk import RiskModel, RiskSpec
+from faultline.model.risk import RiskModel, RiskSpec, TextPositionRule
 from faultline.paths import ProjectPaths
 from faultline.runs import git_sha
 from faultline.training.loop import risk_logits
@@ -243,12 +248,34 @@ def paired_rows_cached(
 # =====================================================================================
 
 
+def head_shape(design: str) -> tuple[Literal["last", "mean", "last_plus_text"], Literal[1, 2], int]:
+    """The pooling, hidden layers and unfrozen blocks one design or read-out name stands for.
+
+    ADR-0023's four designs are named in :mod:`faultline.evaluation.probe_control`; ADR-0026's
+    read-outs are named in :mod:`faultline.evaluation.readout` and are linear heads over a frozen
+    backbone, so they carry one hidden layer and no unfrozen block. ``final_position`` is in both
+    vocabularies and means the same thing in each.
+
+    Args:
+        design: An ADR-0023 design name or an ADR-0026 read-out name.
+
+    Returns:
+        The pooling, the head's hidden layers, and the backbone blocks that train.
+
+    Raises:
+        KeyError: If the name is neither.
+    """
+    if design in POOLING:
+        return POOLING[design], HEAD_LAYERS[design], UNFROZEN_BLOCKS[design]
+    return READOUT_POOLING[design], READOUT_HEAD_LAYERS, READOUT_UNFROZEN_BLOCKS
+
+
 def load_saved_probe(probe_path: Path, design: str, inputs: ProbeInputs) -> RiskModel:
     """Load a selected probe, whole, on the inputs' device, in evaluation mode.
 
     Args:
         probe_path: The probe's saved state (``save_to`` of ``probe_and_score``).
-        design: The ADR-0023 design it was trained under.
+        design: The ADR-0023 design or ADR-0026 read-out it was trained under.
         inputs: The opened shards and rung.
 
     Returns:
@@ -259,27 +286,33 @@ def load_saved_probe(probe_path: Path, design: str, inputs: ProbeInputs) -> Risk
     """
     payload = read_checkpoint(probe_path)
     # A probe saved before an option existed was saved at that option's default (§a predates
-    # pooling, §b the layers, §c the unfrozen blocks).
+    # pooling, §b the layers, §c the unfrozen blocks, and every probe before ADR-0026 the
+    # text positions).
     saved = (
         payload.get("pooling", "last"),
         payload.get("head_layers", 1),
         payload.get("unfrozen_blocks", 0),
     )
-    wanted = (POOLING[design], HEAD_LAYERS[design], UNFROZEN_BLOCKS[design])
+    pooling, layers, unfrozen = head_shape(design)
+    wanted = (pooling, layers, unfrozen)
     if saved != wanted:
         raise ValueError(f"{probe_path} was saved as {saved}, not {design} {wanted}")
+    # The rule is read back from the probe itself, so a scoring rebuilds the head the probe was
+    # trained as, whatever a configuration says now.
+    rule = payload.get("text_positions")
     risk = RiskSpec(
         hidden=inputs.ladder_model.head_hidden,
         dropout=inputs.ladder_model.head_dropout,
         label=inputs.ladder.risk.label,
-        pooling=POOLING[design],
-        layers=HEAD_LAYERS[design],
+        pooling=pooling,
+        layers=layers,
+        text_positions=None if rule is None else TextPositionRule(**rule),
     )
     model = RiskModel(
         inputs.spec,
         risk,
         frozen=True,
-        unfrozen_blocks=UNFROZEN_BLOCKS[design],
+        unfrozen_blocks=unfrozen,
         pad_id=payload.get("pad_id"),
     ).to(inputs.device)
     model.load_state_dict({k: v.to(inputs.device) for k, v in payload["state"].items()})

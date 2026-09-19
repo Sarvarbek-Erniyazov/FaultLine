@@ -5,11 +5,23 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+import pytest
+import torch
+
 from faultline.config import load_config
 from faultline.evaluation.axis_gate import AxisGateConfig
 from faultline.evaluation.gate_check import GateCheckConfig
 from faultline.evaluation.h1_gate import H1ArmsConfig, H1GateConfig
-from faultline.evaluation.readout import READOUT_NAMES, ReadoutConfig
+from faultline.evaluation.readout import (
+    READOUT_HEAD_LAYERS,
+    READOUT_NAMES,
+    READOUT_POOLING,
+    READOUT_UNFROZEN_BLOCKS,
+    ReadoutConfig,
+    risk_spec,
+)
+from faultline.model.risk import RiskModel, RiskSpec, TextPositionRule
+from faultline.model.transformer import ModelSpec
 from faultline.tokenizers.layout import SPECIAL_TOKENS, TEXT_CAPACITY, TEXT_OFFSET
 from faultline.training.config import LadderConfig, LadderModel
 
@@ -20,6 +32,8 @@ ARMS = REPO / "configs/train/h1_arms_v0.yaml"
 H1 = REPO / "configs/eval/h1_gate_v0.yaml"
 LADDER = REPO / "configs/train/telemetry_v1.yaml"
 MODEL = REPO / "configs/model/ladder_v0.yaml"
+#: The read-outs in the order ADR-0026 §2 defines them: (a), (b), (d).
+READOUT_NAMES_IN_ORDER = ("final_position", "mean_all", "last_plus_text")
 HEADING = (
     "## ADR-0026 F7': is the read-out the limit? "
     "Text-aware linear probes on the existing joint backbones"
@@ -206,3 +220,85 @@ def test_the_registration_hash_is_pending_or_recorded_in_adr_0026() -> None:
     adr = _adr_0026()
     head = adr[: adr.index("\n### ")]
     assert f"`{registered}`" in head
+
+
+# =====================================================================================
+# the selector: one registered name, one head specification (ADR-0026 §2)
+# =====================================================================================
+
+TINY = ModelSpec(name="T", d_model=32, n_layer=2, n_head=4, context=48, vocab_size=64)
+
+
+def _readout() -> ReadoutConfig:
+    return load_config(READOUT, ReadoutConfig)
+
+
+def _head(name: str) -> RiskSpec:
+    model = load_config(MODEL, LadderModel)
+    config = _readout()
+    return risk_spec(config, name, model.head_hidden, model.head_dropout, config.label)
+
+
+def test_the_selector_builds_each_registered_read_out_by_name() -> None:
+    config = _readout()
+    final, mean, text_aware = (_head(name) for name in READOUT_NAMES_IN_ORDER)
+    assert (final.pooling, mean.pooling) == ("last", "mean")
+    assert text_aware.pooling == "last_plus_text"
+    # Only (d) carries the text-position rule, and it carries the configuration's values.
+    assert (final.text_positions, mean.text_positions) == (None, None)
+    assert text_aware.text_positions == TextPositionRule(
+        special_ids=tuple(config.text_positions.special_ids), min_id=config.text_positions.min_id
+    )
+    assert text_aware.text_positions is not None
+    assert text_aware.text_positions.special_ids == (4, 5)
+    assert text_aware.text_positions.min_id == 1184
+    # Every read-out is a linear head over a frozen backbone: one hidden layer, no unfrozen block.
+    assert {spec.layers for spec in (final, mean, text_aware)} == {1}
+    assert (READOUT_HEAD_LAYERS, READOUT_UNFROZEN_BLOCKS) == (1, 0)
+    assert set(READOUT_POOLING) == set(READOUT_NAMES)
+
+
+def test_the_selector_builds_the_width_the_configuration_registers() -> None:
+    config = _readout()
+    for name in READOUT_NAMES_IN_ORDER:
+        registered = config.readout(name)
+        for d_model in (32, 192):
+            built = _head(name).input_width(d_model)
+            assert built == registered.head_input_width(d_model)
+            assert built == registered.d_model_blocks * d_model + registered.scalars
+    assert _head("last_plus_text").input_width(192) == 385
+
+
+def test_the_selector_refuses_a_read_out_it_does_not_register() -> None:
+    with pytest.raises(KeyError, match="no read-out named"):
+        _head("mlp_mean_pooled")
+
+
+def test_a_final_position_probe_through_the_selector_is_the_probe_in_force() -> None:
+    # The head in force is built from RiskSpec(pooling="last"). Selecting "final_position" by
+    # name must build that module, parameter for parameter and random number for random number,
+    # and score a fixed window to the same bits -- or every number H1 read would move under a
+    # change that is meant to add read-outs beside it, not alter it.
+    model = load_config(MODEL, LadderModel)
+    in_force = RiskSpec(
+        hidden=model.head_hidden,
+        dropout=model.head_dropout,
+        label=_readout().label,
+        pooling="last",
+        layers=1,
+    )
+    selected = _head("final_position")
+    assert selected == in_force
+    torch.manual_seed(11)
+    before = RiskModel(TINY, in_force, frozen=True, pad_id=0).eval()
+    torch.manual_seed(11)
+    after = RiskModel(TINY, selected, frozen=True, pad_id=0).eval()
+    states = (before.state_dict(), after.state_dict())
+    assert list(states[0]) == list(states[1])
+    assert all(torch.equal(states[0][k], states[1][k]) for k in states[0])
+    window = torch.cat(
+        [torch.randint(1, 64, (2, 30)), torch.zeros((2, 18), dtype=torch.long)], dim=1
+    )
+    with torch.no_grad():
+        assert torch.equal(before.pool(window), after.pool(window))
+        assert torch.equal(before(window), after(window))

@@ -5055,6 +5055,11 @@ the **137,025-window stride-12 pooled test split (5,312 positive)**.
 `R-rand-d` is ADR-0023's random-init control re-applied to the new read-out: each backbone is the
 S2 decoder as pretraining at that init seed constructs it, with **no optimiser step**, exactly as
 `configs/train/probe_control_v0.yaml` constructs it. Only the read-out differs from §a.
+**Which backbones, recorded by F7'-1:** the three saved under that configuration,
+`checkpoints/probe_control_v0_00d2d3c0/S2_random_seed{1,2,3}_probe.pt`, whose spec is S2 at
+`vocab_size` 33,952 and context 2,048 — reused rather than re-drawn, so the gate is read against
+the backbones ADR-0023 probed; where such a file is absent the backbone is constructed fresh at
+that init seed with the joint spec, which is the same construction, and the run record says which.
 
 **Cost.** ADR-0025 §7's measured per-item rates, with the same 1.094 = 2,048 / 1,872 padding
 factor:

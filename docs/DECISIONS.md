@@ -4810,3 +4810,108 @@ authorisation.
 - `configs/eval/h1_gate_v0.yaml`: this rule, by value.
 
 joint_v1's shard directory `joint_v1_<hash>` does not exist until `mixture-shards` is re-run.
+
+### Outcome of F6-3, 2026-09-19 -- H1 is INCONCLUSIVE at this budget
+
+**Runs.**
+- **Scoring.** `faultline model h1-score` ran on the GPU at `4cf68b9` from a clean tree, launched
+  by the author. It made all 27 scorings in 3.33 GPU-hours, plus 4.0 min of selection re-checks
+  and 0.7 min of validation loss. Every scoring was computed and none was resumed.
+  `h1_scoring.py` sha256 is `5340406c…549d`.
+- **Bootstrap and report.** `faultline model h1-gate` ran on the CPU in 15.1 min.
+- **Report.** `reports/data/h1_gate_v0_20260919.md` and its `.json`, committed in `4e3008c`.
+  Configuration `h1_gate_v0.yaml` has hash `a3f6606a`.
+
+**Checks.** Every scoring covers F3's windows exactly: 137,025 windows, 5,312 positive, with the
+same rows in the same order. All 12 probes' re-scored selection AUPRCs equal F6-2's records
+exactly. Every mask overwrote exactly retained steps × channels telemetry slots, and no text
+token. No interval discarded a replicate.
+
+**B1 and the verdict.** Δ = AUPRC(joint) − AUPRC(`tel_only`), same seed, R0, final-step probes:
+
+| seed | joint | `tel_only` | paired Δ [95%] |
+| --- | --- | --- | --- |
+| 1 | 0.0602 | 0.0580 | +0.0022 [-0.0034, +0.0068] |
+| 2 | 0.0554 | 0.0576 | -0.0022 [-0.0084, +0.0021] |
+| 3 | 0.0497 | 0.0515 | -0.0018 [-0.0060, +0.0021] |
+
+The median Δ is **-0.0018**. No lower bound exceeds 0, so SUPPORTED fails. Seeds 2 and 3 have
+upper bounds below 0.005, but seed 1's upper bound is 0.0068, so REFUTED fails too. **Under §5,
+H1 is INCONCLUSIVE at this budget.** No comparison was untrusted. INCONCLUSIVE is a named
+clause, so the "reported as measured" sentence does not apply. Nothing below changes the verdict.
+
+**B2, decomposition through control (iii).**
+- **What the input change costs.** Moving from the M1 window to the tail-anchored window with
+  text, on a backbone that never read text, lowers AUPRC on every seed. Δ(iii − `tel_only`) is
+  -0.0122, -0.0096 and -0.0076, and every interval lies below zero.
+- **What joint pretraining adds at identical input.** Δ(joint − iii) is +0.0144, +0.0075 and
+  +0.0059, and every interval lies above zero. Joint pretraining recovers roughly what the input
+  change costs, and no more.
+
+**B3, R2.** Removing every provider Stop row moves the joint read by -0.0028 [-0.0058, -0.0000]
+on seed 1, and by -0.0001 and +0.0000 on seeds 2 and 3. The recurrence channel carries at most
+about 0.003 AUPRC of the joint read, on one seed.
+
+**B4, strata.** Δ(joint − `tel_only`) has no consistent sign in either stratum:
+- **Has status (97,810 / 4,224):** +0.0020, -0.0034 and -0.0082. Only seed 3's interval excludes
+  zero, and it is negative.
+- **No status (39,215 / 1,088):** -0.0107, -0.0050 and +0.0085. Seeds 1 and 3 exclude zero, with
+  opposite signs.
+
+**B5, the first H2 rows. Reported only, forward in time at the same sites; never a site-shift
+result.**
+- **Text withheld.** The joint probe scored through the joint backbone on the 1,872-token M1
+  windows reads 0.0558, 0.0543 and 0.0543. **This is a different window from the R0 and masked
+  reads, and is not comparable with them. No paired Δ is given.**
+- **Channel masks.** Each is imposed on the R0 windows with text present, and paired against the
+  seed's R0 joint read:
+
+  | farm | seed 1 | seed 2 | seed 3 |
+  | --- | --- | --- | --- |
+  | A | -0.0009 | **-0.0085** | -0.0001 |
+  | B | -0.0026 | -0.0011 | +0.0014 |
+  | C | +0.0011 | +0.0017 | **+0.0042** |
+
+  Only the bold values have an interval that excludes zero.
+- **Beside F6-0a.** F6-0a's `tel_only` masked rows, on their own 1,872-token windows, put farm C
+  below its unmasked read on seeds 1 and 2. The joint arm does not repeat that.
+- **Deferred.** Coverage and selective risk remain deferred (§6).
+
+**B6, selected against final. Reported only.** Δ(final − selected), paired:
+
+| probe | seed 1 | seed 2 | seed 3 |
+| --- | --- | --- | --- |
+| joint | +0.0009 [-0.0008, +0.0028] | **+0.0035** [+0.0014, +0.0052] | **+0.0033** [+0.0012, +0.0052] |
+| control (iii) | -0.0010 | +0.0022 | +0.0024 [+0.0000, +0.0049] |
+
+Joint seed 3's selection preferred step 200 over the final step by 0.022 validation AUPRC. On
+test, its final read is nonetheless **above** its selected read, and the interval excludes zero.
+The pre-written sentence applies only if seed 3's final read on test were below its selected read
+by more than its paired interval, and it was not. **This is not evidence against the fixed-final
+rule of ADR-0022's addendum.** Where the test favours either checkpoint, it favours the final one.
+
+**Validation next-token loss, for the record.** Each backbone is read at its final pretraining
+step. The tel+status windows are 500 per training site from `tel_status_normalized` val.
+
+| seed | joint, tel+status val | joint, tel val | `tel_only`, tel val |
+| --- | --- | --- | --- |
+| 1 | 3.606 | 3.405 | 3.317 |
+| 2 | 3.596 | 3.418 | 3.276 |
+| 3 | 3.675 | 3.473 | 3.316 |
+
+The joint arm's `tel` loss is 0.09 to 0.16 nats above `tel_only`'s on every seed. It spent 70%
+of the same token budget on text-bearing streams.
+
+**The two caveats, carried on every row.**
+1. **Forward in time, same sites.** ADR-0009: a temporal hold-out with a change in what is
+   labelled, not a drift test.
+2. **Message volume.** Kelmarsh positives average 67.2 status tokens in train (stride 6) and
+   190.1 in test (stride 12). The joint probe learns on the train mix and is scored on the test
+   mix.
+
+**What F7 is conditional on.** §1 defers `joint_status_raw` and `joint_no_txt` to F7,
+"conditional on H1 not being refuted here". H1 was not refuted, so that condition is met, but
+narrowly: two of the three seeds' upper bounds sit below 0.005. **F7 is not authorised by this
+outcome.** It needs the user's authorisation. Whether it is worth its cost is a separate question:
+- At this budget, B1 cannot resolve Δ from zero on any seed.
+- B2 says the joint arm's pretraining gain is spent recovering the input change's cost.

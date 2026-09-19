@@ -1,0 +1,162 @@
+# The text-aware read-outs, version 0. Decision record: docs/DECISIONS.md, ADR-0026, written in the
+# same commit as this file, BEFORE any code reads it and before any read-out probe exists. That
+# commit's hash is recorded below and inside ADR-0026 by the commit after it.
+#
+# WHY (ADR-0026 §0). H1 is INCONCLUSIVE. The order-blind status-only classifier scores 0.0725 on
+# the same test windows, above every probe of either arm (0.050-0.060); the joint backbone's
+# last-position probe barely moves when the text enters the window; and joint pretraining's gain is
+# spent recovering what the window change costs. The read-out in force is a linear head on the last
+# real position, which under ADR-0025 §2 is a telemetry bin token. It does not harvest the text
+# signal. Whether the representation holds that signal elsewhere in the window is what H1' tests.
+#
+# THE H1' RULE (ADR-0026 §4). Same-seed paired Delta = AUPRC(last_plus_text on joint) -
+# AUPRC(tel_only under final_position, its F3 final read), pooled Kelmarsh + Penmanshiel stride-12
+# forward-in-time test split, paired block bootstrap as ADR-0024, final-step probes, R0 windows.
+# Smallest effect of interest 0.005 AUPRC. SUPPORTED if all three paired lower bounds exceed zero
+# and the median Delta exceeds 0.005; REFUTED if all three paired upper bounds are below 0.005;
+# otherwise INCONCLUSIVE at this budget. Any outcome the clauses do not name is reported as
+# measured; no clause is added afterwards.
+#
+# THE RANDOM-INIT GATE ON THE INSTRUMENT (ADR-0026 §4). last_plus_text on the trained joint
+# backbone must exceed last_plus_text on every random-init backbone, same-seed and cross-seed:
+# nine of nine paired lower bounds above zero. On FAIL, H1' is NOT EVALUABLE.
+#
+# THIS FILE AUTHORISES NOTHING. No probe code and no scoring code exists in its commit (ADR-0026
+# §6). tests/evaluation/test_readout.py checks every restated value below against the file it comes
+# from, and the rule and the gate against ADR-0026's text.
+
+version: 0
+
+# The registration commit of ADR-0026. "pending" in that commit; the commit after it writes the
+# hash here and in ADR-0026, and changes nothing else.
+registered_in: "pending"
+
+axis_config: "configs/eval/axis_gate_v0.yaml" # the temporal axis: shards, label, counts
+h1_gate_config: "configs/eval/h1_gate_v0.yaml" # H1's rule, whose reference side this one keeps
+arms_config: "configs/train/h1_arms_v0.yaml" # the joint backbones, their probe and its windows
+random_init_config: "configs/train/probe_control_v0.yaml" # ADR-0023's random-init construction
+ladder_config: "configs/train/telemetry_v1.yaml" # the probe stage's recipe
+model_config_path: "configs/model/ladder_v0.yaml" # the head's hidden width
+
+label: "narrow_within_24h"
+axis: "temporal" # axis_gate_v0.yaml axes.temporal: in-distribution, forward in time, not shift
+stride: 12
+windows: 137025
+positives: 5312
+
+# ADR-0021's interval as ADR-0024 pairs it, unchanged (configs/train/gate_check_v0.yaml, bootstrap).
+bootstrap:
+  block_steps: 288 # two-day blocks: a window's end step // 288 within its shard
+  replicates: 10000
+  seed: 20260916
+  confidence: 0.95
+  max_discarded_share: 0.01 # above this, a comparison is untrusted and counts toward no clause
+
+# The probe protocol every read-out shares (ADR-0026 §2). Only the pooling differs between them.
+probe:
+  cadence_config: "configs/train/probe_cadence_v0.yaml" # G3: 20 measurements in 1,000 steps
+  checkpoint: "final_step" # ADR-0022's addendum; the fixed-final rule stays in force
+  window_rule: "tail_anchored_2048" # ADR-0025 §2
+  context_tokens: 2048
+  status_rows: "all" # R0
+  sampling: "balanced"
+  head_hidden: 1.0 # ladder_v0.yaml head_hidden: one hidden layer of d_model
+  learning_rate: 0.002 # telemetry_v1.yaml risk.probe.learning_rate, the §a probe's own rate
+  train_stride: 6 # telemetry_v1.yaml train_stride
+  selection: # drawn as F3 drew it (ADR-0024 §5), as h1_arms_v0.yaml restates it
+    shard_keys: ["kelmarsh__val", "penmanshiel__val"]
+    windows_per_source: 3000
+    stride: 1
+    seed: 20260912
+
+# What counts as a text-token position for the last_plus_text read-out (ADR-0026 §2): the two
+# structural markers, and the text block of the joint layout (ADR-0003, src/faultline/tokenizers/
+# layout.py: specials [0, 32), text [1184, 33952)).
+text_positions:
+  special_ids: [4, 5] # <txt>, </txt>
+  min_id: 1184
+  empty_window: "zero_vector" # a window with no text position contributes the zero vector
+
+# ADR-0026 §2, by name and definition. `d_model_blocks` and `scalars` give the head's input width
+# as d_model_blocks * d_model + scalars.
+readouts:
+  - name: "final_position"
+    pooling: "last_real"
+    d_model_blocks: 1
+    scalars: 0
+    text_block: false
+    in_force: true # the probe in force; reference only, no new run
+  - name: "mean_all"
+    pooling: "mean_real"
+    d_model_blocks: 1
+    scalars: 0
+    text_block: false
+    in_force: false
+  - name: "last_plus_text"
+    pooling: "last_real_plus_text_mean"
+    d_model_blocks: 2
+    scalars: 1 # the has-text indicator
+    text_block: true
+    in_force: false
+
+# ADR-0026 §3. Every backbone exists on disk; nothing is pretrained. Twelve probes, twelve scores.
+runs:
+  - name: "R-joint-b"
+    readout: "mean_all"
+    backbone: "joint"
+    seeds: [1, 2, 3]
+  - name: "R-joint-d"
+    readout: "last_plus_text"
+    backbone: "joint"
+    seeds: [1, 2, 3]
+  - name: "R-ctrl-d"
+    readout: "last_plus_text"
+    backbone: "tel_only" # control (iii)'s backbones, on the same windows
+    seeds: [1, 2, 3]
+  - name: "R-rand-d"
+    readout: "last_plus_text"
+    backbone: "random_init" # ADR-0023's control re-applied to the new read-out
+    seeds: [1, 2, 3]
+
+# ADR-0026 §4. The reference side is ADR-0025 §5's, unchanged: tel_only's saved final-step scores.
+rule:
+  arm_readout: "last_plus_text"
+  arm_backbone: "joint"
+  reference_readout: "final_position"
+  reference_backbone: "tel_only"
+  pairing: "same_seed" # seed k with seed k, on identical (turbine, year, end step) rows
+  seeds: [1, 2, 3]
+  checkpoint: "final_step"
+  windows: "R0"
+  smallest_effect: 0.005
+  # SUPPORTED: every paired lower bound > 0, and the median of the three point Deltas > 0.005.
+  supported_lower_bound_above: 0.0
+  supported_median_above: 0.005
+  # REFUTED: every paired upper bound < 0.005.
+  refuted_upper_bound_below: 0.005
+  otherwise: "inconclusive"
+
+# ADR-0026 §4. Must pass for H1' to be read at all.
+random_init_gate:
+  readout: "last_plus_text"
+  arm_backbone: "joint"
+  reference_backbone: "random_init"
+  pairing: "same_and_cross_seed" # 3 trained x 3 random-init
+  comparisons: 9
+  lower_bound_above: 0.0
+  on_failure: "not_evaluable"
+
+# Reported beside the verdict, each with its paired interval; none decides anything (ADR-0026 §4).
+reported:
+  - "d_joint_vs_d_control" # does joint pretraining matter once the text has a direct path
+  - "b_joint_vs_a_joint" # what mean pooling alone buys
+  - "d_joint_vs_status_only_bag" # against control (ii)'s 0.0725; scores exist from F6-1b
+  - "strata_has_status"
+  - "strata_no_status"
+  - "selected_vs_final" # for every new probe; the fixed-final rule stays in force
+
+# Carried in full on every row of every table (ADR-0026 §4).
+caveats:
+  - "adr_0009"
+  - "forward_in_time_same_sites"
+  - "message_volume_shift"

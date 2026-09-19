@@ -4915,3 +4915,252 @@ narrowly: two of the three seeds' upper bounds sit below 0.005. **F7 is not auth
 outcome.** It needs the user's authorisation. Whether it is worth its cost is a separate question:
 - At this budget, B1 cannot resolve Δ from zero on any seed.
 - B2 says the joint arm's pretraining gain is spent recovering the input change's cost.
+
+---
+
+## ADR-0026 F7': is the read-out the limit? Text-aware linear probes on the existing joint backbones
+
+**Status:** Accepted; **registered 2026-09-20, before any read-out code, probe or scoring of it
+exists** · **Date:** 2026-09-20.
+**Commit:** this record, `configs/eval/readout_v0.yaml`, its configuration classes and their test
+were committed together in **`pending`**, before any code that builds, trains or scores a
+text-aware read-out existed. The hash is recorded here by the commit after it. **Nothing in this
+record authorises a run** (§6).
+
+**This is a second pre-registered test of H1 with a changed instrument.** It is registered *after*
+H1's INCONCLUSIVE result and after the three rows of §0 were seen. It is not a re-reading of the
+H1 numbers and it adds no clause to ADR-0025 §5. H1's verdict stands as written; H1' below is a
+separate hypothesis with its own rule, fixed here before any read-out is trained.
+
+### 0. Why: three measured rows locate the reason H1 was inconclusive
+
+H1 is INCONCLUSIVE. Same-seed paired Δ = AUPRC(joint) − AUPRC(`tel_only`) is **+0.0022
+[−0.0034, +0.0068]**, **−0.0022 [−0.0084, +0.0021]** and **−0.0018 [−0.0060, +0.0021]** on seeds
+1, 2 and 3; the median is **−0.0018** and the three upper bounds are **0.0068 / 0.0021 / 0.0021**
+(`reports/data/h1_gate_v0_20260919.md`, B1). At this budget nothing separates the arms.
+
+Three rows measured beside it say where the failure sits.
+
+**(a) The status text carries risk signal.** Control (ii), the order-blind bag-of-tokens over the
+status region only (ids ≥ 1,184 plus `<txt>`/`</txt>`, an empty window a zero histogram), scores
+**0.0725 [0.0537, 0.0979]** on the same 137,025 stride-12 test windows
+(`reports/data/h1_controls_v0_20260918.md`, §2, R0). Every probe of either arm sits between
+**0.050 and 0.060**: joint 0.0602 / 0.0554 / 0.0497 and `tel_only` 0.0580 / 0.0576 / 0.0515
+(h1_gate B1). A histogram of the strings, with no order and no model, is **above every probe**.
+Within the has-status stratum the gap is wider still: control (ii) reads **0.0943
+[0.0697, 0.1268]** against the tel bag's 0.0595 (h1_controls §3).
+
+**(b) Adding the text to the window barely moves the last-position probe.** The joint backbone's
+final-step probe reads **0.0558 / 0.0543 / 0.0543** with text withheld, on `tel_only`'s 1,872-token
+M1 windows, and **0.0602 / 0.0554 / 0.0497** with the text present on the R0 tail-anchored windows
+(h1_gate B5 and B1). Those are different windows and ADR-0025 §6 forbids pairing them, so no Δ is
+claimed — but the two columns overlap seed for seed. Putting the text in front of the model changes
+this read-out by roughly nothing, in either direction.
+
+**(c) What joint pretraining buys is spent on the window, not on the text.** Control (iii) is
+`tel_only`'s frozen backbone with a new §a probe on the joint windows. Δ(iii − `tel_only`), the
+input change alone — truncation plus text presence on a backbone that never read text — is
+**−0.0122 / −0.0096 / −0.0076**, every interval below zero. Δ(joint − iii), joint pretraining at
+identical input, is **+0.0144 / +0.0075 / +0.0059**, every interval above zero (h1_gate B2). Joint
+pretraining recovers about what the window change costs, and no more.
+
+**The inference.** The registered read-out is a linear head on the hidden state at the **last real
+position** of the window. Under ADR-0025 §2's `tail_anchored_2048` rule that position is the last
+token of telemetry step *t* — a telemetry bin token, never a text token. Rows (a), (b) and (c)
+together say that this read-out **does not harvest the text signal that row (a) proves is present
+in the window**. What they do not say is whether the signal is absent from the backbone's
+representation or merely absent from that one position. **That is the open question this record
+tests, and the only one it tests.** A null here does not become a claim about the text pathway; it
+becomes a claim about the pathway *and* every read-out named in §2.
+
+### 1. Why not F7 as registered: `joint_status_raw` and `joint_no_txt` are withdrawn
+
+ADR-0025 §1 defers two arms to F7 "conditional on H1 not being refuted here": `joint_status_raw`
+(ADR-0017's convention ablation) and `joint_no_txt` (no narrative stream). That condition is met,
+but only because seed 1's upper bound is **0.0068**; seeds 2 and 3 are both below 0.005.
+
+Both arms vary **what the backbone is pretrained on** and read the result through the §a probe.
+Section 0 says that probe does not read the text. Two arms that differ only in their text diet,
+compared through an instrument that does not respond to text, return nulls that **cannot
+discriminate between the arms and the instrument**. Their cost would buy a measurement whose
+negative result is already explained.
+
+**They are withdrawn from F7, not deferred.** Withdrawn is the honest word: deferring implies the
+question is still queued, and it is not. **They may be revisited only if H1' below is SUPPORTED** —
+that is, only once a read-out exists that demonstrably reads the text. If H1' is REFUTED, NOT
+EVALUABLE or INCONCLUSIVE, they stay withdrawn and the record says so.
+
+### 2. The read-outs, registered by name and definition
+
+Three read-outs. Each is a **linear head** — the head in force, one hidden layer at the existing
+head hidden width (`configs/model/ladder_v0.yaml`, `head_hidden: 1.0`, a hidden layer of
+`d_model`), `RiskSpec` unchanged otherwise. Every probe is trained with **balanced sampling**, the
+**G3 cadence** (`configs/train/probe_cadence_v0.yaml`: step 0, every 25 to 300, then every 100;
+20 measurements in a 1,000-step probe), read at its **final step** under the fixed-final rule of
+ADR-0022's addendum, on the **R0 tail-anchored windows of ADR-0025 §2**, with the **same optimiser
+and learning rate as the §a probe** (`configs/train/telemetry_v1.yaml`, `risk.probe`: 2e-3,
+16 windows × 2 accumulation, balanced at `positive_fraction` 0.5, under that file's optimiser
+block).
+
+Let `h` be the backbone's final hidden states over the window, of shape `(time, d_model)`; let a
+position be **real** when its input id is not `<pad>`; let `L` be the index of the last real
+position.
+
+- **(a) `final_position`** — the probe in force. Head input `h[L]`, width `d_model`. **Reference
+  only: no new run.** Its numbers are h1_gate B1's joint column and F3's `tel_only` column.
+- **(b) `mean_all`** — head input the **mean of `h` over all real positions** of the window; pads
+  are excluded from both the sum and the divisor. Width `d_model`. This is `RiskModel.pool`'s
+  `mean` branch under `pad_id`, and it is ADR-0023 §b's pooling re-applied to a window that now
+  holds text.
+- **(d) `last_plus_text`** — head input the concatenation of three blocks, in this order:
+  1. `h[L]`, the hidden state at the last real index — `d_model` values;
+  2. the **mean of `h` over the window's text-token positions** — `d_model` values. A position is
+     a text-token position when its input id is `<txt>` (4), `</txt>` (5), or **≥ 1,184** (the
+     text block of the joint layout, ADR-0003). When the window holds no such position this block
+     is the **zero vector**;
+  3. a scalar **has-text indicator**: 1.0 when the window holds at least one text-token position,
+     0.0 otherwise.
+
+  Head input width is **2·`d_model` + 1**. On a window with no text the second block is zero and
+  the third is a constant, so **(d) degrades to (a) plus a constant** — the read-out cannot be
+  worse-posed than the one in force on the 39,215 status-empty windows.
+
+There is no read-out (c). The letters name designs, not positions in a list, and (c) is ADR-0023's
+two-hidden-layer head, which is not re-used here: **these are linear read-outs over a frozen
+representation, and a deeper head would answer a different question** (ADR-0023 §c's reasoning,
+unchanged).
+
+**A unit test on a synthetic padded window asserts, before any GPU run:** that (b) excludes pad
+positions from both numerator and denominator; that (d)'s text-mean block averages **exactly** the
+text-token positions as defined above and is the zero vector for a window holding none; and that
+(d)'s first block equals `RiskModel.pool`'s output under the `last` pooling with `pad_id` set.
+
+### 3. Runs: twelve probes on saved backbones, nothing pretrained
+
+Every backbone in this record **already exists on disk**. No arm is pretrained, no shard is built,
+and `tel_only`'s and joint's saved backbones are read frozen.
+
+| run | read-out | backbones | seeds | probes |
+| --- | --- | --- | --- | ---: |
+| `R-joint-b` | (b) `mean_all` | `joint` (F6-2) | 1, 2, 3 | 3 |
+| `R-joint-d` | (d) `last_plus_text` | `joint` (F6-2) | 1, 2, 3 | 3 |
+| `R-ctrl-d` | (d) `last_plus_text` | `tel_only` (F3), i.e. control (iii)'s backbones | 1, 2, 3 | 3 |
+| `R-rand-d` | (d) `last_plus_text` | random-init S2, no optimiser step | init 1, 2, 3 | 3 |
+
+All four run on the **same** ADR-0025 §2 R0 windows, at the same strides: probe training at stride
+6 on the pooled Kelmarsh + Penmanshiel train index, selection on the probes' selection split
+(`kelmarsh__val` + `penmanshiel__val`, 3,000 windows each, stride 1, seed 20260912), scoring on
+the **137,025-window stride-12 pooled test split (5,312 positive)**.
+
+`R-rand-d` is ADR-0023's random-init control re-applied to the new read-out: each backbone is the
+S2 decoder as pretraining at that init seed constructs it, with **no optimiser step**, exactly as
+`configs/train/probe_control_v0.yaml` constructs it. Only the read-out differs from §a.
+
+**Cost.** ADR-0025 §7's measured per-item rates, with the same 1.094 = 2,048 / 1,872 padding
+factor:
+
+| item | count | seconds each | seconds |
+| --- | ---: | ---: | ---: |
+| probes, G3 cadence | 12 | 447.2 × 1.094 | 5,870.9 |
+| scorings, 137,025 windows | 12 | 407.9 × 1.094 | 5,354.9 |
+| **F7' in all** | | | **11,225.8 s ≈ 3.1 GPU-h** |
+
+**The author launches the runs, as in F6-2 and F6-3. Claude Code prepares the commands and reads
+the results.** Each probe carries the two checks F6-3 ran: its **selection-split re-check** (the
+re-scored selection AUPRC must equal the training run's record) and the **window-alignment check**
+(the scored rows must be F3's windows exactly — 137,025 rows, 5,312 positive, the same rows in the
+same order), both as `src/faultline/evaluation/h1_scoring.py` performs them.
+
+### 4. The rules
+
+**H1' — this decides.**
+
+> Same-seed paired Δ = AUPRC((d) `last_plus_text` on the `joint` backbone) − AUPRC(`tel_only` under
+> (a) `final_position`, its F3 final read), pooled Kelmarsh + Penmanshiel stride-12 forward-in-time
+> test split, paired block bootstrap as ADR-0024 (two-day blocks of 288 steps, 10,000 replicates,
+> seed 20260916, discard rule 1%), R0 windows of ADR-0025 §2, final-step probes. Smallest effect of
+> interest: 0.005 AUPRC. H1' is SUPPORTED if all three paired lower bounds exceed zero and the
+> median Δ exceeds 0.005; REFUTED if all three paired upper bounds are below 0.005; otherwise
+> INCONCLUSIVE at this budget. A comparison discarding more than 1% of its replicates counts toward
+> neither clause. Anything the clauses do not name is reported as measured, and no clause is added
+> afterwards.
+
+Read as follows, fixed here: pairing is seed *k* of the joint side with seed *k* of `tel_only`, on
+identical (turbine, year, end step) rows in every replicate; a block is a window's end step // 288
+within its shard; the median Δ is the median of the three full-sample point estimates. The
+reference side is **unchanged from ADR-0025 §5** — the same saved `tel_only` final-step scores,
+0.0580 / 0.0576 / 0.0515 — so H1 and H1' differ in the instrument on the joint side and in nothing
+else.
+
+**The random-init gate on the instrument — this must pass for H1' to be read at all.**
+
+> (d) `last_plus_text` on the trained `joint` backbone must exceed (d) on every random-init
+> backbone, **same-seed and cross-seed**: all **nine of nine** paired lower bounds strictly above
+> zero, under ADR-0024's paired block bootstrap on the same windows.
+
+If it fails, **H1' is NOT EVALUABLE**, and the sentence is written now so that it cannot be written
+later: *whatever (d) harvests is the tokens' embeddings, not the pretraining — a bag of text
+embeddings pushed through an untrained backbone already reads the status text.* In that case no Δ
+from the H1' rule is reported as a verdict; the measured values are reported as measured.
+
+**Reported beside the verdict, deciding nothing. Each carries its paired interval.**
+
+> - **(d)-joint vs (d)-control**: `R-joint-d` against `R-ctrl-d`, same seed. Does joint pretraining
+>   matter once the text has a direct path to the head?
+> - **(b)-joint vs (a)-joint**: `R-joint-b` against h1_gate B1's joint column, same seed. What mean
+>   pooling alone buys, with no text-specific block.
+> - **(d)-joint vs the order-blind status-only classifier**: against control (ii)'s **0.0725
+>   [0.0537, 0.0979]**, whose per-row scores already exist from F6-1b, paired on the identical
+>   137,025 rows. **If a linear read of the SLM's text-position states cannot match a histogram of
+>   the strings, the sequence model adds nothing over counting them.**
+> - **(d)-joint strata**: AUPRC and paired Δ within the **has-status** and **no-status** strata of
+>   the R0 windows, blocks re-formed within each stratum.
+> - **Selected against final**, for every new probe, as h1_gate B6 reports it. The fixed-final rule
+>   stays in force; nothing here changes which probe is read.
+
+**Caveats carried on every row of every table**, in full, as h1_gate carries them: (1) **ADR-0009**
+— the late split is a temporal hold-out with a change in what is labelled, not a drift test, and
+every late-test result is reported both with and without the anemometer-defect events;
+(2) **forward in time, same sites** — this is the in-distribution temporal test set; no row here is
+a site-shift result; (3) **message-volume shift** — Kelmarsh positives average **67.2** status
+tokens in train (stride 6) and **190.1** in test (stride 12), so every probe learns on the train
+mix and is scored on the test mix.
+
+### 5. Closure: the experimental programme ends with F7', whatever it returns
+
+**Whatever F7' returns, this is the last experiment.** No further arm, read-out or axis is
+registered after it. The record the dissertation is written against then holds:
+
+1. **Two pre-registered site-shift negatives, with attribution.** Hill of Towie is NOT EVALUABLE
+   under ADR-0021's gate, and CARE is not evaluable at chance under ADR-0022 (F5). The project has
+   no evaluable shift axis, and F6-0 attributed farm A's null to transfer failure, with farms B and
+   C unattributed.
+2. **Telemetry bag-of-tokens parity on three seeds.** ADR-0024 G2: the frozen probe is at parity
+   with an order-blind histogram of the telemetry tokens on every seed, every interval spanning
+   zero.
+3. **A measured text signal, and a measured answer to whether the SLM converts it.** Control (ii)
+   reads 0.0725 on the status strings alone; H1 is INCONCLUSIVE through the last-position read-out;
+   H1' says whether a text-aware linear read-out of the same backbones does better, and the
+   random-init gate says whether any such gain is the pretraining or the embeddings.
+4. **H2's first rows.** Text withheld and the three CARE-farm channel masks on the joint arm,
+   forward in time at the same sites, reported and never a shift result. Coverage and selective
+   risk remain deferred; no abstention path exists.
+
+**The next step after F7' is the dissertation write-up against the committed record.** S3, the ONNX
+export, the CPU demo and any further arm or ablation are **out of scope** unless the write-up needs
+one for a specific sentence — in which case that sentence is named first and the run is registered
+against it.
+
+### 6. What this record does not authorise
+
+**It does not authorise a run.** This commit holds the decision, the configuration and its
+schema — no probe code, no read-out code, no scoring code. The order is:
+
+1. **F7'-1.** Code: the three read-outs as pooling designs over the existing frozen backbones, the
+   §2 unit test on a synthetic padded window, the runner over the four runs of §3, and the scoring
+   path re-using `h1_scoring.py`'s checks.
+2. **F7'-2.** The twelve probes and twelve scorings, author-launched.
+3. **F7'-3.** The bootstrap, the random-init gate, the H1' verdict under §4, and the reported rows.
+
+Each step needs the user's authorisation. **Configuration:** `configs/eval/readout_v0.yaml`, this
+record's read-outs, runs, rule and gate by value.

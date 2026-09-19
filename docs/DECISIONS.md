@@ -4923,7 +4923,7 @@ outcome.** It needs the user's authorisation. Whether it is worth its cost is a 
 **Status:** Accepted; **registered 2026-09-20, before any read-out code, probe or scoring of it
 exists** · **Date:** 2026-09-20.
 **Commit:** this record, `configs/eval/readout_v0.yaml`, its configuration classes and their test
-were committed together in **`pending`**, before any code that builds, trains or scores a
+were committed together in **`319ae3b`**, before any code that builds, trains or scores a
 text-aware read-out existed. The hash is recorded here by the commit after it. **Nothing in this
 record authorises a run** (§6).
 

@@ -29,7 +29,7 @@ version: 0
 
 # The registration commit of ADR-0026. "pending" in that commit; the commit after it writes the
 # hash here and in ADR-0026, and changes nothing else.
-registered_in: "pending"
+registered_in: "319ae3b"
 
 axis_config: "configs/eval/axis_gate_v0.yaml" # the temporal axis: shards, label, counts
 h1_gate_config: "configs/eval/h1_gate_v0.yaml" # H1's rule, whose reference side this one keeps

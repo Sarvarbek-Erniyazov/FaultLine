@@ -12,6 +12,27 @@ evaluation: it registers no rule, decides nothing, and adds no number to the rec
 calls the evaluation package's own correction and bootstrap rather than re-deriving
 either.
 
+## Which turbine-year, and why two of them
+
+A demonstration chooses its example, and choosing it badly is how a demonstration quietly
+becomes a claim. `selection.py` holds the two rules that choose it, both written down
+before any score was looked at, and both read labels only:
+
+| rule | criterion | what it selects for |
+| --- | --- | --- |
+| most events | the turbine with the most labelled narrow event starts in the year | the densest turbine-year the site has, which is an atypical one by construction |
+| typical event rate | the turbine whose positive-window rate in the year is closest to the pooled test base rate | the turbine-year least unlike the pooled test split the gates were read on |
+
+Ties go to the lowest turbine id. `faultline model stream-trace` runs both by default and
+writes both reports from the same pass, so the two agree with each other; each report and
+`reports/data/figures_index.md` state both rules side by side. Two examples chosen under
+two rules are not a sample, and neither trace is an evaluation result.
+
+The figure draws two labelled reference lines, the pooled test base rate and the
+turbine-year's own positive rate, because an AUPRC only means anything against the base
+rate it was measured on, and the two differ here by a large factor. Each report says
+plainly whether the turbine-year's interval clears or contains its own positive rate.
+
 It meets the second and third constraints below and deliberately does not meet the first:
 **it draws and computes no abstention threshold.** The contract sketched at M0 assumed the
 programme would earn an operating point. It did not -- ADR-0025 closed INCONCLUSIVE -- so

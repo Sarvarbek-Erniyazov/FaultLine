@@ -1,0 +1,36 @@
+{
+  "traces": [
+    {
+      "rule": "most_events",
+      "stem": "stream_trace_kelmarsh_5_2023",
+      "source": "kelmarsh",
+      "year": 2023,
+      "turbine": "Kelmarsh 5",
+      "events": 162,
+      "windows": 8614,
+      "positive_rate": 0.16589273512363434,
+      "mean_probability": 0.01374239288471597,
+      "auprc": 0.18756935281629333,
+      "low": 0.1320693987829839,
+      "high": 0.2540385899385052,
+      "clears_own_base_rate": false,
+      "seconds": 1280.1001366000273
+    },
+    {
+      "rule": "typical_rate",
+      "stem": "stream_trace_kelmarsh_4_2023",
+      "source": "kelmarsh",
+      "year": 2023,
+      "turbine": "Kelmarsh 4",
+      "events": 16,
+      "windows": 8562,
+      "positive_rate": 0.042863816022872925,
+      "mean_probability": 0.01710673882150761,
+      "auprc": 0.047338939106749175,
+      "low": 0.025454457505587773,
+      "high": 0.08708044242732388,
+      "clears_own_base_rate": false,
+      "seconds": 1308.6075197999598
+    }
+  ]
+}

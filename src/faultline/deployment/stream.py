@@ -15,6 +15,13 @@ this probe, and the interval is
 bootstrap. A local copy of any of those would be a second implementation of a rule that
 already has one.
 
+**Which turbine-year, and why that one.** A demonstration chooses its example, and
+choosing it badly is how a demonstration quietly becomes a claim. Two rules are in
+force, both declared in :mod:`faultline.deployment.selection` before any score was
+looked at -- the most events, and the positive-window rate closest to the pooled test
+base rate -- and both traces are reported side by side wherever either appears. Neither
+is an evaluation result, and two examples are not a sample.
+
 **What the trace deliberately does not draw.** No threshold, no alarm mark, no abstention
 band. Choosing an operating point is a decision this project has not earned the right to
 make, and drawing one would read as a claim. The figure shows the corrected probability
@@ -30,9 +37,11 @@ never converted to a time by arithmetic.
 
 from __future__ import annotations
 
+import calendar
 import csv
 import json
 import time
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -45,6 +54,17 @@ import torch
 
 from faultline.data.common.report import kv_table, section, table
 from faultline.data.telemetry.pipeline import parquet_files, stage_source_dir
+from faultline.deployment.selection import (
+    MOST_EVENTS,
+    RULE_CRITERIA,
+    RULE_NAMES,
+    RULES,
+    TIE_BREAK,
+    TRACE_RECORD,
+    read_traces,
+    rules_block,
+    write_trace,
+)
 from faultline.evaluation.bootstrap import AuprcInterval, bootstrap_auprc, window_blocks
 from faultline.evaluation.calibration import at_natural_rate
 from faultline.evaluation.paired_control import load_saved_probe
@@ -79,30 +99,86 @@ DESIGN = "final_position"
 #: a few index reads rather than a pass.
 LM_SELECTION_WINDOWS = 1
 
-#: Categorical slots of the validated reference palette, on its light surface.
-TRACE, EVENT = "#2a78d6", "#c2475f"
+#: Categorical slots of the validated reference palette, on its light surface. ``RATE``
+#: is the turbine-year's own positive-rate line, which has to be told apart from both
+#: the trace and the event marks; every one of them also carries a word.
+TRACE, EVENT, RATE = "#2a78d6", "#c2475f", "#8a5cd0"
 INK, MUTED, GRID, SURFACE, BAND = "#1a1a19", "#5f5e58", "#e4e3dd", "#fcfcfb", "#f6dfe4"
 
 
 @dataclass(frozen=True)
-class TurbineChoice:
-    """Which turbine of a site-year the trace runs on, and why.
+class TurbineYear:
+    """One turbine's year as the selection rules see it: labels only, never a score.
 
     Attributes:
-        turbine: The chosen turbine.
+        turbine: The turbine.
         events: Its labelled narrow event starts in the year.
-        runner_up: The next turbine down, so the margin is visible.
-        runner_up_events: That turbine's count.
-        counts: Every turbine's count, in turbine order.
-        tied: Whether the choice was a tie broken by lowest turbine id.
+        windows: Its known windows in the year, at the stride the trace scores.
+        positives: How many of those the in-force label calls positive.
     """
 
     turbine: str
     events: int
+    windows: int
+    positives: int
+
+    @property
+    def rate(self) -> float:
+        """Its positive-window rate, which is what the typical-rate rule reads."""
+        return self.positives / self.windows if self.windows else float("nan")
+
+
+@dataclass(frozen=True)
+class TurbineChoice:
+    """Which turbine of a site-year the trace runs on, under which rule, and why.
+
+    Attributes:
+        rule: The rule applied, one of :data:`faultline.deployment.selection.RULES`.
+        target: The pooled test base rate, which the typical-rate rule aims at.
+        turbine: The chosen turbine.
+        runner_up: The next turbine down under the same rule, so the margin is visible.
+        candidates: Every turbine of the site-year that has a window, in turbine order.
+        tied: Whether the choice was a tie on the criterion, broken by lowest turbine id.
+    """
+
+    rule: str
+    target: float
+    turbine: str
     runner_up: str
-    runner_up_events: int
-    counts: dict[str, int]
+    candidates: dict[str, TurbineYear]
     tied: bool
+
+    @property
+    def chosen(self) -> TurbineYear:
+        """The chosen turbine's year."""
+        return self.candidates[self.turbine]
+
+    @property
+    def events(self) -> int:
+        """The chosen turbine's labelled narrow event starts in the year."""
+        return self.chosen.events
+
+    @property
+    def runner_up_events(self) -> int:
+        """The runner-up's count, or ``0`` when the site-year offers no runner-up."""
+        year = self.candidates.get(self.runner_up)
+        return year.events if year is not None else 0
+
+    @property
+    def criterion(self) -> str:
+        """The rule exactly as it was declared, with its tie-break."""
+        return f"{RULE_CRITERIA[self.rule]}, {TIE_BREAK}"
+
+    def picks(self, rule: str) -> str:
+        """Which turbine another rule would choose from the same candidates.
+
+        Args:
+            rule: The rule to apply.
+
+        Returns:
+            The turbine it chooses.
+        """
+        return choose_turbine(self.candidates, rule, self.target).turbine
 
 
 @dataclass(frozen=True)
@@ -112,7 +188,7 @@ class StreamTrace:
     Attributes:
         source: The site.
         year: The calendar year.
-        choice: The turbine and the count that chose it.
+        choice: The turbine, the rule that chose it and the field it was chosen from.
         stamps: Per window, the UTC timestamp of its last step.
         ends: Per window, that step's index in the shard's step stream.
         probabilities: Per window, the prior-corrected probability.
@@ -121,10 +197,13 @@ class StreamTrace:
         events: Event start timestamps inside the traced span.
         interval: This turbine-year's own AUPRC and its block-bootstrap interval.
         train_rate: The registered training prior the correction reads.
-        natural_rate: The training split's natural positive rate.
+        natural_rate: The training split's natural positive rate, which it corrects to.
         balanced_shift: The F2 balanced-mean offset measured for this probe.
         offset: The constant the correction actually added.
-        pooled_base_rate: The pooled test base rate, drawn as a reference line.
+        pooled_base_rate: The pooled test base rate, drawn as a labelled reference line.
+        pooled_auprc: The pooled test AUPRC, named only to refuse the comparison.
+        pooled_low: Its 95% lower bound.
+        pooled_high: Its 95% upper bound.
         seconds: CPU wall clock of the scoring pass.
         checkpoint: The backbone the probe carries.
         probe: The probe that was loaded.
@@ -145,6 +224,9 @@ class StreamTrace:
     balanced_shift: float
     offset: float
     pooled_base_rate: float
+    pooled_auprc: float
+    pooled_low: float
+    pooled_high: float
     seconds: float
     checkpoint: str
     probe: str
@@ -170,16 +252,60 @@ class StreamTrace:
         return float(self.probabilities.mean()) if self.probabilities.size else float("nan")
 
     @property
+    def clears(self) -> bool:
+        """Whether the interval's lower bound is strictly above this turbine-year's own rate.
+
+        This is the shape of ADR-0021's registered rule, read here against one turbine-year
+        rather than against a scored set. It decides nothing: it is reported so that the
+        reader is not left to compare an interval with a base rate by eye.
+        """
+        return bool(self.interval.low > self.positive_rate)
+
+    @property
+    def days_between_events(self) -> float:
+        """Days of the calendar year per labelled event start, the density in plain units.
+
+        The event count is a calendar-year count, so the year is what it is divided by.
+        """
+        days = 366 if calendar.isleap(self.year) else 365
+        return days / self.choice.events if self.choice.events else float("nan")
+
+    @property
     def stem(self) -> str:
         """The output stem the three files share.
 
         A turbine id repeats its site ("Kelmarsh 5"), and the stem already names the site,
-        so the prefix is dropped rather than written twice.
+        so the prefix is dropped rather than written twice. The rule that chose the turbine
+        is not in the stem: two rules that landed on the same turbine-year would produce
+        the same trace, and writing it twice under two names would not make it two.
         """
         turbine = self.choice.turbine.lower().replace(" ", "_")
         site = self.source.lower()
         turbine = turbine.removeprefix(f"{site}_")
         return f"stream_trace_{site}_{turbine}_{self.year}"
+
+    def record(self) -> dict[str, Any]:
+        """This trace as one entry of the shared trace record.
+
+        Returns:
+            The fields the figure index and the other trace's report read.
+        """
+        return {
+            "rule": self.choice.rule,
+            "stem": self.stem,
+            "source": self.source,
+            "year": self.year,
+            "turbine": self.choice.turbine,
+            "events": self.choice.events,
+            "windows": self.windows,
+            "positive_rate": self.positive_rate,
+            "mean_probability": self.mean_probability,
+            "auprc": self.interval.auprc,
+            "low": self.interval.low,
+            "high": self.interval.high,
+            "clears_own_base_rate": self.clears,
+            "seconds": self.seconds,
+        }
 
 
 def narrow_event_starts(paths: ProjectPaths, source: str) -> pd.DataFrame:
@@ -207,19 +333,18 @@ def narrow_event_starts(paths: ProjectPaths, source: str) -> pd.DataFrame:
     )
 
 
-def choose_turbine(events: pd.DataFrame, year: int) -> TurbineChoice:
-    """The turbine with the most labelled narrow events in a year; ties to the lowest id.
+def event_counts(events: pd.DataFrame, year: int) -> dict[str, int]:
+    """Per turbine, its labelled narrow event starts in a year, in turbine order.
 
-    The count is the event starts the label is built from, unfiltered: the labelling stage
-    reads every start of the turbine, and ``in_grid`` is a reporting column there rather
-    than a filter.
+    The count is unfiltered: the labelling stage reads every start of the turbine, and
+    ``in_grid`` is a reporting column there rather than a filter.
 
     Args:
         events: The site's narrow event starts, from :func:`narrow_event_starts`.
         year: The calendar year.
 
     Returns:
-        The choice, its count, the runner-up's, and every turbine's.
+        Turbine to count, for every turbine that saw a start that year.
 
     Raises:
         ValueError: If no turbine has an event start in the year.
@@ -230,20 +355,52 @@ def choose_turbine(events: pd.DataFrame, year: int) -> TurbineChoice:
     counts = {
         str(turbine): int(count) for turbine, count in inside["turbine_id"].value_counts().items()
     }
-    counts = {turbine: counts[turbine] for turbine in sorted(counts)}
-    # Sorted by count, then by turbine id, so a tie is broken by the lowest id and the
-    # runner-up is the next one down under the same rule.
-    order = sorted(counts.items(), key=lambda item: (-item[1], item[0]))
-    turbine, best = order[0]
-    # A site-year with one turbine that saw an event has no runner-up to state.
-    second, runner_up = order[1] if len(order) > 1 else ("-", 0)
+    return {turbine: counts[turbine] for turbine in sorted(counts)}
+
+
+def choose_turbine(
+    candidates: Mapping[str, TurbineYear], rule: str, target: float
+) -> TurbineChoice:
+    """Apply one of the two declared selection rules to a site-year.
+
+    Both rules read labels only -- an event count and a positive-window rate -- and neither
+    reads a score, so the choice is a function of the data and the rule alone. The rules
+    themselves are declared in :mod:`faultline.deployment.selection`, and both are reported
+    wherever either trace appears.
+
+    Args:
+        candidates: Every turbine of the site-year, from :func:`turbine_years`.
+        rule: :data:`~faultline.deployment.selection.MOST_EVENTS` or
+            :data:`~faultline.deployment.selection.TYPICAL_RATE`.
+        target: The pooled test base rate the typical-rate rule aims at.
+
+    Returns:
+        The choice, its runner-up, and the whole field it was chosen from.
+
+    Raises:
+        ValueError: If the rule is not one of the two, or there is nothing to choose from.
+    """
+    if rule not in RULES:
+        raise ValueError(f"unknown selection rule {rule!r}; expected one of {RULES}")
+    if not candidates:
+        raise ValueError("no turbine-year to choose from")
+
+    def criterion(year: TurbineYear) -> float:
+        """Lower is better, under whichever rule is in force."""
+        return float(-year.events) if rule == MOST_EVENTS else abs(year.rate - target)
+
+    # Sorted by the criterion, then by turbine id, so a tie is broken by the lowest id and
+    # the runner-up is the next one down under the same rule.
+    order = sorted(candidates.values(), key=lambda year: (criterion(year), year.turbine))
+    best = order[0]
+    second = order[1] if len(order) > 1 else None
     return TurbineChoice(
-        turbine=turbine,
-        events=best,
-        runner_up=second,
-        runner_up_events=runner_up,
-        counts=counts,
-        tied=best == runner_up,
+        rule=rule,
+        target=target,
+        turbine=best.turbine,
+        runner_up=second.turbine if second is not None else "-",
+        candidates={turbine: candidates[turbine] for turbine in sorted(candidates)},
+        tied=second is not None and criterion(second) == criterion(best),
     )
 
 
@@ -279,46 +436,125 @@ def step_stamps(paths: ProjectPaths, source: str, split: str) -> np.ndarray:
     return np.concatenate(blocks)
 
 
-def turbine_year_windows(
-    shards: ShardSet, key: str, turbine: str, year: int, stride: int, label: str
-) -> WindowSet:
-    """Every known window of one turbine-year, in time order, at a stride.
+def known_windows(shards: ShardSet, key: str, label: str) -> tuple[WindowSet, np.ndarray]:
+    """A shard's known windows at stride 1, and the turbine each of them belongs to.
 
-    The shard's window index is read once by :func:`load_windows` at stride 1, which
-    applies the label's own ``_known`` rule; the turbine-year is then masked out of it in
-    index order and the stride is taken inside the turbine-year, so the stride counts that
-    turbine's windows and not the site's.
+    ``load_windows`` keeps the known rows of the index, in index order, and nothing else,
+    so the known rows of the same file line up with its arrays one for one.
 
     Args:
         shards: The shard set.
         key: The shard key, ``<source>__<split>``.
-        turbine: The turbine.
-        year: The calendar year.
-        stride: Keep every ``stride``-th known window of the turbine-year.
-        label: The window-index column to read as the target.
+        label: The window-index column read as the target.
 
     Returns:
-        The windows, in the index's own order, which is time order inside a turbine-year.
+        The windows and, per window, its turbine id.
 
     Raises:
-        ValueError: If the turbine-year holds no known window.
+        ValueError: If the index and the window arrays disagree on length.
     """
     every = load_windows(shards, key, stride=1, label=label)
     record = shards.files()[key]
     frame = pq.read_table(
         shards.root / str(record["windows"]), columns=["turbine_id", f"{label}_known"]
     ).to_pandas()
-    # load_windows keeps the known rows of the index, in index order, and nothing else, so
-    # the known rows of the same file line up with its arrays one for one.
     known = frame[frame[f"{label}_known"].to_numpy()].reset_index(drop=True)
     if len(known) != len(every):
         raise ValueError(f"{key}: {len(known)} known rows against {len(every)} windows")
-    mine = np.flatnonzero(
-        (known["turbine_id"].astype(str).to_numpy() == turbine) & (every.years == year)
-    )
-    if mine.size == 0:
+    return every, known["turbine_id"].astype(str).to_numpy(dtype=object)
+
+
+def turbine_year_rows(
+    every: WindowSet, turbines: np.ndarray, turbine: str, year: int, stride: int
+) -> np.ndarray:
+    """The rows of one turbine-year in the known window set, strided inside it.
+
+    The turbine-year is masked out of the index in index order and the stride is taken
+    afterwards, so the stride counts that turbine's windows and not the site's.
+
+    Args:
+        every: Every known window, from :func:`known_windows`.
+        turbines: Per window, its turbine id.
+        turbine: The turbine.
+        year: The calendar year.
+        stride: Keep every ``stride``-th known window of the turbine-year.
+
+    Returns:
+        Row indices into ``every``, in index order, which is time order inside a
+        turbine-year.
+    """
+    mine = np.flatnonzero((turbines == turbine) & (every.years == year))
+    return mine[::stride]
+
+
+def turbine_years(
+    every: WindowSet,
+    turbines: np.ndarray,
+    counts: Mapping[str, int],
+    year: int,
+    stride: int,
+) -> dict[str, TurbineYear]:
+    """Per turbine of a site-year, the two quantities the selection rules read.
+
+    The positive-window rate is taken over exactly the windows a trace of that turbine
+    would score, so the rate reported for the chosen turbine is the positive rate its own
+    trace reports. Nothing is scored to compute it: the label column is read off the
+    window index.
+
+    Args:
+        every: Every known window, from :func:`known_windows`.
+        turbines: Per window, its turbine id.
+        counts: Per turbine, its event starts in the year, from :func:`event_counts`.
+        year: The calendar year.
+        stride: The stride the trace scores at.
+
+    Returns:
+        Turbine to its year, in turbine order. A turbine with an event start but no known
+        window that year is left out: a turbine-year with nothing to score is not a
+        candidate under either rule.
+
+    Raises:
+        ValueError: If no turbine has a known window in the year.
+    """
+    out: dict[str, TurbineYear] = {}
+    for turbine, events in counts.items():
+        rows = turbine_year_rows(every, turbines, turbine, year, stride)
+        if rows.size == 0:
+            logger.info("%s: %d event starts in %d but no known window", turbine, events, year)
+            continue
+        out[turbine] = TurbineYear(
+            turbine=turbine,
+            events=events,
+            windows=int(rows.size),
+            positives=int(every.labels[rows].sum()),
+        )
+    if not out:
+        raise ValueError(f"no turbine has a known window in {year}")
+    return out
+
+
+def turbine_year_windows(
+    every: WindowSet, turbines: np.ndarray, key: str, turbine: str, year: int, stride: int
+) -> WindowSet:
+    """Every known window of one turbine-year, in time order, at a stride.
+
+    Args:
+        every: Every known window, from :func:`known_windows`.
+        turbines: Per window, its turbine id.
+        key: The shard key the windows are carried under.
+        turbine: The turbine.
+        year: The calendar year.
+        stride: Keep every ``stride``-th known window of the turbine-year.
+
+    Returns:
+        The windows, in the index's own order.
+
+    Raises:
+        ValueError: If the turbine-year holds no known window.
+    """
+    rows = turbine_year_rows(every, turbines, turbine, year, stride)
+    if rows.size == 0:
         raise ValueError(f"{key}: {turbine} has no known window in {year}")
-    rows = mine[::stride]
     return WindowSet(
         key=key,
         tokens=every.tokens,
@@ -389,6 +625,7 @@ def trace_turbine_year(
     rung: str,
     checkpoint_dir: str,
     device_name: str = "cpu",
+    rule: str = MOST_EVENTS,
 ) -> StreamTrace:
     """Score one turbine-year window by window and measure the pass.
 
@@ -401,6 +638,7 @@ def trace_turbine_year(
         rung: The rung the backbone was pretrained at.
         checkpoint_dir: The run directory under ``checkpoints/`` holding the probe.
         device_name: Torch device; ``cpu``, which is the point of the demonstration.
+        rule: Which declared selection rule chooses the turbine-year.
 
     Returns:
         The trace.
@@ -411,16 +649,7 @@ def trace_turbine_year(
     """
     block = read_probe_record(paths, SEED)
     events = narrow_event_starts(paths, source)
-    choice = choose_turbine(events, year)
-    logger.info(
-        "%s %d: %s has %d narrow event starts (runner-up %s, %d)",
-        source,
-        year,
-        choice.turbine,
-        choice.events,
-        choice.runner_up,
-        choice.runner_up_events,
-    )
+    counts = event_counts(events, year)
 
     inputs = open_probe_inputs(
         paths,
@@ -432,15 +661,32 @@ def trace_turbine_year(
         "hill_of_towie",
         device_name,
     )
+    key = f"{source}__test"
+    label = inputs.ladder.risk.label
+    stride = inputs.mixture.window_stride_steps
+
+    # Both rules read the window index and the event table, and neither reads a score, so
+    # the whole field is built before the probe is even loaded.
+    every, turbines = known_windows(inputs.telemetry, key, label)
+    candidates = turbine_years(every, turbines, counts, year, stride)
+    choice = choose_turbine(candidates, rule, float(block["pooled"]["base_rate"]))
+    logger.info(
+        "%s %d under %r: %s (%d event starts, positive-window rate %.4f; runner-up %s)",
+        source,
+        year,
+        rule,
+        choice.turbine,
+        choice.events,
+        choice.chosen.rate,
+        choice.runner_up,
+    )
+
     probe_path = paths.checkpoints_dir / checkpoint_dir / f"{rung}_trained_seed{SEED}_probe.pt"
     if not probe_path.is_file():
         raise FileNotFoundError(f"{probe_path} not found")
     model = load_saved_probe(probe_path, DESIGN, inputs)
 
-    key = f"{source}__test"
-    label = inputs.ladder.risk.label
-    stride = inputs.mixture.window_stride_steps
-    windows = turbine_year_windows(inputs.telemetry, key, choice.turbine, year, stride, label)
+    windows = turbine_year_windows(every, turbines, key, choice.turbine, year, stride)
     stamps = step_stamps(paths, source, "test")
     steps = int(inputs.telemetry.files()[key]["steps"])
     if stamps.size != steps:
@@ -490,6 +736,7 @@ def trace_turbine_year(
     )
     horizon = np.timedelta64(HORIZON_HOURS, "h")
     inside = starts[(starts >= when[0]) & (starts <= when[-1] + horizon)]
+    pooled = block["pooled"]
     return StreamTrace(
         source=source,
         year=year,
@@ -505,7 +752,10 @@ def trace_turbine_year(
         natural_rate=scores.natural_rate,
         balanced_shift=float(block["prior_band"]["shift"]),
         offset=scores.offset,
-        pooled_base_rate=float(block["pooled"]["base_rate"]),
+        pooled_base_rate=float(pooled["base_rate"]),
+        pooled_auprc=float(pooled["auprc"]),
+        pooled_low=float(pooled["low"]),
+        pooled_high=float(pooled["high"]),
         seconds=seconds,
         checkpoint=f"{checkpoint_dir}/{rung}_tel_only_seed{SEED}.pt",
         probe=f"{checkpoint_dir}/{probe_path.name}",
@@ -550,10 +800,14 @@ def write_csv(trace: StreamTrace, path: Path) -> Path:
 def render_svg(trace: StreamTrace) -> str:
     """Draw the corrected probability against time, with the labelled events.
 
-    The pooled test base rate is a horizontal reference line, each event start a vertical
-    marker, and the horizon before each start a shaded band. No threshold, no alarm mark
-    and no abstention band is drawn: the trace shows the score and the events, and the
-    reader is left to judge.
+    Two horizontal reference lines are drawn, each labelled in words on the line itself:
+    the pooled test base rate, and this turbine-year's own positive rate. Both are needed,
+    because they differ by a large factor and a reader shown only the pooled one would
+    read this turbine-year against the wrong denominator.
+
+    Each event start is a vertical marker and the horizon before it a shaded band. No
+    threshold, no alarm mark and no abstention band is drawn: the trace shows the score and
+    the events, and the reader is left to judge.
 
     Args:
         trace: The trace.
@@ -565,7 +819,8 @@ def render_svg(trace: StreamTrace) -> str:
     left, right, top, bottom = 64, 24, 44, 52
     first, last = trace.stamps[0], trace.stamps[-1]
     span = max(float((last - first) / np.timedelta64(1, "h")), 1.0)
-    high = max(float(trace.probabilities.max()), trace.pooled_base_rate) * 1.08
+    ceiling = max(float(trace.probabilities.max()), trace.pooled_base_rate, trace.positive_rate)
+    high = ceiling * 1.08
 
     def x(when: np.datetime64) -> float:
         hours = float((when - first) / np.timedelta64(1, "h"))
@@ -612,13 +867,7 @@ def render_svg(trace: StreamTrace) -> str:
             f'text-anchor="end">{value:.2f}</text>'
         )
         value += tick
-    base = trace.pooled_base_rate
-    out.append(
-        f'<line x1="{left}" x2="{width - right}" y1="{y(base):.1f}" y2="{y(base):.1f}" '
-        f'stroke="{INK}" stroke-width="1.2" stroke-dasharray="6 4"/>'
-        f'<text x="{width - right - 4}" y="{y(base) - 6:.1f}" fill="{INK}" '
-        f'text-anchor="end">pooled test base rate {base:.4f}</text>'
-    )
+    out.extend(_reference_lines(trace, left, width - right, y))
     path = " ".join(
         f"{x(when):.1f},{y(float(p)):.1f}"
         for when, p in zip(trace.stamps, trace.probabilities, strict=True)
@@ -652,6 +901,106 @@ def render_svg(trace: StreamTrace) -> str:
     return "\n".join(out) + "\n"
 
 
+def _reference_lines(
+    trace: StreamTrace, left: float, right: float, y: Callable[[float], float]
+) -> list[str]:
+    """The two labelled rate lines: the pooled one, and this turbine-year's own.
+
+    Each carries its name and its value as text on the line, so neither is identified by
+    colour alone. When the two sit close enough for their labels to collide, the lower
+    line's label is written under it instead of over it.
+
+    Args:
+        trace: The trace.
+        left: Left edge of the plotting area.
+        right: Right edge of the plotting area.
+        y: The value-to-pixel mapping.
+
+    Returns:
+        One SVG fragment a line, in drawing order.
+    """
+    lines = [
+        (trace.pooled_base_rate, "pooled test base rate", INK, "6 4"),
+        (trace.positive_rate, f"{trace.choice.turbine} {trace.year} positive rate", RATE, "2 3"),
+    ]
+    heights = [y(value) for value, *_ in lines]
+    under = [False, False]
+    if abs(heights[0] - heights[1]) < 16:
+        under[0 if heights[0] > heights[1] else 1] = True
+    out = []
+    for (value, name, colour, dashes), height, below in zip(lines, heights, under, strict=True):
+        out.append(
+            f'<line class="reference" x1="{left}" x2="{right}" y1="{height:.1f}" '
+            f'y2="{height:.1f}" stroke="{colour}" stroke-width="1.2" '
+            f'stroke-dasharray="{dashes}"/>'
+            f'<text x="{right - 4}" y="{height + (14 if below else -6):.1f}" fill="{colour}" '
+            f'text-anchor="end">{name} {value:.4f}</text>'
+        )
+    return out
+
+
+def interval_against_own_rate(trace: StreamTrace) -> str:
+    """The interval read against this turbine-year's own positive rate, in words.
+
+    An AUPRC is only above chance relative to the base rate of the set it was measured on,
+    and this set's base rate is not the pooled one. Stating which way round the comparison
+    came out is not a verdict -- nothing is gated on it -- but leaving the reader to make
+    it by eye would be.
+
+    Args:
+        trace: The trace.
+
+    Returns:
+        One sentence.
+    """
+    i = trace.interval
+    if trace.clears:
+        return (
+            f"This turbine-year's 95% interval [{i.low:.4f}, {i.high:.4f}] CLEARS its own "
+            f"positive rate {trace.positive_rate:.4f}: the lower bound is strictly above "
+            f"it, which is the shape of ADR-0021's registered rule, read here against one "
+            f"turbine-year rather than against a scored set, and gating nothing."
+        )
+    return (
+        f"This turbine-year's 95% interval [{i.low:.4f}, {i.high:.4f}] CONTAINS its own "
+        f"positive rate {trace.positive_rate:.4f}, so the trace is consistent with chance "
+        f"on this turbine-year."
+    )
+
+
+def observation(trace: StreamTrace) -> str:
+    """What the selection rule did to this turbine-year, stated rather than left implicit.
+
+    Args:
+        trace: The trace.
+
+    Returns:
+        One sentence.
+    """
+    choice = trace.choice
+    if choice.rule == MOST_EVENTS:
+        return (
+            f"One observation: {choice.events} event starts against a site runner-up of "
+            f"{choice.runner_up_events} -- about one every {trace.days_between_events:.1f} "
+            f"days -- so this turbine-year is atypical for the site, and it was selected by "
+            f'"most events", which is a rule that selects atypical turbine-years by '
+            f"construction."
+        )
+    runner_up = choice.candidates.get(choice.runner_up)
+    beside = (
+        f" (runner-up {choice.runner_up}, {runner_up.rate:.4f})" if runner_up is not None else ""
+    )
+    return (
+        f"One observation: {choice.events} event starts -- about one every "
+        f"{trace.days_between_events:.1f} days -- and a positive-window rate of "
+        f"{trace.positive_rate:.4f}, {abs(trace.positive_rate - choice.target):.4f} from the "
+        f"pooled test base rate {choice.target:.4f} and the closest of the site's "
+        f'{len(choice.candidates)} turbines{beside}; it was selected by "typical event '
+        f'rate", which is a rule that selects the turbine-year least unlike the pooled test '
+        f"split, and reads no score to do it."
+    )
+
+
 def caption(trace: StreamTrace) -> str:
     """The caption, carrying the same numbers as the report.
 
@@ -664,28 +1013,81 @@ def caption(trace: StreamTrace) -> str:
     i = trace.interval
     return (
         f"{trace.choice.turbine}, {trace.year}, scored on CPU: {trace.windows:,} windows of "
-        f"1,872 telemetry tokens (144 steps x 13), one an hour, in time order. "
-        f"This turbine-year holds {trace.choice.events} labelled narrow event "
-        f"starts, the most of any {trace.source.replace('_', ' ').title()} turbine that year "
-        f"(runner-up {trace.choice.runner_up}, {trace.choice.runner_up_events}); its own "
-        f"positive rate is {trace.positive_rate:.4f} and its own AUPRC is {i.auprc:.4f} "
-        f"[{i.low:.4f}, {i.high:.4f}] under ADR-0021's block bootstrap "
-        f"({BLOCK_STEPS // 144}-day blocks, {REPLICATES:,} replicates, seed {BOOTSTRAP_SEED}). "
-        f"**Illustrative, forward-in-time, same site, a single turbine-year: not an evaluation "
-        f"result, and not comparable with the pooled gate numbers**, whose base rate "
-        f"({trace.pooled_base_rate:.4f}, the dashed line) is "
-        f"{trace.positive_rate / trace.pooled_base_rate:.1f}x lower than this turbine-year's. "
-        f"No threshold, no alarm and no abstention is drawn or computed. The model reads "
-        f"telemetry only."
+        f"1,872 telemetry tokens (144 steps x 13), one an hour, in time order. Selected "
+        f"under the {RULE_NAMES[trace.choice.rule]} rule -- {trace.choice.criterion} -- one "
+        f"of the two rules declared before any score was looked at; the other trace is "
+        f"shown beside this one and neither is an evaluation result. Its own AUPRC is "
+        f"{i.auprc:.4f} [{i.low:.4f}, {i.high:.4f}] under ADR-0021's block bootstrap "
+        f"({BLOCK_STEPS // 144}-day blocks, {REPLICATES:,} replicates, seed "
+        f"{BOOTSTRAP_SEED}). {interval_against_own_rate(trace)} The {i.auprc:.4f} is not "
+        f"comparable with the pooled test AUPRC ({trace.pooled_auprc:.4f} "
+        f"[{trace.pooled_low:.4f}, {trace.pooled_high:.4f}]), because this turbine-year's "
+        f"positive rate {trace.positive_rate:.4f} is "
+        f"{trace.positive_rate / trace.pooled_base_rate:.1f}x the pooled "
+        f"{trace.pooled_base_rate:.4f}; the figure draws both rates as labelled reference "
+        f"lines rather than the pooled one alone. The mean corrected probability is "
+        f"{trace.mean_probability:.4f}, beside a positive rate of {trace.positive_rate:.4f}: "
+        f"they differ because ADR-0019's correction targets the training prior "
+        f"{trace.natural_rate:.4f}, the training split's natural rate, and not this "
+        f"turbine-year's. {observation(trace)} **Illustrative, forward-in-time, same site, "
+        f"a single turbine-year: not an evaluation result, and not comparable with the "
+        f"pooled gate numbers.** No threshold, no alarm and no abstention is drawn or "
+        f"computed. The model reads telemetry only."
     )
 
 
-def render_report(trace: StreamTrace, paths: ProjectPaths) -> str:
+def selection_table(trace: StreamTrace) -> str:
+    """The field both rules chose from: per turbine, its events and its positive rate.
+
+    Args:
+        trace: The trace.
+
+    Returns:
+        A Markdown table, one row a turbine of the site-year.
+    """
+    choice = trace.choice
+    picks = {rule: choice.picks(rule) for rule in RULES}
+
+    def note(turbine: str) -> str:
+        """What the rules did with one turbine, and what this trace did with it."""
+        parts = [f"chosen by {RULE_NAMES[rule]}" for rule in RULES if picks[rule] == turbine]
+        if turbine == choice.turbine:
+            parts.append("traced here")
+        elif turbine == choice.runner_up:
+            parts.append(f"runner-up under {RULE_NAMES[choice.rule]}")
+        return "; ".join(parts)
+
+    return table(
+        [
+            "turbine",
+            f"narrow event starts in {trace.year}",
+            "known windows",
+            "positive-window rate",
+            f"distance from {choice.target:.4f}",
+            "note",
+        ],
+        [
+            [
+                year.turbine,
+                year.events,
+                f"{year.windows:,}",
+                f"{year.rate:.4f}",
+                f"{abs(year.rate - choice.target):.4f}",
+                note(year.turbine),
+            ]
+            for year in choice.candidates.values()
+        ],
+    )
+
+
+def render_report(trace: StreamTrace, paths: ProjectPaths, out_dir: Path | None = None) -> str:
     """Render the Markdown that sits beside the trace and its figure.
 
     Args:
         trace: The trace.
         paths: Resolved project paths.
+        out_dir: Where the trace is written, and where its shared record is read
+            from; ``reports/data/`` when omitted.
 
     Returns:
         The report.
@@ -696,6 +1098,7 @@ def render_report(trace: StreamTrace, paths: ProjectPaths) -> str:
         kv_table(
             {
                 "what this is": "a demonstration of the deployment path on CPU, not an evaluation",
+                "selection rule": f"{RULE_NAMES[trace.choice.rule]} -- {trace.choice.criterion}",
                 "backbone": f"`{trace.checkpoint}`",
                 "probe": f"`{trace.probe}` (§a {DESIGN}, ADR-0022's addendum rule)",
                 "windows": f"{trace.windows:,} at stride 6, every known window of the "
@@ -708,25 +1111,19 @@ def render_report(trace: StreamTrace, paths: ProjectPaths) -> str:
             }
         ),
         section(
-            "1. The turbine, and why it was chosen",
-            "The turbine with the most labelled narrow event starts in the year, ties broken "
-            "by the lowest turbine id. The count is the event starts the in-force label is "
-            f"built from, read from `data/cleaned/telemetry/{trace.source}/labels/"
-            "events_narrow.parquet`.\n\n"
-            + table(
-                ["turbine", f"narrow event starts in {trace.year}", "note"],
-                [
-                    [
-                        name,
-                        count,
-                        "traced"
-                        if name == trace.choice.turbine
-                        else ("runner-up" if name == trace.choice.runner_up else ""),
-                    ]
-                    for name, count in trace.choice.counts.items()
-                ],
-            )
-            + f"\nTie broken by lowest turbine id: {'yes' if trace.choice.tied else 'no'}.\n",
+            "1. The two selection rules, and the one this trace ran under",
+            rules_block(read_traces((out_dir or paths.data_reports_dir) / TRACE_RECORD))
+            + "\nBoth rules read labels only, and neither reads a score. The event count is "
+            "the event starts the in-force label is built from, unfiltered, read from "
+            f"`data/cleaned/telemetry/{trace.source}/labels/events_narrow.parquet`; the "
+            "positive-window rate is taken over exactly the windows a trace of that turbine "
+            "would score, so the chosen turbine's rate below is the positive rate section 3 "
+            "reports.\n\n"
+            f"**This trace ran under the {RULE_NAMES[trace.choice.rule]} rule**: "
+            f"{trace.choice.criterion}.\n\n"
+            + selection_table(trace)
+            + "\nTie on the criterion, broken by lowest turbine id: "
+            f"{'yes' if trace.choice.tied else 'no'}.\n",
         ),
         section(
             "2. The correction, as the record registered it",
@@ -757,6 +1154,9 @@ def render_report(trace: StreamTrace, paths: ProjectPaths) -> str:
                     "mean corrected probability": f"{trace.mean_probability:.4f}",
                     "this turbine-year's AUPRC": f"{i.auprc:.4f}",
                     "95% block-bootstrap interval": f"[{i.low:.4f}, {i.high:.4f}]",
+                    "the interval against its own positive rate": "CLEARS it"
+                    if trace.clears
+                    else "CONTAINS it, so this turbine-year is consistent with chance",
                     "blocks": f"{i.blocks:,} two-day blocks, {i.positive_blocks:,} holding a "
                     "positive window",
                     "replicates": f"{i.replicates:,}, seed {i.seed}, "
@@ -764,19 +1164,24 @@ def render_report(trace: StreamTrace, paths: ProjectPaths) -> str:
                     f"rule refuses above {MAX_DISCARDED_SHARE:.0%})",
                     "pooled test base rate (reference line)": f"{trace.pooled_base_rate:.4f} "
                     f"(`{SEED_RECORD}`, `trained[seed {SEED}].pooled.base_rate`)",
+                    "pooled test AUPRC (not comparable)": f"{trace.pooled_auprc:.4f} "
+                    f"[{trace.pooled_low:.4f}, {trace.pooled_high:.4f}], measured on a base "
+                    f"rate {trace.positive_rate / trace.pooled_base_rate:.1f}x below this "
+                    "turbine-year's",
                     "CPU wall clock": f"{trace.seconds:.1f} s",
                     "throughput": f"{trace.windows_per_second:.1f} windows/s",
                 }
             )
             + "\nThe interval is ADR-0021's registered block bootstrap, called through "
             "`faultline.evaluation.bootstrap.bootstrap_auprc`. It describes this turbine-year "
-            "and nothing else.\n\nThe mean corrected probability sits near the training "
-            f"split's natural rate ({trace.natural_rate:.4f}), which is what the correction "
-            "targets, and well below this turbine-year's own positive rate "
-            f"({trace.positive_rate:.4f}). That gap is the turbine-year being far more "
-            "event-dense than the distribution the head was calibrated against; it is "
-            "visible here rather than argued, and it is one more reason these numbers do "
-            "not transfer to the pooled ones.\n",
+            f"and nothing else. {interval_against_own_rate(trace)}\n\nThe mean corrected "
+            f"probability ({trace.mean_probability:.4f}) sits near the training split's "
+            f"natural rate ({trace.natural_rate:.4f}), which is the prior ADR-0019's "
+            "correction targets, and not near this turbine-year's own positive rate "
+            f"({trace.positive_rate:.4f}). The correction was never aimed at this turbine: "
+            "the gap is this turbine-year's event density against the distribution the head "
+            "was calibrated on, visible here rather than argued, and one more reason these "
+            "numbers do not transfer to the pooled ones.\n",
         ),
         section(
             "4. The files",
@@ -791,8 +1196,14 @@ def render_report(trace: StreamTrace, paths: ProjectPaths) -> str:
                     ],
                     [
                         f"`{trace.stem}.svg`",
-                        "probability against time, the pooled base rate as a dashed line, each "
-                        "event start as a vertical marker and the horizon before it shaded",
+                        "probability against time; two labelled reference lines, the pooled "
+                        "test base rate and this turbine-year's own positive rate; each event "
+                        "start a vertical marker with the horizon before it shaded",
+                    ],
+                    [
+                        f"`{TRACE_RECORD}`",
+                        "both traces in one record, a row a rule, which is where this report "
+                        "and `figures_index.md` read the other rule's trace from",
                     ],
                 ],
             ),
@@ -801,14 +1212,97 @@ def render_report(trace: StreamTrace, paths: ProjectPaths) -> str:
         section(
             "6. What this is not",
             "This trace adds no rule, no ADR and no verdict, and changes nothing in the "
-            "record. It is one turbine-year of one site, chosen for holding the most events, "
-            "and the site is a training site: the split is forward in time, not across "
-            "sites. Its AUPRC is therefore not comparable with the pooled gate numbers, and "
-            "the programme's findings (ADR-0025 INCONCLUSIVE, ADR-0026's read-out result) "
-            "stand exactly as the ledger records them.\n",
+            "record. It is one turbine-year of one site, and the site is a training site: "
+            "the split is forward in time, not across sites. Its AUPRC is therefore not "
+            "comparable with the pooled gate numbers, and the programme's findings "
+            "(ADR-0025 INCONCLUSIVE, ADR-0026's read-out result) stand exactly as the "
+            "ledger records them.\n\nTwo turbine-years are not a sample. The two rules in "
+            "section 1 were written down before any score was looked at, and both traces "
+            "are shown whichever way they came out -- but two examples chosen under two "
+            "rules measure nothing. They show what a signal of this strength looks like "
+            "against a year of one turbine, on the site's densest turbine-year and on its "
+            "most typical, and they stop there.\n",
         ),
     ]
     return "".join(parts)
+
+
+def write_stream_traces(
+    paths: ProjectPaths,
+    source: str = "kelmarsh",
+    year: int = 2023,
+    mixture_config: str = "configs/train/joint_v0.yaml",
+    ladder_config: str = "configs/train/telemetry_v1.yaml",
+    rung: str = "S2",
+    checkpoint_dir: str = "seed_replication_v0_424c4f33",
+    device_name: str = "cpu",
+    rules: Sequence[str] = RULES,
+    out_dir: Path | None = None,
+) -> list[tuple[Path, Path, Path]]:
+    """Trace a turbine-year under each rule, then write every file once all are scored.
+
+    Every report states both rules side by side, so a report written between two scoring
+    passes would name a trace that did not exist yet. The passes therefore all run first,
+    the shared record is written whole, and only then is a report rendered: the pair of
+    reports a run leaves behind agrees with itself.
+
+    Args:
+        paths: Resolved project paths.
+        source: The site.
+        year: The calendar year of its test split to trace.
+        mixture_config: The joint mixture configuration.
+        ladder_config: The ladder configuration.
+        rung: The rung the backbone was pretrained at.
+        checkpoint_dir: The run directory under ``checkpoints/`` holding the probe.
+        device_name: Torch device.
+        rules: The declared rules to run, one trace each.
+        out_dir: Where to write; ``reports/data/`` when omitted.
+
+    Returns:
+        Per rule, its CSV, its SVG and its Markdown report.
+    """
+    traces = [
+        trace_turbine_year(
+            paths,
+            source,
+            year,
+            mixture_config,
+            ladder_config,
+            rung,
+            checkpoint_dir,
+            device_name,
+            rule,
+        )
+        for rule in rules
+    ]
+    target = out_dir or paths.data_reports_dir
+    target.mkdir(parents=True, exist_ok=True)
+    for trace in traces:
+        write_trace(target / TRACE_RECORD, trace.record())
+    written: list[tuple[Path, Path, Path]] = []
+    for trace in traces:
+        csv_path = write_csv(trace, target / f"{trace.stem}.csv")
+        svg_path = target / f"{trace.stem}.svg"
+        svg_path.write_text(render_svg(trace), encoding="utf-8", newline="\n")
+        report = target / f"{trace.stem}.md"
+        report.write_text(render_report(trace, paths, target), encoding="utf-8", newline="\n")
+        logger.info(
+            "%s %d %s under %r: %d windows in %.1f s (%.1f windows/s), AUPRC %.4f "
+            "[%.4f, %.4f] against a positive rate of %.4f",
+            trace.source,
+            trace.year,
+            trace.choice.turbine,
+            trace.choice.rule,
+            trace.windows,
+            trace.seconds,
+            trace.windows_per_second,
+            trace.interval.auprc,
+            trace.interval.low,
+            trace.interval.high,
+            trace.positive_rate,
+        )
+        written.append((csv_path, svg_path, report))
+    return written
 
 
 def write_stream_trace(
@@ -820,9 +1314,14 @@ def write_stream_trace(
     rung: str = "S2",
     checkpoint_dir: str = "seed_replication_v0_424c4f33",
     device_name: str = "cpu",
+    rule: str = MOST_EVENTS,
     out_dir: Path | None = None,
 ) -> tuple[Path, Path, Path]:
-    """Run the trace and write its three files.
+    """Run one rule's trace and write its files, leaving the other rule's alone.
+
+    The shared record is merged rather than overwritten, so rerunning one rule keeps the
+    other's entry. The other rule's *report* is not re-rendered, though, so a run of one
+    rule after the other has moved is best done through :func:`write_stream_traces`.
 
     Args:
         paths: Resolved project paths.
@@ -833,31 +1332,21 @@ def write_stream_trace(
         rung: The rung the backbone was pretrained at.
         checkpoint_dir: The run directory under ``checkpoints/`` holding the probe.
         device_name: Torch device.
+        rule: Which declared selection rule chooses the turbine-year.
         out_dir: Where to write; ``reports/data/`` when omitted.
 
     Returns:
         The CSV, the SVG and the Markdown report.
     """
-    trace = trace_turbine_year(
-        paths, source, year, mixture_config, ladder_config, rung, checkpoint_dir, device_name
-    )
-    target = out_dir or paths.data_reports_dir
-    target.mkdir(parents=True, exist_ok=True)
-    csv_path = write_csv(trace, target / f"{trace.stem}.csv")
-    svg_path = target / f"{trace.stem}.svg"
-    svg_path.write_text(render_svg(trace), encoding="utf-8", newline="\n")
-    report = target / f"{trace.stem}.md"
-    report.write_text(render_report(trace, paths), encoding="utf-8", newline="\n")
-    logger.info(
-        "%s %d %s: %d windows in %.1f s (%.1f windows/s), AUPRC %.4f [%.4f, %.4f]",
+    return write_stream_traces(
+        paths,
         source,
         year,
-        trace.choice.turbine,
-        trace.windows,
-        trace.seconds,
-        trace.windows_per_second,
-        trace.interval.auprc,
-        trace.interval.low,
-        trace.interval.high,
-    )
-    return csv_path, svg_path, report
+        mixture_config,
+        ladder_config,
+        rung,
+        checkpoint_dir,
+        device_name,
+        [rule],
+        out_dir,
+    )[0]

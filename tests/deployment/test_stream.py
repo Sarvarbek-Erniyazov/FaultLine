@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -14,6 +16,16 @@ import pandas as pd
 import pytest
 
 from faultline.deployment import stream
+from faultline.deployment.selection import (
+    MOST_EVENTS,
+    RULE_NAMES,
+    RULES,
+    TRACE_RECORD,
+    TYPICAL_RATE,
+    read_traces,
+    rules_block,
+    write_trace,
+)
 from faultline.deployment.stream import (
     BLOCK_STEPS,
     DESIGN,
@@ -21,13 +33,17 @@ from faultline.deployment.stream import (
     SEED,
     StreamTrace,
     TurbineChoice,
+    TurbineYear,
     caption,
     choose_turbine,
+    event_counts,
     hours_to_next_event,
     render_report,
     render_svg,
     trace_turbine_year,
+    turbine_years,
     write_csv,
+    write_stream_traces,
 )
 from faultline.evaluation import calibration
 from faultline.evaluation.bootstrap import bootstrap_auprc, window_blocks
@@ -40,6 +56,9 @@ SVG = "{http://www.w3.org/2000/svg}"
 #: A small turbine-year: four events, hourly windows, enough positives for a bootstrap.
 WINDOWS = 240
 EVENTS = 4
+
+#: The pooled test base rate the typical-rate rule aims at, as the record carries it.
+POOLED = 0.0388
 
 
 def _events(counts: dict[str, int], year: int = 2023) -> pd.DataFrame:
@@ -56,7 +75,15 @@ def _events(counts: dict[str, int], year: int = 2023) -> pd.DataFrame:
     return pd.DataFrame(rows, columns=["turbine_id", "start_utc"])
 
 
-def _trace() -> StreamTrace:
+def _candidates(spec: dict[str, tuple[int, int, int]]) -> dict[str, TurbineYear]:
+    """A field of turbine-years from ``turbine -> (events, windows, positives)``."""
+    return {
+        turbine: TurbineYear(turbine, events, windows, positives)
+        for turbine, (events, windows, positives) in spec.items()
+    }
+
+
+def _trace(rule: str = MOST_EVENTS) -> StreamTrace:
     """A synthetic trace, built without loading a model or reading a shard."""
     stamps = (
         np.datetime64("2023-01-01T00:00:00") + np.arange(WINDOWS) * np.timedelta64(1, "h")
@@ -76,10 +103,20 @@ def _trace() -> StreamTrace:
         replicates=200,
         seed=1,
     )
+    positives = int(labels.sum())
+    candidates = _candidates(
+        {
+            # The dense one the most-events rule picks, and a sparse one whose rate sits
+            # nearest the pooled base rate, so the two rules genuinely disagree.
+            "Kelmarsh 5": (EVENTS, WINDOWS, positives),
+            "Kelmarsh 4": (1, WINDOWS, round(POOLED * WINDOWS)),
+        }
+    )
+    choice = choose_turbine(candidates, rule, POOLED)
     return StreamTrace(
         source="kelmarsh",
         year=2023,
-        choice=TurbineChoice("Kelmarsh 5", EVENTS, "Kelmarsh 4", 1, {"Kelmarsh 5": EVENTS}, False),
+        choice=choice,
         stamps=stamps,
         ends=ends,
         probabilities=probabilities,
@@ -91,11 +128,29 @@ def _trace() -> StreamTrace:
         natural_rate=0.0221,
         balanced_shift=0.0,
         offset=-3.7921,
-        pooled_base_rate=0.0388,
+        pooled_base_rate=POOLED,
+        pooled_auprc=0.0576,
+        pooled_low=0.0503,
+        pooled_high=0.0670,
         seconds=12.0,
         checkpoint="run/S2_tel_only_seed2.pt",
         probe="run/S2_trained_seed2_probe.pt",
     )
+
+
+def _chance_trace(rule: str = MOST_EVENTS) -> StreamTrace:
+    """The same turbine-year with a score that carries nothing, so the interval contains it."""
+    trace = _trace(rule)
+    rng = np.random.default_rng(7)
+    probabilities = rng.uniform(0.0, 0.1, trace.windows)
+    interval = bootstrap_auprc(
+        probabilities,
+        trace.labels,
+        window_blocks(trace.ends, np.zeros_like(trace.ends), BLOCK_STEPS),
+        replicates=200,
+        seed=1,
+    )
+    return replace(trace, probabilities=probabilities, interval=interval)
 
 
 # --------------------------------------------------------------------------------------
@@ -120,7 +175,7 @@ def test_the_trace_routes_its_probabilities_through_that_function(
         "seed": SEED,
         "natural_rate": 0.0221,
         "prior_band": {"shift": 0.25},
-        "pooled": {"base_rate": 0.0388},
+        "pooled": {"base_rate": 0.0388, "auprc": 0.0576, "low": 0.0503, "high": 0.0670},
     }
     logits = np.linspace(-2.0, 2.0, WINDOWS, dtype=np.float32)
     labels = np.zeros(WINDOWS, dtype=np.float32)
@@ -174,6 +229,11 @@ def test_the_trace_routes_its_probabilities_through_that_function(
     monkeypatch.setattr(stream, "narrow_event_starts", lambda paths, source: _events({"T1": 3}))
     monkeypatch.setattr(stream, "open_probe_inputs", lambda *a, **k: inputs)
     monkeypatch.setattr(stream, "load_saved_probe", lambda *a, **k: None)
+    monkeypatch.setattr(
+        stream,
+        "known_windows",
+        lambda *a, **k: (windows, np.full(WINDOWS, "T1", dtype=object)),
+    )
     monkeypatch.setattr(stream, "turbine_year_windows", lambda *a, **k: windows)
     monkeypatch.setattr(
         stream,
@@ -202,6 +262,8 @@ def test_the_trace_routes_its_probabilities_through_that_function(
     assert np.allclose(trace.probabilities, expected)
     # And the two-term rule is genuinely in the number, not an unshifted sigmoid.
     assert not np.allclose(trace.probabilities, 1.0 / (1.0 + np.exp(-logits)))
+    # The pooled AUPRC the caption refuses the comparison with comes off the same record.
+    assert (trace.pooled_auprc, trace.pooled_low, trace.pooled_high) == (0.0576, 0.0503, 0.0670)
 
 
 # --------------------------------------------------------------------------------------
@@ -244,12 +306,36 @@ def test_the_figure_draws_one_marker_an_event() -> None:
     assert len(bands) == EVENTS
 
 
-def test_the_figure_draws_the_base_rate_and_no_operating_point() -> None:
+def test_the_figure_draws_both_rate_lines_and_no_operating_point() -> None:
+    """The pooled rate and this turbine-year's own, each named in words on its own line."""
     trace = _trace()
     svg = render_svg(trace)
-    assert f"{trace.pooled_base_rate:.4f}" in svg
+    root = ET.fromstring(svg)
+    lines = [line for line in root.iter(f"{SVG}line") if line.get("class") == "reference"]
+    assert len(lines) == 2
+    # Different dash patterns, so the two are told apart with the colour taken away.
+    assert len({line.get("stroke-dasharray") for line in lines}) == 2
+    labels = [text.text or "" for text in root.iter(f"{SVG}text")]
+    assert any(f"pooled test base rate {trace.pooled_base_rate:.4f}" == label for label in labels)
+    assert any(
+        label == f"{trace.choice.turbine} {trace.year} positive rate {trace.positive_rate:.4f}"
+        for label in labels
+    )
     for banned in ("threshold", "alarm", "abstention", "abstain"):
         assert banned not in svg.lower()
+
+
+def test_the_figure_keeps_both_rate_lines_inside_the_value_axis() -> None:
+    """This turbine-year's rate is far above the pooled one and must still be drawn."""
+    trace = _trace()
+    root = ET.fromstring(render_svg(trace))
+    lines = [line for line in root.iter(f"{SVG}line") if line.get("class") == "reference"]
+    for line in lines:
+        assert 44.0 <= float(line.get("y1") or 0.0) <= 360.0 - 52.0
+
+
+# --------------------------------------------------------------------------------------
+# What the caption says, and refuses to say
 
 
 def test_the_caption_says_what_the_trace_is_not() -> None:
@@ -267,6 +353,63 @@ def test_the_caption_says_what_the_trace_is_not() -> None:
         assert term in said
 
 
+def test_the_caption_reads_the_interval_against_the_turbine_year_s_own_rate() -> None:
+    """Not against the pooled base rate, which is a different set's denominator."""
+    trace = _trace()
+    assert trace.interval.low > trace.positive_rate
+    assert trace.clears
+    said = caption(trace)
+    assert f"CLEARS its own positive rate {trace.positive_rate:.4f}" in said
+    assert "CONTAINS" not in said
+
+
+def test_a_score_at_chance_is_said_to_contain_its_own_rate() -> None:
+    """The comparison the caption must make, and the reading it must not hide."""
+    trace = _chance_trace()
+    assert trace.interval.low <= trace.positive_rate
+    assert not trace.clears
+    said = caption(trace)
+    assert f"CONTAINS its own positive rate {trace.positive_rate:.4f}" in said
+    assert "consistent with chance on this turbine-year" in said
+    assert "CLEARS" not in said
+
+
+def test_the_caption_states_the_mean_probability_beside_the_positive_rate() -> None:
+    """And why the two differ: the correction targets the training prior, not this turbine."""
+    trace = _trace()
+    said = caption(trace)
+    assert f"mean corrected probability is {trace.mean_probability:.4f}" in said
+    assert f"targets the training prior {trace.natural_rate:.4f}" in said
+    assert "not this turbine-year's" in said
+
+
+def test_the_caption_refuses_the_pooled_comparison_with_both_numbers() -> None:
+    trace = _trace()
+    said = caption(trace)
+    ratio = trace.positive_rate / trace.pooled_base_rate
+    assert f"pooled test AUPRC ({trace.pooled_auprc:.4f}" in said
+    assert f"{ratio:.1f}x the pooled {trace.pooled_base_rate:.4f}" in said
+
+
+def test_the_caption_observes_what_the_rule_selected_for() -> None:
+    dense = caption(_trace(MOST_EVENTS))
+    assert "One observation:" in dense
+    assert "atypical for the site" in dense
+    assert "selects atypical turbine-years by construction" in dense
+    typical = caption(_trace(TYPICAL_RATE))
+    assert "One observation:" in typical
+    assert "least unlike the pooled test split" in typical
+    assert "reads no score to do it" in typical
+
+
+def test_the_caption_names_the_rule_and_the_other_trace() -> None:
+    for rule in RULES:
+        said = caption(_trace(rule))
+        assert f"Selected under the {RULE_NAMES[rule]} rule" in said
+        assert "the other trace is shown beside this one" in said
+        assert "neither is an evaluation result" in said
+
+
 def test_the_report_carries_the_caption_s_numbers(tmp_paths: ProjectPaths) -> None:
     trace = _trace()
     report = render_report(trace, tmp_paths)
@@ -282,8 +425,22 @@ def test_the_report_carries_the_caption_s_numbers(tmp_paths: ProjectPaths) -> No
     assert caption(trace) in report
 
 
+def test_the_report_states_both_rules_side_by_side(tmp_paths: ProjectPaths) -> None:
+    """Whichever rule ran, the reader is shown the other one in the same table."""
+    for rule in RULES:
+        report = render_report(_trace(rule), tmp_paths)
+        for name in RULE_NAMES.values():
+            assert name in report
+        assert "Neither is an evaluation result." in report
+        assert f"**This trace ran under the {RULE_NAMES[rule]} rule**" in report
+        # Every candidate is listed with both quantities the rules read, so the choice
+        # can be checked against the table rather than taken on trust.
+        assert "positive-window rate" in report
+        assert "Kelmarsh 4" in report and "Kelmarsh 5" in report
+
+
 # --------------------------------------------------------------------------------------
-# Choosing the turbine, and reading the horizon
+# Choosing the turbine: two rules, both reading labels and neither reading a score
 
 
 def test_the_stem_names_the_site_once() -> None:
@@ -291,31 +448,175 @@ def test_the_stem_names_the_site_once() -> None:
     assert _trace().stem == "stream_trace_kelmarsh_5_2023"
 
 
+def test_the_stem_does_not_carry_the_rule() -> None:
+    """Two rules landing on one turbine-year would be one trace, not two."""
+    assert _trace(MOST_EVENTS).stem == "stream_trace_kelmarsh_5_2023"
+    assert _trace(TYPICAL_RATE).stem == "stream_trace_kelmarsh_4_2023"
+
+
 def test_the_turbine_with_the_most_events_is_chosen_with_its_runner_up() -> None:
-    choice = choose_turbine(_events({"T1": 2, "T2": 9, "T3": 5}), 2023)
+    field = _candidates({"T1": (2, 100, 4), "T2": (9, 100, 40), "T3": (5, 100, 4)})
+    choice = choose_turbine(field, MOST_EVENTS, POOLED)
     assert (choice.turbine, choice.events) == ("T2", 9)
     assert (choice.runner_up, choice.runner_up_events) == ("T3", 5)
-    assert choice.counts == {"T1": 2, "T2": 9, "T3": 5}
+    assert set(choice.candidates) == {"T1", "T2", "T3"}
     assert not choice.tied
 
 
+def test_the_turbine_nearest_the_pooled_base_rate_is_chosen() -> None:
+    """The typical-rate rule reads the positive-window rate and nothing else."""
+    field = _candidates({"T1": (2, 1000, 400), "T2": (9, 1000, 39), "T3": (5, 1000, 120)})
+    choice = choose_turbine(field, TYPICAL_RATE, POOLED)
+    assert choice.turbine == "T2"
+    assert choice.chosen.rate == pytest.approx(0.039)
+    assert choice.runner_up == "T3"
+    # The other rule would have taken a different turbine-year, which is the point of
+    # reporting both: the example is a choice, and it is visible as one.
+    assert choice.picks(MOST_EVENTS) == "T2"
+    assert choose_turbine(field, MOST_EVENTS, POOLED).turbine == "T2"
+
+
+def test_the_two_rules_disagree_when_the_densest_turbine_year_is_not_the_typical_one() -> None:
+    field = _candidates({"T1": (40, 1000, 400), "T2": (3, 1000, 39)})
+    assert choose_turbine(field, MOST_EVENTS, POOLED).turbine == "T1"
+    assert choose_turbine(field, TYPICAL_RATE, POOLED).turbine == "T2"
+
+
 def test_a_tie_goes_to_the_lowest_turbine_id() -> None:
-    choice = choose_turbine(_events({"T3": 4, "T1": 4, "T2": 1}), 2023)
+    field = _candidates({"T3": (4, 100, 4), "T1": (4, 100, 4), "T2": (1, 100, 90)})
+    choice = choose_turbine(field, MOST_EVENTS, POOLED)
     assert choice.turbine == "T1"
     assert choice.tied
 
 
+def test_a_tie_on_the_rate_goes_to_the_lowest_turbine_id() -> None:
+    field = _candidates({"T2": (1, 1000, 39), "T1": (9, 1000, 39)})
+    # The same rate, so the same distance, and the event counts the other rule reads are
+    # not a tie-break here: the criterion is the rate and the tie-break is the id.
+    choice = choose_turbine(field, TYPICAL_RATE, POOLED)
+    assert choice.turbine == "T1"
+    assert choice.tied
+
+
+def test_an_unknown_rule_is_refused() -> None:
+    with pytest.raises(ValueError, match="unknown selection rule"):
+        choose_turbine(_candidates({"T1": (1, 10, 1)}), "prettiest", POOLED)
+
+
 def test_only_the_year_asked_for_is_counted() -> None:
     events = pd.concat([_events({"T1": 3}, 2023), _events({"T2": 9}, 2022)])
-    choice = choose_turbine(events, 2023)
-    assert (choice.turbine, choice.events) == ("T1", 3)
-    # The other turbine saw nothing that year, so there is no runner-up to name.
-    assert (choice.runner_up, choice.runner_up_events) == ("-", 0)
+    assert event_counts(events, 2023) == {"T1": 3}
 
 
 def test_a_year_without_an_event_is_refused() -> None:
     with pytest.raises(ValueError, match="no narrow event starts"):
-        choose_turbine(_events({"T1": 1}, 2023), 2021)
+        event_counts(_events({"T1": 1}, 2023), 2021)
+
+
+def test_the_rate_is_taken_over_the_windows_the_trace_would_score() -> None:
+    """Strided inside the turbine-year, so it is the positive rate the trace reports."""
+    labels = np.zeros(12, dtype=np.float32)
+    labels[::2] = 1.0
+    every = WindowSet(
+        key="kelmarsh__test",
+        tokens=np.zeros(0, dtype=np.uint16),
+        starts=np.arange(12, dtype=np.int64),
+        ends=np.arange(12, dtype=np.int64) + 143,
+        labels=labels,
+        years=np.full(12, 2023, dtype=np.int64),
+    )
+    turbines = np.array(["T1"] * 6 + ["T2"] * 6, dtype=object)
+    field = turbine_years(every, turbines, {"T1": 3, "T2": 4}, 2023, 2)
+    # T1 takes rows 0, 2, 4 -- every label at an even row is positive.
+    assert field["T1"].windows == 3
+    assert field["T1"].rate == pytest.approx(1.0)
+    # T2 starts at row 6, which is also even, so its strided rows are positive too.
+    assert field["T2"].windows == 3
+    assert field["T2"].events == 4
+
+
+def test_a_turbine_with_events_but_no_window_is_not_a_candidate() -> None:
+    every = WindowSet(
+        key="kelmarsh__test",
+        tokens=np.zeros(0, dtype=np.uint16),
+        starts=np.arange(4, dtype=np.int64),
+        ends=np.arange(4, dtype=np.int64) + 143,
+        labels=np.zeros(4, dtype=np.float32),
+        years=np.full(4, 2023, dtype=np.int64),
+    )
+    field = turbine_years(every, np.array(["T1"] * 4, dtype=object), {"T1": 2, "T2": 7}, 2023, 1)
+    assert set(field) == {"T1"}
+
+
+def test_a_year_with_no_known_window_anywhere_is_refused() -> None:
+    every = WindowSet(
+        key="kelmarsh__test",
+        tokens=np.zeros(0, dtype=np.uint16),
+        starts=np.arange(4, dtype=np.int64),
+        ends=np.arange(4, dtype=np.int64) + 143,
+        labels=np.zeros(4, dtype=np.float32),
+        years=np.full(4, 2022, dtype=np.int64),
+    )
+    with pytest.raises(ValueError, match="no turbine has a known window"):
+        turbine_years(every, np.array(["T1"] * 4, dtype=object), {"T1": 2}, 2023, 1)
+
+
+# --------------------------------------------------------------------------------------
+# The shared record, which is how each trace knows about the other
+
+
+def test_a_second_rule_does_not_drop_the_first_rule_s_trace(tmp_path: Path) -> None:
+    record = tmp_path / TRACE_RECORD
+    write_trace(record, _trace(MOST_EVENTS).record())
+    write_trace(record, _trace(TYPICAL_RATE).record())
+    entries = read_traces(record)
+    assert [entry["rule"] for entry in entries] == list(RULES)
+    assert {entry["turbine"] for entry in entries} == {"Kelmarsh 5", "Kelmarsh 4"}
+    # Rerunning one rule replaces its own entry and leaves the other alone.
+    write_trace(record, _trace(MOST_EVENTS).record())
+    assert [entry["rule"] for entry in read_traces(record)] == list(RULES)
+    assert len(json.loads(record.read_text(encoding="utf-8"))["traces"]) == 2
+
+
+def test_a_record_that_was_never_written_reads_as_nothing(tmp_path: Path) -> None:
+    assert read_traces(tmp_path / TRACE_RECORD) == []
+    # And the rules are still stated, because they do not depend on a trace existing.
+    for name in RULE_NAMES.values():
+        assert name in rules_block(())
+
+
+def test_the_record_carries_the_clears_or_contains_reading() -> None:
+    assert _trace().record()["clears_own_base_rate"] is True
+    assert _chance_trace().record()["clears_own_base_rate"] is False
+    assert _trace().record()["positive_rate"] == pytest.approx(_trace().positive_rate)
+
+
+def test_both_reports_are_written_from_one_pass_and_name_each_other(
+    monkeypatch: pytest.MonkeyPatch, tmp_paths: ProjectPaths, tmp_path: Path
+) -> None:
+    """A report written between two passes would name a trace that did not exist yet."""
+    monkeypatch.setattr(stream, "trace_turbine_year", lambda *a, **k: _trace(a[-1]))
+    written = write_stream_traces(tmp_paths, out_dir=tmp_path)
+    assert [report.name for _, _, report in written] == [
+        "stream_trace_kelmarsh_5_2023.md",
+        "stream_trace_kelmarsh_4_2023.md",
+    ]
+    for _, _, report in written:
+        body = report.read_text(encoding="utf-8")
+        assert "stream_trace_kelmarsh_5_2023.md" in body
+        assert "stream_trace_kelmarsh_4_2023.md" in body
+    assert [entry["rule"] for entry in read_traces(tmp_path / TRACE_RECORD)] == list(RULES)
+
+
+def test_the_report_names_the_other_trace_once_it_exists(tmp_paths: ProjectPaths) -> None:
+    tmp_paths.data_reports_dir.mkdir(parents=True, exist_ok=True)
+    write_trace(tmp_paths.data_reports_dir / TRACE_RECORD, _trace(TYPICAL_RATE).record())
+    report = render_report(_trace(MOST_EVENTS), tmp_paths)
+    assert "stream_trace_kelmarsh_4_2023.md" in report
+
+
+# --------------------------------------------------------------------------------------
+# The horizon
 
 
 def test_the_horizon_is_open_on_the_left_and_closed_on_the_right() -> None:
@@ -336,6 +637,11 @@ def test_no_event_leaves_every_window_blank() -> None:
     assert np.isnan(hours_to_next_event(stamps, np.array([], dtype="datetime64[ns]"), 24)).all()
 
 
+def test_the_event_density_is_read_off_the_calendar_year() -> None:
+    """The event count is a calendar-year count, so the year is what it is divided by."""
+    assert _trace().days_between_events == pytest.approx(365 / EVENTS)
+
+
 # --------------------------------------------------------------------------------------
 # The script
 
@@ -352,3 +658,12 @@ def test_the_script_runs_headless(repo_root: Path) -> None:
     )
     assert done.returncode == 0, done.stderr
     assert "stream-trace" in done.stdout
+
+
+def test_a_site_year_with_one_turbine_has_no_runner_up() -> None:
+    """The choice is still a choice, and it still says what it had to choose from."""
+    choice = choose_turbine(_candidates({"T1": (3, 100, 4)}), MOST_EVENTS, POOLED)
+    assert isinstance(choice, TurbineChoice)
+    # A site-year with one turbine has no runner-up to name.
+    assert (choice.runner_up, choice.runner_up_events) == ("-", 0)
+    assert not choice.tied

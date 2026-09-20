@@ -1716,14 +1716,27 @@ def model_readout_gate(
     "stream-trace",
     help="DEMONSTRATION (CPU): run the deployment path -- backbone, frozen probe, prior-"
     "corrected probability -- over every known window of one held-out turbine-year in time "
-    "order, and write reports/data/stream_trace_<site>_<turbine>_<year>.csv/.svg/.md. Adds no "
-    "rule, no ADR and no verdict; changes nothing in the record. Resume-safe.",
+    "order, and write reports/data/stream_trace_<site>_<turbine>_<year>.csv/.svg/.md. The "
+    "turbine-year is chosen by --rule, one of two rules declared before any score was "
+    "looked at; both are reported side by side. Adds no rule, no ADR and no verdict; "
+    "changes nothing in the record. Resume-safe.",
 )
 def model_stream_trace(
     source: Annotated[
         str, typer.Option("--source", help="The site whose test split holds the year.")
     ] = "kelmarsh",
     year: Annotated[int, typer.Option("--year", help="The calendar year to trace.")] = 2023,
+    rule: Annotated[
+        str,
+        typer.Option(
+            "--rule",
+            help="Which turbine-year to trace: most-events, the turbine with the most "
+            "labelled narrow event starts in the year; typical-rate, the turbine whose "
+            "positive-window rate is closest to the pooled test base rate; both, one trace "
+            "under each, which is the only way the two reports are written from the same "
+            "pass and so agree with each other.",
+        ),
+    ] = "both",
     device: Annotated[
         str, typer.Option("--device", help="Torch device; cpu is the point of the trace.")
     ] = "cpu",
@@ -1733,10 +1746,15 @@ def model_stream_trace(
     Args:
         source: The site whose test split holds the year.
         year: The calendar year to trace.
+        rule: Which declared selection rule chooses the turbine-year, or ``both``.
         device: Torch device.
     """
-    from faultline.deployment.stream import write_stream_trace
+    from faultline.deployment.selection import RULES
+    from faultline.deployment.stream import write_stream_traces
 
+    chosen = RULES if rule == "both" else (rule.replace("-", "_"),)
     paths = ProjectPaths.resolve()
-    trace, figure, report = write_stream_trace(paths, source=source, year=year, device_name=device)
-    typer.echo(f"wrote {trace}, {figure} and {report}")
+    for trace, figure, report in write_stream_traces(
+        paths, source=source, year=year, rules=chosen, device_name=device
+    ):
+        typer.echo(f"wrote {trace}, {figure} and {report}")

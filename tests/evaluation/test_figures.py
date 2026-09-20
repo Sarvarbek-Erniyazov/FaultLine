@@ -11,11 +11,13 @@ from faultline.evaluation.figures import (
     BUILDERS,
     FORWARD_CAVEAT,
     FORWARD_SPAN,
+    TRACE_CAVEAT,
     Figure,
     Marker,
     Panel,
     RecordSet,
     Row,
+    _shorten,
     delta,
     interval,
     render_intervals,
@@ -101,6 +103,50 @@ def test_forward_figures_carry_the_standing_caveat(paths: ProjectPaths) -> None:
         figure = builder(records)
         assert figure is not None
         assert FORWARD_CAVEAT in figure.caption, name
+
+
+def test_the_caveat_never_opens_a_sentence_in_lowercase(paths: ProjectPaths) -> None:
+    """The caveat is a fragment, so every caption has to lead into it."""
+    records = RecordSet(paths)
+    for name in ("F4", "F2", "F3"):
+        figure = dict(BUILDERS)[name](records)
+        assert figure is not None
+        before = figure.caption[: figure.caption.index(FORWARD_CAVEAT)]
+        assert before.rstrip().endswith(":"), name
+
+
+def test_the_traces_caveat_is_singular_and_no_other_is(built: list[Path]) -> None:
+    """Both traced turbine-years are Kelmarsh; every other figure pools two sites."""
+    assert TRACE_CAVEAT.count("same site;") == 1
+    assert FORWARD_CAVEAT.count("same sites;") == 1
+    index = next(path for path in built if path.name == "figures_index.md")
+    text = index.read_text(encoding="utf-8")
+    # One singular caveat, in section 3, and the plural everywhere else it appears.
+    assert text.count(TRACE_CAVEAT) == 1
+    assert TRACE_CAVEAT in text.split("## 3.")[1]
+
+
+def test_a_shortened_heading_never_breaks_inside_a_word() -> None:
+    """The ledger truncated "scoring protocol" to "scoring prot", which reads as a typo."""
+    heading = "The primary evaluation axis after ADR-0021: the selection rule and scoring protocol"
+    cut = _shorten(heading, limit=60)
+    assert cut.endswith("...")
+    assert len(cut) <= 60
+    # What is kept is a prefix of the original, ending where a word ends.
+    kept = cut[:-3]
+    assert heading.startswith(kept)
+    assert heading[len(kept)] in " ,;:-", repr(cut)
+    # A heading that fits is returned whole, and one long word is still cut.
+    assert _shorten("short enough", limit=60) == "short enough"
+    assert _shorten("x" * 80, limit=20).endswith("...")
+
+
+def test_the_index_says_what_its_order_is(built: list[Path]) -> None:
+    """The set is listed in the write-up's order, which is not F1 through F6."""
+    index = next(path for path in built if path.name == "figures_index.md")
+    listing = index.read_text(encoding="utf-8").split("## 1. The set")[1]
+    assert "not by figure number" in listing.split("| figure |")[0]
+    assert [name for name, _ in BUILDERS] != sorted(name for name, _ in BUILDERS)
 
 
 def test_the_index_names_every_figure_and_its_sentence(built: list[Path]) -> None:

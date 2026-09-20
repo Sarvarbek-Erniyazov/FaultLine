@@ -32,6 +32,7 @@ from faultline.deployment.stream import (
     CONFIDENCE,
     DESIGN,
     HORIZON_HOURS,
+    LABEL_FONT,
     REPLICATES,
     SEED,
     SelectionField,
@@ -43,6 +44,7 @@ from faultline.deployment.stream import (
     comparability,
     event_counts,
     hours_to_next_event,
+    label_width,
     render_report,
     render_stream_traces,
     render_svg,
@@ -351,6 +353,71 @@ def test_the_figure_keeps_both_rate_lines_inside_the_value_axis() -> None:
     lines = [line for line in root.iter(f"{SVG}line") if line.get("class") == "reference"]
     for line in lines:
         assert 44.0 <= float(line.get("y1") or 0.0) <= 360.0 - 52.0
+
+
+def _text_boxes(root: ET.Element) -> list[tuple[str, float, float, float, float]]:
+    """Every text node's box, measured the way the generator places its plates.
+
+    Args:
+        root: The parsed SVG root.
+
+    Returns:
+        Per text node its content and its ``(x0, x1, y0, y1)`` box.
+    """
+    default = float(root.get("font-size") or LABEL_FONT)
+    boxes = []
+    for node in root.iter(f"{SVG}text"):
+        content = node.text or ""
+        font = float(node.get("font-size") or default)
+        span = label_width(content, font)
+        if (node.get("font-weight") or "400") in ("600", "700", "bold"):
+            span *= 1.06
+        x, y = float(node.get("x") or 0.0), float(node.get("y") or 0.0)
+        anchor_at = node.get("text-anchor") or "start"
+        x0 = x if anchor_at == "start" else (x - span / 2 if anchor_at == "middle" else x - span)
+        boxes.append((content, x0, x0 + span, y - 0.82 * font, y + 0.22 * font))
+    return boxes
+
+
+@pytest.mark.parametrize("build", [_trace, _chance_trace])
+def test_no_two_labels_in_the_figure_overlap(build: Any) -> None:
+    """Two labels sharing pixels are two labels a reader may read as one word."""
+    boxes = _text_boxes(ET.fromstring(render_svg(build())))
+    for index, first in enumerate(boxes):
+        for second in boxes[index + 1 :]:
+            apart = (
+                first[2] <= second[1]
+                or second[2] <= first[1]
+                or first[4] <= second[3]
+                or second[4] <= first[3]
+            )
+            assert apart, f"{first[0]!r} and {second[0]!r} overlap"
+
+
+@pytest.mark.parametrize("build", [_trace, _chance_trace])
+def test_each_rate_label_is_written_on_a_plate_over_the_trace(build: Any) -> None:
+    """The defect this guards is the trace running between a label's letters.
+
+    Kelmarsh 4 2023 put 153 polyline vertices inside the pooled label's box, nine of them
+    inside the word "pooled", which two readers read as "pobled". The two labels never
+    touched each other; what crossed the words was the score. So each label needs an
+    opaque plate, and the plate has to be drawn after the polyline to cover anything.
+    """
+    svg = render_svg(build())
+    root = ET.fromstring(svg)
+    plates = [rect for rect in root.iter(f"{SVG}rect") if rect.get("class") == "plate"]
+    assert len(plates) == 2
+    labels = [box for box in _text_boxes(root) if "rate" in box[0]]
+    assert len(labels) == 2
+    for _, x0, x1, y0, y1 in labels:
+        assert any(
+            float(plate.get("x") or 0.0) <= x0
+            and float(plate.get("x") or 0.0) + float(plate.get("width") or 0.0) >= x1
+            and float(plate.get("y") or 0.0) <= y0
+            and float(plate.get("y") or 0.0) + float(plate.get("height") or 0.0) >= y1
+            for plate in plates
+        ), "a rate label is not covered by any plate"
+    assert svg.index("<polyline") < svg.index('class="plate"')
 
 
 # --------------------------------------------------------------------------------------

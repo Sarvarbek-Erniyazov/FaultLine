@@ -109,6 +109,40 @@ LM_SELECTION_WINDOWS = 1
 TRACE, EVENT, RATE = "#2a78d6", "#c2475f", "#8a5cd0"
 INK, MUTED, GRID, SURFACE, BAND = "#1a1a19", "#5f5e58", "#e4e3dd", "#fcfcfb", "#f6dfe4"
 
+#: The figure's body font size, and the padding a label's plate adds around its text.
+LABEL_FONT, LABEL_PAD = 12.0, 2.0
+
+#: Per-character advances as a fraction of the font size, for a sans UI face. There is no
+#: font metric library in this project's dependencies and one is not worth adding to place
+#: a plate, so the widest plausible advance of each class is used: an over-estimate leaves
+#: a plate slightly wider than its text, which is harmless, where an under-estimate would
+#: leave the last letter over the trace. ``tests/deployment/test_stream.py`` measures label
+#: boxes with this same function, so the drawn plate and the tested box cannot disagree.
+_WIDE, _NARROW = set("MWmw@%"), set("iljtfI .,;:'|!")
+
+
+def label_width(text: str, font: float) -> float:
+    """The width a text label occupies, over-estimated, in user units.
+
+    Args:
+        text: The label.
+        font: The font size the label is drawn at.
+
+    Returns:
+        The estimated advance width.
+    """
+
+    def advance(character: str) -> float:
+        if character in _WIDE:
+            return 0.95 * font
+        if character in _NARROW:
+            return 0.34 * font
+        if character.isupper() or character.isdigit():
+            return 0.68 * font
+        return 0.60 * font
+
+    return sum(advance(character) for character in text)
+
 
 @dataclass(frozen=True)
 class TurbineYear:
@@ -1002,7 +1036,11 @@ def render_svg(trace: StreamTrace) -> str:
             f'text-anchor="end">{value:.2f}</text>'
         )
         value += tick
-    out.extend(_reference_lines(trace, left, width - right, y))
+    # The rate lines go under the trace, so the score is never hidden by its own
+    # annotation; their labels go over it, on a plate, so the trace cannot run through
+    # the words. Both halves come from one call, so the two cannot drift apart.
+    rules, labels = _reference_lines(trace, left, width - right, y)
+    out.extend(rules)
     path = " ".join(
         f"{x(when):.1f},{y(float(p)):.1f}"
         for when, p in zip(trace.stamps, trace.probabilities, strict=True)
@@ -1011,6 +1049,7 @@ def render_svg(trace: StreamTrace) -> str:
         f'<polyline points="{path}" fill="none" stroke="{TRACE}" stroke-width="0.9" '
         'stroke-linejoin="round" stroke-opacity="0.9"/>'
     )
+    out.extend(labels)
     for month in range(1, 13):
         when = np.datetime64(f"{trace.year}-{month:02d}-01T00:00:00")
         if first <= when <= last:
@@ -1038,12 +1077,20 @@ def render_svg(trace: StreamTrace) -> str:
 
 def _reference_lines(
     trace: StreamTrace, left: float, right: float, y: Callable[[float], float]
-) -> list[str]:
+) -> tuple[list[str], list[str]]:
     """The two labelled rate lines: the pooled one, and this turbine-year's own.
 
     Each carries its name and its value as text on the line, so neither is identified by
     colour alone. When the two sit close enough for their labels to collide, the lower
     line's label is written under it instead of over it.
+
+    Each label is also written on an opaque plate in the surface colour. Without one the
+    label is drawn straight over the trace, and on a turbine-year whose rate sits in the
+    bulk of the score the polyline weaves between the letters: on Kelmarsh 4 2023, 153
+    vertices of the trace fall inside the pooled label's box and nine of them inside the
+    word "pooled", which two readers independently read as "pobled". The plate is what
+    keeps the words legible; the vertical separation above only keeps the two labels off
+    each other, which they already were.
 
     Args:
         trace: The trace.
@@ -1052,7 +1099,7 @@ def _reference_lines(
         y: The value-to-pixel mapping.
 
     Returns:
-        One SVG fragment a line, in drawing order.
+        The rate lines, to draw under the trace, and their plated labels, to draw over it.
     """
     lines = [
         (trace.pooled_base_rate, "pooled test base rate", INK, "6 4"),
@@ -1062,16 +1109,26 @@ def _reference_lines(
     under = [False, False]
     if abs(heights[0] - heights[1]) < 16:
         under[0 if heights[0] > heights[1] else 1] = True
-    out = []
+    rules, labels = [], []
     for (value, name, colour, dashes), height, below in zip(lines, heights, under, strict=True):
-        out.append(
+        label = f"{name} {value:.4f}"
+        baseline = height + (14 if below else -6)
+        span = label_width(label, LABEL_FONT)
+        rules.append(
             f'<line class="reference" x1="{left}" x2="{right}" y1="{height:.1f}" '
             f'y2="{height:.1f}" stroke="{colour}" stroke-width="1.2" '
             f'stroke-dasharray="{dashes}"/>'
-            f'<text x="{right - 4}" y="{height + (14 if below else -6):.1f}" fill="{colour}" '
-            f'text-anchor="end">{name} {value:.4f}</text>'
         )
-    return out
+        labels.append(
+            f'<rect class="plate" x="{right - 4 - span - LABEL_PAD:.1f}" '
+            f'y="{baseline - 0.82 * LABEL_FONT - LABEL_PAD:.1f}" '
+            f'width="{span + 2 * LABEL_PAD:.1f}" '
+            f'height="{1.04 * LABEL_FONT + 2 * LABEL_PAD:.1f}" rx="2" '
+            f'fill="{SURFACE}" fill-opacity="0.92"/>'
+            f'<text x="{right - 4}" y="{baseline:.1f}" fill="{colour}" '
+            f'text-anchor="end">{label}</text>'
+        )
+    return rules, labels
 
 
 def interval_against_own_rate(trace: StreamTrace) -> str:

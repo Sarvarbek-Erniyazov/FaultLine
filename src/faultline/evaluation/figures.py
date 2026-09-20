@@ -48,6 +48,11 @@ logger = get_logger(__name__)
 #: The caveat every figure drawn from the forward-in-time split carries.
 FORWARD_CAVEAT = "forward-in-time, same sites; not a site-shift result"
 
+#: The same caveat for the streaming traces of section 3. Both traced turbine-years are
+#: Kelmarsh, so the plural would overstate what those two figures cover; every other
+#: figure pools Kelmarsh with Penmanshiel and keeps :data:`FORWARD_CAVEAT`.
+TRACE_CAVEAT = "forward-in-time, same site; not a site-shift result"
+
 #: How the forward-in-time split's span is named, everywhere.
 FORWARD_SPAN = "tested on 2022 onward (Kelmarsh through 2024, Penmanshiel 2022 only)"
 
@@ -635,7 +640,7 @@ def build_f4(records: RecordSet) -> Figure | None:
             "text-aware read-out. The two hollow rows are (d)'s controls: the random-init "
             "backbone is the floor the gate had to clear, and the telemetry-only backbone, whose "
             f"text embedding rows collapsed onto one shared vector, is read with the same head. "
-            f"{FORWARD_CAVEAT}."
+            f"The standing caveat applies: {FORWARD_CAVEAT}."
         ),
     )
 
@@ -821,7 +826,7 @@ def build_f3(records: RecordSet) -> Figure | None:
             "blocks. The shaded band is the registered smallest effect of interest. The H1 "
             "cluster sits inside it on all three seeds, which is what INCONCLUSIVE means here; "
             "the H1' cluster sits wholly outside it, as does its nine-cell instrument gate. "
-            f"{FORWARD_CAVEAT}."
+            f"The standing caveat applies: {FORWARD_CAVEAT}."
         ),
     )
 
@@ -1004,7 +1009,13 @@ def _shorten(value: str, limit: int = 96) -> str:
         The shortened text.
     """
     flat = " ".join(value.replace("|", "/").split())
-    return flat if len(flat) <= limit else flat[: limit - 1].rstrip() + "..."
+    if len(flat) <= limit:
+        return flat
+    cut = flat[: limit - 3]
+    # Back up to the last space, so a heading never breaks inside a word ("scoring prot").
+    # A single word longer than the limit has no space to find; it is cut as it stands.
+    head = cut.rsplit(" ", 1)[0] if " " in cut else cut
+    return head.rstrip(" ,;:-") + "..."
 
 
 def build_f2(records: RecordSet) -> Figure | None:
@@ -1062,7 +1073,7 @@ def build_f2(records: RecordSet) -> Figure | None:
             "is within noise of the trained probe. The status-only bag-of-tokens, a histogram "
             "of the window's status strings with no model at all, is above every telemetry row. "
             "The two bag rows are single fits, not per-seed, and repeat in each panel as a "
-            f"reference. {FORWARD_CAVEAT}."
+            f"reference. The standing caveat applies: {FORWARD_CAVEAT}."
         ),
     )
 
@@ -1210,7 +1221,8 @@ def build_f5(records: RecordSet) -> Figure | None:
             "split leaves the probe clear of the base rate on all nine farm-by-seed cells, so "
             "the channel gaps are not what nulls it. Below: on CARE itself the probe and the "
             "order-blind comparator both sit at each farm's own base rate, over a per-farm "
-            f"range of {low:.4f} to {high:.4f} AUPRC. The worst discarded-replicate share "
+            f"range of {low:.4f} to {high:.4f} AUPRC across the final-step rows drawn here. "
+            f"The worst discarded-replicate share "
             f"anywhere below is {worst:.2%}, at farm_b, whose positives fall in the fewest "
             "blocks of the three; the pooled rows the rule actually reads discard nothing. "
             "Every panel has its own value scale and its own base-rate line, because CARE's "
@@ -1314,7 +1326,9 @@ def build_f6(records: RecordSet) -> Figure | None:
     return figure
 
 
-#: The set, in the order it is built and indexed.
+#: The set, in the order it is built and indexed. That order is the write-up's, not F1
+#: through F6: the figure carrying the programme's headline sentence comes first and the
+#: diagnostics last. :func:`render_index` says so, so the listing does not read as unsorted.
 BUILDERS: tuple[tuple[str, Any], ...] = (
     ("F4", build_f4),
     ("F1", build_f1),
@@ -1359,7 +1373,14 @@ def render_index(figures: Sequence[Figure], records: RecordSet, paths: ProjectPa
         ]
         for figure in figures
     ]
-    parts.append(section("1. The set", table(["figure", "file", "the sentence it supports"], rows)))
+    listing = table(["figure", "file", "the sentence it supports"], rows)
+    parts.append(
+        section(
+            "1. The set",
+            "Ordered by the weight of the sentence each figure carries in the write-up, "
+            "not by figure number.\n\n" + listing,
+        )
+    )
     body = ""
     for figure in figures:
         body += f"### {figure.title}\n\n"
@@ -1458,7 +1479,7 @@ def _traces(records: RecordSet) -> str:
         "wider, and each trace's own report states its positive count and how much wider. "
         "An AUPRC only means anything against the base "
         "rate it was measured on, which is why each row carries its own. The standing "
-        f"caveat applies: {FORWARD_CAVEAT}.\n"
+        f"caveat applies: {TRACE_CAVEAT}.\n"
         "\nSources:\n\n"
         f"- `reports/data/{TRACE_RECORD}`\n"
         + "".join(f"- `reports/data/{entry['stem']}.md`\n" for entry in entries)

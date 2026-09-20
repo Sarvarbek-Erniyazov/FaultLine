@@ -10,7 +10,7 @@ The result is a set of measured answers, several of them negative, each with its
 
 ## Status
 
-**Experimental programme closed (2026-09-20).** Six pre-registered gates were run (ADR-0021 → ADR-0026). The final test (F7′, ADR-0026) **passed its instrument control nine of nine and returned H1′ SUPPORTED**: read with a text-aware linear head, the joint model beats the telemetry-only model by +0.017 to +0.023 AUPRC on every seed. ADR-0026 §1 withdrew two backbone ablations (`joint_status_raw`, `joint_no_txt`); H1′'s outcome makes them revisitable under a new registration against a named write-up sentence, and nothing in the record schedules a run. Nothing in this repository is a deployed system.
+**Experimental programme closed (2026-09-20).** Six pre-registered gates were run (ADR-0021 → ADR-0026). The final test (F7', ADR-0026) **passed its instrument control nine of nine and returned H1' SUPPORTED**: read with a text-aware linear head, the joint model beats the telemetry-only model by +0.017 to +0.023 AUPRC on every seed. ADR-0026 §1 withdrew two backbone ablations (`joint_status_raw`, `joint_no_txt`); the H1' outcome makes them revisitable under a new registration against a named write-up sentence, and nothing in the record schedules a run. Nothing in this repository is a deployed system.
 
 Total GPU cost of the runs that wrote a timing sidecar beside their checkpoints: **12.6 GPU-hours** on a single NVIDIA RTX 4060 (8 GB), over 98 records in eleven run directories. That is a floor for the programme, not its total: the telemetry ladder, the text pretraining and the order-blind comparators wrote no sidecar and are timed only in their own reports under `reports/data/`.
 
@@ -59,15 +59,15 @@ Three controls carry the weight. The **random-initialisation control** trains th
 
 ### 1. Site shift: two pre-registered negatives, with attribution
 
-**Hill of Towie** (Siemens, held out). Rule ADR-0021: the block-bootstrap 95% lower bound must exceed the site's base rate (0.03325). Seed 1: AUPRC 0.0393 [0.0306, 0.0553] — not evaluable. Three seeds: 0.0390, 0.0510, 0.0359; one clears. The site is marginal, not null, and the verdict is the same under the one-seed and the two-of-three rule.
+**Hill of Towie** (Siemens, held out). Rule ADR-0021: the block-bootstrap 95% lower bound must exceed the site's base rate (0.03325). Seed 1: AUPRC 0.0393 [0.0306, 0.0553] — not evaluable. Three seeds: 0.0390, 0.0510, 0.0359; one clears. The two seed-1 figures are two scorings of the same probe, not a disagreement: 0.0393 is the ADR-0021 gate's own 12,000-window score and 0.0390 is the replication record's. The site is marginal, not null, and the verdict is the same under the one-seed and the two-of-three rule.
 
-**CARE** (three anonymised farms, other OEMs). Rule ADR-0022, same criterion at CARE's own base rate 0.00125, scored on 430,506 windows holding all 45 labelled events. Pooled AUPRC 0.0012–0.0015 on every seed and checkpoint, 0.0008–0.0018 on the per-farm rows; every interval contains its own base rate; discarded-replicate share 0.00% on the pooled rows the rule reads, 0.11% at worst per farm. At chance.
+**CARE** (three anonymised farms, other OEMs). Rule ADR-0022, same criterion at CARE's own base rate 0.00125, scored on 430,506 windows holding all 45 labelled events. Pooled AUPRC 0.0012–0.0015 on every seed and checkpoint, 0.0008–0.0018 on the per-farm rows across both checkpoint rules; every interval contains its own base rate; discarded-replicate share 0.00% on the pooled rows the rule reads, 0.11% at worst per farm. At chance.
 
 **Attribution** (ADR-0022 F6-0). Imposing each CARE farm's missing-channel pattern on the *training-site* test split leaves the probe above base rate on 3 of 3 seeds for all three patterns — the channel gaps do not explain the null. The order-blind comparator is also at chance on CARE. The null is a property of the token stream across manufacturers: quantile bins fitted on one OEM's distribution do not carry to another's. Neither the backbone nor the channel gaps are the cause.
 
 **Consequence.** The only evaluable axis is the forward-in-time split at the training sites (all three seeds clear 0.0388). Every result below is forward-in-time, same sites, and none is a site-shift result.
 
-### 2. The probe sees the backbone — and pretraining buys about a quarter of the base rate
+### 2. The probe sees the backbone — and pretraining buys a quarter to a half of the base rate
 
 Paired Δ(trained − random-init), pooled forward-in-time test split, three pretraining seeds × three init seeds: nine of nine lower bounds above zero; Δ = +0.009 to +0.019 AUPRC against a base rate of 0.0388 (ADR-0024). Untrained backbones already read 0.039–0.042; trained backbones 0.051–0.058. Fifty million tokens of telemetry pretraining moves a frozen linear probe by a quarter to a half of the base rate.
 
@@ -81,15 +81,15 @@ An order-blind classifier on the window's **status strings alone** scores **0.07
 
 **H1** (ADR-0025): the joint arm (telemetry 0.30 · narrative 0.20 · telemetry-with-status 0.50, same S2, same 50M-token budget, three seeds) against telemetry-only, same-seed paired Δ, smallest effect of interest 0.005: **+0.0022 [−0.0034, +0.0068], −0.0022 [−0.0084, +0.0021], −0.0018 [−0.0060, +0.0021] — INCONCLUSIVE.** No effect detectable; any effect below about 0.007 AUPRC. The decomposition explained why: the joint window *costs* the telemetry-only backbone −0.008 to −0.012 (less telemetry fits, and text it cannot read), joint pretraining recovers +0.006 to +0.014 at identical input, and the two cancel. The registered read-out was a linear head on the **last position** — a telemetry bin token — with status messages attached to earlier steps.
 
-**H1′** (ADR-0026): the same frozen joint backbones, no further pretraining, read with a text-aware linear head — the last-position state concatenated with the mean over text-token positions and a has-text indicator. Registered with a random-initialisation gate on the new instrument, because a bag of text embeddings through an *untrained* backbone might already read the strings.
+**H1'** (ADR-0026): the same frozen joint backbones, no further pretraining, read with a text-aware linear head — the last-position state concatenated with the mean over text-token positions and a has-text indicator. Registered with a random-initialisation gate on the new instrument, because a bag of text embeddings through an *untrained* backbone might already read the strings.
 
 - **Gate: PASS, nine of nine** paired lower bounds above zero (weakest +0.0058), so what the read-out harvests is **not only the tokens' embeddings**. The level, though, is largely theirs: an *untrained* backbone read with the same head scores 0.0581 / 0.0575 / 0.0547 — at or above the trained telemetry-only probe — and pretraining adds +0.0103 to +0.0263 on top of that.
-- **H1′: SUPPORTED.** Paired Δ against telemetry-only: **+0.0200 [+0.0112, +0.0294], +0.0234 [+0.0128, +0.0342], +0.0170 [+0.0111, +0.0232]**; median +0.0200, four times the smallest effect of interest.
+- **H1': SUPPORTED.** Paired Δ against telemetry-only: **+0.0200 [+0.0112, +0.0294], +0.0234 [+0.0128, +0.0342], +0.0170 [+0.0111, +0.0232]**; median +0.0200, four times the smallest effect of interest.
 - Joint pretraining still matters once the text has a direct path: Δ against the telemetry-only backbone under the same read-out is +0.0271 / +0.0285 / +0.0267, every interval above zero. A telemetry-only backbone reads the text no better than an untrained one, and on two of three seeds measurably worse (−0.0072, −0.0050 [−0.0110, +0.0007], −0.0129). F6-R's measurement that its 32,768 text embedding rows had collapsed onto one shared vector is the plausible explanation; this test does not establish it.
 - The gain is where the text is: has-status strata +0.0252 / +0.0260 / +0.0145, no-status strata inconsistent in sign. Mean-pooling alone does not do it (−0.0026 / +0.0100 / +0.0094): the text block is what moves the read-out.
 - **Against the cheap baseline, it is parity, not victory.** Paired Δ against the order-blind status-only classifier: +0.0055 [−0.0173, +0.0241], +0.0085 [−0.0141, +0.0265], −0.0040 [−0.0264, +0.0125] — all three span zero.
 
-So: the text carries the signal, the joint model's representation encodes it beyond what the tokens alone supply, a text-aware linear read-out reaches it — and the end-to-end result lands level with a classifier that counts the strings. H1's INCONCLUSIVE stands as a verdict about the arm *read through the last-position instrument*; H1′ is the same hypothesis re-tested with an instrument that can see, registered as such after H1's result was known.
+So: the text carries the signal, the joint model's representation encodes it beyond what the tokens alone supply, a text-aware linear read-out reaches it — and the end-to-end result lands level with a classifier that counts the strings. H1's INCONCLUSIVE stands as a verdict about the arm *read through the last-position instrument*; H1' is the same hypothesis re-tested with an instrument that can see, registered as such after H1's result was known.
 
 ### 5. Graceful degradation, first rows (H2, forward-in-time)
 
@@ -108,11 +108,11 @@ Thirteen entries. Among them: the first probe-control criterion required non-ove
 ## What is open
 
 - The only evaluable evaluation axis is forward-in-time at the training sites. Site shift returned two pre-registered negatives, and no result here is a site-shift result.
-- The joint model at parity with an order-blind classifier on the status strings (B4) is the honest ceiling of the current design. Beating it is the next research question, not a claim this record supports.
+- The joint model at parity with an order-blind classifier on the status strings is the honest ceiling of the current design. Beating it is the next research question, not a claim this record supports.
 - Coverage and selective risk — the "calibrated abstention" endpoint — have a prior correction and a threshold function but no risk–coverage harness. H2 has its first rows (channel dropout, ≤0.009 AUPRC) and nothing more.
 - The cross-OEM null is a tokenizer-level finding: quantile bins fitted on one manufacturer's distribution do not carry to another's. Per-site or rank-based bin fitting is the indicated next design, untried here.
 - Seed variance on the forward-in-time split equals one seed's interval half-width; ~0.005 AUPRC is the smallest difference this evaluation can resolve, and every claim above is sized to that.
-- Two withdrawn ablations (`joint_status_raw`, `joint_no_txt`) are revisitable: they would test whether raw status casing and the unpaired narrative corpus contribute anything. ADR-0026 §1 withdrew them and admits them back on one condition only, that H1′ be SUPPORTED — which it is; the outcome section adds the second, that revisiting them is a new registration against a named write-up sentence under §5, and records that nothing schedules a run. §1's rationale — that an instrument which cannot read the text cannot discriminate between backbones that differ in their text — implies such a registration would read them through the H1′ read-out; that inference is not itself registered.
+- Two withdrawn ablations (`joint_status_raw`, `joint_no_txt`) are revisitable: they would test whether raw status casing and the unpaired narrative corpus contribute anything. ADR-0026 §1 withdrew them and admits them back on one condition only, that H1' be SUPPORTED — which it is; the outcome section adds the second, that revisiting them is a new registration against a named write-up sentence under §5, and records that nothing schedules a run. §1's rationale — that an instrument which cannot read the text cannot discriminate between backbones that differ in their text — implies such a registration would read them through the H1' read-out; that inference is not itself registered.
 
 ## Reproducing the record
 

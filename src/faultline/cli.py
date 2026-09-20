@@ -1674,3 +1674,25 @@ def model_h1_gate(
     paths = ProjectPaths.resolve()
     report, record = run_h1_verdict(paths, paths.repo_root / gate)
     typer.echo(f"wrote {report} and {record}")
+
+
+@model_app.command(
+    "readout-gate",
+    help="ADR-0026 F7'-3 (CPU): bootstrap the saved read-out scorings, apply the §4 random-init "
+    "gate on the instrument first, then the H1' rule on B1 (NOT EVALUABLE if the gate fails), "
+    "and write reports/data/readout_v0_<date>.md/.json. Trains nothing, scores nothing. "
+    "Resume-safe.",
+)
+def model_readout_gate(
+    config: ConfigOption = Path("configs/eval/readout_v0.yaml"),
+) -> None:
+    """Bootstrap F7''s rows, gate the instrument, apply the H1' rule and write the report.
+
+    Args:
+        config: The read-out configuration.
+    """
+    from faultline.evaluation.readout_verdict import run_readout_verdict
+
+    paths = ProjectPaths.resolve()
+    report, record = run_readout_verdict(paths, paths.repo_root / config)
+    typer.echo(f"wrote {report} and {record}")

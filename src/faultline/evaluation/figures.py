@@ -3,9 +3,11 @@
 No model is loaded, nothing is scored and nothing is retrained. Every value on every
 figure is read from a tracked file under ``reports/data/`` -- the gate reports' JSON, the
 per-step training logs' CSV -- or from the registered evaluation configuration that fixes
-the smallest effect of interest. **No measured number is written into this module.** A
-figure whose source file is missing is skipped and named in the index, so a partial record
-produces a partial set rather than a wrong one.
+the smallest effect of interest. **No measured number is written into this module.** The
+ledger adds one more source of the same kind: the repository's own history, asked by
+``git log`` which commit wrote a given outcome section, so no hash is transcribed here
+either. A figure whose source file is missing is skipped and named in the index, so a
+partial record produces a partial set rather than a wrong one.
 
 **The split's name.** Six of the seven outputs read the forward-in-time split. It is
 *tested on 2022 onward (Kelmarsh through 2024, Penmanshiel 2022 only)* -- Penmanshiel's
@@ -26,6 +28,7 @@ import csv
 import json
 import math
 import re
+import subprocess
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -825,13 +828,13 @@ def build_f3(records: RecordSet) -> Figure | None:
 def build_ledger(records: RecordSet) -> Figure | None:
     """The gate ledger: one row per pre-registered gate, read from ``DECISIONS.md``.
 
-    The record names a hash in prose rather than in a field, so each column is taken from
-    the sentence that asserts it: a rule's commit from the record's ``Commit:`` block or
-    from a sentence saying the rule was *registered in* it, and an outcome's commit from a
-    sentence in the outcome section saying a report was *committed in* it. A commit that
-    writes an outcome cannot cite its own hash, so several outcome cells are empty by
-    construction; an empty cell means the record does not assert a hash, never that none
-    exists.
+    A rule's commit is taken from the sentence that asserts it, because the rule was
+    committed before the run and its own section can therefore name it: the record's
+    ``Commit:`` block, or a sentence saying the rule was *registered in* it. An outcome's
+    commit is not asserted anywhere -- the commit that writes an outcome cannot cite its
+    own hash -- so it is found instead by asking ``git log`` which commit added that
+    outcome's heading to ``DECISIONS.md``. An empty cell means the log found no such
+    commit, never that none exists.
 
     Args:
         records: The record set.
@@ -839,7 +842,7 @@ def build_ledger(records: RecordSet) -> Figure | None:
     Returns:
         The ledger, or ``None`` when ``DECISIONS.md`` is missing.
     """
-    text = records.text("docs/DECISIONS.md")
+    text = records.text(DECISIONS)
     if text is None:
         return None
     heads = list(re.finditer(r"^## (ADR-\d{4}) (.+)$", text, flags=re.MULTILINE))
@@ -851,7 +854,6 @@ def build_ledger(records: RecordSet) -> Figure | None:
         end = heads[index + 1].start() if index + 1 < len(heads) else len(text)
         body = text[head.end() : end]
         outcome = _own_outcome(body)
-        after = body[outcome.start() :] if outcome else ""
         heading = outcome.group(1) if outcome else ""
         verdict = heading.split("--", 1)[1].strip() if "--" in heading else heading.strip()
         status = re.search(r"\*\*Status:\*\*[^\n]*?((?:pre-)?registered \d{4}-\d{2}-\d{2})", body)
@@ -862,7 +864,7 @@ def build_ledger(records: RecordSet) -> Figure | None:
                 status.group(1) if status else "-",
                 _cell(_registering_hash(body)),
                 _shorten(verdict) or "-",
-                _cell(_outcome_hash(after)),
+                _cell(_writing_commit(records.paths.repo_root, heading)),
             ]
         )
         gates.append(number)
@@ -872,7 +874,7 @@ def build_ledger(records: RecordSet) -> Figure | None:
         stem="ledger_gates",
         title="Ledger. The pre-registered gates",
         sentence="Every rule was committed before the run it governs.",
-        sources=["docs/DECISIONS.md"],
+        sources=[DECISIONS],
         markdown=table(
             ["ADR", "question", "registered", "registering commit", "outcome", "outcome commit"],
             rows,
@@ -881,11 +883,14 @@ def build_ledger(records: RecordSet) -> Figure | None:
             f"{len(gates)} gates, {gates[0]} through {gates[-1]}, each read from its section of "
             "`docs/DECISIONS.md`. The rule was written into that file and committed in its own "
             "commit before the run it governs; the outcome was written under the rule "
-            "afterwards. An empty outcome-commit cell is the normal case: the commit that "
-            "writes an outcome cannot name its own hash, so the record does not assert one."
+            "afterwards. The outcome commit is the commit that wrote the outcome section, "
+            "found by log rather than self-cited."
         ),
     )
 
+
+#: The decision record the ledger reads, and asks the log about.
+DECISIONS = "docs/DECISIONS.md"
 
 #: The first and last gate the ledger reports, by ADR number.
 FIRST_GATE, LAST_GATE = "ADR-0021", "ADR-0026"
@@ -895,9 +900,6 @@ _HASH = re.compile(r"`([0-9a-f]{7,40})`")
 
 #: A line that asserts where a rule was registered.
 _REGISTERED = re.compile(r"regist\w*\s+(?:in|at)\b|fixed in commit", re.IGNORECASE)
-
-#: A line that asserts something was committed.
-_COMMITTED = re.compile(r"\bcommit(?:ted|s)?\b", re.IGNORECASE)
 
 #: A line holding a backticked hash.
 _HASH_LINE = re.compile(r"^[^\n]*`[0-9a-f]{7,40}`[^\n]*$", re.MULTILINE)
@@ -940,22 +942,42 @@ def _registering_hash(body: str) -> str:
     return ""
 
 
-def _outcome_hash(after: str) -> str:
-    """The commit that carried an outcome's report, when the outcome section names one.
+def _writing_commit(repo_root: Path, heading: str) -> str:
+    """The commit that wrote an outcome section, as the repository's history records it.
+
+    The heading line is the section's fingerprint -- it carries the date and the verdict --
+    so the commit that added it is the commit that wrote the outcome. It is found by
+    pickaxe over ``DECISIONS.md``, and the oldest match is taken: the commit that
+    introduced the line rather than a later one that moved it.
 
     Args:
-        after: The outcome section's Markdown.
+        repo_root: The repository to ask.
+        heading: The outcome heading, without its ``###`` marker.
 
     Returns:
-        The hash, or an empty string when the section asserts none.
+        The abbreviated hash, or an empty string when the section records no outcome, the
+        log names no commit, or git cannot be run.
     """
-    for line in _HASH_LINE.findall(after):
-        if _REGISTERED.search(line) or not _COMMITTED.search(line):
-            continue
-        found = _HASH.search(line)
-        if found:
-            return found.group(1)
-    return ""
+    if not heading:
+        return ""
+    command = ["git", "log", "--reverse", "--format=%h", f"-S### {heading}", "--", DECISIONS]
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=str(repo_root),
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        logger.warning("ledger: git log could not be run; the outcome commit is left empty")
+        return ""
+    if completed.returncode != 0:
+        logger.warning("ledger: git log failed; the outcome commit is left empty")
+        return ""
+    found = completed.stdout.split()
+    return found[0] if found else ""
 
 
 def _cell(value: str) -> str:

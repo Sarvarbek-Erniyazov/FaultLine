@@ -28,17 +28,23 @@ from faultline.deployment.selection import (
 )
 from faultline.deployment.stream import (
     BLOCK_STEPS,
+    BOOTSTRAP_SEED,
+    CONFIDENCE,
     DESIGN,
     HORIZON_HOURS,
+    REPLICATES,
     SEED,
+    SelectionField,
     StreamTrace,
     TurbineChoice,
     TurbineYear,
     caption,
     choose_turbine,
+    comparability,
     event_counts,
     hours_to_next_event,
     render_report,
+    render_stream_traces,
     render_svg,
     trace_turbine_year,
     turbine_years,
@@ -59,6 +65,10 @@ EVENTS = 4
 
 #: The pooled test base rate the typical-rate rule aims at, as the record carries it.
 POOLED = 0.0388
+
+#: The pooled test split's positive windows and positive blocks, which is what makes its
+#: interval narrower than any single turbine-year's, and so the ground of the refusal.
+POOLED_POSITIVES, POOLED_POSITIVE_BLOCKS = 5312, 497
 
 
 def _events(counts: dict[str, int], year: int = 2023) -> pd.DataFrame:
@@ -132,6 +142,8 @@ def _trace(rule: str = MOST_EVENTS) -> StreamTrace:
         pooled_auprc=0.0576,
         pooled_low=0.0503,
         pooled_high=0.0670,
+        pooled_positives=POOLED_POSITIVES,
+        pooled_positive_blocks=POOLED_POSITIVE_BLOCKS,
         seconds=12.0,
         checkpoint="run/S2_tel_only_seed2.pt",
         probe="run/S2_trained_seed2_probe.pt",
@@ -175,7 +187,14 @@ def test_the_trace_routes_its_probabilities_through_that_function(
         "seed": SEED,
         "natural_rate": 0.0221,
         "prior_band": {"shift": 0.25},
-        "pooled": {"base_rate": 0.0388, "auprc": 0.0576, "low": 0.0503, "high": 0.0670},
+        "pooled": {
+            "base_rate": 0.0388,
+            "auprc": 0.0576,
+            "low": 0.0503,
+            "high": 0.0670,
+            "positives": POOLED_POSITIVES,
+            "positive_blocks": POOLED_POSITIVE_BLOCKS,
+        },
     }
     logits = np.linspace(-2.0, 2.0, WINDOWS, dtype=np.float32)
     labels = np.zeros(WINDOWS, dtype=np.float32)
@@ -375,20 +394,51 @@ def test_a_score_at_chance_is_said_to_contain_its_own_rate() -> None:
 
 
 def test_the_caption_states_the_mean_probability_beside_the_positive_rate() -> None:
-    """And why the two differ: the correction targets the training prior, not this turbine."""
+    """And why the two differ: it targets the training split's natural rate, not this turbine.
+
+    Not "the training prior" either: section 2 registers that as 0.5, and the rate the
+    correction aims at is the natural one.
+    """
     trace = _trace()
     said = caption(trace)
     assert f"mean corrected probability is {trace.mean_probability:.4f}" in said
-    assert f"targets the training prior {trace.natural_rate:.4f}" in said
+    assert f"targets the training split's natural rate {trace.natural_rate:.4f}" in said
+    assert "the training prior" not in said
     assert "not this turbine-year's" in said
 
 
-def test_the_caption_refuses_the_pooled_comparison_with_both_numbers() -> None:
+def test_the_caption_refuses_the_pooled_comparison_on_the_positive_counts() -> None:
+    """The ground is how few positives one turbine-year holds, not its base rate.
+
+    Two sets can share a base rate exactly and still be incomparable, so a ratio of base
+    rates is no ground at all. The counts are, and both are stated.
+    """
     trace = _trace()
     said = caption(trace)
-    ratio = trace.positive_rate / trace.pooled_base_rate
     assert f"pooled test AUPRC ({trace.pooled_auprc:.4f}" in said
-    assert f"{ratio:.1f}x the pooled {trace.pooled_base_rate:.4f}" in said
+    assert f"{trace.positives:,} against {trace.pooled_positives:,}" in said
+    assert f"{trace.positive_rate / trace.pooled_base_rate:.1f}x the pooled" not in said
+
+
+def test_the_caption_shows_the_measured_widening_beside_the_square_root_guide() -> None:
+    """A reader is given both ratios, so neither has to be taken on trust."""
+    said = caption(_trace())
+    trace = _trace()
+    assert f"{trace.widening:.1f} times the width of the pooled one" in said
+    assert f"sqrt({trace.pooled_positives:,}/{trace.positives:,})" in said
+    assert f"suggests {trace.root_widening:.1f}" in said
+
+
+def test_a_widening_that_does_not_match_the_guide_is_not_said_to_match_it() -> None:
+    """The two ratios need not agree, and the caption says which way it came out."""
+    trace = _trace()
+    narrow = replace(trace, interval=replace(trace.interval, low=0.05, high=0.06))
+    assert narrow.widening < narrow.root_widening
+    said = comparability(narrow)
+    assert "do not agree" in said
+    assert "agree to within" not in said
+    wide = replace(trace, interval=replace(trace.interval, low=0.0, high=1.0))
+    assert "do not agree" in comparability(wide)
 
 
 def test_the_caption_observes_what_the_rule_selected_for() -> None:
@@ -658,6 +708,8 @@ def test_the_script_runs_headless(repo_root: Path) -> None:
     )
     assert done.returncode == 0, done.stderr
     assert "stream-trace" in done.stdout
+    # The render-only path is reachable from the same command.
+    assert "--render-only" in done.stdout
 
 
 def test_a_site_year_with_one_turbine_has_no_runner_up() -> None:
@@ -667,3 +719,185 @@ def test_a_site_year_with_one_turbine_has_no_runner_up() -> None:
     # A site-year with one turbine has no runner-up to name.
     assert (choice.runner_up, choice.runner_up_events) == ("-", 0)
     assert not choice.tied
+
+
+# --------------------------------------------------------------------------------------
+# Rendering from the record, which is how a caption is corrected without moving a number
+
+
+def _registered_trace(rule: str = MOST_EVENTS) -> StreamTrace:
+    """The fixture trace with ADR-0021's registered interval, as a written trace carries."""
+    trace = _trace(rule)
+    return replace(
+        trace,
+        interval=bootstrap_auprc(
+            trace.probabilities,
+            trace.labels,
+            window_blocks(trace.ends, np.zeros_like(trace.ends), BLOCK_STEPS),
+            replicates=REPLICATES,
+            seed=BOOTSTRAP_SEED,
+            confidence=CONFIDENCE,
+        ),
+    )
+
+
+def _written(out: Path, rule: str = MOST_EVENTS) -> StreamTrace:
+    """Write one trace's record entry and CSV, as a scoring pass leaves them behind."""
+    trace = _registered_trace(rule)
+    out.mkdir(parents=True, exist_ok=True)
+    write_trace(out / TRACE_RECORD, trace.record())
+    write_csv(trace, out / f"{trace.stem}.csv")
+    return trace
+
+
+def _stub_the_field(monkeypatch: pytest.MonkeyPatch, trace: StreamTrace) -> None:
+    """Stand in for the shards and the configurations, which a render still opens."""
+    risk = PositiveAwareRiskStage(
+        label="narrow_within_24h",
+        sampling="balanced",
+        positive_fraction=trace.train_rate,
+        probe=PositiveBudget(positives=16, batch_windows=2, accumulate=1, learning_rate=2e-3),
+        finetune=PositiveBudget(positives=16, batch_windows=2, accumulate=1, learning_rate=5e-4),
+        random=PositiveBudget(positives=16, batch_windows=2, accumulate=1, learning_rate=5e-4),
+    )
+    monkeypatch.setattr(
+        stream,
+        "open_record_inputs",
+        lambda *a, **k: SimpleNamespace(
+            label=risk.label,
+            stride=6,
+            telemetry=None,
+            ladder=SimpleNamespace(risk=risk),
+        ),
+    )
+    starts = pd.DataFrame(
+        {
+            "turbine_id": [trace.choice.turbine] * trace.events.size,
+            "start_utc": trace.events,
+        }
+    )
+    monkeypatch.setattr(
+        stream,
+        "selection_field",
+        lambda *a, **k: SelectionField(
+            key="kelmarsh__test",
+            every=None,
+            turbines=np.array([], dtype=object),
+            starts=starts,
+            candidates=trace.choice.candidates,
+        ),
+    )
+    monkeypatch.setattr(
+        stream,
+        "read_probe_record",
+        lambda *a, **k: {
+            "seed": SEED,
+            "natural_rate": trace.natural_rate,
+            "prior_band": {"shift": trace.balanced_shift},
+            "pooled": {
+                "base_rate": trace.pooled_base_rate,
+                "auprc": trace.pooled_auprc,
+                "low": trace.pooled_low,
+                "high": trace.pooled_high,
+                "positives": trace.pooled_positives,
+                "positive_blocks": trace.pooled_positive_blocks,
+            },
+        },
+    )
+
+
+def _render(out: Path, tmp_paths: ProjectPaths) -> list[tuple[Path, Path]]:
+    """Run the render-only path over a written trace."""
+    return render_stream_traces(tmp_paths, rung="S2", checkpoint_dir="run", out_dir=out)
+
+
+def test_a_render_only_pass_refuses_when_the_record_is_absent(
+    tmp_paths: ProjectPaths, tmp_path: Path
+) -> None:
+    """There is nothing to render from, and inventing the numbers is the alternative."""
+    empty = tmp_path / "nothing_written_yet"
+    empty.mkdir()
+    with pytest.raises(FileNotFoundError, match=TRACE_RECORD):
+        _render(empty, tmp_paths)
+    assert not list(empty.iterdir())
+
+
+def test_a_render_only_pass_leaves_the_record_and_the_csv_byte_identical(
+    monkeypatch: pytest.MonkeyPatch, tmp_paths: ProjectPaths, tmp_path: Path
+) -> None:
+    """The record is the input. A pass that rewrote it would be scoring under another name."""
+    trace = _written(tmp_path)
+    _stub_the_field(monkeypatch, trace)
+    record = (tmp_path / TRACE_RECORD).read_bytes()
+    rows = (tmp_path / f"{trace.stem}.csv").read_bytes()
+    written = _render(tmp_path, tmp_paths)
+    assert [path.name for pair in written for path in pair] == [
+        f"{trace.stem}.svg",
+        f"{trace.stem}.md",
+    ]
+    assert (tmp_path / TRACE_RECORD).read_bytes() == record
+    assert (tmp_path / f"{trace.stem}.csv").read_bytes() == rows
+
+
+def test_a_render_only_pass_prints_the_record_s_own_numbers(
+    monkeypatch: pytest.MonkeyPatch, tmp_paths: ProjectPaths, tmp_path: Path
+) -> None:
+    """Every figure the record carries reaches the report and the figure unchanged."""
+    trace = _written(tmp_path)
+    _stub_the_field(monkeypatch, trace)
+    _render(tmp_path, tmp_paths)
+    entry = read_traces(tmp_path / TRACE_RECORD)[0]
+    report = (tmp_path / f"{trace.stem}.md").read_text(encoding="utf-8")
+    figure = (tmp_path / f"{trace.stem}.svg").read_text(encoding="utf-8")
+    for key in ("auprc", "low", "high", "positive_rate", "mean_probability"):
+        assert f"{float(entry[key]):.4f}" in report, key
+    assert f"{int(entry['windows']):,}" in report
+    assert f"{float(entry['seconds']):.1f} s" in report
+    # The figure's own reference line is the record's positive rate, to the same digits.
+    assert f"positive rate {float(entry['positive_rate']):.4f}" in figure
+    assert f"{int(entry['windows']):,} windows" in figure
+
+
+def test_a_render_only_pass_refuses_a_rebuild_that_disagrees_with_the_record(
+    monkeypatch: pytest.MonkeyPatch, tmp_paths: ProjectPaths, tmp_path: Path
+) -> None:
+    """A CSV and a record that no longer agree are a corruption, not a rendering job."""
+    trace = _written(tmp_path)
+    _stub_the_field(monkeypatch, trace)
+    record = tmp_path / TRACE_RECORD
+    parsed = json.loads(record.read_text(encoding="utf-8"))
+    parsed["traces"][0]["auprc"] = float(parsed["traces"][0]["auprc"]) + 0.5
+    record.write_text(json.dumps(parsed, indent=2) + "\n", encoding="utf-8", newline="\n")
+    with pytest.raises(ValueError, match="auprc"):
+        _render(tmp_path, tmp_paths)
+    # And nothing was written: the report still says what the last honest pass said.
+    assert not (tmp_path / f"{trace.stem}.md").exists()
+
+
+def test_a_render_only_pass_refuses_a_trace_whose_csv_is_gone(
+    monkeypatch: pytest.MonkeyPatch, tmp_paths: ProjectPaths, tmp_path: Path
+) -> None:
+    """The per-window scores are part of the record too, and are never re-derived."""
+    trace = _written(tmp_path)
+    _stub_the_field(monkeypatch, trace)
+    (tmp_path / f"{trace.stem}.csv").unlink()
+    with pytest.raises(FileNotFoundError, match="part of the record"):
+        _render(tmp_path, tmp_paths)
+
+
+def test_both_rules_are_rendered_from_one_record(
+    monkeypatch: pytest.MonkeyPatch, tmp_paths: ProjectPaths, tmp_path: Path
+) -> None:
+    """A render reads the record for which traces exist, not a --rule the caller passes."""
+    first = _written(tmp_path, MOST_EVENTS)
+    second = _written(tmp_path, TYPICAL_RATE)
+    _stub_the_field(monkeypatch, first)
+    written = _render(tmp_path, tmp_paths)
+    assert [report.name for _, report in written] == [
+        f"{first.stem}.md",
+        f"{second.stem}.md",
+    ]
+    for _, report in written:
+        body = report.read_text(encoding="utf-8")
+        assert f"{first.stem}.md" in body
+        assert f"{second.stem}.md" in body

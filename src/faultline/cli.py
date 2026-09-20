@@ -1719,7 +1719,10 @@ def model_readout_gate(
     "order, and write reports/data/stream_trace_<site>_<turbine>_<year>.csv/.svg/.md. The "
     "turbine-year is chosen by --rule, one of two rules declared before any score was "
     "looked at; both are reported side by side. Adds no rule, no ADR and no verdict; "
-    "changes nothing in the record. Resume-safe.",
+    "changes nothing in the record. Resume-safe. --render-only rewrites the .md and .svg "
+    "of every trace already in reports/data/stream_traces_v0.json from that record, "
+    "scoring nothing, loading no checkpoint and writing no record: it is how a correction "
+    "to the prose is made without moving a number.",
 )
 def model_stream_trace(
     source: Annotated[
@@ -1740,6 +1743,16 @@ def model_stream_trace(
     device: Annotated[
         str, typer.Option("--device", help="Torch device; cpu is the point of the trace.")
     ] = "cpu",
+    render_only: Annotated[
+        bool,
+        typer.Option(
+            "--render-only",
+            help="Rewrite the report and the figure of every trace already in the record, "
+            "from that record. Scores nothing, loads no checkpoint, and writes neither the "
+            "record nor the CSVs; refuses if the record is absent. --source, --year, --rule "
+            "and --device are not read: the record says which traces exist.",
+        ),
+    ] = False,
 ) -> None:
     """Score one turbine-year window by window and write the trace, the figure and the report.
 
@@ -1748,12 +1761,17 @@ def model_stream_trace(
         year: The calendar year to trace.
         rule: Which declared selection rule chooses the turbine-year, or ``both``.
         device: Torch device.
+        render_only: Re-render the written traces from the record instead of scoring.
     """
     from faultline.deployment.selection import RULES
-    from faultline.deployment.stream import write_stream_traces
+    from faultline.deployment.stream import render_stream_traces, write_stream_traces
 
-    chosen = RULES if rule == "both" else (rule.replace("-", "_"),)
     paths = ProjectPaths.resolve()
+    if render_only:
+        for figure, report in render_stream_traces(paths):
+            typer.echo(f"rendered {figure} and {report} from the record")
+        return
+    chosen = RULES if rule == "both" else (rule.replace("-", "_"),)
     for trace, figure, report in write_stream_traces(
         paths, source=source, year=year, rules=chosen, device_name=device
     ):

@@ -42,7 +42,7 @@ import csv
 import json
 import time
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -52,8 +52,11 @@ import pandas as pd
 import pyarrow.parquet as pq
 import torch
 
+from faultline.config import load_config
 from faultline.data.common.report import kv_table, section, table
+from faultline.data.telemetry.bins import QuantileBinsConfig
 from faultline.data.telemetry.pipeline import parquet_files, stage_source_dir
+from faultline.data.telemetry.shards import shards_dir, tokenizer_path
 from faultline.deployment.selection import (
     MOST_EVENTS,
     RULE_CRITERIA,
@@ -72,8 +75,9 @@ from faultline.evaluation.variance_probe import open_probe_inputs
 from faultline.logging_utils import get_logger
 from faultline.paths import ProjectPaths
 from faultline.runs import git_sha
-from faultline.training.config import PositiveAwareRiskStage
+from faultline.training.config import LadderConfig, PositiveAwareRiskStage
 from faultline.training.loop import risk_logits
+from faultline.training.mixture import JointMixtureConfig
 from faultline.training.windows import ShardSet, WindowSampler, WindowSet, load_windows
 
 logger = get_logger(__name__)
@@ -204,6 +208,8 @@ class StreamTrace:
         pooled_auprc: The pooled test AUPRC, named only to refuse the comparison.
         pooled_low: Its 95% lower bound.
         pooled_high: Its 95% upper bound.
+        pooled_positives: Its positive windows, which is the count the refusal rests on.
+        pooled_positive_blocks: Its positive blocks, which is what the bootstrap resamples.
         seconds: CPU wall clock of the scoring pass.
         checkpoint: The backbone the probe carries.
         probe: The probe that was loaded.
@@ -227,6 +233,8 @@ class StreamTrace:
     pooled_auprc: float
     pooled_low: float
     pooled_high: float
+    pooled_positives: int
+    pooled_positive_blocks: int
     seconds: float
     checkpoint: str
     probe: str
@@ -250,6 +258,47 @@ class StreamTrace:
     def mean_probability(self) -> float:
         """The mean corrected probability, which a calibrated head puts at the base rate."""
         return float(self.probabilities.mean()) if self.probabilities.size else float("nan")
+
+    @property
+    def positives(self) -> int:
+        """Positive windows of this turbine-year.
+
+        This is the count the refusal of the pooled comparison rests on: it is what makes
+        this interval wider than the pooled split's, and so what makes the two unreadable
+        against each other.
+        """
+        return int(self.labels.sum())
+
+    @property
+    def interval_width(self) -> float:
+        """Width of this turbine-year's 95% interval."""
+        return self.interval.high - self.interval.low
+
+    @property
+    def pooled_interval_width(self) -> float:
+        """Width of the pooled test split's 95% interval, for the same coverage."""
+        return self.pooled_high - self.pooled_low
+
+    @property
+    def widening(self) -> float:
+        """How many times wider this interval is than the pooled one, as measured."""
+        pooled = self.pooled_interval_width
+        return self.interval_width / pooled if pooled > 0 else float("nan")
+
+    @property
+    def root_widening(self) -> float:
+        """The widening a square-root-of-n rule would suggest from the positive counts.
+
+        It is a guide and not a rule: the registered interval resamples two-day blocks
+        rather than windows, so the count that actually drives its width is the positive
+        *blocks*. It is reported beside :attr:`widening` so a reader can hold the two
+        against each other rather than take either on trust.
+        """
+        return (
+            float(np.sqrt(self.pooled_positives / self.positives))
+            if self.positives
+            else float("nan")
+        )
 
     @property
     def clears(self) -> bool:
@@ -401,6 +450,78 @@ def choose_turbine(
         runner_up=second.turbine if second is not None else "-",
         candidates={turbine: candidates[turbine] for turbine in sorted(candidates)},
         tied=second is not None and criterion(second) == criterion(best),
+    )
+
+
+@dataclass(frozen=True)
+class SelectionField:
+    """A site-year as the two rules see it: a window index and a label column, no score.
+
+    The scoring pass and the render-only pass build the field through the same function,
+    so a report rendered from the record shows the field the run actually chose from
+    rather than a second reconstruction of it.
+
+    Attributes:
+        key: The shard key the windows are carried under.
+        every: Every known window of that shard, at stride 1.
+        turbines: Per window, its turbine id.
+        starts: The site's narrow event starts, unfiltered.
+        candidates: Per turbine of the year, the two quantities the rules read.
+    """
+
+    key: str
+    every: WindowSet
+    turbines: np.ndarray
+    starts: pd.DataFrame
+    candidates: dict[str, TurbineYear]
+
+    def choose(self, rule: str, target: float) -> TurbineChoice:
+        """Apply one of the two declared rules to the field.
+
+        Args:
+            rule: The rule.
+            target: The pooled test base rate the typical-rate rule aims at.
+
+        Returns:
+            The choice.
+        """
+        return choose_turbine(self.candidates, rule, target)
+
+    def event_starts(self, turbine: str) -> np.ndarray:
+        """One turbine's labelled event start timestamps, sorted.
+
+        Args:
+            turbine: The turbine.
+
+        Returns:
+            Its start timestamps, in time order.
+        """
+        mine = self.starts[self.starts["turbine_id"] == turbine]
+        return np.sort(mine["start_utc"].to_numpy(dtype="datetime64[ns]"))
+
+
+def selection_field(
+    paths: ProjectPaths, shards: ShardSet, source: str, year: int, label: str, stride: int
+) -> SelectionField:
+    """Build the field both rules choose from, reading labels and never a score.
+
+    Args:
+        paths: Resolved project paths.
+        shards: The telemetry shard set.
+        source: The site, whose test split holds the year.
+        year: The calendar year.
+        label: The window-index column the risk head reads as its target.
+        stride: The stride a trace of a turbine-year scores at.
+
+    Returns:
+        The field.
+    """
+    key = f"{source}__test"
+    starts = narrow_event_starts(paths, source)
+    every, turbines = known_windows(shards, key, label)
+    candidates = turbine_years(every, turbines, event_counts(starts, year), year, stride)
+    return SelectionField(
+        key=key, every=every, turbines=turbines, starts=starts, candidates=candidates
     )
 
 
@@ -565,6 +686,25 @@ def turbine_year_windows(
     )
 
 
+def events_inside(starts: np.ndarray, when: np.ndarray) -> np.ndarray:
+    """The event starts a trace's span covers, which are the marks the figure draws.
+
+    The span runs from the first window's last step to the horizon past the last one's, so
+    an event the final windows are labelled against is drawn even though it falls after
+    the last window.
+
+    Args:
+        starts: The turbine's event start timestamps, sorted.
+        when: Per window, the UTC timestamp of its last step, in time order.
+
+    Returns:
+        The starts inside the span.
+    """
+    horizon = np.timedelta64(HORIZON_HOURS, "h")
+    inside: np.ndarray = starts[(starts >= when[0]) & (starts <= when[-1] + horizon)]
+    return inside
+
+
 def hours_to_next_event(stamps: np.ndarray, starts: np.ndarray, horizon: int) -> np.ndarray:
     """Hours from each window's last step to the next event start, ``nan`` past the horizon.
 
@@ -648,9 +788,6 @@ def trace_turbine_year(
         ValueError: If the rebuilt step axis disagrees with the shard manifest.
     """
     block = read_probe_record(paths, SEED)
-    events = narrow_event_starts(paths, source)
-    counts = event_counts(events, year)
-
     inputs = open_probe_inputs(
         paths,
         mixture_config,
@@ -661,15 +798,14 @@ def trace_turbine_year(
         "hill_of_towie",
         device_name,
     )
-    key = f"{source}__test"
     label = inputs.ladder.risk.label
     stride = inputs.mixture.window_stride_steps
 
     # Both rules read the window index and the event table, and neither reads a score, so
     # the whole field is built before the probe is even loaded.
-    every, turbines = known_windows(inputs.telemetry, key, label)
-    candidates = turbine_years(every, turbines, counts, year, stride)
-    choice = choose_turbine(candidates, rule, float(block["pooled"]["base_rate"]))
+    field = selection_field(paths, inputs.telemetry, source, year, label, stride)
+    key = field.key
+    choice = field.choose(rule, float(block["pooled"]["base_rate"]))
     logger.info(
         "%s %d under %r: %s (%d event starts, positive-window rate %.4f; runner-up %s)",
         source,
@@ -686,7 +822,7 @@ def trace_turbine_year(
         raise FileNotFoundError(f"{probe_path} not found")
     model = load_saved_probe(probe_path, DESIGN, inputs)
 
-    windows = turbine_year_windows(every, turbines, key, choice.turbine, year, stride)
+    windows = turbine_year_windows(field.every, field.turbines, key, choice.turbine, year, stride)
     stamps = step_stamps(paths, source, "test")
     steps = int(inputs.telemetry.files()[key]["steps"])
     if stamps.size != steps:
@@ -731,11 +867,8 @@ def trace_turbine_year(
         confidence=CONFIDENCE,
     )
     when = stamps[ends]
-    starts = np.sort(
-        events[events["turbine_id"] == choice.turbine]["start_utc"].to_numpy(dtype="datetime64[ns]")
-    )
-    horizon = np.timedelta64(HORIZON_HOURS, "h")
-    inside = starts[(starts >= when[0]) & (starts <= when[-1] + horizon)]
+    starts = field.event_starts(choice.turbine)
+    inside = events_inside(starts, when)
     pooled = block["pooled"]
     return StreamTrace(
         source=source,
@@ -756,6 +889,8 @@ def trace_turbine_year(
         pooled_auprc=float(pooled["auprc"]),
         pooled_low=float(pooled["low"]),
         pooled_high=float(pooled["high"]),
+        pooled_positives=int(pooled["positives"]),
+        pooled_positive_blocks=int(pooled["positive_blocks"]),
         seconds=seconds,
         checkpoint=f"{checkpoint_dir}/{rung}_tel_only_seed{SEED}.pt",
         probe=f"{checkpoint_dir}/{probe_path.name}",
@@ -968,6 +1103,57 @@ def interval_against_own_rate(trace: StreamTrace) -> str:
     )
 
 
+def comparability(trace: StreamTrace) -> str:
+    """Why this turbine-year's AUPRC does not stand beside the pooled one.
+
+    The ground is the positive count, not the base rate. A single turbine-year holds a
+    small fraction of the pooled split's positive windows, so its interval is far wider,
+    and an estimate of that precision cannot be read against one of the pooled split's.
+    (A ratio of base rates is no ground at all: two sets can share a base rate exactly and
+    still be incomparable, and Kelmarsh 4's rate is only 1.1 times the pooled one.)
+
+    The measured widening and the square-root guide are both stated, and whether they
+    agree is read off the two numbers rather than asserted. They need not agree: the
+    registered interval resamples two-day blocks, so the effective count is the positive
+    blocks, not the positive windows.
+
+    Args:
+        trace: The trace.
+
+    Returns:
+        One or two sentences.
+    """
+    i = trace.interval
+    gap = trace.widening / trace.root_widening
+    if 0.8 <= gap <= 1.25:
+        tail = f", and the two agree to within {abs(gap - 1.0) * 100:.0f}%."
+    else:
+        off = (
+            f"{gap:.1f} times the guide"
+            if gap > 1.0
+            else f"{1.0 / gap:.1f} times narrower than the guide"
+        )
+        tail = (
+            f", and the two do not agree: the measured widening is {off}. The guide counts "
+            f"positive windows as though each stood on its own, while the registered "
+            f"interval resamples two-day blocks, and this turbine-year's positives fall in "
+            f"{i.positive_blocks:,} blocks against the pooled split's "
+            f"{trace.pooled_positive_blocks:,} -- a reason to expect the guide to understate "
+            f"the widening here, though not one that accounts for the whole of the gap."
+        )
+    return (
+        f"The {i.auprc:.4f} is not comparable with the pooled test AUPRC "
+        f"({trace.pooled_auprc:.4f} [{trace.pooled_low:.4f}, {trace.pooled_high:.4f}]): a "
+        f"single turbine-year holds far fewer positive windows than the pooled test split "
+        f"-- {trace.positives:,} against {trace.pooled_positives:,} -- so its interval is "
+        f"correspondingly wider, and two estimates of such different precision do not stand "
+        f"beside each other. This interval is {trace.widening:.1f} times the width of the "
+        f"pooled one ({trace.interval_width:.4f} against {trace.pooled_interval_width:.4f}); "
+        f"a square root of the positive counts, sqrt({trace.pooled_positives:,}/"
+        f"{trace.positives:,}), suggests {trace.root_widening:.1f}{tail}"
+    )
+
+
 def observation(trace: StreamTrace) -> str:
     """What the selection rule did to this turbine-year, stated rather than left implicit.
 
@@ -1019,17 +1205,15 @@ def caption(trace: StreamTrace) -> str:
         f"shown beside this one and neither is an evaluation result. Its own AUPRC is "
         f"{i.auprc:.4f} [{i.low:.4f}, {i.high:.4f}] under ADR-0021's block bootstrap "
         f"({BLOCK_STEPS // 144}-day blocks, {REPLICATES:,} replicates, seed "
-        f"{BOOTSTRAP_SEED}). {interval_against_own_rate(trace)} The {i.auprc:.4f} is not "
-        f"comparable with the pooled test AUPRC ({trace.pooled_auprc:.4f} "
-        f"[{trace.pooled_low:.4f}, {trace.pooled_high:.4f}]), because this turbine-year's "
-        f"positive rate {trace.positive_rate:.4f} is "
-        f"{trace.positive_rate / trace.pooled_base_rate:.1f}x the pooled "
-        f"{trace.pooled_base_rate:.4f}; the figure draws both rates as labelled reference "
-        f"lines rather than the pooled one alone. The mean corrected probability is "
+        f"{BOOTSTRAP_SEED}). {interval_against_own_rate(trace)} {comparability(trace)} The "
+        f"figure draws this turbine-year's own positive rate {trace.positive_rate:.4f} and "
+        f"the pooled {trace.pooled_base_rate:.4f} as two labelled reference lines rather "
+        f"than the pooled one alone, because an AUPRC is read against the base rate of the "
+        f"set it was measured on. The mean corrected probability is "
         f"{trace.mean_probability:.4f}, beside a positive rate of {trace.positive_rate:.4f}: "
-        f"they differ because ADR-0019's correction targets the training prior "
-        f"{trace.natural_rate:.4f}, the training split's natural rate, and not this "
-        f"turbine-year's. {observation(trace)} **Illustrative, forward-in-time, same site, "
+        f"they differ because ADR-0019's correction targets the training split's natural "
+        f"rate {trace.natural_rate:.4f}, and not this turbine-year's. {observation(trace)} "
+        f"**Illustrative, forward-in-time, same site, "
         f"a single turbine-year: not an evaluation result, and not comparable with the "
         f"pooled gate numbers.** No threshold, no alarm and no abstention is drawn or "
         f"computed. The model reads telemetry only."
@@ -1165,18 +1349,19 @@ def render_report(trace: StreamTrace, paths: ProjectPaths, out_dir: Path | None 
                     "pooled test base rate (reference line)": f"{trace.pooled_base_rate:.4f} "
                     f"(`{SEED_RECORD}`, `trained[seed {SEED}].pooled.base_rate`)",
                     "pooled test AUPRC (not comparable)": f"{trace.pooled_auprc:.4f} "
-                    f"[{trace.pooled_low:.4f}, {trace.pooled_high:.4f}], measured on a base "
-                    f"rate {trace.positive_rate / trace.pooled_base_rate:.1f}x below this "
-                    "turbine-year's",
+                    f"[{trace.pooled_low:.4f}, {trace.pooled_high:.4f}], measured on "
+                    f"{trace.pooled_positives:,} positive windows against this "
+                    f"turbine-year's {trace.positives:,}",
                     "CPU wall clock": f"{trace.seconds:.1f} s",
                     "throughput": f"{trace.windows_per_second:.1f} windows/s",
                 }
             )
             + "\nThe interval is ADR-0021's registered block bootstrap, called through "
             "`faultline.evaluation.bootstrap.bootstrap_auprc`. It describes this turbine-year "
-            f"and nothing else. {interval_against_own_rate(trace)}\n\nThe mean corrected "
+            f"and nothing else. {interval_against_own_rate(trace)}\n\n"
+            f"{comparability(trace)}\n\nThe mean corrected "
             f"probability ({trace.mean_probability:.4f}) sits near the training split's "
-            f"natural rate ({trace.natural_rate:.4f}), which is the prior ADR-0019's "
+            f"natural rate ({trace.natural_rate:.4f}), which is what ADR-0019's "
             "correction targets, and not near this turbine-year's own positive rate "
             f"({trace.positive_rate:.4f}). The correction was never aimed at this turbine: "
             "the gap is this turbine-year's event density against the distribution the head "
@@ -1225,6 +1410,317 @@ def render_report(trace: StreamTrace, paths: ProjectPaths, out_dir: Path | None 
         ),
     ]
     return "".join(parts)
+
+
+@dataclass(frozen=True)
+class RecordInputs:
+    """What a render-only pass opens: two configs and a shard index, and nothing else.
+
+    No checkpoint is loaded and no split is built, because nothing is scored. The stride
+    and the label column come from the same configurations the scoring pass reads them
+    from, so the field the render rebuilds is the field the run chose from.
+
+    Attributes:
+        mixture: The joint mixture configuration.
+        ladder: The ladder configuration, whose risk stage names the label.
+        telemetry: The telemetry shard set.
+    """
+
+    mixture: JointMixtureConfig
+    ladder: LadderConfig
+    telemetry: ShardSet
+
+    @property
+    def label(self) -> str:
+        """The window-index column the risk head reads as its target."""
+        return self.ladder.risk.label
+
+    @property
+    def stride(self) -> int:
+        """The stride a trace of a turbine-year scores at."""
+        return self.mixture.window_stride_steps
+
+
+def open_record_inputs(
+    paths: ProjectPaths, mixture_config: str, ladder_config: str
+) -> RecordInputs:
+    """Open the configurations and shards a render reads; no model, no split, no checkpoint.
+
+    Args:
+        paths: Resolved project paths.
+        mixture_config: The joint mixture configuration, relative to the repository.
+        ladder_config: The ladder configuration, relative to the repository.
+
+    Returns:
+        The opened inputs.
+
+    Raises:
+        ValueError: If the ladder is not the positive-aware risk stage the trace reads.
+    """
+    mixture = load_config(paths.repo_root / mixture_config, JointMixtureConfig)
+    ladder = load_config(paths.repo_root / ladder_config, LadderConfig)
+    if not isinstance(ladder.risk, PositiveAwareRiskStage):
+        raise ValueError(f"{ladder_config} is not the positive-aware risk stage")
+    bins = load_config(paths.repo_root / mixture.telemetry_tokenizer_config, QuantileBinsConfig)
+    return RecordInputs(
+        mixture=mixture,
+        ladder=ladder,
+        telemetry=ShardSet.load(shards_dir(paths, tokenizer_path(paths, bins))),
+    )
+
+
+def read_csv(path: Path) -> dict[str, np.ndarray]:
+    """Read back a written trace, column by column, as :func:`write_csv` wrote it.
+
+    Args:
+        path: The trace's CSV.
+
+    Returns:
+        ``stamps``, ``ends``, ``probabilities``, ``labels`` and ``hours``, in file order,
+        which is time order.
+
+    Raises:
+        FileNotFoundError: If the CSV is absent; it is part of the record, not an output
+            the render may invent.
+        ValueError: If it holds no window.
+    """
+    if not path.is_file():
+        raise FileNotFoundError(f"{path.name} not found: a trace's CSV is part of the record")
+    stamps: list[np.datetime64] = []
+    ends: list[int] = []
+    probabilities: list[float] = []
+    labels: list[int] = []
+    hours: list[float] = []
+    with path.open(encoding="utf-8", newline="") as handle:
+        for row in csv.DictReader(handle):
+            stamps.append(np.datetime64(row["timestamp_utc"].removesuffix("Z"), "ns"))
+            ends.append(int(row["window_end_step"]))
+            probabilities.append(float(row["probability"]))
+            labels.append(int(row["label"]))
+            gap = row["hours_to_next_event"]
+            hours.append(float(gap) if gap else float("nan"))
+    if not ends:
+        raise ValueError(f"{path.name} holds no window")
+    return {
+        "stamps": np.array(stamps, dtype="datetime64[ns]"),
+        "ends": np.array(ends, dtype=np.int64),
+        "probabilities": np.array(probabilities, dtype=np.float64),
+        "labels": np.array(labels, dtype=np.int64),
+        "hours": np.array(hours, dtype=np.float64),
+    }
+
+
+def check_against_record(
+    trace: StreamTrace, entry: Mapping[str, Any], measured: AuprcInterval
+) -> None:
+    """Refuse a render whose rebuilt trace disagrees with the record it was read from.
+
+    A render-only pass prints the record's own AUPRC and bounds, and reads the rest off
+    the committed CSV. That is only honest if the two agree, so every quantity the record
+    carries is held against the rebuilt one at the precision the report prints it, and the
+    interval recomputed from the CSV is held against the recorded one at the same
+    precision. Nothing is written when any of them disagrees.
+
+    Args:
+        trace: The trace rebuilt from the record and the CSV.
+        entry: Its entry in the record.
+        measured: The interval recomputed from the CSV, before the record's own AUPRC and
+            bounds were substituted into it.
+
+    Raises:
+        ValueError: On the first disagreement, naming the field and both values.
+    """
+    exact: list[tuple[str, Any, Any]] = [
+        ("turbine", trace.choice.turbine, str(entry["turbine"])),
+        ("stem", trace.stem, str(entry["stem"])),
+        ("events", trace.choice.events, int(entry["events"])),
+        ("windows", trace.windows, int(entry["windows"])),
+        ("clears_own_base_rate", trace.clears, bool(entry["clears_own_base_rate"])),
+    ]
+    for field, rebuilt, recorded in exact:
+        if rebuilt != recorded:
+            raise ValueError(
+                f"{entry['stem']}: {field} is {rebuilt!r}, the record says {recorded!r}"
+            )
+    printed: list[tuple[str, float, float, str]] = [
+        ("positive_rate", trace.positive_rate, float(entry["positive_rate"]), ".4f"),
+        ("mean_probability", trace.mean_probability, float(entry["mean_probability"]), ".4f"),
+        ("auprc", measured.auprc, float(entry["auprc"]), ".4f"),
+        ("low", measured.low, float(entry["low"]), ".4f"),
+        ("high", measured.high, float(entry["high"]), ".4f"),
+        ("seconds", trace.seconds, float(entry["seconds"]), ".1f"),
+    ]
+    for field, rebuilt, recorded, spec in printed:
+        if format(rebuilt, spec) != format(recorded, spec):
+            raise ValueError(
+                f"{entry['stem']}: {field} renders as {rebuilt:{spec}}, "
+                f"the record says {recorded:{spec}}"
+            )
+
+
+def trace_from_record(
+    paths: ProjectPaths,
+    entry: Mapping[str, Any],
+    inputs: RecordInputs,
+    block: Mapping[str, Any],
+    checkpoint_dir: str,
+    rung: str,
+    out_dir: Path,
+) -> StreamTrace:
+    """Rebuild one trace from the committed record and its committed CSV.
+
+    Nothing is scored and no checkpoint is opened: the per-window probabilities are the
+    ones the run wrote, the AUPRC and its bounds are the ones the record holds, and the
+    field the rules chose from is rebuilt from the label column. The block counts and the
+    discard count are the only figures the record does not carry, and they come from
+    ADR-0021's registered bootstrap re-run over the written probabilities -- which also
+    reproduces the AUPRC and its bounds, so :func:`check_against_record` can hold the
+    rebuild against the record before a byte is written.
+
+    Args:
+        paths: Resolved project paths.
+        entry: One entry of the trace record.
+        inputs: The configurations and shards, from :func:`open_record_inputs`.
+        block: The trained seed's block of the seed-replication record.
+        checkpoint_dir: The run directory the probe was loaded from, for the header.
+        rung: The rung the backbone was pretrained at, for the header.
+        out_dir: Where the record and the CSVs live.
+
+    Returns:
+        The rebuilt trace.
+
+    Raises:
+        ValueError: If the rebuild disagrees with the record.
+    """
+    source, year = str(entry["source"]), int(entry["year"])
+    columns = read_csv(out_dir / f"{entry['stem']}.csv")
+    field = selection_field(paths, inputs.telemetry, source, year, inputs.label, inputs.stride)
+    choice = field.choose(str(entry["rule"]), float(block["pooled"]["base_rate"]))
+    ends = columns["ends"]
+    # ADR-0021's registered bootstrap, over the probabilities the run wrote. The record's
+    # own auprc, low and high are put back afterwards, so the report prints the record's
+    # numbers and not a second measurement of them.
+    measured = bootstrap_auprc(
+        columns["probabilities"],
+        columns["labels"],
+        window_blocks(ends, np.zeros_like(ends), BLOCK_STEPS),
+        replicates=REPLICATES,
+        seed=BOOTSTRAP_SEED,
+        confidence=CONFIDENCE,
+    )
+    interval = replace(
+        measured,
+        auprc=float(entry["auprc"]),
+        low=float(entry["low"]),
+        high=float(entry["high"]),
+    )
+    risk = inputs.ladder.risk
+    if not isinstance(risk, PositiveAwareRiskStage):  # pragma: no cover - refused upstream
+        raise ValueError("the ladder is not the positive-aware risk stage")
+    # The correction is a constant of three registered rates; asking the registered
+    # function for it over no logits is how the offset is read without scoring anything.
+    scores = at_natural_rate(
+        np.zeros(0),
+        train_rate=float(risk.positive_fraction),
+        natural_rate=float(block["natural_rate"]),
+        balanced_shift=float(block["prior_band"]["shift"]),
+    )
+    pooled = block["pooled"]
+    trace = StreamTrace(
+        source=source,
+        year=year,
+        choice=choice,
+        stamps=columns["stamps"],
+        ends=ends,
+        probabilities=columns["probabilities"],
+        labels=columns["labels"],
+        hours=columns["hours"],
+        events=events_inside(field.event_starts(choice.turbine), columns["stamps"]),
+        interval=interval,
+        train_rate=scores.train_rate,
+        natural_rate=scores.natural_rate,
+        balanced_shift=float(block["prior_band"]["shift"]),
+        offset=scores.offset,
+        pooled_base_rate=float(pooled["base_rate"]),
+        pooled_auprc=float(pooled["auprc"]),
+        pooled_low=float(pooled["low"]),
+        pooled_high=float(pooled["high"]),
+        pooled_positives=int(pooled["positives"]),
+        pooled_positive_blocks=int(pooled["positive_blocks"]),
+        seconds=float(entry["seconds"]),
+        checkpoint=f"{checkpoint_dir}/{rung}_tel_only_seed{SEED}.pt",
+        probe=f"{checkpoint_dir}/{rung}_trained_seed{SEED}_probe.pt",
+    )
+    check_against_record(trace, entry, measured)
+    return trace
+
+
+def render_stream_traces(
+    paths: ProjectPaths,
+    mixture_config: str = "configs/train/joint_v0.yaml",
+    ladder_config: str = "configs/train/telemetry_v1.yaml",
+    rung: str = "S2",
+    checkpoint_dir: str = "seed_replication_v0_424c4f33",
+    out_dir: Path | None = None,
+) -> list[tuple[Path, Path]]:
+    """Rewrite every trace's report and figure from the committed record. Nothing is scored.
+
+    This is the path a correction to the prose takes. The scoring pass is a GPU-free but
+    twenty-minute affair and it would write new numbers; a caption fixed by re-scoring
+    would therefore be a caption fixed against a different measurement. So the record is
+    the input here, the record and the CSVs are read and never written, and the two
+    derived files -- the report and the figure -- are the only things that move.
+
+    Args:
+        paths: Resolved project paths.
+        mixture_config: The joint mixture configuration.
+        ladder_config: The ladder configuration.
+        rung: The rung the backbone was pretrained at, for the header.
+        checkpoint_dir: The run directory the probe was loaded from, for the header.
+        out_dir: Where the record and the traces live; ``reports/data/`` when omitted.
+
+    Returns:
+        Per trace, its figure and its report.
+
+    Raises:
+        FileNotFoundError: If the record is absent. There is nothing to render from, and
+            writing a report without one would be inventing the numbers rather than
+            reading them.
+        ValueError: If the record holds no trace, or a rebuild disagrees with it.
+    """
+    target = out_dir or paths.data_reports_dir
+    record = target / TRACE_RECORD
+    if not record.is_file():
+        raise FileNotFoundError(
+            f"{record} not found: --render-only reads the committed record and writes none"
+        )
+    entries = read_traces(record)
+    if not entries:
+        raise ValueError(f"{record} holds no trace")
+    before = record.read_bytes()
+    inputs = open_record_inputs(paths, mixture_config, ladder_config)
+    block = read_probe_record(paths, SEED)
+    traces = [
+        trace_from_record(paths, entry, inputs, block, checkpoint_dir, rung, target)
+        for entry in entries
+    ]
+    written: list[tuple[Path, Path]] = []
+    for trace in traces:
+        svg_path = target / f"{trace.stem}.svg"
+        svg_path.write_text(render_svg(trace), encoding="utf-8", newline="\n")
+        report = target / f"{trace.stem}.md"
+        report.write_text(render_report(trace, paths, target), encoding="utf-8", newline="\n")
+        logger.info(
+            "%s: rendered from the record, AUPRC %.4f [%.4f, %.4f]; nothing scored",
+            trace.stem,
+            trace.interval.auprc,
+            trace.interval.low,
+            trace.interval.high,
+        )
+        written.append((svg_path, report))
+    if record.read_bytes() != before:
+        raise ValueError(f"{record} changed during a render-only pass")
+    return written
 
 
 def write_stream_traces(

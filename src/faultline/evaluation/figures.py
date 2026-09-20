@@ -1378,7 +1378,7 @@ def render_index(figures: Sequence[Figure], records: RecordSet, paths: ProjectPa
         body += "\n"
     parts.append(section("2. Each figure, its sources and its caption", body))
     parts.append(
-        section("3. The streaming traces, and the two rules that chose them", _traces(paths))
+        section("3. The streaming traces, and the two rules that chose them", _traces(records))
     )
     if records.missing:
         unique = sorted(set(records.missing))
@@ -1393,7 +1393,7 @@ def render_index(figures: Sequence[Figure], records: RecordSet, paths: ProjectPa
     return "".join(parts)
 
 
-def _traces(paths: ProjectPaths) -> str:
+def _traces(records: RecordSet) -> str:
     """The two CPU streaming traces, side by side with the rules that chose them.
 
     The traces are demonstrations, not figures: nothing in the write-up rests on them, they
@@ -1401,17 +1401,30 @@ def _traces(paths: ProjectPaths) -> str:
     who meets one of them meets both selection rules at once.
 
     Args:
-        paths: Resolved project paths.
+        records: The tracked record, which also holds the pooled positive count the
+            refusal of the pooled comparison rests on.
 
     Returns:
         The rules, whichever traces exist, and what they are not.
     """
-    entries = read_traces(paths.data_reports_dir / TRACE_RECORD)
+    entries = read_traces(records.paths.data_reports_dir / TRACE_RECORD)
     if not entries:
         return (
             "No streaming trace is written. `faultline model stream-trace` writes them, one "
             f"rule at a time, and records them in `reports/data/{TRACE_RECORD}`.\n"
         )
+    # The count the refusal rests on is read from the record the gates were read from,
+    # rather than written down a second time here.
+    replication = records.json("seed_replication_v0_20260917.json")
+    positives = next(
+        (int(block["pooled"]["positives"]) for block in (replication or {}).get("trained", [])),
+        None,
+    )
+    pooled = (
+        f"the pooled split's {positives:,} positive windows"
+        if positives is not None
+        else "the pooled split's positive windows"
+    )
     rows = [
         [
             f"{entry['turbine']}, {entry['year']}",
@@ -1440,9 +1453,12 @@ def _traces(paths: ProjectPaths) -> str:
             rows,
         )
         + "\nEach AUPRC above describes its own turbine-year, and is comparable with nothing "
-        "else in this file: not with the other trace, whose base rate differs from it, and "
-        "not with the pooled gate numbers. An AUPRC only means anything against the base "
-        f"rate it was measured on, which is why each row carries its own. {FORWARD_CAVEAT}.\n"
+        "else in this file: not with the other trace, and not with the pooled gate numbers. "
+        f"A single turbine-year holds a small fraction of {pooled}, so its interval is far "
+        "wider, and each trace's own report states its positive count and how much wider. "
+        "An AUPRC only means anything against the base "
+        "rate it was measured on, which is why each row carries its own. The standing "
+        f"caveat applies: {FORWARD_CAVEAT}.\n"
         "\nSources:\n\n"
         f"- `reports/data/{TRACE_RECORD}`\n"
         + "".join(f"- `reports/data/{entry['stem']}.md`\n" for entry in entries)

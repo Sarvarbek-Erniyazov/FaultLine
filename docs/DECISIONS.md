@@ -5169,3 +5169,107 @@ schema — no probe code, no read-out code, no scoring code. The order is:
 
 Each step needs the user's authorisation. **Configuration:** `configs/eval/readout_v0.yaml`, this
 record's read-outs, runs, rule and gate by value.
+
+### Outcome of F7'-3, 2026-09-20 -- the gate PASSES and H1' is SUPPORTED
+
+**Runs.**
+- **Probes and scorings.** `faultline model readout` ran on the GPU at `f945a11` from a clean
+  tree, launched by the author. It made all 12 probes and all 12 scorings in **3.15 GPU-hours**
+  (1.68 h of probes, 1.48 h of scorings), plus 3.9 min of selection re-checks. Every item was
+  computed and none was resumed.
+- **Bootstrap and report.** `faultline model readout-gate` ran on the CPU in 9.6 min. It trained
+  nothing and scored nothing: every score file was read from disk. Its worker pool is capped for
+  memory (each spawned worker re-imports the package); the per-job computation is F6-3's
+  unchanged, and the cached replicate vectors are the ones an uncapped pool would write.
+- **Report.** `reports/data/readout_v0_20260920.md` and its `.json`. Configuration
+  `readout_v0.yaml` has hash `7c2765e7`; ADR-0026 was registered in `319ae3b` and its hash
+  recorded by `ce0eb5a`.
+
+**Checks.** All 19 scorers -- the twelve read-out scorings, `tel_only`'s three F3 final reads,
+the joint arm's three F6-3 R0 reads and F6-1b's status-only classifier -- cover the same 137,025
+windows, 5,312 positive, in the same order; the run was refused until they did. All 12 probes'
+re-scored selection AUPRCs equal F7'-2's records exactly. No interval discarded a replicate. The
+three random-init backbones are ADR-0023's saved ones, re-used rather than re-drawn.
+
+**G, the random-init gate on the instrument. Computed before B1, and it decides whether H1' is
+read at all.** Δ((d) on the trained `joint` backbone − (d) on a random-init backbone), all nine
+(trained seed, init seed) pairs:
+
+| (d) trained | vs init 1 | vs init 2 | vs init 3 |
+| --- | --- | --- | --- |
+| seed 1 (0.0780) | +0.0199 [+0.0128, +0.0290] | +0.0205 [+0.0128, +0.0301] | +0.0233 [+0.0156, +0.0329] |
+| seed 2 (0.0810) | +0.0229 [+0.0160, +0.0313] | +0.0235 [+0.0166, +0.0318] | +0.0263 [+0.0187, +0.0354] |
+| seed 3 (0.0685) | +0.0103 [+0.0058, +0.0152] | +0.0109 [+0.0064, +0.0158] | +0.0138 [+0.0090, +0.0187] |
+
+The random-init backbones read 0.0581, 0.0575 and 0.0547 through the same read-out. **Nine of
+nine paired lower bounds are strictly above zero; the weakest is +0.0058. The gate PASSES**, so
+H1' is read. What (d) harvests is not only the tokens' embeddings: an untrained backbone pushed
+through the same text-aware head reads the status text, but measurably less well than a
+pretrained one, on every one of the nine pairs.
+
+**B1 and the verdict.** Δ = AUPRC((d) `last_plus_text` on `joint`) − AUPRC(`tel_only` under (a)
+`final_position`, its F3 final read), same seed, R0, final-step probes. The reference side is
+ADR-0025 §5's, unchanged:
+
+| seed | (d)-joint | `tel_only` (a) | paired Δ [95%] |
+| --- | --- | --- | --- |
+| 1 | 0.0780 | 0.0580 | +0.0200 [+0.0112, +0.0294] |
+| 2 | 0.0810 | 0.0576 | +0.0234 [+0.0128, +0.0342] |
+| 3 | 0.0685 | 0.0515 | +0.0170 [+0.0111, +0.0232] |
+
+The median Δ is **+0.0200**. Every paired lower bound exceeds zero and the median exceeds the
+smallest effect of interest, 0.005. **Under §4, H1' is SUPPORTED.** No comparison was untrusted.
+ADR-0026 §0's open question is answered in the direction it left open: the text signal **is** in
+the joint backbone's representation, and the last-position read-out registered under ADR-0025 --
+not the pathway -- is what failed to reach it. H1's INCONCLUSIVE verdict stands as written; it
+was a verdict about the arm read through that instrument, and this is a different instrument.
+
+**B2, (d)-joint against (d)-control.** Joint pretraining still matters once the text has a direct
+path to the head: Δ is **+0.0271 [+0.0196, +0.0366]**, **+0.0285 [+0.0199, +0.0386]** and
+**+0.0267 [+0.0209, +0.0331]**, every interval above zero, against a `tel_only` backbone read
+through the identical read-out (0.0509, 0.0526, 0.0418).
+
+**B4, against the order-blind status-only classifier.** Δ((d)-joint − control (ii)'s 0.0725
+[0.0537, 0.0979]) is **+0.0055 [-0.0173, +0.0241]**, **+0.0085 [-0.0141, +0.0265]** and
+**-0.0040 [-0.0264, +0.0125]**: every interval spans zero. **A linear read of the SLM's
+text-position states matches a histogram of the strings; it does not beat it.** Two seeds sit
+above the comparator and one below, and at this budget the sequence model adds nothing
+measurable over counting the strings -- ADR-0026 §4's sentence, read in the direction it names.
+
+**B3, (b)-joint against (a)-joint.** Mean pooling alone, with no text-specific block, buys
+-0.0026 [-0.0068, +0.0017], +0.0100 [+0.0051, +0.0164] and +0.0094 [+0.0054, +0.0142]: no
+consistent sign, and well under (d)'s gain, so the text block and not the pooling change is what
+moves the read-out.
+
+**B5, strata.** The whole of H1's gain sits where the text is: Δ((d)-joint − `tel_only`) is
++0.0252 [+0.0158, +0.0357], +0.0260 [+0.0142, +0.0375] and +0.0145 [+0.0070, +0.0220] in the
+has-status stratum (97,810 / 4,224, base rate 0.0432), and -0.0111, -0.0046 and +0.0083 in the
+no-status stratum (39,215 / 1,088, base rate 0.0277), where the read-out degrades to (a) plus a
+constant and no consistent sign survives.
+
+**B7, for the record.** Δ((d)-control − (d)-random) is -0.0072 [-0.0125, -0.0022], -0.0050
+[-0.0110, +0.0007] and -0.0129 [-0.0190, -0.0077]: a telemetry-only backbone's text rows --
+collapsed, as F6-R found them -- read the status text **no better than an untrained backbone**,
+and on two seeds measurably worse. Only the joint diet puts usable text structure in the
+representation.
+
+**B6, selected against final.** **No selected checkpoint was scored: this step scores nothing,
+and ADR-0026 §2 registered the final step.** The validation-split values are reported for all
+twelve probes from their records. The widest gaps are **R-joint-b seed 3, -0.0184** (selected
+step 900, 0.0533; final step 1,000, 0.0350) and **R-ctrl-d seed 2, -0.0143** (selected 250,
+0.0398; final 1,000, 0.0255). The fixed-final rule of ADR-0022's addendum stays in force and
+reads the final step in both cases; the selected checkpoints are saved beside the final ones, so
+any later re-run can score them, and test-split selected reads were not produced for F7'.
+
+**Closure, now in force (§5).** **The experimental programme is closed.** F7' was the last
+experiment, and no further arm, read-out or axis is registered after it. **The next step is the
+dissertation write-up against the committed record.** S3, the ONNX export, the CPU demo and any
+further arm or ablation stay out of scope unless the write-up needs one for a specific sentence,
+in which case that sentence is named first and the run is registered against it.
+
+**The §1 condition is met.** `joint_status_raw` and `joint_no_txt` were withdrawn from F7 because
+they would have been read through an instrument that does not respond to text; §1 allows them to
+be revisited **only if H1' is SUPPORTED**, and it is. A read-out that demonstrably reads the text
+now exists. They are therefore revisitable -- but revisiting them is a **new registration**
+against a named write-up sentence under §5, not an authorisation this record grants, and nothing
+here schedules a run.

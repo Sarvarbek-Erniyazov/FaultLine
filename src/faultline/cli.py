@@ -1007,6 +1007,20 @@ def model_text_curves(
 
 
 @model_app.command(
+    "figures",
+    help="Draw the programme's figures and the gate ledger from the committed record; no model "
+    "is loaded, nothing is scored and every value is read from a tracked file.",
+)
+def model_figures() -> None:
+    """Write every figure the record supports, and the index that lists them."""
+    from faultline.evaluation.figures import write_figures
+
+    written = write_figures(ProjectPaths.resolve())
+    for path in written:
+        typer.echo(f"wrote {path}")
+
+
+@model_app.command(
     "status-nll",
     help="H3' measured behaviourally: single-token-word rate per status string, and per-string "
     "NLL under the text-only checkpoints against held-out narrative text. No training.",

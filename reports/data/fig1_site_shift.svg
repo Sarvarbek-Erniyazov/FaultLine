@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="736" height="541" viewBox="0 0 736 541" font-family="system-ui, sans-serif" font-size="12">
+<rect width="736" height="541" fill="#fcfcfb"/>
+<svg x="0" y="0" width="736" height="203" viewBox="0 0 736 203"><title>F1. Two pre-registered site-shift negatives, and the one evaluable axis</title>
+<rect width="736" height="203" fill="#fcfcfb"/>
+<text x="16" y="24" fill="#1a1a19" font-size="15" font-weight="600">F1. Two pre-registered site-shift negatives, and the one evaluable axis</text>
+<text x="16" y="43" fill="#5f5e58">AUPRC with 95% block-bootstrap intervals. Each axis has its own value scale and its own base rate: the three are never compared by eye.</text>
+<line x1="259.0" x2="259.0" y1="58.0" y2="169.0" stroke="#e4e3dd" stroke-width="1"/><text x="259.0" y="185.0" fill="#5f5e58" text-anchor="middle">0.03</text>
+<line x1="338.7" x2="338.7" y1="58.0" y2="169.0" stroke="#e4e3dd" stroke-width="1"/><text x="338.7" y="185.0" fill="#5f5e58" text-anchor="middle">0.04</text>
+<line x1="418.3" x2="418.3" y1="58.0" y2="169.0" stroke="#e4e3dd" stroke-width="1"/><text x="418.3" y="185.0" fill="#5f5e58" text-anchor="middle">0.05</text>
+<line x1="497.9" x2="497.9" y1="58.0" y2="169.0" stroke="#e4e3dd" stroke-width="1"/><text x="497.9" y="185.0" fill="#5f5e58" text-anchor="middle">0.06</text>
+<line x1="577.6" x2="577.6" y1="58.0" y2="169.0" stroke="#e4e3dd" stroke-width="1"/><text x="577.6" y="185.0" fill="#5f5e58" text-anchor="middle">0.07</text>
+<line x1="284.9" x2="284.9" y1="52.0" y2="169.0" stroke="#1a1a19" stroke-width="1.5"/><text x="284.9" y="48.0" fill="#1a1a19" font-size="11" text-anchor="middle">base rate 0.03325</text>
+<text x="16" y="80.0" fill="#1a1a19" font-size="12" font-weight="600">Hill of Towie: held-out site, same country, different OEM</text>
+<text x="200.0" y="102.5" fill="#1a1a19" text-anchor="end">seed 1</text><line x1="262.5" x2="456.7" y1="98.5" y2="98.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/>
+<circle cx="330.5" cy="98.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="650.0" y="102.5" fill="#5f5e58" font-size="11">does not clear</text>
+<text x="200.0" y="123.5" fill="#1a1a19" text-anchor="end">seed 2</text><line x1="315.3" x2="610.3" y1="119.5" y2="119.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/>
+<circle cx="426.0" cy="119.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="650.0" y="123.5" fill="#5f5e58" font-size="11">clears</text>
+<text x="200.0" y="144.5" fill="#1a1a19" text-anchor="end">seed 3</text><line x1="239.7" x2="424.3" y1="140.5" y2="140.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/>
+<circle cx="306.2" cy="140.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="650.0" y="144.5" fill="#5f5e58" font-size="11">does not clear</text>
+<text x="425" y="195" fill="#5f5e58" text-anchor="middle">AUPRC on Hill of Towie (higher is better)</text>
+</svg>
+<svg x="0" y="203" width="736" height="169" viewBox="0 0 736 169"><title>CARE: three anonymised farms, other manufacturers</title>
+<rect width="736" height="169" fill="#fcfcfb"/>
+<line x1="221.5" x2="221.5" y1="24.0" y2="135.0" stroke="#e4e3dd" stroke-width="1"/><text x="221.5" y="151.0" fill="#5f5e58" text-anchor="middle">0.0008</text>
+<line x1="294.3" x2="294.3" y1="24.0" y2="135.0" stroke="#e4e3dd" stroke-width="1"/><text x="294.3" y="151.0" fill="#5f5e58" text-anchor="middle">0.001</text>
+<line x1="367.1" x2="367.1" y1="24.0" y2="135.0" stroke="#e4e3dd" stroke-width="1"/><text x="367.1" y="151.0" fill="#5f5e58" text-anchor="middle">0.0012</text>
+<line x1="439.9" x2="439.9" y1="24.0" y2="135.0" stroke="#e4e3dd" stroke-width="1"/><text x="439.9" y="151.0" fill="#5f5e58" text-anchor="middle">0.0014</text>
+<line x1="512.6" x2="512.6" y1="24.0" y2="135.0" stroke="#e4e3dd" stroke-width="1"/><text x="512.6" y="151.0" fill="#5f5e58" text-anchor="middle">0.0016</text>
+<line x1="585.4" x2="585.4" y1="24.0" y2="135.0" stroke="#e4e3dd" stroke-width="1"/><text x="585.4" y="151.0" fill="#5f5e58" text-anchor="middle">0.0018</text>
+<line x1="386.9" x2="386.9" y1="18.0" y2="135.0" stroke="#1a1a19" stroke-width="1.5"/><text x="386.9" y="14.0" fill="#1a1a19" font-size="11" text-anchor="middle">base rate 0.00125434</text>
+<text x="16" y="46.0" fill="#1a1a19" font-size="12" font-weight="600">CARE: three anonymised farms, other manufacturers</text>
+<text x="200.0" y="68.5" fill="#1a1a19" text-anchor="end">seed 1</text><line x1="270.6" x2="610.3" y1="64.5" y2="64.5" stroke="#eb6834" stroke-width="2" stroke-linecap="round"/>
+<circle cx="414.8" cy="64.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="650.0" y="68.5" fill="#5f5e58" font-size="11">does not clear</text>
+<text x="200.0" y="89.5" fill="#1a1a19" text-anchor="end">seed 2</text><line x1="239.8" x2="516.1" y1="85.5" y2="85.5" stroke="#eb6834" stroke-width="2" stroke-linecap="round"/>
+<circle cx="360.9" cy="85.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="650.0" y="89.5" fill="#5f5e58" font-size="11">does not clear</text>
+<text x="200.0" y="110.5" fill="#1a1a19" text-anchor="end">seed 3</text><line x1="239.7" x2="566.1" y1="106.5" y2="106.5" stroke="#eb6834" stroke-width="2" stroke-linecap="round"/>
+<circle cx="371.1" cy="106.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="650.0" y="110.5" fill="#5f5e58" font-size="11">does not clear</text>
+<text x="425" y="161" fill="#5f5e58" text-anchor="middle">AUPRC on CARE (higher is better)</text>
+</svg>
+<svg x="0" y="372" width="736" height="169" viewBox="0 0 736 169"><title>Forward in time at the training sites: tested on 2022 onward (Kelmarsh through 2024, Penmanshiel 2022 only)</title>
+<rect width="736" height="169" fill="#fcfcfb"/>
+<line x1="255.7" x2="255.7" y1="24.0" y2="135.0" stroke="#e4e3dd" stroke-width="1"/><text x="255.7" y="151.0" fill="#5f5e58" text-anchor="middle">0.04</text>
+<line x1="386.0" x2="386.0" y1="24.0" y2="135.0" stroke="#e4e3dd" stroke-width="1"/><text x="386.0" y="151.0" fill="#5f5e58" text-anchor="middle">0.05</text>
+<line x1="516.3" x2="516.3" y1="24.0" y2="135.0" stroke="#e4e3dd" stroke-width="1"/><text x="516.3" y="151.0" fill="#5f5e58" text-anchor="middle">0.06</text>
+<line x1="239.7" x2="239.7" y1="18.0" y2="135.0" stroke="#1a1a19" stroke-width="1.5"/><text x="239.7" y="14.0" fill="#1a1a19" font-size="11" text-anchor="middle">base rate 0.0387666</text>
+<text x="16" y="46.0" fill="#1a1a19" font-size="12" font-weight="600">Forward in time at the training sites: tested on 2022 onward (Kelmarsh through 2024, Penmanshiel 2022 only)</text>
+<text x="200.0" y="68.5" fill="#1a1a19" text-anchor="end">seed 1</text><line x1="392.8" x2="610.3" y1="64.5" y2="64.5" stroke="#3f8f5b" stroke-width="2" stroke-linecap="round"/>
+<circle cx="490.5" cy="64.5" r="4.5" fill="#3f8f5b" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="650.0" y="68.5" fill="#5f5e58" font-size="11">clears</text>
+<text x="200.0" y="89.5" fill="#1a1a19" text-anchor="end">seed 2</text><line x1="389.8" x2="607.9" y1="85.5" y2="85.5" stroke="#3f8f5b" stroke-width="2" stroke-linecap="round"/>
+<circle cx="485.3" cy="85.5" r="4.5" fill="#3f8f5b" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="650.0" y="89.5" fill="#5f5e58" font-size="11">clears</text>
+<text x="200.0" y="110.5" fill="#1a1a19" text-anchor="end">seed 3</text><line x1="324.3" x2="498.6" y1="106.5" y2="106.5" stroke="#3f8f5b" stroke-width="2" stroke-linecap="round"/>
+<circle cx="405.7" cy="106.5" r="4.5" fill="#3f8f5b" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="650.0" y="110.5" fill="#5f5e58" font-size="11">clears</text>
+<text x="425" y="161" fill="#5f5e58" text-anchor="middle">AUPRC on the forward-in-time split (higher is better)</text>
+</svg>
+</svg>

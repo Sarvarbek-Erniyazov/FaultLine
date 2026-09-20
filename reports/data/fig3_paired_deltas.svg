@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="776" height="983" viewBox="0 0 776 983" font-family="system-ui, sans-serif" font-size="12">
+<title>F3. What this evaluation could and could not resolve</title>
+<rect width="776" height="983" fill="#fcfcfb"/>
+<text x="16" y="24" fill="#1a1a19" font-size="15" font-weight="600">F3. What this evaluation could and could not resolve</text>
+<text x="16" y="43" fill="#5f5e58">Paired block-bootstrap deltas with 95% intervals, tested on 2022 onward (Kelmarsh through 2024, Penmanshiel 2022 only)</text>
+<rect x="373.8" y="58.0" width="68.5" height="891.0" fill="#ece9f5"/>
+<text x="446.3" y="69.0" fill="#5f5e58" font-size="11">+/-0.005, the smallest effect of interest</text>
+<line x1="271.0" x2="271.0" y1="58.0" y2="949.0" stroke="#e4e3dd" stroke-width="1"/><text x="271.0" y="965.0" fill="#5f5e58" text-anchor="middle">-0.02</text>
+<line x1="408.0" x2="408.0" y1="58.0" y2="949.0" stroke="#e4e3dd" stroke-width="1"/><text x="408.0" y="965.0" fill="#5f5e58" text-anchor="middle">0</text>
+<line x1="545.1" x2="545.1" y1="58.0" y2="949.0" stroke="#e4e3dd" stroke-width="1"/><text x="545.1" y="965.0" fill="#5f5e58" text-anchor="middle">0.02</text>
+<line x1="408.0" x2="408.0" y1="52.0" y2="949.0" stroke="#1a1a19" stroke-width="1.5"/><text x="408.0" y="48.0" fill="#1a1a19" font-size="11" text-anchor="middle">no difference</text>
+<text x="16" y="80.0" fill="#1a1a19" font-size="12" font-weight="600">ADR-0024: trained backbone vs random init (nine cells)</text>
+<text x="240.0" y="102.5" fill="#1a1a19" text-anchor="end">trained 1 vs random 1</text><line x1="465.3" x2="528.0" y1="98.5" y2="98.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/>
+<circle cx="492.7" cy="98.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="123.5" fill="#1a1a19" text-anchor="end">trained 1 vs random 2</text><line x1="465.8" x2="536.0" y1="119.5" y2="119.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/>
+<circle cx="496.8" cy="119.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="144.5" fill="#1a1a19" text-anchor="end">trained 1 vs random 3</text><line x1="479.5" x2="550.4" y1="140.5" y2="140.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/>
+<circle cx="510.3" cy="140.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="165.5" fill="#1a1a19" text-anchor="end">trained 2 vs random 1</text><line x1="487.1" x2="562.0" y1="161.5" y2="161.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/>
+<circle cx="517.8" cy="161.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="186.5" fill="#1a1a19" text-anchor="end">trained 2 vs random 2</text><line x1="485.9" x2="571.4" y1="182.5" y2="182.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/>
+<circle cx="522.0" cy="182.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="207.5" fill="#1a1a19" text-anchor="end">trained 2 vs random 3</text><line x1="499.8" x2="585.1" y1="203.5" y2="203.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/>
+<circle cx="535.4" cy="203.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="228.5" fill="#1a1a19" text-anchor="end">trained 3 vs random 1</text><line x1="438.7" x2="509.5" y1="224.5" y2="224.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/>
+<circle cx="471.3" cy="224.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="249.5" fill="#1a1a19" text-anchor="end">trained 3 vs random 2</text><line x1="442.7" x2="512.9" y1="245.5" y2="245.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/>
+<circle cx="475.5" cy="245.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="270.5" fill="#1a1a19" text-anchor="end">trained 3 vs random 3</text><line x1="457.2" x2="527.2" y1="266.5" y2="266.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/>
+<circle cx="488.9" cy="266.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="16" y="299.0" fill="#1a1a19" font-size="12" font-weight="600">ADR-0024: probe vs telemetry bag-of-tokens</text>
+<text x="240.0" y="321.5" fill="#1a1a19" text-anchor="end">seed 1</text><line x1="367.6" x2="465.5" y1="317.5" y2="317.5" stroke="#b5893a" stroke-width="2" stroke-linecap="round"/>
+<circle cx="419.2" cy="317.5" r="4.5" fill="#b5893a" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="342.5" fill="#1a1a19" text-anchor="end">seed 2</text><line x1="396.3" x2="495.8" y1="338.5" y2="338.5" stroke="#b5893a" stroke-width="2" stroke-linecap="round"/>
+<circle cx="444.3" cy="338.5" r="4.5" fill="#b5893a" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="363.5" fill="#1a1a19" text-anchor="end">seed 3</text><line x1="343.8" x2="444.2" y1="359.5" y2="359.5" stroke="#b5893a" stroke-width="2" stroke-linecap="round"/>
+<circle cx="397.8" cy="359.5" r="4.5" fill="#b5893a" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="16" y="392.0" fill="#1a1a19" font-size="12" font-weight="600">H1 (ADR-0025): joint vs tel_only, last-position read-out</text>
+<text x="240.0" y="414.5" fill="#1a1a19" text-anchor="end">seed 1</text><line x1="384.5" x2="454.3" y1="410.5" y2="410.5" stroke="#eb6834" stroke-width="2" stroke-linecap="round"/>
+<circle cx="423.0" cy="410.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="435.5" fill="#1a1a19" text-anchor="end">seed 2</text><line x1="350.5" x2="422.6" y1="431.5" y2="431.5" stroke="#eb6834" stroke-width="2" stroke-linecap="round"/>
+<circle cx="393.1" cy="431.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="456.5" fill="#1a1a19" text-anchor="end">seed 3</text><line x1="367.0" x2="422.5" y1="452.5" y2="452.5" stroke="#eb6834" stroke-width="2" stroke-linecap="round"/>
+<circle cx="395.8" cy="452.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="16" y="485.0" fill="#1a1a19" font-size="12" font-weight="600">H1 decomposition (B2): pretraining, and the window change</text>
+<text x="240.0" y="507.5" fill="#1a1a19" text-anchor="end">seed 1: joint - (iii)</text><line x1="477.7" x2="539.5" y1="503.5" y2="503.5" stroke="#3f8f5b" stroke-width="2" stroke-linecap="round"/>
+<circle cx="506.6" cy="503.5" r="4.5" fill="#3f8f5b" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="528.5" fill="#1a1a19" text-anchor="end">seed 1: (iii) - tel_only</text><line x1="279.7" x2="358.0" y1="524.5" y2="524.5" stroke="#c2475f" stroke-width="2" stroke-linecap="round"/>
+<circle cx="324.4" cy="524.5" r="4.5" fill="#c2475f" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="549.5" fill="#1a1a19" text-anchor="end">seed 2: joint - (iii)</text><line x1="436.1" x2="484.9" y1="545.5" y2="545.5" stroke="#3f8f5b" stroke-width="2" stroke-linecap="round"/>
+<circle cx="459.1" cy="545.5" r="4.5" fill="#3f8f5b" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="570.5" fill="#1a1a19" text-anchor="end">seed 2: (iii) - tel_only</text><line x1="293.3" x2="375.1" y1="566.5" y2="566.5" stroke="#c2475f" stroke-width="2" stroke-linecap="round"/>
+<circle cx="342.0" cy="566.5" r="4.5" fill="#c2475f" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="591.5" fill="#1a1a19" text-anchor="end">seed 3: joint - (iii)</text><line x1="427.5" x2="470.3" y1="587.5" y2="587.5" stroke="#3f8f5b" stroke-width="2" stroke-linecap="round"/>
+<circle cx="448.2" cy="587.5" r="4.5" fill="#3f8f5b" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="612.5" fill="#1a1a19" text-anchor="end">seed 3: (iii) - tel_only</text><line x1="320.4" x2="386.9" y1="608.5" y2="608.5" stroke="#c2475f" stroke-width="2" stroke-linecap="round"/>
+<circle cx="355.7" cy="608.5" r="4.5" fill="#c2475f" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="16" y="641.0" fill="#1a1a19" font-size="12" font-weight="600">H1' gate (ADR-0026): joint vs random init, text-aware read-out</text>
+<text x="240.0" y="663.5" fill="#1a1a19" text-anchor="end">joint1 vs rand1</text><line x1="495.6" x2="607.0" y1="659.5" y2="659.5" stroke="#8a5cd0" stroke-width="2" stroke-linecap="round"/>
+<circle cx="544.4" cy="659.5" r="4.5" fill="#8a5cd0" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="684.5" fill="#1a1a19" text-anchor="end">joint1 vs rand2</text><line x1="495.5" x2="614.4" y1="680.5" y2="680.5" stroke="#8a5cd0" stroke-width="2" stroke-linecap="round"/>
+<circle cx="548.5" cy="680.5" r="4.5" fill="#8a5cd0" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="705.5" fill="#1a1a19" text-anchor="end">joint1 vs rand3</text><line x1="515.1" x2="633.5" y1="701.5" y2="701.5" stroke="#8a5cd0" stroke-width="2" stroke-linecap="round"/>
+<circle cx="567.8" cy="701.5" r="4.5" fill="#8a5cd0" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="726.5" fill="#1a1a19" text-anchor="end">joint2 vs rand1</text><line x1="517.4" x2="622.2" y1="722.5" y2="722.5" stroke="#8a5cd0" stroke-width="2" stroke-linecap="round"/>
+<circle cx="564.9" cy="722.5" r="4.5" fill="#8a5cd0" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="747.5" fill="#1a1a19" text-anchor="end">joint2 vs rand2</text><line x1="522.0" x2="625.9" y1="743.5" y2="743.5" stroke="#8a5cd0" stroke-width="2" stroke-linecap="round"/>
+<circle cx="569.1" cy="743.5" r="4.5" fill="#8a5cd0" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="768.5" fill="#1a1a19" text-anchor="end">joint2 vs rand3</text><line x1="535.8" x2="650.3" y1="764.5" y2="764.5" stroke="#8a5cd0" stroke-width="2" stroke-linecap="round"/>
+<circle cx="588.4" cy="764.5" r="4.5" fill="#8a5cd0" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="789.5" fill="#1a1a19" text-anchor="end">joint3 vs rand1</text><line x1="447.6" x2="512.2" y1="785.5" y2="785.5" stroke="#8a5cd0" stroke-width="2" stroke-linecap="round"/>
+<circle cx="478.9" cy="785.5" r="4.5" fill="#8a5cd0" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="810.5" fill="#1a1a19" text-anchor="end">joint3 vs rand2</text><line x1="451.7" x2="516.2" y1="806.5" y2="806.5" stroke="#8a5cd0" stroke-width="2" stroke-linecap="round"/>
+<circle cx="483.0" cy="806.5" r="4.5" fill="#8a5cd0" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="831.5" fill="#1a1a19" text-anchor="end">joint3 vs rand3</text><line x1="470.0" x2="536.1" y1="827.5" y2="827.5" stroke="#8a5cd0" stroke-width="2" stroke-linecap="round"/>
+<circle cx="502.3" cy="827.5" r="4.5" fill="#8a5cd0" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="16" y="860.0" fill="#1a1a19" font-size="12" font-weight="600">H1' (ADR-0026): joint vs tel_only, text-aware read-out</text>
+<text x="240.0" y="882.5" fill="#1a1a19" text-anchor="end">seed 1</text><line x1="484.7" x2="609.7" y1="878.5" y2="878.5" stroke="#3f8f5b" stroke-width="2" stroke-linecap="round"/>
+<circle cx="545.1" cy="878.5" r="4.5" fill="#3f8f5b" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="903.5" fill="#1a1a19" text-anchor="end">seed 2</text><line x1="496.0" x2="642.5" y1="899.5" y2="899.5" stroke="#3f8f5b" stroke-width="2" stroke-linecap="round"/>
+<circle cx="568.4" cy="899.5" r="4.5" fill="#3f8f5b" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="240.0" y="924.5" fill="#1a1a19" text-anchor="end">seed 3</text><line x1="483.9" x2="566.8" y1="920.5" y2="920.5" stroke="#3f8f5b" stroke-width="2" stroke-linecap="round"/>
+<circle cx="524.2" cy="920.5" r="4.5" fill="#3f8f5b" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="465" y="975" fill="#5f5e58" text-anchor="middle">paired difference in AUPRC</text>
+</svg>

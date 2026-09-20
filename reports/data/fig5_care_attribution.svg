@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="786" height="933" viewBox="0 0 786 933" font-family="system-ui, sans-serif" font-size="12">
+<rect width="786" height="933" fill="#fcfcfb"/>
+<svg x="0" y="0" width="786" height="329" viewBox="0 0 786 329"><title>F5. The channel gaps do not explain the cross-OEM null</title>
+<rect width="786" height="329" fill="#fcfcfb"/>
+<text x="16" y="24" fill="#1a1a19" font-size="15" font-weight="600">F5. The channel gaps do not explain the cross-OEM null</text>
+<text x="16" y="43" fill="#5f5e58">AUPRC with 95% block-bootstrap intervals, tested on 2022 onward (Kelmarsh through 2024, Penmanshiel 2022 only)</text>
+<line x1="302.7" x2="302.7" y1="58.0" y2="295.0" stroke="#e4e3dd" stroke-width="1"/><text x="302.7" y="311.0" fill="#5f5e58" text-anchor="middle">0.04</text>
+<line x1="411.2" x2="411.2" y1="58.0" y2="295.0" stroke="#e4e3dd" stroke-width="1"/><text x="411.2" y="311.0" fill="#5f5e58" text-anchor="middle">0.05</text>
+<line x1="519.8" x2="519.8" y1="58.0" y2="295.0" stroke="#e4e3dd" stroke-width="1"/><text x="519.8" y="311.0" fill="#5f5e58" text-anchor="middle">0.06</text>
+<line x1="628.4" x2="628.4" y1="58.0" y2="295.0" stroke="#e4e3dd" stroke-width="1"/><text x="628.4" y="311.0" fill="#5f5e58" text-anchor="middle">0.07</text>
+<line x1="289.7" x2="289.7" y1="52.0" y2="295.0" stroke="#1a1a19" stroke-width="1.5"/><text x="289.7" y="48.0" fill="#1a1a19" font-size="11" text-anchor="middle">base rate 0.0388</text>
+<text x="16" y="80.0" fill="#1a1a19" font-size="12" font-weight="600">each CARE farm's absent channels, imposed on the training-site split</text>
+<text x="250.0" y="102.5" fill="#1a1a19" text-anchor="end">farm_a pattern, seed 1 (1 channel)</text><line x1="450.4" x2="660.3" y1="98.5" y2="98.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/>
+<circle cx="547.0" cy="98.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="700.0" y="102.5" fill="#5f5e58" font-size="11">clears</text>
+<text x="250.0" y="123.5" fill="#1a1a19" text-anchor="end">farm_a pattern, seed 2 (1 channel)</text><line x1="374.5" x2="547.2" y1="119.5" y2="119.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/>
+<circle cx="454.1" cy="119.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="700.0" y="123.5" fill="#5f5e58" font-size="11">clears</text>
+<text x="250.0" y="144.5" fill="#1a1a19" text-anchor="end">farm_a pattern, seed 3 (1 channel)</text><line x1="366.9" x2="513.4" y1="140.5" y2="140.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/>
+<circle cx="436.3" cy="140.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="700.0" y="144.5" fill="#5f5e58" font-size="11">clears</text>
+<text x="250.0" y="165.5" fill="#1a1a19" text-anchor="end">farm_b pattern, seed 1 (3 channels)</text><line x1="437.4" x2="623.5" y1="161.5" y2="161.5" stroke="#eb6834" stroke-width="2" stroke-linecap="round"/>
+<circle cx="523.8" cy="161.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="700.0" y="165.5" fill="#5f5e58" font-size="11">clears</text>
+<text x="250.0" y="186.5" fill="#1a1a19" text-anchor="end">farm_b pattern, seed 2 (3 channels)</text><line x1="417.6" x2="609.0" y1="182.5" y2="182.5" stroke="#eb6834" stroke-width="2" stroke-linecap="round"/>
+<circle cx="503.0" cy="182.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="700.0" y="186.5" fill="#5f5e58" font-size="11">clears</text>
+<text x="250.0" y="207.5" fill="#1a1a19" text-anchor="end">farm_b pattern, seed 3 (3 channels)</text><line x1="383.7" x2="559.9" y1="203.5" y2="203.5" stroke="#eb6834" stroke-width="2" stroke-linecap="round"/>
+<circle cx="465.7" cy="203.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="700.0" y="207.5" fill="#5f5e58" font-size="11">clears</text>
+<text x="250.0" y="228.5" fill="#1a1a19" text-anchor="end">farm_c pattern, seed 1 (3 channels)</text><line x1="364.2" x2="525.8" y1="224.5" y2="224.5" stroke="#3f8f5b" stroke-width="2" stroke-linecap="round"/>
+<circle cx="438.0" cy="224.5" r="4.5" fill="#3f8f5b" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="700.0" y="228.5" fill="#5f5e58" font-size="11">clears</text>
+<text x="250.0" y="249.5" fill="#1a1a19" text-anchor="end">farm_c pattern, seed 2 (3 channels)</text><line x1="325.6" x2="491.4" y1="245.5" y2="245.5" stroke="#3f8f5b" stroke-width="2" stroke-linecap="round"/>
+<circle cx="398.5" cy="245.5" r="4.5" fill="#3f8f5b" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="700.0" y="249.5" fill="#5f5e58" font-size="11">clears</text>
+<text x="250.0" y="270.5" fill="#1a1a19" text-anchor="end">farm_c pattern, seed 3 (3 channels)</text><line x1="358.4" x2="508.9" y1="266.5" y2="266.5" stroke="#3f8f5b" stroke-width="2" stroke-linecap="round"/>
+<circle cx="429.4" cy="266.5" r="4.5" fill="#3f8f5b" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="700.0" y="270.5" fill="#5f5e58" font-size="11">clears</text>
+<text x="475" y="321" fill="#5f5e58" text-anchor="middle">AUPRC on the training-site split (higher is better)</text>
+</svg>
+<svg x="0" y="329" width="786" height="224" viewBox="0 0 786 224"><title>CARE per farm: the probe and the order-blind comparator alike</title>
+<rect width="786" height="224" fill="#fcfcfb"/>
+<text x="16" y="24" fill="#1a1a19" font-size="15" font-weight="600">CARE per farm: the probe and the order-blind comparator alike</text>
+<text x="16" y="43" fill="#5f5e58">AUPRC with 95% intervals, held-out cross-OEM evaluation; one value scale a farm</text>
+<line x1="274.0" x2="274.0" y1="58.0" y2="190.0" stroke="#e4e3dd" stroke-width="1"/><text x="274.0" y="206.0" fill="#5f5e58" text-anchor="middle">0</text>
+<line x1="386.3" x2="386.3" y1="58.0" y2="190.0" stroke="#e4e3dd" stroke-width="1"/><text x="386.3" y="206.0" fill="#5f5e58" text-anchor="middle">0.005</text>
+<line x1="498.5" x2="498.5" y1="58.0" y2="190.0" stroke="#e4e3dd" stroke-width="1"/><text x="498.5" y="206.0" fill="#5f5e58" text-anchor="middle">0.01</text>
+<line x1="610.8" x2="610.8" y1="58.0" y2="190.0" stroke="#e4e3dd" stroke-width="1"/><text x="610.8" y="206.0" fill="#5f5e58" text-anchor="middle">0.015</text>
+<line x1="307.4" x2="307.4" y1="52.0" y2="190.0" stroke="#1a1a19" stroke-width="1.5"/><text x="307.4" y="48.0" fill="#1a1a19" font-size="11" text-anchor="middle">base rate 0.00148923</text>
+<text x="16" y="80.0" fill="#1a1a19" font-size="12" font-weight="600">CARE farm_a: the probe on three seeds, and the comparator</text>
+<text x="250.0" y="102.5" fill="#1a1a19" text-anchor="end">probe, seed 1</text><line x1="290.4" x2="327.1" y1="98.5" y2="98.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/>
+<circle cx="304.9" cy="98.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="250.0" y="123.5" fill="#1a1a19" text-anchor="end">probe, seed 2</text><line x1="289.7" x2="321.8" y1="119.5" y2="119.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/>
+<circle cx="302.8" cy="119.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="250.0" y="144.5" fill="#1a1a19" text-anchor="end">probe, seed 3</text><line x1="289.9" x2="326.3" y1="140.5" y2="140.5" stroke="#2a78d6" stroke-width="2" stroke-linecap="round"/>
+<circle cx="304.0" cy="140.5" r="4.5" fill="#2a78d6" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="250.0" y="165.5" fill="#1a1a19" text-anchor="end">bag-of-tokens</text><line x1="298.9" x2="660.3" y1="161.5" y2="161.5" stroke="#b5893a" stroke-width="2" stroke-linecap="round"/>
+<circle cx="354.9" cy="161.5" r="4" fill="#fcfcfb" stroke="#b5893a" stroke-width="2"/>
+<text x="475" y="216" fill="#5f5e58" text-anchor="middle">AUPRC on CARE farm_a (higher is better)</text>
+</svg>
+<svg x="0" y="553" width="786" height="190" viewBox="0 0 786 190"><title>CARE farm_b: the probe on three seeds, and the comparator</title>
+<rect width="786" height="190" fill="#fcfcfb"/>
+<line x1="279.1" x2="279.1" y1="24.0" y2="156.0" stroke="#e4e3dd" stroke-width="1"/><text x="279.1" y="172.0" fill="#5f5e58" text-anchor="middle">0</text>
+<line x1="364.9" x2="364.9" y1="24.0" y2="156.0" stroke="#e4e3dd" stroke-width="1"/><text x="364.9" y="172.0" fill="#5f5e58" text-anchor="middle">0.002</text>
+<line x1="450.7" x2="450.7" y1="24.0" y2="156.0" stroke="#e4e3dd" stroke-width="1"/><text x="450.7" y="172.0" fill="#5f5e58" text-anchor="middle">0.004</text>
+<line x1="536.5" x2="536.5" y1="24.0" y2="156.0" stroke="#e4e3dd" stroke-width="1"/><text x="536.5" y="172.0" fill="#5f5e58" text-anchor="middle">0.006</text>
+<line x1="622.3" x2="622.3" y1="24.0" y2="156.0" stroke="#e4e3dd" stroke-width="1"/><text x="622.3" y="172.0" fill="#5f5e58" text-anchor="middle">0.008</text>
+<line x1="322.8" x2="322.8" y1="18.0" y2="156.0" stroke="#1a1a19" stroke-width="1.5"/><text x="322.8" y="14.0" fill="#1a1a19" font-size="11" text-anchor="middle">base rate 0.00101691</text>
+<text x="16" y="46.0" fill="#1a1a19" font-size="12" font-weight="600">CARE farm_b: the probe on three seeds, and the comparator</text>
+<text x="250.0" y="68.5" fill="#1a1a19" text-anchor="end">probe, seed 1</text><line x1="290.0" x2="349.1" y1="64.5" y2="64.5" stroke="#eb6834" stroke-width="2" stroke-linecap="round"/>
+<circle cx="312.8" cy="64.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="700.0" y="68.5" fill="#5f5e58" font-size="11">discarded 0.11%</text>
+<text x="250.0" y="89.5" fill="#1a1a19" text-anchor="end">probe, seed 2</text><line x1="289.7" x2="346.8" y1="85.5" y2="85.5" stroke="#eb6834" stroke-width="2" stroke-linecap="round"/>
+<circle cx="311.6" cy="85.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="700.0" y="89.5" fill="#5f5e58" font-size="11">discarded 0.11%</text>
+<text x="250.0" y="110.5" fill="#1a1a19" text-anchor="end">probe, seed 3</text><line x1="290.4" x2="355.3" y1="106.5" y2="106.5" stroke="#eb6834" stroke-width="2" stroke-linecap="round"/>
+<circle cx="314.2" cy="106.5" r="4.5" fill="#eb6834" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="700.0" y="110.5" fill="#5f5e58" font-size="11">discarded 0.11%</text>
+<text x="250.0" y="131.5" fill="#1a1a19" text-anchor="end">bag-of-tokens</text><line x1="290.4" x2="660.3" y1="127.5" y2="127.5" stroke="#b5893a" stroke-width="2" stroke-linecap="round"/>
+<circle cx="346.1" cy="127.5" r="4" fill="#fcfcfb" stroke="#b5893a" stroke-width="2"/>
+<text x="475" y="182" fill="#5f5e58" text-anchor="middle">AUPRC on CARE farm_b (higher is better)</text>
+</svg>
+<svg x="0" y="743" width="786" height="190" viewBox="0 0 786 190"><title>CARE farm_c: the probe on three seeds, and the comparator</title>
+<rect width="786" height="190" fill="#fcfcfb"/>
+<line x1="328.6" x2="328.6" y1="24.0" y2="156.0" stroke="#e4e3dd" stroke-width="1"/><text x="328.6" y="172.0" fill="#5f5e58" text-anchor="middle">0.001</text>
+<line x1="405.3" x2="405.3" y1="24.0" y2="156.0" stroke="#e4e3dd" stroke-width="1"/><text x="405.3" y="172.0" fill="#5f5e58" text-anchor="middle">0.0015</text>
+<line x1="482.1" x2="482.1" y1="24.0" y2="156.0" stroke="#e4e3dd" stroke-width="1"/><text x="482.1" y="172.0" fill="#5f5e58" text-anchor="middle">0.002</text>
+<line x1="558.8" x2="558.8" y1="24.0" y2="156.0" stroke="#e4e3dd" stroke-width="1"/><text x="558.8" y="172.0" fill="#5f5e58" text-anchor="middle">0.0025</text>
+<line x1="635.5" x2="635.5" y1="24.0" y2="156.0" stroke="#e4e3dd" stroke-width="1"/><text x="635.5" y="172.0" fill="#5f5e58" text-anchor="middle">0.003</text>
+<line x1="364.2" x2="364.2" y1="18.0" y2="156.0" stroke="#1a1a19" stroke-width="1.5"/><text x="364.2" y="14.0" fill="#1a1a19" font-size="11" text-anchor="middle">base rate 0.0012319</text>
+<text x="16" y="46.0" fill="#1a1a19" font-size="12" font-weight="600">CARE farm_c: the probe on three seeds, and the comparator</text>
+<text x="250.0" y="68.5" fill="#1a1a19" text-anchor="end">probe, seed 1</text><line x1="318.9" x2="548.1" y1="64.5" y2="64.5" stroke="#3f8f5b" stroke-width="2" stroke-linecap="round"/>
+<circle cx="409.4" cy="64.5" r="4.5" fill="#3f8f5b" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="250.0" y="89.5" fill="#1a1a19" text-anchor="end">probe, seed 2</text><line x1="289.7" x2="433.0" y1="85.5" y2="85.5" stroke="#3f8f5b" stroke-width="2" stroke-linecap="round"/>
+<circle cx="351.3" cy="85.5" r="4.5" fill="#3f8f5b" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="250.0" y="110.5" fill="#1a1a19" text-anchor="end">probe, seed 3</text><line x1="302.6" x2="504.0" y1="106.5" y2="106.5" stroke="#3f8f5b" stroke-width="2" stroke-linecap="round"/>
+<circle cx="378.8" cy="106.5" r="4.5" fill="#3f8f5b" stroke="#fcfcfb" stroke-width="1.5"/>
+<text x="250.0" y="131.5" fill="#1a1a19" text-anchor="end">bag-of-tokens</text><line x1="360.0" x2="660.3" y1="127.5" y2="127.5" stroke="#b5893a" stroke-width="2" stroke-linecap="round"/>
+<circle cx="481.3" cy="127.5" r="4" fill="#fcfcfb" stroke="#b5893a" stroke-width="2"/>
+<text x="475" y="182" fill="#5f5e58" text-anchor="middle">AUPRC on CARE farm_c (higher is better)</text>
+</svg>
+</svg>

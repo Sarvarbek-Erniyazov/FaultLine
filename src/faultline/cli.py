@@ -1710,3 +1710,33 @@ def model_readout_gate(
     paths = ProjectPaths.resolve()
     report, record = run_readout_verdict(paths, paths.repo_root / config)
     typer.echo(f"wrote {report} and {record}")
+
+
+@model_app.command(
+    "stream-trace",
+    help="DEMONSTRATION (CPU): run the deployment path -- backbone, frozen probe, prior-"
+    "corrected probability -- over every known window of one held-out turbine-year in time "
+    "order, and write reports/data/stream_trace_<site>_<turbine>_<year>.csv/.svg/.md. Adds no "
+    "rule, no ADR and no verdict; changes nothing in the record. Resume-safe.",
+)
+def model_stream_trace(
+    source: Annotated[
+        str, typer.Option("--source", help="The site whose test split holds the year.")
+    ] = "kelmarsh",
+    year: Annotated[int, typer.Option("--year", help="The calendar year to trace.")] = 2023,
+    device: Annotated[
+        str, typer.Option("--device", help="Torch device; cpu is the point of the trace.")
+    ] = "cpu",
+) -> None:
+    """Score one turbine-year window by window and write the trace, the figure and the report.
+
+    Args:
+        source: The site whose test split holds the year.
+        year: The calendar year to trace.
+        device: Torch device.
+    """
+    from faultline.deployment.stream import write_stream_trace
+
+    paths = ProjectPaths.resolve()
+    trace, figure, report = write_stream_trace(paths, source=source, year=year, device_name=device)
+    typer.echo(f"wrote {trace}, {figure} and {report}")

@@ -1,0 +1,173 @@
+# Calibration, risk-coverage and H2, version 0. Decision record: docs/DECISIONS.md, ADR-0028,
+# written in the same commit as this file, BEFORE any risk-coverage code, validation scoring or
+# masked scoring exists. That commit's hash is recorded below and inside ADR-0028 by the commit
+# after it.
+#
+# THE OPERATING MODEL (ADR-0028 §1). Per arm, the three-seed ensemble: the mean of the seeds'
+# ADR-0019 prior-corrected probabilities. Confidence is seed disagreement (population std of the
+# corrected logits; lower = more confident); the margin |p - tau| is reported only. tau (max F1)
+# and kappa (90% coverage) are fixed on the clean 2021 VALIDATION split before any test number is
+# read. Abstain when disagreement > kappa; on covered windows alarm when p >= tau.
+#
+# GATE A, per arm (§2): paired block-bootstrap Delta = AURC(disagreement) - AURC(random ordering);
+# PASS iff the 95% upper bound is below zero. GATE B (§3): paired Delta AUPRC(ensemble, k=8) -
+# AUPRC(ensemble, clean) must have its upper bound below zero, or H2 is NOT TESTABLE at this
+# severity. THE H2 RULE (§3), joint (d), k=8 against clean, (tau, kappa) unchanged: SUPPORTED if
+# the upper bound of Delta coverage < 0 AND the upper bound of Delta selective risk < +0.005;
+# REFUTED if the lower bound of Delta coverage >= 0 AND the lower bound of Delta selective risk > 0;
+# otherwise INCONCLUSIVE. Anything the clauses do not name is reported as measured and no clause
+# is added afterwards.
+#
+# THIS FILE AUTHORISES NOTHING (ADR-0028 §5). tests/evaluation/test_abstention_gate.py checks the
+# restated values against the files they come from, the ladder against its seed, and the gates
+# and the rule against ADR-0028's text.
+
+version: 0
+
+# The registration commit of ADR-0028. "pending" in that commit; the commit after it writes the
+# hash here and in ADR-0028, and changes nothing else.
+registered_in: "pending"
+
+axis_config: "configs/eval/axis_gate_v0.yaml" # the temporal axis: shards, label, counts
+readout_config: "configs/eval/readout_v0.yaml" # the read-outs and their runs
+h1_gate_config: "configs/eval/h1_gate_v0.yaml" # the (a) reads' runs
+telemetry_manifest: "data/shards/telemetry/quantile_bins_v2_9cd52b65/manifest.json" # step layout
+
+label: "narrow_within_24h"
+axis: "temporal" # in-distribution, forward in time, same sites; never site shift (ADR-0022)
+stride: 12
+
+# The two splits (the F9 read-only check). Test is the axis gate's; validation is F3's split,
+# re-read through R0 windows and final-step probes in F9-2 (none exist in that form today).
+splits:
+  test:
+    windows: 137025
+    positives: 5312
+    base_rate: 0.0388
+  validation:
+    shard_keys: ["kelmarsh__val", "penmanshiel__val"]
+    windows: 85529
+    positives: 1805
+    base_rate: 0.0211
+
+# ADR-0021's interval as ADR-0024 pairs it, unchanged (configs/train/gate_check_v0.yaml,
+# bootstrap). The test asserts equality with gate_check_v0.
+bootstrap:
+  block_steps: 288
+  replicates: 10000
+  seed: 20260916
+  confidence: 0.95
+  max_discarded_share: 0.01
+
+# ADR-0028 §1. Every arm is read on R0 windows through final-step probes, prior-corrected.
+arms:
+  - name: "tel_only_a"
+    backbone: "tel_only"
+    readout: "final_position"
+    source: "h1_gate_v0 S2 (control iii)"
+    test_scores: "checkpoints/h1_gate_v0_a3f6606a/S2_tel_only_seed{seed}_on_joint_final_R0_stride12_scores.npz"
+  - name: "joint_a"
+    backbone: "joint"
+    readout: "final_position"
+    source: "h1_gate_v0 S1"
+    test_scores: "checkpoints/h1_gate_v0_a3f6606a/S2_joint_seed{seed}_final_R0_stride12_scores.npz"
+  - name: "joint_d"
+    backbone: "joint"
+    readout: "last_plus_text"
+    source: "readout_v0 R-joint-d"
+    test_scores: "checkpoints/readout_v0_7c2765e7/S2_R-joint-d_seed{seed}_final_R0_stride12_scores.npz"
+
+seeds: [1, 2, 3]
+checkpoint: "final_step"
+windows: "R0"
+prior_correction: "adr_0019" # z = logit + the saved prior_offset
+
+# ADR-0028 §1.
+operating_model:
+  ensemble: "mean_corrected_probability"
+  primary_signal: "seed_disagreement" # std (ddof 0) of the three corrected logits; lower = confident
+  secondary_signals: ["margin"] # |p - tau|; reported only
+  disagreement_ddof: 0
+  operating_point_split: "validation" # clean; fixed before any test number is read
+  tau_rule: "max_f1" # candidates: distinct validation p; the smallest on a tie
+  kappa_coverage: 0.90 # the 0.90 quantile of validation disagreement, method "lower"
+  abstain_when: "disagreement_above_kappa"
+  alarm_when: "p_at_or_above_tau"
+  selective_risk: "misclassification_rate_on_covered"
+  # The F9 read-only check: F3's saved validation scores are tel_only's SELECTED probes on
+  # telemetry-only windows, so no arm has usable validation scores; all nine are scored in F9-2.
+  validation_scorings: 9
+
+# ADR-0028 §2. Part A: CPU, on the saved clean test scores.
+calibration:
+  ece_bins: 15
+  binning: "equal_mass"
+  variants: ["prior_corrected", "platt_on_validation"]
+  verdict: false # reported, no verdict
+  # F3 (ADR-0024 addendum), tel_only's corrected test means, recorded as the known under-read.
+  known_under_read: [0.0176, 0.0173, 0.0189]
+
+risk_coverage:
+  ordering: "disagreement_ascending"
+  random_orderings: 100
+  random_seed: 20260924
+
+gate_a:
+  statistic: "aurc_disagreement_minus_aurc_random"
+  upper_bound_below: 0.0
+  on_failure: "not_evaluable"
+
+# ADR-0028 §3. Part B: the severity ladder on joint (d), GPU scoring only.
+ladder:
+  arm: "joint_d"
+  mechanism: "mask_to_nan_every_step" # MaskedJointSampler over care_attribution.mask_positions
+  text_kept: true
+  split: "test" # validation is never scored under a mask
+  seed: 20260924 # numpy default_rng(seed).permutation(12) over the step layout's channels
+  severities: [2, 4, 6, 8]
+  # The first k channels of that permutation; nested; identical across seeds and windows.
+  sets:
+    2: [nacelle_position_deg, ambient_temp_c]
+    4: [nacelle_position_deg, ambient_temp_c, generator_speed_rpm, rotor_speed_rpm]
+    6: [nacelle_position_deg, ambient_temp_c, generator_speed_rpm, rotor_speed_rpm,
+        generator_bearing_temp_c, power_pu]
+    8: [nacelle_position_deg, ambient_temp_c, generator_speed_rpm, rotor_speed_rpm,
+        generator_bearing_temp_c, power_pu, pitch_angle_deg, generator_winding_temp_c]
+  test_scorings: 12 # 4 severities x 3 seeds
+  gpu_hours_estimate: 2.2 # 12 ladder + 9 validation scorings, from the timing sidecars
+  launched_by: "author"
+
+gate_b:
+  statistic: "auprc_ensemble_k8_minus_clean"
+  severity: 8
+  upper_bound_below: 0.0
+  on_failure: "not_testable"
+
+# ADR-0028 §3, by value.
+h2_rule:
+  arm: "joint_d"
+  severity: 8
+  operating_point: "clean_validation_unchanged"
+  smallest_effect_risk: 0.005 # absolute; about 13% of the test base rate
+  supported_cov_upper_below: 0.0
+  supported_risk_upper_below: 0.005
+  refuted_cov_lower_at_or_above: 0.0
+  refuted_risk_lower_above: 0.0
+  otherwise: "inconclusive"
+  requires: ["gate_a_pass_joint_d", "gate_b_damage"]
+
+reported:
+  - "ladder_coverage"
+  - "ladder_selective_risk"
+  - "ladder_auprc"
+  - "ladder_ece"
+  - "margin_signal"
+  - "coverage_and_risk_at_operating_point_per_arm"
+
+# Carried in full on every row of every table (ADR-0028 §4).
+caveats:
+  - "adr_0009"
+  - "forward_in_time_same_sites"
+  - "message_volume_shift"
+  - "small_ensemble"
+  - "operating_point_base_rate_shift"

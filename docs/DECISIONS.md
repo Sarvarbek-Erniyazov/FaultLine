@@ -5627,3 +5627,239 @@ rule stays in force and every verdict above reads the final step.
 unchanged: no further arm, read-out or axis follows from this record, and the write-up reports
 both sentences as undecided, one at this budget and one because the instrument does not read
 the raw windows.
+
+---
+
+## ADR-0028 Calibration, risk–coverage and graceful degradation (H2)
+
+**Status:** Accepted; **registered 2026-09-24, before any risk–coverage code, masked scoring or
+validation scoring exists, and before any number below is read on test** · **Date:** 2026-09-24.
+**Commit:** this record, `configs/eval/abstention_v0.yaml`, its configuration classes
+(`src/faultline/evaluation/abstention_gate.py`) and their tests were committed together in
+**`pending`**, before any code that computes a risk–coverage curve or scores a masked window
+existed. The hash is recorded here by the commit after it. **Nothing in this record authorises a
+GPU run** (§5).
+
+**Sources of every count.** The window and positive counts, the saved score files and the scoring
+times come from a read-only pass over `checkpoints/` and the shard manifests made on 2026-09-24
+before this record was written, cited below as *the F9 read-only check*. Everything else is cited
+to the record it comes from.
+
+### 0. Why: the endpoint has no result, and the degradations so far are too mild to test H2
+
+ADR-0001 names the endpoint as "the probability of a fault or shutdown event within a horizon,
+with calibrated abstention". The project calls itself risk-calibrated, yet **no calibration or
+abstention result exists**. ADR-0025 §6 deferred coverage and selective risk "until an abstention
+path exists. None exists today", and none has been built since. The only abstention code is
+`abstention_threshold` in `src/faultline/evaluation/calibration.py`, a quantile of `max(p, 1 − p)`
+that nothing but its unit test calls. There is no risk–coverage curve, no AURC and no conformal
+procedure. `expected_calibration_error` in the same file uses equal-width bins, not the
+equal-mass bins registered below (the F9 read-only check).
+
+H2 and its falsifier, as first written in the author's M3 evaluation design. That planning
+document is not in this repository. The repository's own statements of H2 are ROADMAP's
+"calibrated abstention degrades gracefully under modality shift" and ADR-0022's "graceful
+degradation under modality dropout, in-distribution".
+
+> As degradation severity rises, coverage falls and selective risk stays approximately flat … if
+> coverage stays flat while selective risk rises, H2 is refuted.
+
+**The existing degradations cannot test this.** H2's first rows are ADR-0025's text-withheld read
+and the three CARE-farm channel masks. Each of them costs **at most 0.009 AUPRC** against the
+clean read. That is inside the three-seed spread, so it is too mild to decide whether coverage or
+selective risk moves first. Part B (§3) therefore registers a severity ladder strong enough to
+damage the ranking, and it checks that damage (Gate B) before the H2 rule is read.
+
+H2 is read **in-distribution, forward in time at the same sites** (ADR-0022). It is not a
+site-shift result, and no sentence written from it may call it one.
+
+### 1. Operating model and signals
+
+**Arms.** Three arms, all on the R0 `tail_anchored_2048` windows through final-step probes, each
+with ADR-0019's prior-corrected probabilities:
+
+- `tel_only` (a): the `final_position` read, ADR-0025 control (iii)
+  (`checkpoints/h1_gate_v0_a3f6606a/S2_tel_only_seed{1,2,3}_on_joint_final_R0_stride12_scores.npz`);
+- `joint` (a): the `final_position` read, ADR-0025 S1
+  (`checkpoints/h1_gate_v0_a3f6606a/S2_joint_seed{1,2,3}_final_R0_stride12_scores.npz`);
+- `joint` (d): the `last_plus_text` read, ADR-0026 `R-joint-d`
+  (`checkpoints/readout_v0_7c2765e7/S2_R-joint-d_seed{1,2,3}_final_R0_stride12_scores.npz`).
+
+**The operating model per arm is the three-seed ensemble.** Its probability is the mean of the
+three seeds' prior-corrected probabilities, `p = mean_s sigmoid(z_s)`, where `z_s` is seed s's
+logit plus its saved `prior_offset`. The three seeds are paired row for row on identical
+(turbine, year, end step) keys, and F9-1 refuses to run if they are not.
+
+**Confidence signals.**
+
+- **PRIMARY: seed disagreement.** `u = std_s(z_s)` is the population standard deviation (ddof 0)
+  of the three seeds' corrected logits. A lower `u` means more confidence.
+- **SECONDARY, reported only: margin.** `|p − τ|`. A larger margin means more confidence. No
+  gate or verdict reads it.
+
+**The operating point, fixed on the 2021 VALIDATION split before any test number is read.** The
+split is `kelmarsh__val` + `penmanshiel__val`, R0 windows at stride 12, clean:
+
+- **τ** is the ensemble probability threshold that maximises F1 on validation. The candidates are
+  the distinct validation values of `p`. On a tie, the smallest such threshold is taken.
+- **κ** is the disagreement cut-off that gives **90% coverage** on clean validation: the 0.90
+  quantile of validation `u` (`method="lower"`).
+- **Decision.** Abstain when `u > κ`. On covered windows, alarm when `p ≥ τ`.
+- **Selective risk** is the misclassification rate on the covered set:
+  (false alarms + missed positives among covered windows) / covered windows.
+
+τ and κ are computed once per arm from the clean validation scores. They are written to the F9
+report before any test file is opened, and they are never recomputed on test or under a mask.
+
+**Caveat, carried with the operating point.** The validation base rate is **0.0211** (1,805 of
+85,529). The test base rate is **0.0388** (5,312 of 137,025), 1.8 times higher. A threshold that
+maximises F1 at one prior is not the one that maximises it at the other. ADR-0024's F3 addendum
+recorded the 1.8x gap between the training natural rate and the test base rate as the ADR-0009
+shift, not a correction error. Test coverage at κ is also not expected to be 90%. Both are
+reported as measured.
+
+**No validation scores in the right form exist (the F9 read-only check).** The only per-window
+validation scores on disk are F3's (`checkpoints/seed_replication_v0_424c4f33/
+S2_trained_seed{1,2,3}_val_stride12_scores.npz`, 85,529 windows, 1,805 positive). They are
+`tel_only`'s **selected-step** probes on the **telemetry-only** windows, which is not this record's
+operating model on two counts. First, the fixed-final-step rule is in force (F4, ADR-0022
+addendum). Second, on test the same end steps read through the two framings correlate at only r = 0.30
+(`tel_only` seed 1). No validation scores exist for `joint` (a) or `joint` (d) at all. Every arm's
+τ and κ therefore wait for **nine new validation scorings** (3 arms × 3 seeds, final-step probes,
+R0 windows) in F9-2. They are forward passes of saved probes, and nothing is trained. F9-1
+asserts that the validation R0 index holds 85,529 windows and 1,805 positives before any of them
+runs.
+
+**Clean test scores exist for all nine (arm × seed) reads** (the F9 read-only check). Each file
+holds 137,025 windows and 5,312 positives, with keys `logits`, `labels`, `which`, `ends`,
+`sources` and `prior_offset`.
+
+### 2. Part A: CPU, on saved scores, clean test split
+
+**Calibration per arm. Reported, no verdict.**
+
+- **ECE** over **15 equal-mass bins** (bins cut at quantiles of `p`, not at equal widths of
+  [0, 1]), with a reliability table (per bin: mean `p`, positive share, windows). Each has a block
+  bootstrap interval under `gate_check_v0`'s bootstrap.
+- It is computed for (i) the **prior-corrected ensemble** as it stands, and (ii) the ensemble
+  after **Platt recalibration** (a, b on the ensemble's logit, `logit(p)`) **fitted on validation
+  only** and applied unchanged to test.
+- **The known under-read, stated before it is measured.** F3 (ADR-0024 addendum, report §3)
+  read `tel_only`'s corrected mean test probability at **0.0176, 0.0173 and 0.0189**
+  (0.017–0.019), against a test base rate of 0.0388. The prior-corrected ensemble is therefore
+  expected to under-read on test. The Platt fit is on a split whose base rate is 0.0211 and does
+  not remove that shift.
+
+**Risk–coverage per arm.**
+
+- **The full curve.** Windows are sorted by `u` ascending (ties broken by row order). At every
+  coverage `c = i / n`, the selective risk is that of the `i` most confident windows at the
+  arm's τ.
+- **AURC** is the mean selective risk over the `n` coverage points.
+- **The random-ordering reference.** AURC under a uniformly random confidence ordering, averaged
+  over **100** permutations drawn from `numpy.random.default_rng(20260924)`. The same 100
+  permutation seeds are reused in every bootstrap replicate.
+
+**GATE A (the instrument), per arm:**
+
+> Paired block-bootstrap Δ = AURC(seed disagreement) − AURC(random ordering). PASS iff the 95%
+> upper bound is below zero. On FAIL, abstention on that arm is NOT EVALUABLE.
+
+The bootstrap is `gate_check_v0`'s, unchanged: two-day blocks of 288 steps, 10,000 replicates,
+seed 20260916, 95%, and more than 1% of replicates discarded makes the comparison untrusted. Both
+sides are recomputed on the same resampled rows. A replicate is discarded only if it holds no
+positive window. **Gate A needs τ**, which fixes what counts as a misclassification, and τ comes
+from validation (§1). Gate A is therefore computed after F9-2's validation scorings. No
+provisional τ is used for any number that is reported.
+
+**Reported:** coverage and selective risk at (τ, κ) on clean test, per arm, each with its block
+bootstrap interval. The same rows are reported under the margin signal, beside the primary.
+
+### 3. Part B: the severity ladder on `joint` (d), GPU scoring only
+
+**Degradation.** At inference, **k of the 12 core channels are masked to `<nan>` on every step of
+the R0 `tail_anchored_2048` windows, and the text is kept**, for **k ∈ {2, 4, 6, 8}**. The
+mechanism is ADR-0025 S5's masked joint sampler (`MaskedJointSampler` over
+`care_attribution.mask_positions`). Every overwritten token is checked to be a telemetry value,
+as S5 checked. Only the backbone's input changes: the probes, τ and κ stay the clean ones.
+
+**The channel sets.** One draw decides all four sets. It is
+`numpy.random.default_rng(20260924).permutation(12)` over the 12 core channels in the step
+layout's order (`data/shards/telemetry/quantile_bins_v2_9cd52b65/manifest.json`, `step` without
+`<sep>`: wind_speed_ms, power_pu, rotor_speed_rpm, generator_speed_rpm, pitch_angle_deg,
+nacelle_position_deg, ambient_temp_c, nacelle_temp_c, gearbox_oil_temp_c,
+generator_bearing_temp_c, generator_winding_temp_c, main_bearing_temp_c). The set at k is the
+first k channels of that permutation. The sets are therefore nested, and they are identical
+across seeds and windows:
+
+| k | channels masked |
+| ---: | --- |
+| 2 | nacelle_position_deg, ambient_temp_c |
+| 4 | + generator_speed_rpm, rotor_speed_rpm |
+| 6 | + generator_bearing_temp_c, power_pu |
+| 8 | + pitch_angle_deg, generator_winding_temp_c |
+
+The four channels never masked are main_bearing_temp_c, wind_speed_ms, nacelle_temp_c and
+gearbox_oil_temp_c. The draw is not tuned. It was made once, the seed is this record's date, and
+the order is recorded above before anything is scored.
+
+**Scorings.** 4 severities × 3 seeds = **12 on test**. There are also the **nine clean validation
+scorings** of §1 (all three arms, because (a) found none of them in the right form, not only
+`joint` (d)'s three). The validation split is not scored under a mask. **Cost, from the F9
+read-only check's timing sidecars:** a clean R0 test scoring took 442.4 s (`joint` (d)), 456.7 s
+(`joint` (a)) and 467.0 s (`tel_only` (a)), and a masked R0 test scoring 445.2 s. The 12 ladder
+scorings come to about 12 × 445 s ≈ 1.48 h. The nine validation scorings are about 0.624 of a
+test pass each (85,529 / 137,025), so about 0.71 h. The total is **about 2.2 GPU-h**,
+author-launched, on the RTX 4060.
+
+**GATE B (damage), computed first:**
+
+> Paired Δ AUPRC(ensemble, k=8) − AUPRC(ensemble, clean). If its upper bound is not below zero,
+> H2 is NOT TESTABLE at this severity and is reported as such.
+
+**H2 RULE**, on the ensemble at k = 8 against clean, (τ, κ) unchanged:
+
+> Δcov = coverage(k=8) − coverage(clean); Δrisk = selective risk(k=8) − selective risk(clean);
+> paired block bootstrap. Smallest effect of interest for selective risk: 0.005 absolute (about 13%
+> of the test base rate; chosen before the run). SUPPORTED (graceful) if the upper bound of Δcov is
+> below zero AND the upper bound of Δrisk is below +0.005. REFUTED if the lower bound of Δcov is at
+> or above zero AND the lower bound of Δrisk is above zero. Otherwise INCONCLUSIVE. Requires Gate A
+> PASS on joint (d) and Gate B damage; anything the clauses do not name is reported as measured and
+> no clause is added afterwards.
+
+If Gate A fails on `joint` (d), H2 is **NOT EVALUABLE**. If Gate B shows no damage, H2 is **NOT
+TESTABLE at this severity**. In either case the ladder is still reported as measured. The pairing
+is row for row on the 137,025 test windows, and each side's ensemble, `u` and misclassifications
+are recomputed on the same resampled rows. The bootstrap is `gate_check_v0`'s. A comparison that
+discards more than 1% of replicates counts toward no clause.
+
+**Reported beside the verdict, deciding nothing:** the whole ladder (k = 0, 2, 4, 6, 8) as curves
+of coverage, selective risk, AUPRC and ECE (equal-mass, 15 bins), each with its interval. The
+margin-signal results are reported beside the primary at every k.
+
+### 4. Caveats, carried on every row
+
+- **ADR-0009**: one harmonised event rule across sites; the label is that rule's, not a site's
+  own.
+- **Forward in time, same sites** (ADR-0022): in-distribution, never site shift.
+- **Message-volume shift** (ADR-0025): Kelmarsh positives average 67.2 status tokens in train
+  (stride 6) and 190.1 in test (stride 12).
+- **A three-seed ensemble is a small ensemble.** Seed disagreement over three members is a coarse
+  confidence signal, and Gate A exists because it may be no better than random.
+- **The operating point is fixed on a split with a different base rate** (0.0211 validation
+  against 0.0388 test; §1).
+
+### 5. Steps. Each needs the user's authorisation
+
+1. **F9-1, code.** The risk–coverage module (ensemble, disagreement, equal-mass ECE, Platt, AURC,
+   the random-ordering reference, Gate A, the H2 rule), the validation-scoring runner and the
+   masking-ladder runner. Everything is fixture-tested, and the §3 channel sets are asserted
+   against this record. Part A is CPU and decides only a gate, never the H2 verdict. It runs and
+   reports in F9-1 **only as far as it needs no validation scores**: the ECE and reliability table
+   of (i). Every number that depends on τ, κ or a validation fit — the risk–coverage curves, AURC,
+   Gate A, the Platt rows and the (τ, κ) rows — waits for F9-2's validation scorings, because none
+   exist in the right form (§1).
+2. **F9-2, scoring (author, GPU).** The nine clean validation scorings and the twelve ladder
+   scorings, about 2.2 GPU-h.
+3. **F9-3, verdict.** τ and κ from validation first. Then Part A's remaining rows and Gate A, then
+   Gate B, then the H2 rule, then the reported ladder.

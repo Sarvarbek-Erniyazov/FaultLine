@@ -1761,6 +1761,28 @@ def model_readout_gate(
 
 
 @model_app.command(
+    "ablation-gate",
+    help="ADR-0027 F8-3 (CPU): bootstrap the saved ablation scorings, apply each ablation's "
+    "§4 instrument gate first, then the §5 rule against joint (d) (NOT EVALUABLE on a failed "
+    "gate), report §6's rows, and write reports/data/ablation_gate_v0_<date>.md/.json with the "
+    "two §1 sentences. Trains nothing, scores nothing. Resume-safe.",
+)
+def model_ablation_gate(
+    config: ConfigOption = Path("configs/eval/ablation_gate_v0.yaml"),
+) -> None:
+    """Bootstrap F8's rows, gate each instrument, apply ADR-0027 §5 and write the report.
+
+    Args:
+        config: The ablation gate configuration.
+    """
+    from faultline.evaluation.ablation_verdict import run_ablation_verdict
+
+    paths = ProjectPaths.resolve()
+    report, record = run_ablation_verdict(paths, paths.repo_root / config)
+    typer.echo(f"wrote {report} and {record}")
+
+
+@model_app.command(
     "stream-trace",
     help="DEMONSTRATION (CPU): run the deployment path -- backbone, frozen probe, prior-"
     "corrected probability -- over every known window of one held-out turbine-year in time "

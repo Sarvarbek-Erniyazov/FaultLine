@@ -5544,3 +5544,86 @@ In full, on every row of every table this record produces:
    the tail-anchored window: **41,371 of 137,025 windows (30.19%), and 1,838 of 5,312 positives,
    retain a different number of telemetry steps** than the normalized windows `joint` is scored on.
    The two sides pair row for row on identical keys, but they do not see identical telemetry.
+
+### Outcome of F8-3, 2026-09-24 -- `joint_no_txt`: gate PASSES, INCONCLUSIVE; `joint_status_raw`: gate FAILS, NOT EVALUABLE
+
+**Runs.**
+- **Pretrainings, probes and scorings.** `faultline model ablation-arms` ran on the GPU at
+  `ba6cade` from a clean tree, launched by the author. It made all 6 pretrainings, 9 probes and 9
+  scorings in **3.37 GPU-hours** (1.02 h of pretraining, 1.24 h of probes, 1.11 h of scorings;
+  §7 estimated 3.36 h). Every item was computed and none was resumed.
+- **Bootstrap and report.** `faultline model ablation-gate` ran on the CPU in 10.4 min (37
+  replicate vectors on F7'-3's memory-capped pool). It trained nothing and scored nothing: every
+  score file was read from disk.
+- **Report.** `reports/data/ablation_gate_v0_20260923.md` and its `.json`. Configuration hashes:
+  `ablation_gate_v0.yaml` `da81bbef`, `ablation_arms_v0.yaml` `ecb0b16e`, `joint_v2.yaml`
+  `d432c6d7`, `readout_v0.yaml` `7c2765e7`. ADR-0027 was registered in `179d769` and its hash
+  recorded by `37fbf74`.
+
+**Checks.** All 19 scorers -- the nine F8-2 scorings, `joint`'s three (d) reads and the three
+normalized random-init (d) reads from F7'-2, `tel_only`'s three F3 final reads and F6-1b's
+status-only classifier -- cover the same 137,025 windows, 5,312 positive, in the same order; the
+run was refused until they did. No interval discarded a replicate. The raw windows' has-status
+mask, measured on the raw-framed windows, is identical row for row to the normalized one (97,810
+has-status windows under both), so both arms read the same strata.
+
+**G, the two instrument gates. Computed before B1; each decides whether its arm is read.**
+
+- **`joint_no_txt`, against ADR-0026's normalized random-init (d) reads (0.0581, 0.0575,
+  0.0547): PASS.** Nine of nine paired lower bounds are strictly above zero; the weakest is
+  **+0.0041** (seed 2 vs init 1). The arm reads 0.0750, 0.0663 and 0.0672.
+- **`joint_status_raw`, against the three new random-init (d) probes on the raw windows: FAIL.**
+  Four of nine lower bounds clear zero; seed 1 against all three inits, and seeds 2 and 3
+  against init 1, do not. The weakest is **-0.0058** (seed 1 vs init 1). On the raw windows the
+  untrained backbones read **0.0665, 0.0653 and 0.0651**, higher than the 0.0581, 0.0575 and
+  0.0547 they read on the normalized windows, while the raw arm reads 0.0719, 0.0773 and 0.0777.
+  **`joint_status_raw` is NOT EVALUABLE**, and under §4 that is not a null result about surface
+  form: the instrument does not separate a pretrained backbone from an untrained one on these
+  windows, nine of nine.
+
+**B1 and the verdicts under §5.** Δ = AUPRC(ablation (d)) − AUPRC(`joint` (d), ADR-0026's
+`R-joint-d`), same seed, R0, final-step probes, smallest effect of interest 0.005:
+
+| arm | seed 1 | seed 2 | seed 3 | median | verdict |
+| --- | --- | --- | --- | ---: | --- |
+| `joint_no_txt` | -0.0030 [-0.0102, +0.0026] | -0.0147 [-0.0207, -0.0101] | -0.0013 [-0.0040, +0.0015] | **-0.0030** | **INCONCLUSIVE** |
+| `joint_status_raw` | -0.0061 [-0.0122, -0.0014] | -0.0037 [-0.0086, +0.0009] | +0.0092 [+0.0050, +0.0142] | -0.0037 | **NOT EVALUABLE** (gate FAIL; as measured) |
+
+- **`joint_no_txt` is INCONCLUSIVE at this budget.** HURTS fails because seeds 1 and 3 have
+  upper bounds above zero and the median, -0.0030, is not below -0.005; HELPS fails on every
+  seed; EQUIVALENT fails because seeds 1 and 2 have intervals outside (-0.005, +0.005). Seed 2
+  alone is measurably worse without the narrative corpus. No comparison was untrusted. **The §1
+  sentence stays undecided:** *"The unpaired narrative corpus [does / does not measurably]
+  contribute to the text signal the joint model's read-out harvests."* **This was the outcome
+  §5 named as most likely before the run**, and it is not evidence that the narrative corpus
+  does not matter.
+- **`joint_status_raw` is NOT EVALUABLE.** Its gate failed, so its B1 row carries no verdict:
+  one seed below zero, one spanning zero and one above zero, reported as measured only. The
+  pairing is row for row on identical keys and labels while the input tokens differ, by design,
+  and every raw row carries the truncation caveat of §8 (41,371 windows, 30.19%, and 1,838
+  positives, 34.60%, retain a different number of telemetry steps, ~1.5 fewer on average).
+  **The §1 sentence stays undecided:** *"Normalising status strings to prose surface form (H3')
+  [does / does not measurably] matter to the joint model's risk read-out."*
+
+**B2, H1' replicated with the component changed.** Both ablations still clear `tel_only` (a)
+under ADR-0026's H1' rule unchanged -- `joint_no_txt` +0.0170, +0.0087, +0.0156 (median
++0.0156) and `joint_status_raw` +0.0139, +0.0197, +0.0262 (median +0.0197), every lower bound
+above zero -- so H1''s direction survives removing the narrative corpus, and survives raw
+strings (on a failed gate). This row decides nothing.
+
+**B3, against the order-blind status-only classifier (0.0725 [0.0537, 0.0979]).** Every one of
+the six paired intervals spans zero (Δ from -0.0062 to +0.0052); for `joint_status_raw` the
+classifier was fit on normalized strings and is reported as-is.
+
+**B4, strata.** The has-status stratum (97,810 / 4,224, base rate 0.0432) carries the B1
+differences: `joint_no_txt` -0.0055, -0.0165, +0.0007 and `joint_status_raw` -0.0093, -0.0033,
++0.0107, against no-status (39,215 / 1,088, base rate 0.0277) differences within ±0.0047.
+
+**B5, selected against final (validation only, nothing scored).** The widest gap is
+`joint_no_txt` seed 3, -0.0138 (step 700, 0.0744; final step 1,000, 0.0606); the fixed-final
+rule stays in force and every verdict above reads the final step.
+
+**What this record now licenses.** Neither §1 sentence has a bracket struck. §5's closure is
+unchanged: no further arm, read-out or axis follows from this record, and the write-up reports
+both sentences as undecided, one at this budget and one because the instrument does not read
+the raw windows.

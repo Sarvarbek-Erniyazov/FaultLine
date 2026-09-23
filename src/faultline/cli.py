@@ -1575,6 +1575,54 @@ def model_readout(
 
 
 @model_app.command(
+    "ablation-arms",
+    help="ADR-0027 F8-2 (GPU): the two ablations of joint_v2 -- joint_status_raw and "
+    "joint_no_txt -- pretrained on three seeds each at joint's own budget and protocol, then "
+    "read through read-out (d) last_plus_text. Nine probes under the G3 cadence (six on the "
+    "ablation backbones, three random-init on the raw windows for that arm's instrument gate), "
+    "then nine scorings of their final-step states on the 137,025-window stride-12 test split, "
+    "with F6-3's window-alignment and selection-split checks. ADR-0027's three registered "
+    "assertions run before any probe trains and refuse the run on failure. joint is neither "
+    "retrained nor re-probed. No bootstrap: the verdict is F8-3's. Resume-safe per artefact. "
+    "--preflight checks and reports only.",
+)
+def model_ablation_arms(
+    config: ConfigOption = Path("configs/eval/ablation_gate_v0.yaml"),
+    device: Annotated[str | None, typer.Option("--device", help="Torch device.")] = None,
+    check: Annotated[
+        bool, typer.Option("--preflight", help="Check inputs and report each item's state.")
+    ] = False,
+) -> None:
+    """Run F8-2's pretrainings, probes and scorings, or check that they can run.
+
+    Args:
+        config: The ablation gate configuration, which names the runner.
+        device: Torch device; chosen automatically when omitted.
+        check: Only check the inputs and print each item's state.
+
+    Raises:
+        typer.Exit: With code 1 when the pre-flight finds a problem.
+    """
+    from faultline.evaluation.ablation_runs import ablation_layout, preflight, run_ablation
+
+    paths = ProjectPaths.resolve()
+    if check:
+        layout = ablation_layout(paths, paths.repo_root / config)
+        problems, status = preflight(paths, layout)
+        typer.echo(f"output: {layout.out_dir.relative_to(paths.repo_root).as_posix()}")
+        for line in status:
+            typer.echo(line)
+        for problem in problems:
+            typer.echo(f"PROBLEM: {problem}")
+        typer.echo("PREFLIGHT OK" if not problems else "PREFLIGHT FAILED")
+        if problems:
+            raise typer.Exit(code=1)
+        return
+    status_file = run_ablation(paths, paths.repo_root / config, device)
+    typer.echo(f"wrote {status_file}")
+
+
+@model_app.command(
     "mixture-shards",
     help="Write the M3 mixture's txt and tel+status shards and every stream's run index, "
     "and report per-stream token counts and per-arm token budgets. Trains nothing.",

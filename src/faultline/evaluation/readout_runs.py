@@ -38,7 +38,7 @@ import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol
 
 import torch
 
@@ -264,7 +264,25 @@ def random_init_state(spec: ModelSpec, seed: int) -> dict[str, Any]:
     return {key: value.clone() for key, value in model.backbone.state_dict().items()}
 
 
-def materialise_random_init(layout: ReadoutLayout, spec: ModelSpec, seeds: list[int]) -> list[str]:
+class RandomInitHost(Protocol):
+    """What :func:`materialise_random_init` needs of a layout: where the backbones live.
+
+    Both F7''s and F8's layouts satisfy it, so the two records construct their random-init
+    backbones by one code path and cannot drift apart in how the gate's reference is built.
+    """
+
+    def random_source(self, seed: int) -> Path:
+        """ADR-0023's saved probe, which holds that seed's random-init backbone."""
+
+    def random_backbone(self, seed: int) -> Path:
+        """Where this record holds the random-init backbone of an initialisation seed."""
+
+    @property
+    def random_record(self) -> Path:
+        """Which random-init backbones were used, and where each came from."""
+
+
+def materialise_random_init(layout: RandomInitHost, spec: ModelSpec, seeds: list[int]) -> list[str]:
     """Write each random-init backbone into this record, and say where each came from.
 
     ADR-0023's control saved the whole risk model of each initialisation seed, backbone

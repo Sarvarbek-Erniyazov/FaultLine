@@ -1,0 +1,533 @@
+{
+  "files": [
+    {
+      "stream": "tel",
+      "variant": "-",
+      "source": "care",
+      "split": "test",
+      "tokens": 68128190,
+      "steps": 5240630,
+      "windows": 862423,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "tel",
+      "variant": "-",
+      "source": "hill_of_towie",
+      "split": "test",
+      "tokens": 28587559,
+      "steps": 2199043,
+      "windows": 362033,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "tel",
+      "variant": "-",
+      "source": "kelmarsh",
+      "split": "test",
+      "tokens": 12235145,
+      "steps": 941165,
+      "windows": 154367,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "tel",
+      "variant": "-",
+      "source": "kelmarsh",
+      "split": "train",
+      "tokens": 19859853,
+      "steps": 1527681,
+      "windows": 247028,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "tel",
+      "variant": "-",
+      "source": "kelmarsh",
+      "split": "val",
+      "tokens": 4045795,
+      "steps": 311215,
+      "windows": 50894,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "tel",
+      "variant": "-",
+      "source": "penmanshiel",
+      "split": "test",
+      "tokens": 9479054,
+      "steps": 729158,
+      "windows": 119827,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "tel",
+      "variant": "-",
+      "source": "penmanshiel",
+      "split": "train",
+      "tokens": 41741869,
+      "steps": 3210913,
+      "windows": 522224,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "tel",
+      "variant": "-",
+      "source": "penmanshiel",
+      "split": "val",
+      "tokens": 9512555,
+      "steps": 731735,
+      "windows": 120469,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "tel+status",
+      "variant": "normalized",
+      "source": "hill_of_towie",
+      "split": "test",
+      "tokens": 35261684,
+      "steps": 2199043,
+      "windows": 362799,
+      "messages": 891253,
+      "message_tokens": 6674125
+    },
+    {
+      "stream": "tel+status",
+      "variant": "normalized",
+      "source": "kelmarsh",
+      "split": "test",
+      "tokens": 13279940,
+      "steps": 941165,
+      "windows": 154515,
+      "messages": 188042,
+      "message_tokens": 1044795
+    },
+    {
+      "stream": "tel+status",
+      "variant": "normalized",
+      "source": "kelmarsh",
+      "split": "train",
+      "tokens": 21227538,
+      "steps": 1527681,
+      "windows": 247330,
+      "messages": 248062,
+      "message_tokens": 1367685
+    },
+    {
+      "stream": "tel+status",
+      "variant": "normalized",
+      "source": "kelmarsh",
+      "split": "val",
+      "tokens": 4406532,
+      "steps": 311215,
+      "windows": 50932,
+      "messages": 65189,
+      "message_tokens": 360737
+    },
+    {
+      "stream": "tel+status",
+      "variant": "normalized",
+      "source": "penmanshiel",
+      "split": "test",
+      "tokens": 10342154,
+      "steps": 729158,
+      "windows": 119999,
+      "messages": 155753,
+      "message_tokens": 863100
+    },
+    {
+      "stream": "tel+status",
+      "variant": "normalized",
+      "source": "penmanshiel",
+      "split": "train",
+      "tokens": 44437276,
+      "steps": 3210913,
+      "windows": 522965,
+      "messages": 490073,
+      "message_tokens": 2695407
+    },
+    {
+      "stream": "tel+status",
+      "variant": "normalized",
+      "source": "penmanshiel",
+      "split": "val",
+      "tokens": 10553858,
+      "steps": 731735,
+      "windows": 120579,
+      "messages": 188554,
+      "message_tokens": 1041303
+    },
+    {
+      "stream": "tel+status",
+      "variant": "raw",
+      "source": "hill_of_towie",
+      "split": "test",
+      "tokens": 36149961,
+      "steps": 2199043,
+      "windows": 362860,
+      "messages": 891253,
+      "message_tokens": 7562402
+    },
+    {
+      "stream": "tel+status",
+      "variant": "raw",
+      "source": "kelmarsh",
+      "split": "test",
+      "tokens": 13339782,
+      "steps": 941165,
+      "windows": 154521,
+      "messages": 188042,
+      "message_tokens": 1104637
+    },
+    {
+      "stream": "tel+status",
+      "variant": "raw",
+      "source": "kelmarsh",
+      "split": "train",
+      "tokens": 21296133,
+      "steps": 1527681,
+      "windows": 247340,
+      "messages": 248062,
+      "message_tokens": 1436280
+    },
+    {
+      "stream": "tel+status",
+      "variant": "raw",
+      "source": "kelmarsh",
+      "split": "val",
+      "tokens": 4427714,
+      "steps": 311215,
+      "windows": 50934,
+      "messages": 65189,
+      "message_tokens": 381919
+    },
+    {
+      "stream": "tel+status",
+      "variant": "raw",
+      "source": "penmanshiel",
+      "split": "test",
+      "tokens": 10388466,
+      "steps": 729158,
+      "windows": 120010,
+      "messages": 155753,
+      "message_tokens": 909412
+    },
+    {
+      "stream": "tel+status",
+      "variant": "raw",
+      "source": "penmanshiel",
+      "split": "train",
+      "tokens": 44558255,
+      "steps": 3210913,
+      "windows": 523003,
+      "messages": 490073,
+      "message_tokens": 2816386
+    },
+    {
+      "stream": "tel+status",
+      "variant": "raw",
+      "source": "penmanshiel",
+      "split": "val",
+      "tokens": 10606644,
+      "steps": 731735,
+      "windows": 120584,
+      "messages": 188554,
+      "message_tokens": 1094089
+    },
+    {
+      "stream": "txt",
+      "variant": "-",
+      "source": "nrc_bulletins",
+      "split": "test",
+      "tokens": 51078,
+      "steps": 0,
+      "windows": 49031,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "txt",
+      "variant": "-",
+      "source": "nrc_bulletins",
+      "split": "train",
+      "tokens": 297894,
+      "steps": 0,
+      "windows": 295847,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "txt",
+      "variant": "-",
+      "source": "nrc_bulletins",
+      "split": "val",
+      "tokens": 26988,
+      "steps": 0,
+      "windows": 24941,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "txt",
+      "variant": "-",
+      "source": "nrc_event_notifications",
+      "split": "test",
+      "tokens": 75483,
+      "steps": 0,
+      "windows": 73436,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "txt",
+      "variant": "-",
+      "source": "nrc_event_notifications",
+      "split": "train",
+      "tokens": 6381873,
+      "steps": 0,
+      "windows": 6379826,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "txt",
+      "variant": "-",
+      "source": "nrc_event_notifications",
+      "split": "val",
+      "tokens": 65086,
+      "steps": 0,
+      "windows": 63039,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "txt",
+      "variant": "-",
+      "source": "nrc_gen_letters",
+      "split": "test",
+      "tokens": 29868,
+      "steps": 0,
+      "windows": 27821,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "txt",
+      "variant": "-",
+      "source": "nrc_gen_letters",
+      "split": "train",
+      "tokens": 878348,
+      "steps": 0,
+      "windows": 876301,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "txt",
+      "variant": "-",
+      "source": "nrc_gen_letters",
+      "split": "val",
+      "tokens": 41256,
+      "steps": 0,
+      "windows": 39209,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "txt",
+      "variant": "-",
+      "source": "nrc_info_notices",
+      "split": "test",
+      "tokens": 50827,
+      "steps": 0,
+      "windows": 48780,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "txt",
+      "variant": "-",
+      "source": "nrc_info_notices",
+      "split": "train",
+      "tokens": 471424,
+      "steps": 0,
+      "windows": 469377,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "txt",
+      "variant": "-",
+      "source": "nrc_info_notices",
+      "split": "val",
+      "tokens": 49384,
+      "steps": 0,
+      "windows": 47337,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "txt",
+      "variant": "-",
+      "source": "nrc_reg_issues",
+      "split": "test",
+      "tokens": 32090,
+      "steps": 0,
+      "windows": 30043,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "txt",
+      "variant": "-",
+      "source": "nrc_reg_issues",
+      "split": "train",
+      "tokens": 45300,
+      "steps": 0,
+      "windows": 43253,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "txt",
+      "variant": "-",
+      "source": "nrc_reg_issues",
+      "split": "val",
+      "tokens": 39369,
+      "steps": 0,
+      "windows": 37322,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "txt",
+      "variant": "-",
+      "source": "phmsa_incident_narratives",
+      "split": "test",
+      "tokens": 43195,
+      "steps": 0,
+      "windows": 41148,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "txt",
+      "variant": "-",
+      "source": "phmsa_incident_narratives",
+      "split": "train",
+      "tokens": 1969035,
+      "steps": 0,
+      "windows": 1966988,
+      "messages": 0,
+      "message_tokens": 0
+    },
+    {
+      "stream": "txt",
+      "variant": "-",
+      "source": "phmsa_incident_narratives",
+      "split": "val",
+      "tokens": 41747,
+      "steps": 0,
+      "windows": 39700,
+      "messages": 0,
+      "message_tokens": 0
+    }
+  ],
+  "dropped": {
+    "kelmarsh": 2887,
+    "penmanshiel": 4923,
+    "hill_of_towie": 275
+  },
+  "unmatched": {
+    "kelmarsh": 0,
+    "penmanshiel": 0,
+    "hill_of_towie": 112808
+  },
+  "arms": [
+    {
+      "arm": {
+        "name": "joint",
+        "role": "default",
+        "mixture": {
+          "tel": 0.3,
+          "txt": 0.2,
+          "tel+status": 0.5
+        },
+        "status_convention": "normalized"
+      },
+      "tokens": {
+        "tel": 15000000,
+        "txt": 10000000,
+        "tel+status": 25000000
+      },
+      "passes": {
+        "tel": 0.24349968658343674,
+        "txt": 0.9956317651933905,
+        "tel+status": 0.38072140126674237
+      },
+      "projected_gpu_hours": {
+        "S2": 8.460206230568037,
+        "S3": 9.98276078190246
+      }
+    },
+    {
+      "arm": {
+        "name": "joint_status_raw",
+        "role": "ablation",
+        "mixture": {
+          "tel": 0.3,
+          "txt": 0.2,
+          "tel+status": 0.5
+        },
+        "status_convention": "raw"
+      },
+      "tokens": {
+        "tel": 15000000,
+        "txt": 10000000,
+        "tel+status": 25000000
+      },
+      "passes": {
+        "tel": 0.24349968658343674,
+        "txt": 0.9956317651933905,
+        "tel+status": 0.3796254245047422
+      },
+      "projected_gpu_hours": {
+        "S2": 8.460206230568037,
+        "S3": 9.98276078190246
+      }
+    },
+    {
+      "arm": {
+        "name": "joint_no_txt",
+        "role": "ablation",
+        "mixture": {
+          "tel": 0.5,
+          "tel+status": 0.5
+        },
+        "status_convention": "normalized"
+      },
+      "tokens": {
+        "tel": 25000000,
+        "txt": 0,
+        "tel+status": 25000000
+      },
+      "passes": {
+        "tel": 0.4058328109723946,
+        "txt": 0.0,
+        "tel+status": 0.38072140126674237
+      },
+      "projected_gpu_hours": {
+        "S2": 8.460206230568037,
+        "S3": 9.98276078190246
+      }
+    }
+  ]
+}

@@ -5636,7 +5636,7 @@ the raw windows.
 validation scoring exists, and before any number below is read on test** · **Date:** 2026-09-24.
 **Commit:** this record, `configs/eval/abstention_v0.yaml`, its configuration classes
 (`src/faultline/evaluation/abstention_gate.py`) and their tests were committed together in
-**`pending`**, before any code that computes a risk–coverage curve or scores a masked window
+**`8f7f10e`**, before any code that computes a risk–coverage curve or scores a masked window
 existed. The hash is recorded here by the commit after it. **Nothing in this record authorises a
 GPU run** (§5).
 

@@ -27,7 +27,7 @@ version: 0
 
 # The registration commit of ADR-0027. "pending" in that commit; the commit after it writes the
 # hash here and in ADR-0027, and changes nothing else.
-registered_in: "pending"
+registered_in: "179d769"
 
 axis_config: "configs/eval/axis_gate_v0.yaml" # the temporal axis: shards, label, counts
 readout_config: "configs/eval/readout_v0.yaml" # read-out (d), its protocol and H1''s rule

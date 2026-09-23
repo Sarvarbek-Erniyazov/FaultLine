@@ -5282,8 +5282,8 @@ here schedules a run.
 scoring exists** · **Date:** 2026-09-23.
 **Commit:** this record, `configs/train/joint_v2.yaml`, `configs/train/ablation_arms_v0.yaml`,
 `configs/eval/ablation_gate_v0.yaml`, their configuration classes and their tests were committed
-together, before any code that builds, trains or scores an ablation arm existed. The hash is
-recorded here by the commit after it. **Nothing in this record authorises a run** (§7).
+together in **`179d769`**, before any code that builds, trains or scores an ablation arm existed.
+The hash is recorded here by the commit after it. **Nothing in this record authorises a run** (§7).
 
 **Sources of every count.** The two ablation arms' realised token counts come from
 `mixture_schedule` read on this record's configuration, at the budget of ADR-0025 §1. The window

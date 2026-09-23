@@ -1,0 +1,145 @@
+# The F8 ablation runs, version 0: the F8-2 runner. Decision record: docs/DECISIONS.md, ADR-0027,
+# written in the same commit as this file, BEFORE any code reads it or any run of it exists.
+# Nothing here has been run, and ADR-0027 §7 does not authorise running it.
+#
+# WHAT IT RUNS. The two ablation arms of joint_v2.yaml, each pretrained on three seeds exactly as
+# F6-2 pretrained `joint` (gate_check_v0.yaml: S2, 763 steps, 50,003,968 tokens), then probed with
+# read-out (d) last_plus_text (readout_v0.yaml), G3's cadence (probe_cadence_v0.yaml), read at the
+# final step (ADR-0022 addendum outcome, axis_gate_v0.yaml checkpoints.gating), over every status
+# row (R0) of the ADR-0025 §2 window "tail_anchored_2048".
+#
+# WHY (d) AND NOT §a. ADR-0026 §1: two arms that differ only in their text diet, compared through
+# an instrument that does not respond to text, return nulls that cannot discriminate between the
+# arms and the instrument. (d) is the read-out F7' showed reads the text (gate 9/9, H1' SUPPORTED).
+#
+# `joint` IS NOT RUN BY THIS FILE. It is the reference side of ADR-0027 §5 and its three (d) reads
+# already exist from F7'-2 (readout_v0.yaml, run R-joint-d).
+#
+# tests/evaluation/test_ablation_gate.py checks every restated value below against the file it
+# comes from.
+
+version: 0
+
+# The mixture (arm list) and the ladder (the S2 spec and the probe stage's positive-aware recipe:
+# balanced sampler, 16,000 positives, 1,000 steps, peak 2e-3, prior correction).
+mixture_config: "configs/train/joint_v2.yaml"
+ladder_config: "configs/train/telemetry_v1.yaml"
+# The gate run, whose pretraining protocol and bootstrap every arm shares.
+gate_config: "configs/train/gate_check_v0.yaml"
+# The read-out definitions, the text-position rule and the probe protocol every (d) probe shares.
+readout_config: "configs/eval/readout_v0.yaml"
+# ADR-0023's random-init construction, re-used unchanged for the instrument gate's backbones.
+random_init_config: "configs/train/probe_control_v0.yaml"
+
+# The arms pretrained and probed. `joint` is absent by design: it is not retrained (ADR-0027 §2).
+arms: [joint_status_raw, joint_no_txt]
+# The reference arm's existing backbones and (d) reads, named so the runner cannot invent them.
+reference_arm: joint
+reference_run: "R-joint-d" # readout_v0.yaml, runs: (d) on the joint backbones, F7'-2's records
+
+rung: S2 # gate_check_v0.yaml, rung
+seeds: [1, 2, 3] # joint's three seeds (h1_arms_v0.yaml, seeds)
+
+# gate_check_v0.yaml's tokens, rounded UP to a whole optimiser step by the runner:
+# 763 steps x (4 x 8) windows x 2,048 tokens = 50,003,968 (ADR-0021 erratum; F6-R recon Q3a).
+tokens: 50000000
+
+# gate_check_v0.yaml, value for value, as h1_arms_v0.yaml restates them. The test refuses any
+# difference, so an ablation differs from `joint` in its mixture and in nothing else.
+optimiser:
+  batch_windows: 4 # gate_check_v0.yaml, batch_windows
+  accumulate: 8 # gate_check_v0.yaml, accumulate
+  learning_rate: 0.0006 # gate_check_v0.yaml, learning_rate (peak; the ladder's schedule)
+  evaluations: 6 # gate_check_v0.yaml, evaluations
+  selection_windows: 500 # gate_check_v0.yaml, selection_windows (per source, pretraining read)
+  initial_loss_guard: true # the pretraining path's guard, as every arm before this one ran under
+
+# ADR-0027 §2: the tel+status token count every arm must realise, identical across all three arms.
+# 24,416 windows of 2,048 tokens at 763 optimiser steps; the shares are joint_v2.yaml's.
+token_budget:
+  windows: 24416
+  steps: 763
+  context_tokens: 2048
+  total_tokens: 50003968
+  # The equality the re-weighting exists to preserve. Asserted before any arm is pretrained.
+  paired_tel_status_tokens: 25001984
+  # What proportional renormalisation would have made it, recorded so the choice stays legible.
+  proportional_tel_status_tokens: 31252480
+
+probe:
+  # (d) last_plus_text: [last real state; mean over text positions; has-text indicator], the
+  # read-out F7' gated and read H1' through (readout_v0.yaml, readouts).
+  readout: "last_plus_text"
+  # G3: step 0, every 25 through 300, then every 100; 20 measurements in 1,000 steps.
+  cadence_config: "configs/train/probe_cadence_v0.yaml"
+  # Fixed-final-step selection (ADR-0022 addendum outcome, 267147d; axis_gate_v0.yaml).
+  checkpoint: "final_step"
+  label: "narrow_within_24h" # axis_gate_v0.yaml, label
+  # ADR-0025 §2, by name. At most the M1 window's 144 steps, whole leading steps dropped until
+  # <= 2,048 tokens, right-padded with <pad>, read at the last real index.
+  window_rule: "tail_anchored_2048"
+  context_tokens: 2048 # joint_v2.yaml, context_tokens
+  # ADR-0025 §3: every status row (R0).
+  status_rows: "all"
+  sampling: "balanced" # telemetry_v1.yaml risk.sampling
+  train_stride: 6 # telemetry_v1.yaml train_stride
+  # The probes' selection split, drawn as F3 drew it (ADR-0024 §5):
+  # build_split(telemetry, "val", 3000, stride 1, seed 20260912).
+  selection:
+    shard_keys: ["kelmarsh__val", "penmanshiel__val"]
+    windows_per_source: 3000
+    stride: 1
+    seed: 20260912
+
+# ADR-0027 §3. Per arm, which tel+status stream its windows are framed over, and whether the
+# instrument gate needs new random-init probes on them. The M1 index is the same in every case:
+# same (turbine, year, end step) keys, same labels, 137,025 / 5,312 (window_index below).
+window_rule_per_arm:
+  - arm: joint_status_raw
+    status_convention: raw
+    # The same index framed over the raw-cased stream. The raw shards already exist beside the
+    # normalized ones in the joint shard directory (manifest tel_status_variants) and
+    # open_probe_inputs takes the convention from the arm, so this is a framing pass, not a new
+    # index. Measured by the F8 read-only check of 2026-09-23 and restated here:
+    reuses_normalized_index: false
+    windows_differing_in_steps_retained: 41371 # of 137,025 (30.19%)
+    positives_differing_in_steps_retained: 1838 # of 5,312 (34.60%)
+    head_cut_windows: 0 # under either convention
+    # The gate needs its own random-init (d) probes, because a gate computed on different windows
+    # from the arm it gates is not a gate (ADR-0027 §4).
+    random_init_probes: 3
+  - arm: joint_no_txt
+    status_convention: normalized
+    # Byte for byte the windows F6-3 and F7' scored: nothing is rebuilt, and ADR-0026's three
+    # random-init (d) scores (0.0581, 0.0575, 0.0547) are the gate's reference.
+    reuses_normalized_index: true
+    windows_differing_in_steps_retained: 0
+    positives_differing_in_steps_retained: 0
+    head_cut_windows: 0
+    random_init_probes: 0
+
+# ADR-0025 §2's counts, which every arm's index must reproduce, asserted by test before any probe
+# is trained. Identical under both conventions (F8 read-only check).
+window_index:
+  test_shard_keys: ["kelmarsh__test", "penmanshiel__test"]
+  test_stride: 12
+  test_windows: 137025 # 77,203 + 59,822
+  test_positives: 5312 # 2,841 + 2,471
+  train_shard_keys: ["kelmarsh__train", "penmanshiel__train"]
+  train_stride: 6 # telemetry_v1.yaml train_stride
+  train_windows: 749387 # 247,463 + 501,924
+  train_positives: 16524 # 3,907 + 12,617
+  # The strata of ADR-0027 §6, identical under both conventions (F8 read-only check).
+  has_status_windows: 97810
+  has_status_positives: 4224
+  no_status_windows: 39215
+  no_status_positives: 1088
+
+# ADR-0027 §7. Author-launched via nohup with timestamped logs, as F6-2 and F7'-2 were.
+cost:
+  pretrainings: 6 # 2 arms x 3 seeds, 609.9 s each
+  ablation_probes: 6 # 2 arms x 3 seeds, 447.2 x 1.094 s each
+  random_init_probes: 3 # joint_status_raw's raw windows only, 447.2 x 1.094 s each
+  scorings: 9 # 6 ablation + 3 random-init, 407.9 x 1.094 s each
+  estimated_seconds: 12078
+  launched_by: "author"

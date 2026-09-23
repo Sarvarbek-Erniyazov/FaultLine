@@ -1,0 +1,75 @@
+# The M3 joint mixture, version 2: the F8 ablation arm set. Decision record: docs/DECISIONS.md,
+# ADR-0027, written in the same commit as this file, BEFORE any code reads it, any shard of it is
+# built or any arm of it is pretrained. Nothing here has been run.
+#
+# WHY A NEW VERSION. joint_v1.yaml is frozen: F6-2 pretrained the joint arm against it, F6-3 and
+# F7' scored against it, and open_probe_inputs derives its shard directory from its config_hash. A
+# config read by a run is never edited, so a changed arm set is a new version. Any change to this
+# file changes its config_hash, and open_probe_inputs names the shard directory joint_v2_<hash>.
+# THAT DIRECTORY DOES NOT EXIST until `faultline model mixture-shards` is re-run for this file
+# (CPU, ADR-0027 §7). Nothing that determines shard content changes between v1 and v2 -- the same
+# tokenizer configs, the same sources, the same segmentation -- so its streams are expected to be
+# byte-identical to joint_v1's. F8-1 checks that rather than assuming it.
+#
+# WHAT CHANGED FROM v1. Only the arm list, and only by addition:
+#   - joint_status_raw is carried back in. ADR-0026 §1 withdrew it because it would have been read
+#     through a read-out that does not respond to text; the F7' outcome (H1' SUPPORTED, instrument
+#     gate 9/9) admits it under a new registration against a named write-up sentence, which is
+#     ADR-0027 §1.
+#   - joint_no_txt is added on the same condition: the narrative stream removed, its 0.20 share
+#     given to plain telemetry.
+#   - tel_only is NOT carried into v2. F8 compares each ablation with `joint`, not with tel_only;
+#     tel_only's saved final-step (a) scores are the reference of a REPORTED row only (ADR-0027
+#     §6), read from seed_replication_v0.yaml's records, and no tel_only arm is pretrained here.
+# Every other value is joint_v1's, with its reasons (see joint_v0.yaml's header): the three
+# streams, the sources, the 2,048-token context, the 6-step stride and the 50,000,000-token budget.
+
+version: 2
+telemetry_tokenizer_config: "configs/tokenizer/quantile_bins_v2.yaml"
+text_shards_config: "configs/tokenizer/text_shards_v1.yaml"
+
+# As joint_v1: Hill of Towie's described messages are written (test split only); CARE has none.
+status_sources: [kelmarsh, penmanshiel, hill_of_towie]
+training_sources: [kelmarsh, penmanshiel]
+
+context_tokens: 2048
+window_stride_steps: 6
+
+# Rounded up to whole optimiser steps by the runner: 763 x 32 x 2,048 = 50,003,968 (ADR-0021
+# erratum; configs/train/ablation_arms_v0.yaml). Every arm sees the same budget.
+tokens_per_arm: 50000000
+
+arms:
+  # joint_v1's default arm, value for value. THE EXISTING F6-2 BACKBONES: it is the reference side
+  # of every Delta in ADR-0027 §5 and it is NOT retrained. It is listed so the arm set is complete
+  # and so joint_status_raw has the normalized twin the schema's raw-twin rule requires.
+  - name: joint
+    role: default
+    mixture: {tel: 0.30, txt: 0.20, "tel+status": 0.50}
+    status_convention: normalized
+  # ABLATION 1 (ADR-0017's convention ablation, ADR-0027 §1's second sentence): the same mixture,
+  # the same budget, the same seeds -- status strings in the provider's own casing. It differs from
+  # `joint` in the convention and in nothing else, which is what the twin rule above enforces.
+  # Raw strings are longer, so the tail-anchored probe window retains fewer telemetry steps on
+  # 41,371 of 137,025 test windows; ADR-0027 §3 and §8 carry that measurement and its caveat.
+  - name: joint_status_raw
+    role: ablation
+    mixture: {tel: 0.30, txt: 0.20, "tel+status": 0.50}
+    status_convention: raw
+  # ABLATION 2 (ADR-0027 §1's first sentence): the unpaired narrative corpus removed.
+  #
+  # THE RE-WEIGHTING, AND WHY IT IS NOT PROPORTIONAL (ADR-0027 §2, verbatim). The 0.20 narrative
+  # share goes to plain telemetry, not proportionally, so that paired tel+status exposure stays
+  # exactly 25,001,984 tokens as in joint -- proportional renormalisation would raise it to
+  # ~31.25M and confound removing the narrative with adding status, the stream H1''s effect comes
+  # from. Telemetry is the filler because its marginal value was measured small (ADR-0024
+  # bag-of-tokens parity).
+  #
+  # The arithmetic: proportional renormalisation is tel 0.375 and tel+status 0.625, which at 24,416
+  # windows is 15,260 tel+status windows = 31,252,480 tokens, 6,250,496 more than joint sees. At
+  # 0.50 the sampler draws 12,208 tel+status windows = 25,001,984 tokens, joint's count to the
+  # token. The test asserts that equality before any arm is pretrained.
+  - name: joint_no_txt
+    role: ablation
+    mixture: {tel: 0.50, "tel+status": 0.50}
+    status_convention: normalized

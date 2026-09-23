@@ -5273,3 +5273,274 @@ be revisited **only if H1' is SUPPORTED**, and it is. A read-out that demonstrab
 now exists. They are therefore revisitable -- but revisiting them is a **new registration**
 against a named write-up sentence under §5, not an authorisation this record grants, and nothing
 here schedules a run.
+
+---
+
+## ADR-0027 The two ablations: does the narrative corpus matter, and does status-string surface form matter, to the text signal read-out (d) harvests?
+
+**Status:** Accepted; **registered 2026-09-23, before any F8 code, shard, pretraining, probe or
+scoring exists** · **Date:** 2026-09-23.
+**Commit:** this record, `configs/train/joint_v2.yaml`, `configs/train/ablation_arms_v0.yaml`,
+`configs/eval/ablation_gate_v0.yaml`, their configuration classes and their tests were committed
+together, before any code that builds, trains or scores an ablation arm existed. The hash is
+recorded here by the commit after it. **Nothing in this record authorises a run** (§7).
+
+**Sources of every count.** The two ablation arms' realised token counts come from
+`mixture_schedule` read on this record's configuration, at the budget of ADR-0025 §1. The window
+counts come from a read-only pass over the joint_v1 shard directory made on 2026-09-23 before this
+record was written, cited below as *the F8 read-only check*. Everything else is cited to the record
+it comes from.
+
+### 0. Why now: ADR-0026 withdrew these arms, and its outcome admits them back
+
+ADR-0026 §1 withdrew both arms, in these words:
+
+> **They are withdrawn from F7, not deferred.** Withdrawn is the honest word: deferring implies the
+> question is still queued, and it is not. **They may be revisited only if H1' below is
+> SUPPORTED** — that is, only once a read-out exists that demonstrably reads the text. If H1' is
+> REFUTED, NOT EVALUABLE or INCONCLUSIVE, they stay withdrawn and the record says so.
+
+ADR-0026's outcome of 2026-09-20, in which the instrument gate passed nine of nine and H1' was
+SUPPORTED, admits them back under a condition:
+
+> **The §1 condition is met.** `joint_status_raw` and `joint_no_txt` were withdrawn from F7 because
+> they would have been read through an instrument that does not respond to text; §1 allows them to
+> be revisited **only if H1' is SUPPORTED**, and it is. A read-out that demonstrably reads the text
+> now exists. They are therefore revisitable -- but revisiting them is a **new registration**
+> against a named write-up sentence under §5, not an authorisation this record grants, and nothing
+> here schedules a run.
+
+**This record is that new registration.** ADR-0026 §5 closed the experimental programme and allows
+a further run only where "the write-up needs one for a specific sentence — in which case that
+sentence is named first and the run is registered against it". §1 below names the two sentences
+before any arm exists. The read-out is (d) `last_plus_text`, the one ADR-0026's gate showed reads
+the text, and it is fixed here; §1's rationale — that an instrument which cannot read the text
+cannot discriminate between backbones that differ in their text — is what makes (d) and no other
+read-out admissible for these two arms.
+
+### 1. The two write-up sentences each ablation is registered to decide
+
+Each sentence is written now, with its alternative in brackets, and F8-3 strikes one bracket. No
+other sentence is decided by this record, and no sentence is added to it afterwards.
+
+- **`joint_no_txt`** decides: *"The unpaired narrative corpus [does / does not measurably]
+  contribute to the text signal the joint model's read-out harvests."*
+- **`joint_status_raw`** decides: *"Normalising status strings to prose surface form (H3')
+  [does / does not measurably] matter to the joint model's risk read-out."*
+
+Both sentences are about **the text signal read-out (d) harvests**, not about the text pathway in
+general. That is the only claim the instrument supports, and §5's mapping keeps the verdict inside
+it.
+
+### 2. Arms, by value, in a new `configs/train/joint_v2.yaml`
+
+**Why a new version.** joint_v1.yaml is frozen: F6-2 pretrained against it, F6-3 and F7' scored
+against it, and `open_probe_inputs` derives the shard directory from its `config_hash`. A
+configuration read by a run is never edited, so a changed arm set is a new version. joint_v2 adds
+two arms and changes nothing else — the same tokenizer configurations, the same sources, the same
+2,048-token context, the same 6-step stride and the same 50,000,000-token budget.
+
+| arm | role | mixture | convention | seeds | tokens |
+| --- | --- | --- | --- | --- | ---: |
+| `joint` | reference | tel 0.30 · txt 0.20 · tel+status 0.50 | normalized | 1, 2, 3 | 50,003,968 |
+| `joint_status_raw` | ablation | tel 0.30 · txt 0.20 · tel+status 0.50 | **raw** | 1, 2, 3 | 50,003,968 |
+| `joint_no_txt` | ablation | tel 0.50 · tel+status 0.50 | normalized | 1, 2, 3 | 50,003,968 |
+
+**`joint` is not retrained.** It is the existing F6-2 backbones, carried into joint_v2 with the
+mixture it was pretrained under, unchanged value for value. It is the reference side of every Δ in
+§5, and it is listed here so that the arm set is complete and the raw arm has the normalized twin
+the mixture schema requires.
+
+**The re-weighting rationale, recorded verbatim.** The 0.20 narrative share **goes to plain
+telemetry, not proportionally**, so that paired tel+status exposure stays exactly **25,001,984
+tokens** as in `joint` — proportional renormalisation would raise it to **~31.25M** and confound
+removing the narrative with adding status, the stream H1''s effect comes from. Telemetry is the
+filler because its marginal value was measured small (ADR-0024 bag-of-tokens parity).
+
+The arithmetic: proportional renormalisation is tel 0.30/0.80 = 0.375 and tel+status 0.50/0.80 =
+0.625, which at 24,416 windows is 15,260 tel+status windows and **31,252,480** tel+status tokens,
+6,250,496 more than `joint` sees. The registered re-weighting holds tel+status at 0.50 exactly.
+
+**The realised token counts the sampler must hit per stream**, from `mixture_schedule` at 24,416
+windows of 2,048 tokens (763 optimiser steps × 4 windows × 8 accumulation; ADR-0021 erratum):
+
+| arm | tel | txt | tel+status | total |
+| --- | ---: | ---: | ---: | ---: |
+| `joint` and `joint_status_raw` | 7,325 windows, 15,001,600 | 4,883 windows, 10,000,384 | **12,208 windows, 25,001,984** | 24,416 windows, 50,003,968 |
+| `joint_no_txt` | 12,208 windows, 25,001,984 | — | **12,208 windows, 25,001,984** | 24,416 windows, 50,003,968 |
+
+The tel+status column is identical across all three arms, by construction and to the token. A test
+asserts it before any arm is pretrained.
+
+**Everything else is `joint`'s**: rung **S2**, **50,003,968 tokens**, **seeds 1, 2, 3**, and the
+gate run's optimiser and schedule value for value (`configs/train/gate_check_v0.yaml`: 4 windows ×
+8 accumulation, peak learning rate 6e-4, 6 evaluations, 500 selection windows per source), with the
+**initial-loss guard** the pretraining path already imposes. The runner configuration restates them
+and its test refuses any difference.
+
+### 3. Probe and windows
+
+**The read-out is (d) `last_plus_text`, exactly as ADR-0026 §2 defines it**: head input the
+concatenation of the hidden state at the last real index, the mean of the hidden states over the
+window's text-token positions (ids `<txt>` 4, `</txt>` 5, or ≥ 1,184; the zero vector when the
+window holds none), and a scalar has-text indicator, of width 2·`d_model` + 1. Probes are trained
+with **balanced sampling**, the **G3 cadence** (`configs/train/probe_cadence_v0.yaml`), read at the
+**final step** under ADR-0022's addendum, at the §a probe's own learning rate, on the R0
+tail-anchored windows at the strides of ADR-0026 §3: training at stride 6 on the pooled train
+index, selection on the 6,000-window selection split, scoring on the **137,025-window stride-12
+pooled test split (5,312 positive)**.
+
+**`joint_no_txt` probes the normalized R0 `tail_anchored_2048` windows — identical to `joint`'s.**
+Its status convention is normalized, so its windows are the same bytes, the same framing and the
+same rows as the ones F6-3 and F7' scored. Nothing is rebuilt for it.
+
+**`joint_status_raw` probes the raw-cased windows built by the same rule.** The `tel_status_raw`
+shards already exist in the joint_v1 shard directory alongside the normalized ones (they were built
+in the same pass, `manifest.json`, `tel_status_variants: ["normalized", "raw"]`), and
+`open_probe_inputs` already takes the convention from the arm, so the raw windows are the **same
+index framed over a different stream**, not a new index.
+
+The F8 read-only check measured both, and its findings are fixed here:
+
+- **The streams' step and message structure is identical.** On every one of the seven shard keys
+  the raw and normalized streams hold the **same step count, the same message count and
+  element-wise equal per-step message counts**, and their runs tables carry identical
+  turbine/year/segment/steps. Raw is longer only in the BPE ids of the strings: +59,842 tokens on
+  `kelmarsh__test` and +46,312 on `penmanshiel__test`, for example.
+- **The index keys, labels and counts are identical.** Framed over either stream, the stride-12
+  test index carries the same (turbine, year, end step) keys, the same labels and the same years,
+  and the counts are **137,025 windows / 5,312 positives** on both. The has-status and no-status
+  strata are also identical at **97,810 / 4,224** and **39,215 / 1,088**.
+- **The truncation differs, and this is the one thing the raw arm does not inherit.** Longer raw
+  strings push more whole leading steps out of the 2,048-token budget: **41,371 of the 137,025
+  windows (30.19%) retain a different number of telemetry steps**, of which **1,838 are positives
+  (34.60% of all positives)**. The mean difference among those windows is 1.54 steps at Kelmarsh
+  and 1.34 at Penmanshiel, with a maximum of 12 and 9. Real length differs on 92,443 windows and
+  status-token count on 94,803. **No window is head-cut under either convention.**
+
+So the raw arm is probed and scored on **its own windows**, framed by the same rule from the same
+index, and the paired Δ of §5 pairs row for row on identical keys while the two sides see slightly
+different amounts of telemetry. §8 carries that as a caveat on every raw row.
+
+### 4. The instrument gate, per ablation, computed first
+
+Computed before any Δ of §5, separately for each ablation, and it decides whether that ablation's
+sentence is read at all:
+
+> (d) on each ablation backbone must exceed (d) on every random-init backbone, same-seed and
+> cross-seed, nine of nine paired lower bounds strictly above zero, ADR-0024's paired block
+> bootstrap on the ablation's own windows. On FAIL that ablation is NOT EVALUABLE and its sentence
+> is reported as undecided.
+
+- **`joint_no_txt` reuses ADR-0026's three random-init (d) scores**, because it probes the same
+  windows: the `R-rand-d` reads of 0.0581, 0.0575 and 0.0547. No random-init probe is trained for
+  it.
+- **`joint_status_raw` requires three new random-init (d) probes on the raw windows.** The
+  backbones are the **same random-init backbones ADR-0026 used** —
+  `checkpoints/probe_control_v0_00d2d3c0/S2_random_seed{1,2,3}_probe.pt`, reused rather than
+  re-drawn — but the probe is trained and scored on the raw-cased windows, because a gate computed
+  on different windows from the arm it gates is not a gate.
+
+A gate FAIL is not a null result about the ablation. It says the instrument does not read the text
+on that arm's windows, and the sentence stays undecided.
+
+### 5. The primary rule, per ablation
+
+> Same-seed paired Δ = AUPRC(ablation, (d)) − AUPRC(joint, (d)), pooled stride-12 forward-in-time
+> split, paired block bootstrap as ADR-0024, final-step probes. Smallest effect of interest 0.005.
+> HURTS if all three paired upper bounds are below zero and the median Δ is below −0.005. HELPS if
+> all three lower bounds are above zero and the median exceeds +0.005. EQUIVALENT if all three
+> paired intervals lie inside (−0.005, +0.005). Otherwise INCONCLUSIVE at this budget. A comparison
+> discarding >1% counts toward none; anything the clauses do not name is reported as measured and
+> no clause is added afterwards.
+
+Read as follows, fixed here: pairing is seed *k* of the ablation with seed *k* of `joint`, on
+identical (turbine, year, end step) rows in every replicate; the bootstrap is ADR-0024's, two-day
+blocks of 288 steps, 10,000 replicates, seed 20260916, a block being a window's end step // 288
+within its shard; the median Δ is the median of the three full-sample point estimates; the
+reference side is `joint` read through **(d)**, that is ADR-0026's `R-joint-d` reads of 0.0780,
+0.0810 and 0.0685, not `joint` under (a).
+
+**Mapping to the sentences of §1.** HURTS → "does matter / does contribute". EQUIVALENT → "does not
+measurably". HELPS → reported as measured, with the direction stated; neither bracket is struck,
+because neither sentence was written to be read in that direction. INCONCLUSIVE → the sentence
+stays undecided.
+
+**Stated plainly, before the run: EQUIVALENT is very unlikely to be reachable at this budget.**
+Paired Δ intervals in ADR-0026 were about **0.018 to 0.022 wide** — H1''s were [+0.0112, +0.0294],
+[+0.0128, +0.0342] and [+0.0111, +0.0232] — and EQUIVALENT requires all three to fit inside a
+0.010-wide band. **The most likely non-HURTS outcome of this record is INCONCLUSIVE**, and an
+INCONCLUSIVE result is not evidence that a component does not matter. This paragraph is written
+before any arm is pretrained so that it cannot be read as an excuse afterwards.
+
+### 6. Reported, not gating
+
+Each row carries its paired interval and the caveats of §8. None decides a sentence.
+
+- **Each ablation (d) against `tel_only` (a)**, under ADR-0026's H1' rule applied unchanged, as a
+  **replication of H1' with the component removed**. The reference side is ADR-0025 §5's saved
+  `tel_only` final-step scores, 0.0580 / 0.0576 / 0.0515.
+- **Each ablation (d) against the status-only order-blind classifier**, control (ii)'s **0.0725
+  [0.0537, 0.0979]**, whose per-row scores exist from F6-1b, paired on the identical 137,025 rows.
+  **For `joint_status_raw`: the order-blind classifier was fit on normalized strings. It is
+  reported as-is and is not refit on raw.** The comparison is therefore between a raw-diet backbone
+  and a normalized-string histogram, and the row says so wherever it appears.
+- **The has-status and no-status strata** of each ablation's own windows, blocks re-formed within
+  each stratum.
+- **Selected against final validation values** for every new probe, as ADR-0026's outcome reports
+  them. The fixed-final rule of ADR-0022's addendum stays in force and nothing here changes which
+  checkpoint is read.
+
+### 7. Cost, and the order of steps
+
+Using ADR-0025 §7's measured per-item rates with the same 1.094 = 2,048 / 1,872 padding factor:
+
+| item | count | seconds each | seconds |
+| --- | ---: | ---: | ---: |
+| ablation pretrainings, 50,003,968 tokens (S2, 763 steps) | 6 | 609.9 | 3,659.4 |
+| ablation (d) probes, G3 cadence | 6 | 447.2 × 1.094 | 2,935.5 |
+| new random-init (d) probes, on the raw windows | 3 | 447.2 × 1.094 | 1,467.7 |
+| scorings, 137,025 windows | 9 | 407.9 × 1.094 | 4,015.8 |
+| **F8 in all** | | | **12,078.4 s ≈ 3.4 GPU-h** |
+
+Budgeted at **≈ 3.5 GPU-h**. `joint` is not retrained, not re-probed and not re-scored: its three
+(d) reads are ADR-0026's.
+
+**One CPU item is not in that table and is named here so it is not discovered later.** joint_v2 has
+its own `config_hash`, so `open_probe_inputs` will look for a shard directory `joint_v2_<hash>`
+that does not exist until `faultline model mixture-shards` is re-run for it (CPU). Nothing that
+determines shard content changes between joint_v1 and joint_v2 — the same tokenizer configurations,
+the same sources, the same segmentation — so the streams are expected to be byte-identical to
+joint_v1's. **F8-1 checks that rather than assuming it**, against the byte counts recorded in the
+F8 read-only check.
+
+**The author launches the pretraining, probe and scoring runs, as in F6-2 and F7'-2**, via `nohup`
+with timestamped logs. Claude Code prepares the commands and reads the results.
+
+**The order. Each step needs the user's authorisation.**
+
+1. **F8-1.** Code: the mixture sampler over the joint_v2 arms, the raw window index if the
+   framing pass needs one, and the runner. CPU only.
+2. **F8-2.** The six pretrainings, the nine probes and the nine scorings, author-launched.
+3. **F8-3.** The two instrument gates, the two verdicts under §5, the reported rows of §6, and the
+   two sentences of §1 with one bracket struck each.
+
+**Configurations.** `configs/train/joint_v2.yaml` (the arms), `configs/train/ablation_arms_v0.yaml`
+(the runner), `configs/eval/ablation_gate_v0.yaml` (the rule and the gate, by value).
+
+### 8. Caveats carried on every row
+
+In full, on every row of every table this record produces:
+
+1. **ADR-0009** — the late split is a temporal hold-out with a change in what is labelled, not a
+   drift test, and every late-test result is reported both with and without the anemometer-defect
+   events.
+2. **Forward in time, same sites** — this is the in-distribution temporal test set. No row here is
+   a site-shift result.
+3. **Message-volume shift** — Kelmarsh positives average **67.2** status tokens in train (stride 6)
+   and **190.1** in test (stride 12), so every probe learns on the train mix and is scored on the
+   test mix.
+4. **For `joint_status_raw` only** — raw casing changes token counts and therefore truncation in
+   the tail-anchored window: **41,371 of 137,025 windows (30.19%), and 1,838 of 5,312 positives,
+   retain a different number of telemetry steps** than the normalized windows `joint` is scored on.
+   The two sides pair row for row on identical keys, but they do not see identical telemetry.

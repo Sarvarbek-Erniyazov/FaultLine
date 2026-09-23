@@ -1,0 +1,149 @@
+# The F8 ablation gate, version 0. Decision record: docs/DECISIONS.md, ADR-0027, written in the
+# same commit as this file, BEFORE any code reads it and before any ablation arm exists. That
+# commit's hash is recorded below and inside ADR-0027 by the commit after it.
+#
+# THE INSTRUMENT GATE, PER ABLATION, COMPUTED FIRST (ADR-0027 §4). (d) on each ablation backbone
+# must exceed (d) on every random-init backbone, same-seed and cross-seed, nine of nine paired
+# lower bounds strictly above zero, ADR-0024's paired block bootstrap on the ablation's own
+# windows. On FAIL that ablation is NOT EVALUABLE and its sentence is reported as undecided.
+#
+# THE PRIMARY RULE, PER ABLATION (ADR-0027 §5). Same-seed paired Delta = AUPRC(ablation, (d)) -
+# AUPRC(joint, (d)), pooled stride-12 forward-in-time split, paired block bootstrap as ADR-0024,
+# final-step probes. Smallest effect of interest 0.005. HURTS if all three paired upper bounds are
+# below zero and the median Delta is below -0.005. HELPS if all three lower bounds are above zero
+# and the median exceeds +0.005. EQUIVALENT if all three paired intervals lie inside (-0.005,
+# +0.005). Otherwise INCONCLUSIVE at this budget. A comparison discarding >1% counts toward none;
+# anything the clauses do not name is reported as measured and no clause is added afterwards.
+#
+# STATED BEFORE THE RUN (ADR-0027 §5). Paired Delta intervals in ADR-0026 were ~0.018-0.022 wide,
+# so EQUIVALENT is very unlikely to be reachable at this budget; the most likely non-HURTS outcome
+# is INCONCLUSIVE. An INCONCLUSIVE result is not evidence that a component does not matter.
+#
+# THIS FILE AUTHORISES NOTHING. No ablation code, no sampler, no probe and no scoring code exists
+# in its commit (ADR-0027 §7). tests/evaluation/test_ablation_gate.py checks every restated value
+# below against the file it comes from, and the rule and the gate against ADR-0027's text.
+
+version: 0
+
+# The registration commit of ADR-0027. "pending" in that commit; the commit after it writes the
+# hash here and in ADR-0027, and changes nothing else.
+registered_in: "pending"
+
+axis_config: "configs/eval/axis_gate_v0.yaml" # the temporal axis: shards, label, counts
+readout_config: "configs/eval/readout_v0.yaml" # read-out (d), its protocol and H1''s rule
+runner_config: "configs/train/ablation_arms_v0.yaml" # the F8-2 runs
+mixture_config: "configs/train/joint_v2.yaml" # the arms, by value
+h1_gate_config: "configs/eval/h1_gate_v0.yaml" # H1's rule, for the reported tel_only reference
+
+label: "narrow_within_24h"
+axis: "temporal" # axis_gate_v0.yaml axes.temporal: in-distribution, forward in time, not shift
+stride: 12
+windows: 137025
+positives: 5312
+
+# ADR-0021's interval as ADR-0024 pairs it, unchanged (configs/train/gate_check_v0.yaml,
+# bootstrap). The test asserts equality with gate_check_v0, axis_gate_v0, h1_gate_v0 and
+# readout_v0: every paired interval in this project is this one.
+bootstrap:
+  block_steps: 288 # two-day blocks: a window's end step // 288 within its shard
+  replicates: 10000
+  seed: 20260916
+  confidence: 0.95
+  max_discarded_share: 0.01 # above this, a comparison is untrusted and counts toward no clause
+
+# The read-out every side of every comparison is read through (readout_v0.yaml, readouts).
+readout: "last_plus_text"
+
+# ADR-0027 §4. Computed BEFORE the rule below, separately per ablation, and it decides whether that
+# ablation's sentence is read at all.
+instrument_gate:
+  readout: "last_plus_text"
+  reference_backbone: "random_init"
+  pairing: "same_and_cross_seed" # 3 trained x 3 random-init
+  comparisons: 9
+  lower_bound_above: 0.0
+  on_failure: "not_evaluable"
+  # Per ablation, where the random-init (d) scores come from. joint_no_txt probes the normalized
+  # windows ADR-0026 already gated on, so its three scores are read from that report; the raw arm's
+  # gate must be computed on its own windows, from the SAME saved random-init backbones.
+  random_init_scores:
+    - arm: joint_no_txt
+      source: "adr_0026_r_rand_d" # reports/data/readout_v0_20260920, G: 0.0581, 0.0575, 0.0547
+      new_probes: 0
+    - arm: joint_status_raw
+      source: "new_on_raw_windows"
+      new_probes: 3
+      backbones_reused_from: "configs/train/probe_control_v0.yaml"
+
+# ADR-0027 §5, by value. One verdict per ablation.
+comparison:
+  arms: [joint_status_raw, joint_no_txt] # ablation_arms_v0.yaml, arms
+  reference: "joint" # read through (d): readout_v0.yaml run R-joint-d, F7'-2's records
+  reference_readout: "last_plus_text" # NOT (a); the reference side is joint under the same read-out
+  pairing: "same_seed" # seed k with seed k, on identical (turbine, year, end step) rows
+  seeds: [1, 2, 3]
+  checkpoint: "final_step"
+  windows: "R0" # every status row; ADR-0025 §3
+
+rule:
+  # Read from readout_v0.yaml, rule.smallest_effect: the same 0.005 H1 and H1' were read at, for
+  # the reason ADR-0025 §5 gives (the three-seed spread cannot resolve less).
+  smallest_effect: 0.005
+  # HURTS: every paired upper bound < 0, and the median of the three point Deltas < -0.005.
+  hurts_upper_bound_below: 0.0
+  hurts_median_below: -0.005
+  # HELPS: every paired lower bound > 0, and the median > +0.005.
+  helps_lower_bound_above: 0.0
+  helps_median_above: 0.005
+  # EQUIVALENT: every paired interval lies strictly inside (-0.005, +0.005).
+  equivalent_interval_within: [-0.005, 0.005]
+  otherwise: "inconclusive"
+
+# ADR-0027 §1 and §5. The write-up sentence each ablation decides, and which bracket each verdict
+# strikes. F8-3 writes no sentence that is not here.
+sentences:
+  - arm: joint_no_txt
+    sentence: >-
+      The unpaired narrative corpus [does / does not measurably] contribute to the text signal the
+      joint model's read-out harvests.
+  - arm: joint_status_raw
+    sentence: >-
+      Normalising status strings to prose surface form (H3') [does / does not measurably] matter to
+      the joint model's risk read-out.
+
+verdict_to_sentence:
+  hurts: "does_matter" # "does matter" / "does contribute"
+  equivalent: "does_not_measurably"
+  helps: "reported_as_measured_with_direction" # neither bracket is struck
+  inconclusive: "undecided"
+  not_evaluable: "undecided" # the instrument gate FAILED on that arm
+
+# Reported beside the verdicts, each with its paired interval; none decides a sentence
+# (ADR-0027 §6).
+reported:
+  # Each ablation (d) against tel_only (a): H1''s rule applied unchanged, as a replication of H1'
+  # with the component removed. Reference: ADR-0025 §5's saved scores 0.0580 / 0.0576 / 0.0515.
+  - "ablation_d_vs_tel_only_a"
+  # Against control (ii)'s order-blind status-only classifier, 0.0725 [0.0537, 0.0979], per-row
+  # scores from F6-1b, paired on the identical 137,025 rows. See status_only_bag below.
+  - "ablation_d_vs_status_only_bag"
+  - "strata_has_status"
+  - "strata_no_status"
+  - "selected_vs_final" # validation values; the fixed-final rule stays in force
+
+status_only_bag:
+  auprc: 0.0725
+  interval: [0.0537, 0.0979]
+  fit_on: "normalized" # F6-1b fit it on normalized strings
+  # For joint_status_raw the comparator is NOT refit on raw. The row is a raw-diet backbone against
+  # a normalized-string histogram, and it says so wherever it appears (ADR-0027 §6).
+  refit_for_raw: false
+
+# Carried in full on every row of every table (ADR-0027 §8).
+caveats:
+  - "adr_0009"
+  - "forward_in_time_same_sites"
+  - "message_volume_shift"
+# Carried in addition on every joint_status_raw row: raw casing changes token counts and therefore
+# truncation in the tail-anchored window (41,371 of 137,025 windows, 1,838 of 5,312 positives).
+raw_only_caveat: "raw_casing_changes_truncation"

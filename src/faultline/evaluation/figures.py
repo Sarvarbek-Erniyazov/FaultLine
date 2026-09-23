@@ -899,7 +899,7 @@ def build_ledger(records: RecordSet) -> Figure | None:
 DECISIONS = "docs/DECISIONS.md"
 
 #: The first and last gate the ledger reports, by ADR number.
-FIRST_GATE, LAST_GATE = "ADR-0021", "ADR-0026"
+FIRST_GATE, LAST_GATE = "ADR-0021", "ADR-0027"
 
 #: A backticked commit hash.
 _HASH = re.compile(r"`([0-9a-f]{7,40})`")

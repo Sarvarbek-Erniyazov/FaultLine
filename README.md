@@ -10,9 +10,9 @@ The result is a set of measured answers, several of them negative, each with its
 
 ## Status
 
-**Experimental programme closed (2026-09-20).** Six pre-registered gates were run (ADR-0021 → ADR-0026). The final test (F7', ADR-0026) **passed its instrument control nine of nine and returned H1' SUPPORTED**: read with a text-aware linear head, the joint model beats the telemetry-only model by +0.017 to +0.023 AUPRC on every seed. ADR-0026 §1 withdrew two backbone ablations (`joint_status_raw`, `joint_no_txt`); the H1' outcome makes them revisitable under a new registration against a named write-up sentence, and nothing in the record schedules a run. Nothing in this repository is a deployed system.
+**Experimental programme closed (2026-09-20).** Seven pre-registered gates were run (ADR-0021 → ADR-0027). The decisive test (F7', ADR-0026) **passed its instrument control nine of nine and returned H1' SUPPORTED**: read with a text-aware linear head, the joint model beats the telemetry-only model by +0.017 to +0.023 AUPRC on every seed. ADR-0026 §1 withdrew two backbone ablations (`joint_status_raw`, `joint_no_txt`); the H1' outcome made them revisitable under a new registration against a named write-up sentence. ADR-0027 ran both through the H1' read-out: `joint_no_txt` is INCONCLUSIVE (its instrument gate passed) and `joint_status_raw` is NOT EVALUABLE (its gate failed), so neither write-up sentence is decided, and no further arm is registered. Nothing in this repository is a deployed system.
 
-Total GPU cost of the runs that wrote a timing sidecar beside their checkpoints: **12.6 GPU-hours** on a single NVIDIA RTX 4060 (8 GB), over 98 records in eleven run directories. That is a floor for the programme, not its total: the telemetry ladder, the text pretraining and the order-blind comparators wrote no sidecar and are timed only in their own reports under `reports/data/`.
+Total GPU cost of the runs that wrote a timing sidecar beside their checkpoints: **12.6 GPU-hours** on a single NVIDIA RTX 4060 (8 GB), over 98 records in eleven run directories. That is a floor for the programme, not its total: the telemetry ladder, the text pretraining and the order-blind comparators wrote no sidecar and are timed only in their own reports under `reports/data/`. F8 (ADR-0027) ran afterwards and adds **3.37 GPU-hours** (1.02 h pretraining, 1.24 h probes, 1.11 h scorings; `reports/data/ablation_gate_v0_20260923.md`), for a floor of **16.0 GPU-hours** over the whole programme.
 
 ---
 
@@ -91,6 +91,8 @@ An order-blind classifier on the window's **status strings alone** scores **0.07
 
 So: the text carries the signal, the joint model's representation encodes it beyond what the tokens alone supply, a text-aware linear read-out reaches it — and the end-to-end result lands level with a classifier that counts the strings. H1's INCONCLUSIVE stands as a verdict about the arm *read through the last-position instrument*; H1' is the same hypothesis re-tested with an instrument that can see, registered as such after H1's result was known.
 
+**The two ablations** (ADR-0027), each read through the same text-aware head with its own random-init gate, same-seed Δ against the joint arm: removing the narrative corpus (`joint_no_txt`) passed its gate nine of nine (weakest +0.0041) and is **INCONCLUSIVE**, median −0.0030 (−0.0030 [−0.0102, +0.0026], −0.0147 [−0.0207, −0.0101], −0.0013 [−0.0040, +0.0015]); leaving status strings in raw casing (`joint_status_raw`) **failed** its gate, four of nine (weakest −0.0058), and is **NOT EVALUABLE** (median −0.0037, as measured). An observation from that gate, not a registered finding: under raw casing, *untrained* backbones read 0.065 through the same head, against 0.055–0.058 on the normalized windows, so on those windows the instrument cannot separate pretraining from the tokens themselves.
+
 ### 5. Graceful degradation, first rows (H2, forward-in-time)
 
 Dropping one to three core channels at inference costs the joint probe at most 0.0085 AUPRC — about half its lift over base rate on the seed where that worst case falls, and an eighth or less on the other two. Coverage and selective-risk curves are not yet implemented and are not claimed.
@@ -107,12 +109,13 @@ Thirteen entries. Among them: the first probe-control criterion required non-ove
 
 ## What is open
 
+- Coverage and selective risk — the "calibrated abstention" endpoint — have a prior correction and a threshold function but no risk–coverage harness. H2 has its first rows (channel dropout, ≤0.009 AUPRC) and nothing more.
 - The only evaluable evaluation axis is forward-in-time at the training sites. Site shift returned two pre-registered negatives, and no result here is a site-shift result.
 - The joint model at parity with an order-blind classifier on the status strings is the honest ceiling of the current design. Beating it is the next research question, not a claim this record supports.
-- Coverage and selective risk — the "calibrated abstention" endpoint — have a prior correction and a threshold function but no risk–coverage harness. H2 has its first rows (channel dropout, ≤0.009 AUPRC) and nothing more.
 - The cross-OEM null is a tokenizer-level finding: quantile bins fitted on one manufacturer's distribution do not carry to another's. Per-site or rank-based bin fitting is the indicated next design, untried here.
 - Seed variance on the forward-in-time split equals one seed's interval half-width; ~0.005 AUPRC is the smallest difference this evaluation can resolve, and every claim above is sized to that.
-- Two withdrawn ablations (`joint_status_raw`, `joint_no_txt`) are revisitable: they would test whether raw status casing and the unpaired narrative corpus contribute anything. ADR-0026 §1 withdrew them and admits them back on one condition only, that H1' be SUPPORTED — which it is; the outcome section adds the second, that revisiting them is a new registration against a named write-up sentence under §5, and records that nothing schedules a run. §1's rationale — that an instrument which cannot read the text cannot discriminate between backbones that differ in their text — implies such a registration would read them through the H1' read-out; that inference is not itself registered.
+- Whether the unpaired narrative corpus measurably contributes to the text signal the joint read-out harvests is **undecided**: ADR-0027's `joint_no_txt` is INCONCLUSIVE at this budget, as its registration named most likely beforehand.
+- Whether normalising status strings to prose surface form matters to the joint risk read-out is **undecided**: ADR-0027's `joint_status_raw` is NOT EVALUABLE, because on raw-cased windows the text-aware read-out does not separate a pretrained backbone from an untrained one.
 
 ## Reproducing the record
 

@@ -159,17 +159,17 @@ def test_the_index_names_every_figure_and_its_sentence(built: list[Path]) -> Non
             assert path.stem in text, path
 
 
-def test_the_ledger_covers_the_six_gates(built: list[Path]) -> None:
-    """One row a gate, ADR-0021 through ADR-0026, with both commits."""
+def test_the_ledger_covers_the_seven_gates(built: list[Path]) -> None:
+    """One row a gate, ADR-0021 through ADR-0027, with both commits."""
     ledger = next(path for path in built if path.name == "ledger_gates.md")
     text = ledger.read_text(encoding="utf-8")
-    for number in range(21, 27):
+    for number in range(21, 28):
         assert f"ADR-00{number}" in text
     # Every rule's own registering commit, as its section asserts it.
-    for sha in ("ce9c8ad", "801ab71", "c9489a2", "79d4e97", "3e29202", "319ae3b"):
+    for sha in ("ce9c8ad", "801ab71", "c9489a2", "79d4e97", "3e29202", "319ae3b", "179d769"):
         assert f"`{sha}`" in text, sha
     # Every outcome's commit, as the log names it: the one that wrote the section.
-    for sha in ("ed60e8d", "d87a524", "81a8fab", "f6c2df0", "23699ee", "9beebaa"):
+    for sha in ("ed60e8d", "d87a524", "81a8fab", "f6c2df0", "23699ee", "9beebaa", "183b1a0"):
         assert f"`{sha}`" in text, sha
     assert " | - |" not in text, "no gate's commit is left unnamed"
 

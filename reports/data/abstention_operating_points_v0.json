@@ -1,0 +1,77 @@
+{
+ "config_hash": "30c9c714",
+ "split": "validation",
+ "rule": {
+  "tau": "max_f1",
+  "kappa_coverage": 0.9,
+  "margin_cut": "F9-1: the 1 - coverage quantile of validation |p - tau|"
+ },
+ "arms": {
+  "tel_only backbone, (a), on R0 windows (ADR-0025 control iii)": {
+   "config_arm": "tel_only_a",
+   "tau": 0.035302406234919516,
+   "kappa": 0.3257222684042958,
+   "margin_cut": 0.005939132749385175,
+   "platt_a": 1.183695213714027,
+   "platt_b": 0.6964163005155506,
+   "validation_coverage": 0.8999988308059255,
+   "validation_windows": 85529,
+   "validation_positives": 1805,
+   "files": [
+    "tel_only_a_seed1_final_R0_val_stride12_scores.npz",
+    "tel_only_a_seed2_final_R0_val_stride12_scores.npz",
+    "tel_only_a_seed3_final_R0_val_stride12_scores.npz"
+   ],
+   "sha256": [
+    "201f1bd647112d2a45dacf6f09f5069346b34907c08159d8f3990d182484ee5e",
+    "1b3226b8512b1b2218a14093b4d45ff2de1863bd16c324b30fbbc5d729e6f8be",
+    "6e94b245237e6dab83871d6309f99fc9fa85ab5fe96757c5d7f4a49af360638f"
+   ]
+  },
+  "joint (a), on R0 windows (ADR-0025 S1)": {
+   "config_arm": "joint_a",
+   "tau": 0.04096179962985563,
+   "kappa": 0.3322277808885001,
+   "margin_cut": 0.011096582846395458,
+   "platt_a": 1.0272687315539955,
+   "platt_b": 0.15842695042093724,
+   "validation_coverage": 0.8999988308059255,
+   "validation_windows": 85529,
+   "validation_positives": 1805,
+   "files": [
+    "joint_a_seed1_final_R0_val_stride12_scores.npz",
+    "joint_a_seed2_final_R0_val_stride12_scores.npz",
+    "joint_a_seed3_final_R0_val_stride12_scores.npz"
+   ],
+   "sha256": [
+    "a84bfa98ae15b31232a6d02919b385c93d2da2442923a151eb07f3778eee15fd",
+    "3102a8817c18fc4a18faf23c83ec41e848632e26496a3601625e3e788a3d8cb8",
+    "abbdd665d9c69215fd56757152600b0dbcde80f75281499d8e3c047b6546ecc6"
+   ]
+  },
+  "joint (d), on R0 windows (ADR-0026 R-joint-d)": {
+   "config_arm": "joint_d",
+   "tau": 0.06373599326625391,
+   "kappa": 0.3388019832500493,
+   "margin_cut": 0.031194837597047588,
+   "platt_a": 1.0278642384656398,
+   "platt_b": 0.13661673616034375,
+   "validation_coverage": 0.900022214687416,
+   "validation_windows": 85529,
+   "validation_positives": 1805,
+   "files": [
+    "joint_d_seed1_final_R0_val_stride12_scores.npz",
+    "joint_d_seed2_final_R0_val_stride12_scores.npz",
+    "joint_d_seed3_final_R0_val_stride12_scores.npz"
+   ],
+   "sha256": [
+    "bb5a86f8b5f961f45143585022616c7361628c62249c35bfb39fd2b705867245",
+    "5e2da2a5cb0dd45e6c5fbd9dc267b07e860857b4a55f0e17ea982c00c1bdf8ba",
+    "1320efcf7742bb2d011dfc16466d7b6e87dfc962ee79459641f4aa2dbeca1b1e"
+   ]
+  }
+ },
+ "test_files_opened": false,
+ "git_sha": "82812271df1148a9bbc51155309aae5af27fd277",
+ "written_utc": "2026-09-24T12:04:33+00:00"
+}

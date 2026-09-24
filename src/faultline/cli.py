@@ -1783,6 +1783,72 @@ def model_ablation_gate(
 
 
 @model_app.command(
+    "abstention-score",
+    help="ADR-0028 F9-2 (GPU): nine clean validation scorings (tel_only (a), joint (a), joint "
+    "(d); final-step probes; R0 windows; seeds 1-3) on the 85,529-window stride-12 validation "
+    "split, then twelve severity-ladder scorings of joint (d) on the 137,025-window test split "
+    "with k in {2, 4, 6, 8} core channels masked to <nan> on every step, text kept. Trains "
+    "nothing; no bootstrap. Resume-safe per scoring. --preflight checks and reports only.",
+)
+def model_abstention_score(
+    config: ConfigOption = Path("configs/eval/abstention_v0.yaml"),
+    device: Annotated[str | None, typer.Option("--device", help="Torch device.")] = None,
+    check: Annotated[
+        bool, typer.Option("--preflight", help="Check inputs and report each scoring's state.")
+    ] = False,
+) -> None:
+    """Run F9-2's scorings, or check that they can run.
+
+    Args:
+        config: The abstention configuration.
+        device: Torch device; chosen automatically when omitted.
+        check: Only check the inputs and print each scoring's state.
+
+    Raises:
+        typer.Exit: With code 1 when the pre-flight finds a problem.
+    """
+    from faultline.evaluation.abstention_runs import abstention_layout, preflight, run_abstention
+
+    paths = ProjectPaths.resolve()
+    if check:
+        layout = abstention_layout(paths, paths.repo_root / config)
+        problems, status = preflight(paths, layout)
+        typer.echo(f"output: {layout.out_dir.relative_to(paths.repo_root).as_posix()}")
+        for line in status:
+            typer.echo(line)
+        for problem in problems:
+            typer.echo(f"PROBLEM: {problem}")
+        typer.echo("PREFLIGHT OK" if not problems else "PREFLIGHT FAILED")
+        if problems:
+            raise typer.Exit(code=1)
+        return
+    status_file = run_abstention(paths, paths.repo_root / config, device)
+    typer.echo(f"wrote {status_file}")
+
+
+@model_app.command(
+    "abstention-ece",
+    help="ADR-0028 F9-1 (CPU): Part A's ECE of the prior-corrected three-seed ensemble per arm, "
+    "15 equal-mass bins, with its reliability table and the block-bootstrap interval, on the "
+    "clean test scores. Needs no tau, kappa or Platt fit. Writes "
+    "reports/data/abstention_part_a_ece_v0_<date>.md/.json. Resume-safe.",
+)
+def model_abstention_ece(
+    config: ConfigOption = Path("configs/eval/abstention_v0.yaml"),
+) -> None:
+    """Write Part A's ECE rows.
+
+    Args:
+        config: The abstention configuration.
+    """
+    from faultline.evaluation.abstention_verdict import run_part_a_ece
+
+    paths = ProjectPaths.resolve()
+    report, record = run_part_a_ece(paths, paths.repo_root / config)
+    typer.echo(f"wrote {report} and {record}")
+
+
+@model_app.command(
     "stream-trace",
     help="DEMONSTRATION (CPU): run the deployment path -- backbone, frozen probe, prior-"
     "corrected probability -- over every known window of one held-out turbine-year in time "

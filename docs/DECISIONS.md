@@ -5863,3 +5863,117 @@ margin-signal results are reported beside the primary at every k.
    scorings, about 2.2 GPU-h.
 3. **F9-3, verdict.** τ and κ from validation first. Then Part A's remaining rows and Gate A, then
    Gate B, then the H2 rule, then the reported ladder.
+
+### Outcome of F9-3, 2026-09-24 -- Gate A PASSES on all three arms, Gate B shows damage, H2 is INCONCLUSIVE
+
+**Runs.**
+- **Scorings.** F9-2 ran on the GPU at `8281227` from a clean tree, launched by the author. It
+  made the 21 scorings (9 clean validation, 12 masked test) in 2.24 GPU-hours. Every selection
+  re-score matched, and on every masked scoring the masked slots equal retained steps × k.
+- **Operating point.** `faultline model abstention-operating-point` fitted τ, κ, the margin
+  cut-off and Platt's (a, b) on the clean validation scores only (85,529 windows, 1,805
+  positive). The record, `reports/data/abstention_operating_points_v0.json`, was committed alone
+  in **`1ad1890`** before any test file was opened, and a test refits it exactly from the
+  validation files.
+- **Verdict run.** `faultline model abstention-outcome` ran on the CPU in about 63 minutes: 10
+  replicate vectors on the memory-capped pool, most of it the 100-permutation random reference.
+  It trained nothing and scored nothing.
+- **Report.** `reports/data/abstention_v0_20260924.md` and its `.json`, with configuration
+  `abstention_v0.yaml` `30c9c714`. The report's claim table reads each of the 114 numbers this
+  outcome draws on a second way, by a separate implementation on the scores or by re-reading the
+  replicate vectors. All 114 agree.
+
+**Checks.** Every ensemble read here covers the same 137,025 test windows, 5,312 of them
+positive, in the same order: the three arms' clean reads and `joint` (d) at k = 2, 4, 6 and 8.
+The run was refused until they did. No interval discarded a replicate.
+
+**Step 0 and the arm's name.** The F9-3 brief first stopped at step 0. It assumed that
+`tel_only` (a)'s test scores were on the M1 1,872-token windows. They are on R0 (§1, ADR-0025
+control iii), and so are its validation scorings. The author ruled to proceed as registered and
+to name the arm **"`tel_only` backbone, (a), on R0 windows (ADR-0025 control iii)"**. **It is
+not F3's `tel_only` (a) on the 1,872-token M1 windows, the H1/H1′ comparator, and its
+calibration should not be read as that baseline's.**
+
+**Operating points (validation only):**
+
+| arm | τ | κ |
+| --- | ---: | ---: |
+| `tel_only` backbone, (a), on R0 windows (ADR-0025 control iii) | 0.0353 | 0.3257 |
+| `joint` (a), on R0 windows (ADR-0025 S1) | 0.0410 | 0.3322 |
+| `joint` (d), on R0 windows (ADR-0026 R-joint-d) | 0.0637 | 0.3388 |
+
+**Part A, reported, no verdict.** On clean test, the equal-mass ECE is **0.0181 [0.0143,
+0.0219]**, **0.0194 [0.0157, 0.0232]** and **0.0172 [0.0135, 0.0209]** for the prior-corrected
+ensembles in the order above. After the validation-fitted Platt map it is **0.0181 [0.0144,
+0.0219]**, **0.0184 [0.0147, 0.0222]** and **0.0164 [0.0127, 0.0201]**, so every interval
+overlaps its unmapped one. The corrected probabilities under-read by about half: their means are
+0.0207, 0.0193 and 0.0216 (0.0206, 0.0204 and 0.0224 after Platt) against the test base rate of
+0.0388. §2 predicted this before the run, because Platt is fitted at the validation base rate of
+0.0211 and cannot remove that shift.
+
+At (τ, κ) on clean test, coverage is 0.8911, 0.8854 and 0.8816 against the 0.90 fixed on
+validation. Selective risk is 0.0577, 0.0729 and 0.0496.
+
+**Gate A, per arm: PASS on all three.** Δ = AURC(seed disagreement) − AURC(random):
+
+| arm | Δ AURC | outcome |
+| --- | --- | --- |
+| `tel_only` backbone, (a), on R0 windows (ADR-0025 control iii) | −0.0158 [−0.0177, −0.0140] | **PASS** |
+| `joint` (a), on R0 windows (ADR-0025 S1) | −0.0184 [−0.0206, −0.0163] | **PASS** |
+| `joint` (d), on R0 windows (ADR-0026 R-joint-d) | −0.0275 [−0.0302, −0.0250] | **PASS** |
+
+Each random-ordering AURC matches its arm's full-coverage selective risk to within 0.0001 (0.0635,
+0.0830 and 0.0689), which is the expected value of a random ordering. Seed disagreement
+therefore orders risk better than chance on every arm, and abstention is evaluable on all three.
+
+**Gate B, `joint` (d) at k = 8: DAMAGE, narrowly.** Δ AUPRC(ensemble, k = 8) − AUPRC(ensemble,
+clean) = **−0.0039 [−0.0082, −0.0001]**. The upper bound is below zero by 0.0001.
+
+**H2, `joint` (d), k = 8 against clean, (τ, κ) unchanged: INCONCLUSIVE.**
+
+| Δcov | Δrisk | verdict |
+| --- | --- | --- |
+| **−0.0797 [−0.0841, −0.0753]** | **+0.0053 [+0.0033, +0.0074]** | **INCONCLUSIVE** |
+
+- **SUPPORTED fails on its risk clause.** Coverage falls (the upper bound is below zero), but the
+  Δrisk upper bound, +0.0074, is not below the registered +0.005.
+- **REFUTED fails on its coverage clause.** Selective risk does rise measurably (the lower bound
+  is +0.0033 > 0), but coverage does not stay flat (the lower bound is below zero).
+- **Neither reading holds.** Abstention neither held selective risk within the smallest effect
+  while it gave up coverage, nor held coverage while selective risk rose. It gave up 8
+  percentage points of coverage (from 0.8816 to 0.8019), and selective risk still rose (from 0.0496
+  to 0.0549). The point Δrisk, +0.0053, sits at the smallest effect of interest, and its
+  interval straddles it.
+
+**What this licenses about "risk-calibrated abstention under degradation".** Nothing beyond
+"undecided". With eight of twelve core telemetry channels masked on forward-in-time data at the
+training sites, disagreement-based abstention on `joint` (d) withdraws coverage, but at this
+budget it cannot be shown to keep selective risk within 0.005 of clean. The ensemble's
+probabilities under-read the test base rate by about half before and after Platt, so the project
+has no calibrated-probability result either. This is not, and cannot be read as, a result under
+site shift.
+
+**The ladder, reported as measured, deciding nothing** (`joint` (d); intervals in the report):
+
+| k | coverage | selective risk | AUPRC | ECE |
+| ---: | --- | --- | --- | --- |
+| 0 | 0.8816 [0.8779, 0.8853] | 0.0496 [0.0458, 0.0534] | (Gate B's paired Δ) | 0.0172 [0.0135, 0.0209] |
+| 2 | 0.8960 [0.8927, 0.8993] | 0.0565 [0.0525, 0.0605] | 0.0867 [0.0748, 0.1005] | 0.0101 [0.0070, 0.0140] |
+| 4 | 0.8866 [0.8833, 0.8898] | 0.0557 [0.0517, 0.0596] | 0.0868 [0.0749, 0.1006] | 0.0080 [0.0061, 0.0116] |
+| 6 | 0.8467 [0.8429, 0.8503] | 0.0558 [0.0518, 0.0597] | 0.0823 [0.0714, 0.0950] | 0.0072 [0.0055, 0.0108] |
+| 8 | 0.8019 [0.7976, 0.8060] | 0.0549 [0.0509, 0.0589] | 0.0754 [0.0657, 0.0865] | 0.0068 [0.0050, 0.0100] |
+
+- **Selective risk moves first.** It steps up by k = 2 and then stays near 0.055. Coverage does
+  not fall until k = 6.
+- **AUPRC is not monotone in k.** The point AUPRC at k = 2 and 4 is above k = 8's, and above the
+  clean read in the report.
+- **ECE falls with k for a known reason.** Masking raises the mean probability (0.0216 clean,
+  0.0335 at k = 8) toward the base rate, which offsets the under-read. It is not evidence that
+  masking calibrates.
+- **The margin signal is in the report beside every row** and decides nothing.
+
+**What this record closes.** ADR-0028's three steps are done. H2 is INCONCLUSIVE at this budget
+and severity, and no clause, severity or signal is added afterwards (§3). All three arms keep the
+§4 caveats: ADR-0009's harmonised label, forward in time at the same sites, the message-volume
+shift, a three-seed ensemble, and an operating point fixed at the validation base rate of 0.0211
+against the test rate of 0.0388.

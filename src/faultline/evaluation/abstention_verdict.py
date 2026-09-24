@@ -28,7 +28,7 @@ from typing import Any
 
 import numpy as np
 
-from faultline.config import config_hash, load_config
+from faultline.config import config_hash, file_hash, load_config
 from faultline.data.common.report import kv_table, table
 from faultline.evaluation.abstention_gate import AbstentionConfig, GateA, GateB, H2Rule
 from faultline.evaluation.h1_scoring import write_json
@@ -60,6 +60,22 @@ logger = get_logger(__name__)
 #: The label Part A's F9-1 rows carry: none of them reads τ, κ or a validation fit.
 PROVISIONAL_FREE = "provisional-free: nothing here depends on τ, κ or Platt"
 
+#: How every table, caption, JSON key and the outcome name each arm (the author's F9-3 ruling).
+#: ``tel_only_a`` is ADR-0025's control (iii), the ``tel_only`` backbone read through (a) on the
+#: joint R0 windows; it is not F3's ``tel_only`` (a) on the 1,872-token M1 windows, the H1/H1'
+#: comparator, and its calibration is not that baseline's.
+ARM_LABELS = {
+    "tel_only_a": "tel_only backbone, (a), on R0 windows (ADR-0025 control iii)",
+    "joint_a": "joint (a), on R0 windows (ADR-0025 S1)",
+    "joint_d": "joint (d), on R0 windows (ADR-0026 R-joint-d)",
+}
+
+
+def arm_label(name: str) -> str:
+    """An arm's label, or its configuration name where the ruling names no label."""
+    return ARM_LABELS.get(name, name)
+
+
 #: ADR-0028 §4's caveats, by the short names the configuration lists.
 CAVEAT_TEXT = {
     "adr_0009": "ADR-0009: one harmonised event rule across sites",
@@ -88,6 +104,11 @@ def validation_file(out_dir: Path, arm: str, seed: int, stride: int) -> Path:
 def out_dir(paths: ProjectPaths, config: AbstentionConfig) -> Path:
     """``checkpoints/abstention_v<version>_<hash>``, without resolving the training layouts."""
     return paths.checkpoints_dir / f"abstention_v{config.version}_{config_hash(config)}"
+
+
+def operating_point_record(paths: ProjectPaths, config: AbstentionConfig) -> Path:
+    """The write-once operating-point record, committed alone before any test score is read."""
+    return paths.data_reports_dir / f"abstention_operating_points_v{config.version}.json"
 
 
 def load_ensemble(files: list[Path], split: str, windows: int, positives: int) -> Ensemble:
@@ -182,8 +203,11 @@ def operating_points(
             if reference is not None and not scores.same_rows(reference):
                 raise ValueError(f"{arm.name}'s validation rows are not the other arms'")
             reference = scores
-            rows[arm.name] = fit_operating_point(scores, config.operating_model.kappa_coverage)
-            rows[arm.name]["files"] = [f.name for f in files]
+            row: dict[str, Any] = {"config_arm": arm.name}
+            row.update(fit_operating_point(scores, config.operating_model.kappa_coverage))
+            row["files"] = [f.name for f in files]
+            row["sha256"] = [file_hash(f, 64) for f in files]
+            rows[arm_label(arm.name)] = row
         write_json(
             record,
             {
@@ -195,6 +219,8 @@ def operating_points(
                     "margin_cut": "F9-1: the 1 - coverage quantile of validation |p - tau|",
                 },
                 "arms": rows,
+                "test_files_opened": False,
+                "git_sha": git_sha(validation_dir),
                 "written_utc": datetime.now(tz=UTC).isoformat(timespec="seconds"),
             },
         )
@@ -202,9 +228,17 @@ def operating_points(
     if loaded.get("split") != VALIDATION:
         raise ValueError(f"{record.name} was not fitted on validation")
     return {
-        name: OperatingPoint(tau=row["tau"], kappa=row["kappa"], margin_cut=row["margin_cut"])
-        for name, row in loaded["arms"].items()
+        row["config_arm"]: OperatingPoint(
+            tau=row["tau"], kappa=row["kappa"], margin_cut=row["margin_cut"]
+        )
+        for row in loaded["arms"].values()
     }
+
+
+def platt_maps(record: Path) -> dict[str, tuple[float, float]]:
+    """Each arm's validation-fitted Platt ``(a, b)``, read from the operating-point record."""
+    loaded = json.loads(record.read_text(encoding="utf-8"))
+    return {row["config_arm"]: (row["platt_a"], row["platt_b"]) for row in loaded["arms"].values()}
 
 
 # =====================================================================================

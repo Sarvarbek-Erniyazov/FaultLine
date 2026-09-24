@@ -1849,6 +1849,59 @@ def model_abstention_ece(
 
 
 @model_app.command(
+    "abstention-operating-point",
+    help="ADR-0028 F9-3 step 1 (CPU): fix each arm's tau, kappa, margin cut-off and Platt map on "
+    "the clean VALIDATION scores only, and write the write-once record "
+    "reports/data/abstention_operating_points_v0.json. Opens no test file; an existing record is "
+    "read back, never refitted.",
+)
+def model_abstention_operating_point(
+    config: ConfigOption = Path("configs/eval/abstention_v0.yaml"),
+) -> None:
+    """Fix the operating points on validation.
+
+    Args:
+        config: The abstention configuration.
+    """
+    from faultline.config import load_config
+    from faultline.evaluation.abstention_gate import AbstentionConfig
+    from faultline.evaluation.abstention_verdict import (
+        operating_point_record,
+        operating_points,
+        out_dir,
+    )
+
+    paths = ProjectPaths.resolve()
+    loaded = load_config(paths.repo_root / config, AbstentionConfig)
+    record = operating_point_record(paths, loaded)
+    for arm, point in operating_points(record, loaded, out_dir(paths, loaded)).items():
+        typer.echo(f"{arm}: tau {point.tau:.6f}, kappa {point.kappa:.6f}")
+    typer.echo(f"record: {record}")
+
+
+@model_app.command(
+    "abstention-outcome",
+    help="ADR-0028 F9-3 (CPU): Part A (ECE before and after Platt, risk-coverage, AURC, the "
+    "random-ordering reference), Gate A per arm, Gate B, the H2 verdict and the severity ladder, "
+    "at the operating points the committed record fixes. Writes "
+    "reports/data/abstention_v0_<date>.md/.json. Resume-safe.",
+)
+def model_abstention_outcome(
+    config: ConfigOption = Path("configs/eval/abstention_v0.yaml"),
+) -> None:
+    """Write F9-3's report.
+
+    Args:
+        config: The abstention configuration.
+    """
+    from faultline.evaluation.abstention_outcome import run_outcome
+
+    paths = ProjectPaths.resolve()
+    report, record = run_outcome(paths, paths.repo_root / config)
+    typer.echo(f"wrote {report} and {record}")
+
+
+@model_app.command(
     "stream-trace",
     help="DEMONSTRATION (CPU): run the deployment path -- backbone, frozen probe, prior-"
     "corrected probability -- over every known window of one held-out turbine-year in time "

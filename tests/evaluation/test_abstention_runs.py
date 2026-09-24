@@ -19,6 +19,7 @@ from faultline.evaluation.abstention_runs import (
 )
 from faultline.evaluation.abstention_verdict import (
     PROVISIONAL_FREE,
+    arm_label,
     decide_gate_a,
     decide_gate_b,
     decide_h2,
@@ -192,7 +193,10 @@ def test_the_operating_point_is_fitted_once_from_validation_and_then_only_read(
     assert set(first) == {"tel_only_a", "joint_a", "joint_d"}
     written = json.loads(record.read_text(encoding="utf-8"))
     assert written["split"] == "validation"
-    assert {"tau", "kappa", "margin_cut", "platt_a", "platt_b"} <= set(written["arms"]["joint_d"])
+    assert {"tau", "kappa", "margin_cut", "platt_a", "platt_b"} <= set(
+        written["arms"][arm_label("joint_d")]
+    )
+    assert written["test_files_opened"] is False
     # Overwrite the validation scores: the record is read back, never refitted.
     for arm in config.arms:
         for seed in config.seeds:

@@ -11,5 +11,6 @@ Every rule was committed before the run it governs.
 | ADR-0025 | H1: the joint arm against `tel_only`, forward-in-time on the training sites | registered 2026-09-18 | `3e29202` | H1 is INCONCLUSIVE at this budget | `23699ee` |
 | ADR-0026 | F7': is the read-out the limit? Text-aware linear probes on the existing joint backbones | registered 2026-09-20 | `319ae3b` | the gate PASSES and H1' is SUPPORTED | `9beebaa` |
 | ADR-0027 | The two ablations: does the narrative corpus matter, and does status-string surface form... | registered 2026-09-23 | `179d769` | `joint_no_txt`: gate PASSES, INCONCLUSIVE; `joint_status_raw`: gate FAILS, NOT EVALUABLE | `183b1a0` |
+| ADR-0028 | Calibration, risk–coverage and graceful degradation (H2) | registered 2026-09-24 | `8f7f10e` | Gate A PASSES on all three arms, Gate B shows damage, H2 is INCONCLUSIVE | `b659897` |
 
-7 gates, ADR-0021 through ADR-0027, each read from its section of `docs/DECISIONS.md`. The rule was written into that file and committed in its own commit before the run it governs; the outcome was written under the rule afterwards. The outcome commit is the commit that wrote the outcome section, found by log rather than self-cited.
+8 gates, ADR-0021 through ADR-0028, each read from its section of `docs/DECISIONS.md`. The rule was written into that file and committed in its own commit before the run it governs; the outcome was written under the rule afterwards. The outcome commit is the commit that wrote the outcome section, found by log rather than self-cited.

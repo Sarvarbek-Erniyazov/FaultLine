@@ -66,7 +66,7 @@ def test_the_command_runs_headless_and_writes_the_set(built: list[Path]) -> None
     stems = {path.name for path in built}
     assert "figures_index.md" in stems
     assert "ledger_gates.md" in stems
-    assert sum(1 for name in stems if name.endswith(".svg")) == 6
+    assert sum(1 for name in stems if name.endswith(".svg")) == 7
     for path in built:
         assert path.is_file() and path.stat().st_size > 0
 
@@ -98,7 +98,7 @@ def test_the_split_is_never_named_by_its_old_span(built: list[Path]) -> None:
 def test_forward_figures_carry_the_standing_caveat(paths: ProjectPaths) -> None:
     """Every figure read from the forward-in-time split says so in its caption."""
     records = RecordSet(paths)
-    for name in ("F4", "F2", "F3"):
+    for name in ("F4", "F2", "F3", "F7"):
         builder = dict(BUILDERS)[name]
         figure = builder(records)
         assert figure is not None
@@ -108,7 +108,7 @@ def test_forward_figures_carry_the_standing_caveat(paths: ProjectPaths) -> None:
 def test_the_caveat_never_opens_a_sentence_in_lowercase(paths: ProjectPaths) -> None:
     """The caveat is a fragment, so every caption has to lead into it."""
     records = RecordSet(paths)
-    for name in ("F4", "F2", "F3"):
+    for name in ("F4", "F2", "F3", "F7"):
         figure = dict(BUILDERS)[name](records)
         assert figure is not None
         before = figure.caption[: figure.caption.index(FORWARD_CAVEAT)]
@@ -159,17 +159,35 @@ def test_the_index_names_every_figure_and_its_sentence(built: list[Path]) -> Non
             assert path.stem in text, path
 
 
-def test_the_ledger_covers_the_seven_gates(built: list[Path]) -> None:
-    """One row a gate, ADR-0021 through ADR-0027, with both commits."""
+def test_the_ledger_covers_the_eight_gates(built: list[Path]) -> None:
+    """One row a gate, ADR-0021 through ADR-0028, with both commits."""
     ledger = next(path for path in built if path.name == "ledger_gates.md")
     text = ledger.read_text(encoding="utf-8")
-    for number in range(21, 28):
+    for number in range(21, 29):
         assert f"ADR-00{number}" in text
     # Every rule's own registering commit, as its section asserts it.
-    for sha in ("ce9c8ad", "801ab71", "c9489a2", "79d4e97", "3e29202", "319ae3b", "179d769"):
+    for sha in (
+        "ce9c8ad",
+        "801ab71",
+        "c9489a2",
+        "79d4e97",
+        "3e29202",
+        "319ae3b",
+        "179d769",
+        "8f7f10e",
+    ):
         assert f"`{sha}`" in text, sha
     # Every outcome's commit, as the log names it: the one that wrote the section.
-    for sha in ("ed60e8d", "d87a524", "81a8fab", "f6c2df0", "23699ee", "9beebaa", "183b1a0"):
+    for sha in (
+        "ed60e8d",
+        "d87a524",
+        "81a8fab",
+        "f6c2df0",
+        "23699ee",
+        "9beebaa",
+        "183b1a0",
+        "b659897",
+    ):
         assert f"`{sha}`" in text, sha
     assert " | - |" not in text, "no gate's commit is left unnamed"
 

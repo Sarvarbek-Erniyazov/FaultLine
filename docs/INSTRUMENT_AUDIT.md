@@ -232,6 +232,34 @@ GPU step-1 losses to 1e-4 in fp32 on the CPU. The test now reads the batch pretr
 draws first. **A fixed choice of windows is not a neutral sample, even for a loss at
 initialisation.**
 
+## 14. The F9-3 brief named the wrong windows for the `tel_only` arm
+
+*Added 2026-09-25.* **A brief that disagreed with its registration. It was caught at step 0,
+before any test number was read, and the registration governed.**
+
+| field | |
+| --- | --- |
+| supposed to measure | Calibration and abstention for the three arms ADR-0028 §1 registers. §1 names `tel_only` (a) as "the `final_position` read, ADR-0025 control (iii)", on the R0 `tail_anchored_2048` windows. |
+| actually measured | What was registered. The F9-3 brief assumed that `tel_only` (a)'s test scores were on the M1 1,872-token windows, which would make them F3's `tel_only` (a), the H1/H1′ comparator. They are on R0, and so are its F9-2 validation scorings. |
+| how found | Step 0 read the brief's premise against the registration and against the score files it names, before any test file was opened. |
+| reported result if undetected | The first arm's calibration and Gate A row would have been read as the H1/H1′ baseline's, a model that ADR-0028 never scored. |
+| regression test | `tests/evaluation/test_abstention_outcome.py::test_the_control_iii_arm_carries_the_authors_label` pins the label the author ruled: "`tel_only` backbone, (a), on R0 windows (ADR-0025 control iii)". |
+| commit | None in code. The ruling is recorded in ADR-0028's outcome (`b659897`) and in the report's `step_0` line (`5283085`). |
+
+## 15. The F8-2 GPU time in the brief was 3.24 h; the records sum to 3.37 h
+
+*Added 2026-09-25.* **An arithmetic slip in a brief, not in code. The record carried the measured
+figure from the start.**
+
+| field | |
+| --- | --- |
+| supposed to measure | F8-2's GPU wall clock: 6 pretrainings, 9 probes and 9 scorings (ADR-0027). |
+| actually measured | The timing records sum to **3.37 h**: 1.02 h of pretraining, 1.24 h of probes and 1.11 h of scorings (`reports/data/ablation_gate_v0_20260923.md`). The F8-3 brief stated 3.24 h, and no combination of the records gives 3.24 h. |
+| how found | F8-3 summed the timing records itself instead of copying the brief's total. |
+| reported result if undetected | ADR-0027's outcome and the README's GPU floor would each have been 0.13 h short, with no record behind the smaller number. |
+| regression test | None. No test checks a figure in a brief. |
+| commit | None needed. ADR-0027's outcome (`183b1a0`) and the README carry 3.37 h. |
+
 ---
 
 ## The seven defects reported for the Gate 6 run, classified

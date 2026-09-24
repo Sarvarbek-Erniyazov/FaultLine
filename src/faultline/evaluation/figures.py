@@ -9,7 +9,7 @@ ledger adds one more source of the same kind: the repository's own history, aske
 either. A figure whose source file is missing is skipped and named in the index, so a
 partial record produces a partial set rather than a wrong one.
 
-**The split's name.** Six of the seven outputs read the forward-in-time split. It is
+**The split's name.** Seven of the eight outputs read the forward-in-time split. It is
 *tested on 2022 onward (Kelmarsh through 2024, Penmanshiel 2022 only)* -- Penmanshiel's
 test shard holds no year after 2022, so the span is never written "2022-2024". Every
 figure drawn from it carries :data:`FORWARD_CAVEAT` in its caption: it is the
@@ -538,7 +538,7 @@ def render_curves(
         for tick in _ticks(x_low, x_high):
             out.append(
                 f'<text x="{px(tick):.1f}" y="{bottom + 16:.1f}" fill="{MUTED}" '
-                f'text-anchor="middle">{tick:.0f}</text>'
+                f'text-anchor="middle">{tick:g}</text>'
             )
         if marker:
             out.append(
@@ -899,7 +899,7 @@ def build_ledger(records: RecordSet) -> Figure | None:
 DECISIONS = "docs/DECISIONS.md"
 
 #: The first and last gate the ledger reports, by ADR number.
-FIRST_GATE, LAST_GATE = "ADR-0021", "ADR-0027"
+FIRST_GATE, LAST_GATE = "ADR-0021", "ADR-0028"
 
 #: A backticked commit hash.
 _HASH = re.compile(r"`([0-9a-f]{7,40})`")
@@ -1326,6 +1326,99 @@ def build_f6(records: RecordSet) -> Figure | None:
     return figure
 
 
+def build_f7(records: RecordSet) -> Figure | None:
+    """F7: abstention under channel masking, the H2 read of ADR-0028.
+
+    Args:
+        records: The record set.
+
+    Returns:
+        The figure, or ``None`` when the source record is missing.
+    """
+    record = records.json("abstention_v0_20260924.json")
+    if record is None:
+        return None
+    ladder = sorted(record["ladder"], key=lambda entry: int(entry["k"]))
+    clean, worst = ladder[0], ladder[-1]
+    h2 = record["h2"]
+    arm = str(h2["arm"])
+
+    def curve(entry: Any) -> list[tuple[float, float]]:
+        return [(float(p["coverage"]), float(p["selective_risk"])) for p in entry["curve"]]
+
+    upper = render_curves(
+        [
+            Series("clean", curve(clean), PALETTE[0]),
+            Series(f"k = {worst['k']}", curve(worst), PALETTE[1], dashed=True),
+        ],
+        [
+            Series(
+                "",
+                [(float(e["k"]), float(e["coverage"]["value"])) for e in ladder],
+                PALETTE[2],
+            )
+        ],
+        title="F7. Abstention gives up coverage under masking, and selective risk still rises",
+        subtitle=f"{arm}, three-seed ensemble, {FORWARD_SPAN}",
+        left_title=f"Risk–coverage by seed disagreement, clean and k = {worst['k']}",
+        right_title="Coverage at the validation (τ, κ), against k",
+        left_x_label="coverage (most confident windows first)",
+        right_x_label="k, core channels masked of 12",
+    )
+    risk = float(clean["selective_risk"]["value"])
+    sesoi = float(h2["smallest_effect_risk"])
+    lower = render_intervals(
+        [
+            Panel(
+                "selective risk at the validation (τ, κ), against k",
+                [
+                    Row(
+                        f"k = {entry['k']}",
+                        float(entry["selective_risk"]["value"]),
+                        float(entry["selective_risk"]["low"]),
+                        float(entry["selective_risk"]["high"]),
+                        PALETTE[2] if entry is clean else PALETTE[1],
+                        hollow=entry is clean,
+                    )
+                    for entry in ladder
+                ],
+            )
+        ],
+        title="",
+        subtitle="",
+        band=(risk, risk + sesoi),
+        band_label=f"within {sesoi:g} of clean",
+        value_label="selective risk, misclassification rate on covered windows (lower is better)",
+    )
+    d_cov, d_risk = h2["delta_coverage"], h2["delta_selective_risk"]
+    return Figure(
+        stem="fig7_abstention",
+        title="F7. Abstention under channel masking (H2)",
+        sentence=(
+            "Seed-disagreement abstention ranks risk better than chance, but under masking it "
+            "gives up coverage and selective risk still rises: graceful degradation is not "
+            "established."
+        ),
+        sources=["reports/data/abstention_v0_20260924.json"],
+        svg=stack([upper, lower]),
+        caption=(
+            "ADR-0028, H2. The operating model is the three-seed ensemble of the text-aware "
+            "read-out; windows are ranked by seed disagreement, and the threshold and the "
+            "disagreement cut-off were fixed on the 2021 validation split before any test file "
+            f"was read. Masking {worst['k']} of the 12 core channels moves the whole "
+            "risk–coverage curve up. At the fixed operating point coverage falls, "
+            f"{float(d_cov['value']):+.4f} [{float(d_cov['low']):+.4f}, "
+            f"{float(d_cov['high']):+.4f}], and selective risk rises, "
+            f"{float(d_risk['value']):+.4f} [{float(d_risk['low']):+.4f}, "
+            f"{float(d_risk['high']):+.4f}], against a registered smallest effect of "
+            f"{sesoi:g}: {str(h2['verdict']).upper()}. Below, the shaded band is the clean "
+            "selective risk plus that smallest effect. Selective risk steps up at the first "
+            "severity; coverage does not fall until later. The standing caveat applies: "
+            f"{FORWARD_CAVEAT}."
+        ),
+    )
+
+
 #: The set, in the order it is built and indexed. That order is the write-up's, not F1
 #: through F6: the figure carrying the programme's headline sentence comes first and the
 #: diagnostics last. :func:`render_index` says so, so the listing does not read as unsorted.
@@ -1336,6 +1429,7 @@ BUILDERS: tuple[tuple[str, Any], ...] = (
     ("ledger", build_ledger),
     ("F2", build_f2),
     ("F5", build_f5),
+    ("F7", build_f7),
     ("F6", build_f6),
 )
 

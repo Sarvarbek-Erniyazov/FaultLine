@@ -58,6 +58,6 @@ would misrepresent the work. What is original here is the modular, typed,
 config-driven implementation, the telemetry pipeline, the joint vocabulary, and the
 evaluation design.
 
-## Signature
+**Amendment, 2026-09-24.** FaultLine was developed independently as described above: personal hardware and time, public data only, no data, code or results from the author's employer, grant projects or advisor. It has since been incorporated, with the doctoral advisor's agreement, as the final study of the author's doctoral dissertation. Point 3 is amended accordingly: FaultLine is now reported as part of the dissertation, while remaining independent of the funded project named in the table. The "Endpoint" row describes the project's designed endpoint; what was established is recorded in `docs/DECISIONS.md` (ADR-0021 to ADR-0028), including that calibrated abstention was evaluated and not established.
 
-Signed: Sarvarbek Erniyazov · Date: 2026-09-08
+Signed: Sarvarbek Erniyazov · Date: 2026-09-24

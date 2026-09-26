@@ -5980,6 +5980,149 @@ against the test rate of 0.0388.
 
 ---
 
+## ADR-0029 Post-closure exploratory analyses: ADR-0009 compliance and persistence baselines
+
+**Status: EXPLORATORY.** Reported, not gating. **No verdict is issued, re-decided or withdrawn
+here**, and nothing here authorises a run. Registered 2026-09-26, after ADR-0026 §5 closed the
+experimental programme · **Date:** 2026-09-26. **Commit:** this record alone, in **`pending`**.
+The hash is written into `configs/eval/exploratory_v0.yaml` by the commit that adds the code, and
+into this line by the outcome commit. The configuration, added with the code, restates §1-§2 by
+value. No committed code that computes a number below existed when this record was committed.
+
+**Registered after numbers were seen, disclosed in full.** This record is written after the
+following were seen, and it must be read with them in mind:
+
+- a re-implemented reconnaissance on the 137,025 temporal test windows found a fault-opening
+  `Stop` row in **2.63% of negatives and 30.7% of positives**;
+- the has-text flag alone reads AUPRC **0.0423** (docs/RESEARCH_SUMMARY.md);
+- a spot check of `joint` (d) seed 1 under the ADR-0009 variant label read **0.0780 → 0.0632**;
+- in preparing this record, scratch code (not committed) reproduced the step timestamps of both
+  test shards, joined the saved scores to the window index (exactly, 137,025 rows in order),
+  found the 9 windows the variant label does not know (Penmanshiel 06: 3, Penmanshiel 14: 6),
+  derived the training opening-code set of §2 with its counts, reproduced F6-3's has-status strata
+  bit for bit with the tail-anchored framing, and computed the prevalence of P3 (2.74% of
+  negatives, 31.36% of positives) and P4 (2.63%, 30.74%: the reconnaissance figure above, which
+  was therefore P4). **No AUPRC, interval or Δ of any P score, and no variant-label metric other
+  than the one spot check, had been computed.**
+
+### 0. Why
+
+ADR-0009's evidence note put a **standing requirement** on every late-test result: report it with
+and without the events `anemometer defect` opens. The requirement was honoured for the axis gate
+(ADR-0022 §3) and nowhere after it. ADR-0025 to ADR-0028 report the full label only, although
+their captions carry the ADR-0009 caveat. Part A closes that gap on the saved scores.
+
+The reconnaissance above raises a second question. Positives carry a fault-opening `Stop` row
+twelve times as often as negatives, so the task may be substantially recurrence. The record has
+no persistence baseline to compare against. Part B supplies one, on the same windows and the same
+estimator.
+
+### 1. Part A — every reported test metric under `narrow_within_24h_without`
+
+**The label.** The window index column `narrow_within_24h_without` and its `_known` twin, taken
+for exactly the evaluated rows: per shard key, the rows known under `narrow_within_24h`, every
+12th from offset 0 (`axis_gate.index_rows`). The first step reconciles 137,016 (the variant's
+known rows among them, ADR-0022 §3) with 137,025 (the evaluated set). It names the 9 windows and
+states why the variant does not know them. It also reports any evaluated row the join cannot
+place. Every metric is then computed on the evaluated rows the variant knows, with the variant's
+label.
+
+**The estimator, unchanged.** ADR-0024's: two-day blocks (288 steps) within each shard, formed on
+the rows evaluated; 10,000 replicates; seed 20260916; 95% percentile intervals; a comparison
+discarding more than 1% of replicates is untrusted. Each scorer's replicate vector is computed
+once per set of rows, and a Δ is paired, replicate by replicate, wherever the original was.
+
+**What is recomputed** (from the saved per-window scores; nothing is re-scored):
+
+- **ADR-0025 (H1)**, the (a) read-outs, `checkpoints/h1_gate_v0_a3f6606a`: B1 (the verdict row),
+  B2, B3, B4 (has-status and no-status strata), B5 (text withheld, channel masks) and B6.
+- **ADR-0026 (H1′)**, `checkpoints/readout_v0_7c2765e7`: the nine-pair random-init gate, B1
+  (`joint` (d) − `tel_only` (a)), B2 (`joint` (d) − (d) control), B3, B4 (`joint` (d) − the
+  order-blind status-only classifier, the parity Δ), B5 strata and B7.
+- **ADR-0027**, `checkpoints/ablation_arms_v0_ecb0b16e`: both instrument gates, B1, B2 with its
+  H1′ rule, B3 and B4.
+- **ADR-0028**, `checkpoints/abstention_v0_30c9c714`: per arm, ECE (prior-corrected and through
+  its Platt map), mean predicted probability against the base rate, AUPRC, AURC and its random
+  reference, coverage and selective risk at the operating point, Gate A; Gate B; H2's Δcoverage
+  and Δselective risk; the severity ladder. **τ, κ, the margin cut-off and Platt's (a, b) are read
+  from `reports/data/abstention_operating_points_v0.json` exactly as fitted on validation**, and
+  never refitted. The random-ordering reference keeps its 100 orderings at seed 20260924.
+
+**No verdict is re-decided.** For each gate and rule, the registered decision function is applied
+to the variant's quantities, and the report states **as a fact** whether it would return the same
+outcome as the record. The record's verdicts stand as written. The integration of any of this into
+the write-up is the author's decision, taken after reading the numbers.
+
+### 2. Part B — persistence baselines
+
+Four scores on the same evaluated rows. Each is scored under **both** labels, the full label on
+all 137,025 rows and the variant on the rows it knows. `t` is the window's end step (its
+timestamp, from the final telemetry rows in shard order). The window spans the 144 steps
+`(t − 24 h, t]`.
+
+- **P1:** 1 if a narrow event of the turbine **starts** in `(t − 24 h, t]`, else 0. The event
+  table is `data/cleaned/telemetry/<site>/labels/events_narrow.parquet`. Past events are known at
+  `t`.
+- **P2:** −(hours since the last narrow event start at or before `t`), capped at 720 h (30 days).
+  With no earlier event the score is the cap, −720.
+- **P3:** 1 if the raw status stream holds a row with `provider_status == "Stop"`, attached in
+  `(t − 24 h, t]`, whose `code` is in the frozen set below, else 0. "Attached" is the joint
+  builder's rule: the row's start is rounded up to the 10-minute grid.
+- **P4:** P3 computed only from the messages actually present in the model's R0
+  `tail_anchored_2048` window (`joint_v1` `tel_status_normalized`). That is, after the 2,048-token
+  cap and after the builder dropped messages whose step is absent from the final rows. A message
+  counts as present if any of its tokens is in the window. **P3 − P4** is what the input pipeline
+  loses.
+
+Both P1 and P2 read every narrow event, including the ones `anemometer defect` opens. The scores
+are the same under both labels; only the labels change.
+
+**The frozen code set.** The code set is taken from the rows that open a narrow event
+(`verify.opening_messages`' rule: the first technical `Stop` row starting in the event's first
+step, else the last one started before it). Only events starting in the training split count
+(start ≤ 2020-12-31T23:59:59Z), pooled over Kelmarsh and Penmanshiel. Every event there has an
+opener. **18 codes:**
+
+| code | message | code | message |
+| --- | --- | --- | --- |
+| 100 | safety chain open | 1620 | implausible gear speed |
+| 455 | repeating error bp52 | 3000 | frequency converter not ready |
+| 650 | pitch controller communication error | 3110 | frequency converter error |
+| 692 | pitch run-away (hub box v.>=4) | 4510 | tower oscillation y level 1 |
+| 715 | charging circuit pitch | 4520 | tower oscillation x level 1 |
+| 1070 | drive train monitor level 2 | 4530 | tower oscillation y level 2 |
+| 1510 | low gearbox oil pressure | 4540 | tower oscillation x level 2 |
+| 1550 | missing gear oil (high rpm) | 6120 | uncontrolled yaw movement |
+| 6530 | anemometer defect | 6620 | vane defect |
+
+6530 is in the set because it opened three training events. The rule selects it, and it is not
+removed.
+
+**Comparisons.** Each P score is reported with its AUPRC, interval, base rate and lift, and with
+a paired Δ(P − comparator) against:
+
+- `joint` (d) per seed (logit plus prior offset);
+- the (d) three-seed ensemble (ADR-0028's `p`);
+- the order-blind status-only classifier (F6-1b's R0 scores).
+
+**Composition.** The share of test positives and of test negatives with a narrow event starting
+in the preceding 6 h and 24 h, `(t − 6 h, t]` and `(t − 24 h, t]`. It is reported per site and
+pooled, under both labels.
+
+### 3. Outputs
+
+`src/faultline/evaluation/exploratory_v0.py`, CLI `faultline model exploratory`, configuration
+`configs/eval/exploratory_v0.yaml`. Unit tests cover the P1-P4 builders on synthetic data. The
+report and record are `reports/data/exploratory_v0_<YYYYMMDD>.md` and `.json`. The outcome
+section below is added in its own commit: tables and facts, no verdicts.
+
+### 4. What would change this record
+
+Nothing, after the outcome is written. A number here can be superseded only by a later record
+that names this one, and no verdict of ADR-0021 to ADR-0028 moves because of it.
+
+---
+
 ## Documentation errata
 
 Appended after the record; no ADR text above is edited. Each entry corrects wording, not a

@@ -1,0 +1,67 @@
+# Post-closure exploratory analyses, version 0. Decision record: docs/DECISIONS.md, ADR-0029,
+# registered ALONE in the commit named below, before this file or any code that reads it existed.
+#
+# EXPLORATORY (ADR-0029): reported, not gating. Nothing read from this file issues, re-decides or
+# withdraws a verdict. For each registered gate and rule, the report states as a fact whether that
+# rule, applied to the variant label's quantities, would return the outcome the record holds.
+#
+# Part A: every reported test metric of ADR-0025 to ADR-0028, recomputed from the saved per-window
+# scores under ADR-0009's variant label. Part B: four persistence scores on the same windows,
+# under both labels. tests/evaluation/test_exploratory_v0.py checks the restated values below
+# against ADR-0029 and the configurations they come from.
+
+version: 0
+
+# ADR-0029's registration commit.
+registered_in: "db5fb96"
+
+axis_config: "configs/eval/axis_gate_v0.yaml" # the temporal axis: shards, counts
+h1_gate_config: "configs/eval/h1_gate_v0.yaml" # ADR-0025
+readout_config: "configs/eval/readout_v0.yaml" # ADR-0026
+ablation_config: "configs/eval/ablation_gate_v0.yaml" # ADR-0027
+abstention_config: "configs/eval/abstention_v0.yaml" # ADR-0028
+
+# The records whose numbers are the "original" column. Read, never rewritten.
+recorded:
+  h1: "reports/data/h1_gate_v0_20260919.json"
+  readout: "reports/data/readout_v0_20260920.json"
+  ablation: "reports/data/ablation_gate_v0_20260923.json"
+  abstention: "reports/data/abstention_v0_20260924.json"
+
+# The label every record read, and ADR-0009's variant: the narrow label without the events the
+# message "anemometer defect" opens (configs/data/splits_v3.yaml, report_without_messages).
+label: "narrow_within_24h"
+variant_label: "narrow_within_24h_without"
+stride: 12
+
+# The evaluated set every saved score covers (ADR-0022 §4), asserted on load.
+windows: 137025
+positives: 5312
+
+# ADR-0024's estimator, unchanged (configs/train/gate_check_v0.yaml, bootstrap).
+bootstrap:
+  block_steps: 288
+  replicates: 10000
+  seed: 20260916
+  confidence: 0.95
+  max_discarded_share: 0.01
+
+# ADR-0029 §2.
+persistence:
+  window_hours: 24 # P1 and P3: (t - 24 h, t], the window's 144 steps
+  cap_hours: 720 # P2: 30 days; no earlier event reads the cap
+  composition_hours: [6, 24]
+  train_until: "2020-12-31T23:59:59Z" # splits_v3.yaml time.train_until
+  stop_status: "Stop"
+  opening_cause: "technical" # events_v2.yaml harmonised.narrow_causes
+  # The 18 codes that open a narrow event starting in the training split, pooled over the two
+  # training sites. Frozen by ADR-0029 §2; the run re-derives them by the rule and refuses a
+  # mismatch.
+  codes: ["100", "455", "650", "692", "715", "1070", "1510", "1550", "1620", "3000", "3110",
+          "4510", "4520", "4530", "4540", "6120", "6530", "6620"]
+  # P4: the model's R0 window (ADR-0025 §2), over the normalized tel+status stream of joint_v1.
+  joint_mixture_config: "configs/train/joint_v1.yaml"
+  status_convention: "normalized"
+  context_tokens: 2048
+  context_steps: 144
+  tokens_per_step: 13

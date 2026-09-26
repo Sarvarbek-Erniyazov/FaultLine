@@ -1902,6 +1902,28 @@ def model_abstention_outcome(
 
 
 @model_app.command(
+    "exploratory",
+    help="ADR-0029 (CPU, EXPLORATORY): every reported test metric of ADR-0025 to ADR-0028 "
+    "recomputed from the saved scores under ADR-0009's variant label, and four persistence "
+    "baselines under both labels. Issues no verdict. Writes "
+    "reports/data/exploratory_v0_<date>.md/.json. Resume-safe.",
+)
+def model_exploratory(
+    config: ConfigOption = Path("configs/eval/exploratory_v0.yaml"),
+) -> None:
+    """Write ADR-0029's report.
+
+    Args:
+        config: The exploratory configuration.
+    """
+    from faultline.evaluation.exploratory_v0 import run_exploratory
+
+    paths = ProjectPaths.resolve()
+    report, record = run_exploratory(paths, paths.repo_root / config)
+    typer.echo(f"wrote {report} and {record}")
+
+
+@model_app.command(
     "stream-trace",
     help="DEMONSTRATION (CPU): run the deployment path -- backbone, frozen probe, prior-"
     "corrected probability -- over every known window of one held-out turbine-year in time "

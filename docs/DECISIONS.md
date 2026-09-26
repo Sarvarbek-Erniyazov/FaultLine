@@ -5977,3 +5977,20 @@ and severity, and no clause, severity or signal is added afterwards (§3). All t
 §4 caveats: ADR-0009's harmonised label, forward in time at the same sites, the message-volume
 shift, a three-seed ensemble, and an operating point fixed at the validation base rate of 0.0211
 against the test rate of 0.0388.
+
+---
+
+## Documentation errata
+
+Appended after the record; no ADR text above is edited. Each entry corrects wording, not a
+rule, a number or a verdict.
+
+- **2026-09-26 -- "linear head".** Where an ADR says "linear head" or "linear probe", the
+  implemented head is a one-hidden-layer probe on the frozen backbone: RMSNorm(w) →
+  Linear(w → 192) → GELU → Linear(192 → 1), where w is the read-out's width (192 for
+  `final_position` and `mean_all`, 385 for `last_plus_text`)
+  (`src/faultline/model/risk.py:111-168`; hidden width `RiskSpec.hidden` = 1.0 × d_model,
+  `risk.py:88`). Every reported result in this record was produced with that head, except
+  the ADR-0023 §c and §d designs and their ADR-0024 subsample rows, which used the two-hidden-layer
+  head their registrations name (§d also unfreezing blocks 6-7) and are labelled as such where
+  they appear.

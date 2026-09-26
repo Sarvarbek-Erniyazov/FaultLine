@@ -37,14 +37,14 @@
 
 **Precise.**
 
-- **The question** (README.md): does pretraining a small decoder-only transformer over quantised SCADA telemetry, alone or jointly with operator text, produce a representation from which a frozen linear probe can read the risk of a fault event in the next 24 hours? And does that reading survive a change of site, of manufacturer, or of time?
+- **The question** (README.md): does pretraining a small decoder-only transformer over quantised SCADA telemetry, alone or jointly with operator text, produce a representation from which a one-hidden-layer probe (RMSNorm → Linear(w→192) → GELU → Linear(192→1)) on the frozen backbone can read the risk of a fault event in the next 24 hours? And does that reading survive a change of site, of manufacturer, or of time?
 - **"A fault event in the next 24 hours"** is the label `narrow_within_24h`. It asks: does a technical-cause stop start in the next 144 ten-minute steps?
 - **The pre-registered hypotheses.**
   - **H1** (ADR-0025): "the text pathway carries signal the telemetry tokens do not". Tested as the joint arm against `tel_only`, with the same seed, the same windows and a paired Δ AUPRC. The smallest effect of interest is 0.005.
   - **H1′** (ADR-0026): the same hypothesis re-tested with a changed instrument, the text-aware read-out (d). It was registered after H1's result was known, and the record says so.
   - **H2** (ADR-0028): "As degradation severity rises, coverage falls and selective risk stays approximately flat … if coverage stays flat while selective risk rises, H2 is refuted."
   - **Site shift.** This is **not a numbered hypothesis**. It was tested as pre-registered gates: ADR-0021 (Hill of Towie, a held-out site) and ADR-0022 (CARE, held-out farms from other manufacturers).
-  - H3 (cross-OEM transfer of status semantics, ADR-0007) was **withdrawn** on measured evidence. H3′ (ADR-0017) is a text-side claim about the surface form of status strings.
+  - H3 (cross-OEM transfer of status semantics, ADR-0007) was **withdrawn** at its own testability gate: 0 of 693 Hill of Towie narrow events and 0 of 45 CARE anomalies map to a status-string type. H3′ (ADR-0017) is a text-side claim about the surface form of status strings.
 - **The one-GPU constraint.** Everything ran on one NVIDIA GeForce RTX 4060 with 8 GB. That fixed the model size (S2), the budget (50,003,968 tokens per arm) and the seeds (3).
 - **Forward-in-time design.** Training uses 2016–2020, validation uses 2021, and the test uses 2022 onward. The model is always tested on a period after the one it learned from.
 
@@ -56,7 +56,7 @@
 |---|---|---|---|---|---|
 | **Kelmarsh** | Cubico wind farm, UK. 6 × Senvion MM92, rated 2,050 kW. 10-minute SCADA and a status log. | train / val / test | Published 2016–2024. Train 2016–2020, val 2021, test 2022–2024. | CC BY 4.0 | Cleaning with plausibility bounds; pitch floored at 0.0° (ADR-0012); power as per-unit of rated (ADR-0013); status strings normalised (H3′, ADR-0017); md5 checksums per file |
 | **Penmanshiel** | Cubico, UK. 14 × Senvion MM82, rated 2,050 kW. Turbine WT03 is absent from the record. | train / val / test | Train 2016–2020, val 2021, test **2022 only** | CC BY 4.0 | As Kelmarsh |
-| **Hill of Towie** | RES on behalf of TRIG, UK. 21 × Siemens SWT-2.3-VS-82, rated 2,300 kW. Publishes alarm codes, not strings. | held-out site, test only | 2019 and 2023 staged; every row is test | CC BY 4.0 | Same cleaning; power per-unit of 2,300 kW |
+| **Hill of Towie** | RES on behalf of TRIG, UK. 21 × Siemens SWT-2.3-VS-82, rated 2,300 kW. Publishes alarm codes, not strings, and its described codes are all non-technical. | held-out site, test only | 2019 and 2023 staged; every row is test | CC BY 4.0 | Same cleaning; power per-unit of 2,300 kW |
 | **CARE** | Fraunhofer IEE. 36 turbines in 3 anonymised farms: A is 5 onshore turbines in Portugal, B and C are offshore in Germany. 95 datasets, 45 of them with labelled anomaly events. Timestamps are anonymised. | evaluation only | every row is test | CC BY-SA 4.0 | Same canonical schema; kept out of training by its licence (ADR-0004) |
 | **NRC** | US Nuclear Regulatory Commission: 5 collections (Event Notification Reports, Information Notices, Bulletins, Generic Letters, Regulatory Issue Summaries). | text pretraining | own train / val / test split, loss reported per source | public domain (17 U.S.C. 105) | clean → filter → exact and near dedup → PII policy; sha256 per document |
 | **PHMSA** | US pipeline incident narratives, 2010 onward. 10,033 staged; 9,659 after the pipeline. | text pretraining | as NRC | public domain (17 U.S.C. 105) | as NRC |
@@ -107,7 +107,7 @@ A classifier that guesses at random scores an AUPRC equal to the base rate. So a
 - **One step is 13 tokens:** `<sep>` (id 8), then one bin token per core channel in a fixed order. The channel is identified by position.
 - One 24 h window = 144 steps = **1,872 tokens**.
 
-> ⚠ The brief and README.md say "16 fixed-width bins per tail". That was the v1 fit. The v2
+> ⚠ The brief, and README.md before its 2026-09-26 fix, said "16 fixed-width bins per tail". That was the v1 fit. The v2
 > tokenizer in force uses `n_tail: 4` (quantile_bins_v2.yaml). The pre-registered signal fired at
 > 16: 184 of 352 tail bins held under 500 training values, and 42 held none.
 
@@ -163,7 +163,7 @@ The step on disk is `[8, 182, 217, 162, 205, 96, 184, 166, 215, 262, 193, 142, 2
 **If challenged.**
 
 - *"Doesn't sharing bin ids across channels confuse the model?"* The embedding of 205 is shared, so the model must combine it with position. Learned absolute positions make that easy: position mod 13 is the channel. The record kept the per-channel alternative open (ADR-0003) in case channel conditioning proved too weak.
-- *"Did the quantile bins cause the site-shift failure?"* That is the README's reading of the CARE attribution: bins fitted on one OEM's distribution do not carry to another's. The registered clause is narrower: "the null is a property of the token stream across OEMs". Farm A is attributed to transfer failure; farms B and C are unattributed.
+- *"Did the quantile bins cause the site-shift failure?"* That is the author's interpretation of the CARE attribution, not a registered finding: bins fitted on one OEM's distribution do not carry to another's. The registered clause is narrower: "the null is a property of the token stream across OEMs". Farm A is attributed to transfer failure; farms B and C are unattributed.
 
 ### 3.2 Text tokenizer
 
@@ -173,7 +173,7 @@ The step on disk is `[8, 182, 217, 162, 205, 96, 184, 166, 215, 262, 193, 142, 2
 - **Vocabulary 32,768 = 256 byte tokens + 32,512 merges.**
 - Trained on the train split of the NRC and PHMSA corpus: 31,750 documents, 10,012,124 tokens (`<sep>` excluded). The text shards hold **10,043,874** train tokens (`<sep>` included). The difference is 31,750, one `<sep>` per document.
 
-> ⚠ The brief and README.md say "32,768 merges". The record says 32,768 is the **vocabulary size**
+> ⚠ The brief, and README.md before its 2026-09-26 fix, said "32,768 merges". The record says 32,768 is the **vocabulary size**
 > and 32,512 merges were learned (reports/data/text_bpe_v1_20260915.md; text_bpe.py:23-25).
 
 **Why this choice.**
@@ -303,7 +303,7 @@ ADR-0018's resource ruling: "all three arms at S2 only. The rung is fixed for co
 **Why this choice.**
 
 - **Matched budget.** "`tel_only` is the equal-token control: a joint arm that beats M1 by seeing more tokens is not evidence for the joint design." Every arm sees exactly 50,003,968 tokens. GPU-hours are observed, never the budget.
-- **Tokens per parameter, stated honestly.** The measured ratios over the 61.6M-token telemetry training stream are 5.9 over all parameters and 17.4 over the backbone. The ~20 tokens-per-parameter heuristic comes from natural language and "never entered the record" (instrument audit). Each arm's 50,003,968 tokens is below 61.6M, so its ratio is lower still. The budget was set by matching arms on one GPU, not by a compute-optimal rule. The models are undertrained, and the record says so.
+- **Tokens per parameter, stated honestly.** The measured ratios over the 61.6M-token telemetry training stream are 5.9 over all parameters and 17.4 over the backbone. The ~20 tokens-per-parameter heuristic comes from natural language, and the record never adopted it. Each arm's 50,003,968 tokens is below 61.6M, so its ratio is lower still. The budget was set by matching arms on one GPU, not by a compute-optimal rule. The models are undertrained, and the record says so.
 
 **Worked example.** The first batch of an S2 run should print a loss near ln V = 10.4327. A first loss below 9.9327 stops the run before any token is wasted: the model would be predicting before it has learned.
 
@@ -317,7 +317,7 @@ ADR-0018's resource ruling: "all three arms at S2 only. The rung is fixed for co
 - A small head reads one vector per window and outputs one logit.
 - **Read-out (a) `final_position`:** the final hidden state h_L, width 192.
 - **Read-out (d) `last_plus_text`:** the concatenation [h_L; mean of h over text-token positions; has-text flag]. Its width is 2 × 192 + 1 = **385**. A text-token position is `<txt>` (4), `</txt>` (5) or any id ≥ 1,184. With no text, the mean is a zero vector.
-- **The head, exactly.** The record calls it a "linear head". In code it is **one hidden layer**: RMSNorm(width) → Linear(width → 192) → GELU → Linear(192 → 1), with biases (`risk.py:137-142, 165`). ADR-0026 §2 says "a **linear head** — the head in force, one hidden layer". Know both words.
+- **The head, exactly.** The record calls it a "linear head", loosely. In code it is **one hidden layer**: RMSNorm(width) → Linear(width → 192) → GELU → Linear(192 → 1), with biases (`risk.py:137-142, 165`). ADR-0026 §2 says "a **linear head** — the head in force, one hidden layer". Know both words.
 - **Balanced sampling.** Probe batches are 50% positive (`positive_fraction: 0.5`). The probe sees 16,000 positives over 1,000 steps: batch 16 × accumulate 2, learning rate 0.002, 32,000 windows.
 - **ADR-0019 prior correction.** Training at 50% positives shifts the logit. The correction is z_true = z_train + logit(π_true) − logit(π_train). With π_train = 0.5 and π_true = 0.0221, the offset is −3.79 nats (the stream trace applies −3.7921).
 - **Fixed final-step selection (ADR-0022 addendum):** "Every probe in every arm, from this record onward, is read at its last probe step. No validation-split checkpoint selection is performed."
@@ -446,7 +446,7 @@ flowchart TD
 1. **Site shift: two pre-registered negatives.**
    - **Hill of Towie.** The rule needs the block-bootstrap lower bound above the site's base rate, 0.03325. Seed 1 scored 0.0393 [0.0306, 0.0553]: NOT EVALUABLE. Over three seeds only one clears (1 of 3), so it is still NOT EVALUABLE. The site is "marginal, not null".
    - **CARE.** It sits at chance on every seed: 0.0012–0.0013 against a base rate of 0.001254, over 430,506 windows holding all 45 labelled events. "CARE is at chance, not merely wide."
-   - **Attribution (ADR-0022 F6-0).** Imposing each CARE farm's missing-channel pattern on the training-site test split leaves the probe above base rate on 3 of 3 seeds, so the channel gaps do not explain the null. The order-blind comparator is also at chance on CARE: 0.001940 [0.001233, 0.003830]. The registered clause: "the null is a property of the token stream across OEMs". The README's reading: quantile bins fitted on one manufacturer's distribution do not carry to another's. Per farm, A is a transfer failure and B and C are unattributed.
+   - **Attribution (ADR-0022 F6-0).** Imposing each CARE farm's missing-channel pattern on the training-site test split leaves the probe above base rate on 3 of 3 seeds (F6-0a); no registered clause attributes any farm's null to the channel gaps. The order-blind comparator is also at chance on CARE: 0.001940 [0.001233, 0.003830]. The registered clause: "the null is a property of the token stream across OEMs". Per farm, A is a transfer failure and B and C are unattributed. The author's interpretation, not a registered finding: quantile bins fitted on one manufacturer's distribution do not carry to another's.
    - **Consequence:** the only evaluable axis is forward-in-time at the training sites. No result below is a site-shift result.
 2. **Pretraining is visible to the probe.** Pretrained vs random-init, paired, 3 pretraining seeds × 3 init seeds: **9 of 9** lower bounds above zero, Δ **+0.009 to +0.019**. That is a quarter to a half of the base rate. Untrained backbones already read 0.039–0.042; trained ones read 0.051–0.058.
 3. **Telemetry-only is at parity with a bag of tokens.** All three paired intervals span zero, and the sign flips across seeds. On this stream, at this size and budget, order does not measurably help.
@@ -461,7 +461,7 @@ flowchart TD
 7. **F9 / ADR-0028: calibrated abstention implemented and evaluated; graceful degradation not established.**
    - Gate A PASSED on all three arms. Gate B found narrow damage. H2 is INCONCLUSIVE.
    - **Calibration.** The mean predicted probability is 0.019–0.022 against a base rate of 0.0388. That is an under-read by about half (DECISIONS.md), or "about 2×" (README.md), both before and after Platt. For joint (d), ECE went 0.0172 → 0.0164 with Platt.
-   - The cause is mainly the post-2021 rise in event rate, which no recalibration fitted on earlier data can anticipate. So the scores are rankings, not risks, without recent recalibration.
+   - Part of the cause is the post-2021 rise in event rate, which Platt fitted at the validation base rate of 0.0211 cannot remove. The record also finds an in-time component, a property of the probe: two of three `tel_only` seeds under-read on 2021 validation (0.0185 and 0.0183 against 0.0211). So the scores are rankings, not risks, without recent recalibration.
 
 ---
 
@@ -475,10 +475,10 @@ flowchart TD
 | CARE: at chance | The token stream does not transfer across OEMs: quantile bins fitted on one OEM's distribution. The channel gaps were ruled out. |
 | Telemetry model ≈ bag of tokens | At 50M tokens and S2, pretraining learns token statistics a histogram already captures. Order adds nothing measurable. |
 | H1 INCONCLUSIVE | The instrument, not the model: the last-position read-out lands on a telemetry token and does not reach the text. |
-| Joint (d) ≈ status-only classifier | The signal is in *which strings occur*, the recurrence of "Stop" rows. A counter captures that as well as the model does. |
+| Joint (d) ≈ status-only classifier | The signal is in *which strings occur*. Part of it is "Stop" rows: removing all of them (R2) cuts the counter's lift over the telemetry bag from +0.0202 to +0.0074. The record does not separate recurrence from other string content. A counter captures the signal as well as the model does. |
 | `joint_status_raw` NOT EVALUABLE | Under raw casing, untrained backbones already read the strings, so the gate cannot separate pretraining. |
 | H2 INCONCLUSIVE | Δrisk +0.0053 straddles the 0.005 line. Abstention gives up coverage, but it cannot be shown to hold selective risk. |
-| Probabilities under-read about 2× | The event rate rose after 2021, and a correction fitted on earlier data cannot anticipate that. |
+| Probabilities under-read about 2× on test | Partly the post-2021 rise in event rate, which a correction fitted on earlier data cannot remove; two of three seeds also under-read in-time, a property of the probe. |
 | First probe-control criterion FAIL (ADR-0023) | A mis-specified rule (non-overlap). It was replaced by the paired test, and the original FAILs stay on record. |
 
 ### (b) Why it is still strong
@@ -749,7 +749,7 @@ Kinds of source:
 | 13 | `docs/INSTRUMENT_AUDIT.md` | 212 | audit entry number (13th ### heading) |
 | 5.9, 17.4 | `docs/COURSE_PORT.md` | 172 | tokens per parameter |
 | 61.6 | `README.md` | 46 | telemetry training stream |
-| 20 | `README.md` | 108 | heuristic never adopted |
+| 20 | general rule of thumb | — | heuristic never adopted (not a record number) |
 | 10,000,000, 0.996 | `configs/train/joint_v0.yaml` | 20 | txt passes at 50M |
 | 50 | `configs/train/joint_v0.yaml` | 18-20 | largest round budget (50M), lines 17-20 |
 | 0.5 | `configs/train/telemetry_v1.yaml` | 82 | balanced sampling |

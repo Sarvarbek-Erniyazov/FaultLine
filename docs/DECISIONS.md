@@ -5984,7 +5984,7 @@ against the test rate of 0.0388.
 
 **Status: EXPLORATORY.** Reported, not gating. **No verdict is issued, re-decided or withdrawn
 here**, and nothing here authorises a run. Registered 2026-09-26, after ADR-0026 §5 closed the
-experimental programme · **Date:** 2026-09-26. **Commit:** this record alone, in **`pending`**.
+experimental programme · **Date:** 2026-09-26. **Commit:** this record alone, in **`db5fb96`**.
 The hash is written into `configs/eval/exploratory_v0.yaml` by the commit that adds the code, and
 into this line by the outcome commit. The configuration, added with the code, restates §1-§2 by
 value. No committed code that computes a number below existed when this record was committed.
@@ -6120,6 +6120,163 @@ section below is added in its own commit: tables and facts, no verdicts.
 
 Nothing, after the outcome is written. A number here can be superseded only by a later record
 that names this one, and no verdict of ADR-0021 to ADR-0028 moves because of it.
+
+### Outcome, 2026-09-26 — reported, not gating; no verdict
+
+**Commits and artefacts.** ADR-0029 was registered alone in `db5fb96`. The code, configuration, unit
+tests and report were committed in `382ba64`: `src/faultline/evaluation/exploratory_v0.py`,
+`faultline model exploratory`, `configs/eval/exploratory_v0.yaml` (hash `da8a916e`) and
+`reports/data/exploratory_v0_20260926.md` / `.json`. The run was CPU only: 112 bootstrap jobs took
+94.8 min on 8 worker processes. Every number below is cited from that report.
+
+**Checks made before anything was reported.** All of them passed.
+
+- Every saved score file covers the same 137,025 rows in the same order, and the window index joins
+  them row for row (end step, shard, full label).
+- Both labels, re-derived from the event table and the record's coverage, equal the index on every
+  evaluated window.
+- Under the full label, every recomputed point value equals the record's to 1e-12. This covers every
+  row of ADR-0025 to ADR-0027 and ADR-0028's Part A.
+- The full-label replicate vectors of `joint` (d) seeds 1-3 and of the status-only classifier equal
+  F7'-3's cached vectors element for element.
+- The code set derived by §2's rule is the frozen one.
+- **An independent read-only reproduction** outside the repository (numpy, pandas and pyarrow only;
+  its scripts are not committed) rebuilt 22 numbers from scratch and matched the record to 1e-18.
+  Among them are `joint` (d) seed 1's variant AUPRC and interval, seed 2's H1′ Δ and interval, P1
+  on the full label and P3 on the variant. The same check matched all 3,195 numbers in the report
+  to its JSON.
+
+One implementation detail matters for these checks. The record adds the prior offset in the logits'
+own float32, and the recomputation must do the same. Upcasting first moves ties and changes the
+status-only classifier's AUPRC.
+
+**A0. 137,025 against 137,016.** The variant knows 137,016 of the evaluated windows (3,330
+positive, base rate 0.0243, against 5,312 and 0.0388 under the full label). The 9 it does not know
+are all on 2022-12-31:
+
+- Penmanshiel 06: end steps 262,071 / 262,083 / 262,095;
+- Penmanshiel 14: end steps 676,579 to 676,639, every 12th.
+
+Each is positive under the full label only through events that `anemometer defect` opens. At
+Penmanshiel 06 those start at 08:40 and 12:50; at Penmanshiel 14, at 12:30. Each window's horizon
+also runs past the end of the event record (last covered step 2022-12-31 23:50; 73 to 133 of the
+144 horizon steps covered). With those events removed, no event is seen in a horizon the record
+does not fully cover, and ADR-0006 makes that label unknown (NA), never False. **No evaluated
+window failed to join.**
+
+**A1. What each registered rule would return under the variant.** These are facts about the rules
+applied to the variant's numbers. The record's verdicts stand as written.
+
+| registered gate or rule | record | under the variant |
+| --- | --- | --- |
+| ADR-0025 §5, H1 | INCONCLUSIVE | INCONCLUSIVE (same) |
+| ADR-0026 §4, random-init gate | PASS | PASS (same; weakest lower bound +0.0012) |
+| ADR-0026 §4, H1′ | SUPPORTED | **INCONCLUSIVE** (seed 2's lower bound is not above 0) |
+| ADR-0027 §4, gate, `joint_no_txt` | PASS | **FAIL** (5 of 9 lower bounds above 0) |
+| ADR-0027 §5, `joint_no_txt` | INCONCLUSIVE | **NOT EVALUABLE** (the rule as measured: INCONCLUSIVE, same) |
+| ADR-0027 §4, gate, `joint_status_raw` | FAIL | FAIL (same; 0 of 9) |
+| ADR-0027 §5, `joint_status_raw` | NOT EVALUABLE | NOT EVALUABLE (same; as measured: INCONCLUSIVE, same) |
+| ADR-0027 B2, H1′'s rule replicated, both arms (reported) | SUPPORTED | **INCONCLUSIVE** |
+| ADR-0028 §2, Gate A, all three arms | pass | pass (same) |
+| ADR-0028 §3, Gate B | damage | damage (same) |
+| ADR-0028 §3, H2 | INCONCLUSIVE | INCONCLUSIVE (same) |
+
+**Two variant bounds sit on a registered line.**
+
+- **H1 under the variant misses REFUTED by one bound.** Seeds 2 and 3 have upper bounds −0.0004
+  and +0.0045, below the 0.005 line. Seed 1's is 0.0050057, not below it.
+- **`joint_no_txt` seed 3 against random seed 3** has a lower bound of −0.0000003. That gate fails
+  regardless, on seed 2's three comparisons.
+
+**The rows that move a rule**, as original → variant:
+
+| row | seed 1 | seed 2 | seed 3 |
+| --- | --- | --- | --- |
+| H1′ B1: Δ(`joint` (d) − `tel_only` (a)) | +0.0200 [+0.0112, +0.0294] → +0.0140 [+0.0026, +0.0264] | +0.0234 [+0.0128, +0.0342] → +0.0031 [−0.0076, +0.0116] | +0.0170 [+0.0111, +0.0232] → +0.0137 [+0.0077, +0.0201] |
+| `joint` (d) AUPRC (lift) | 0.0780 (2.01) → 0.0632 (2.60) | 0.0810 (2.09) → 0.0514 (2.12) | 0.0685 (1.77) → 0.0520 (2.14) |
+| parity Δ(`joint` (d) − status-only) | +0.0055 [−0.0173, +0.0241] → −0.0187 [−0.0534, +0.0093] | +0.0085 [−0.0141, +0.0265] → −0.0305 [−0.0635, −0.0058] | −0.0040 [−0.0264, +0.0125] → −0.0299 [−0.0641, −0.0050] |
+| H1 B1: Δ(`joint` (a) − `tel_only` (a)) | +0.0022 [−0.0034, +0.0068] → −0.0007 [−0.0085, +0.0050] | −0.0022 [−0.0084, +0.0021] → −0.0059 [−0.0147, −0.0004] | −0.0018 [−0.0060, +0.0021] → +0.0003 [−0.0042, +0.0045] |
+
+**Facts from the rest of Part A** (full tables in the report):
+
+- **H1′.** The H1′ median Δ falls from +0.0200 to +0.0137. The failure is one seed: seed 2's
+  `joint` (d) loses 0.0296 AUPRC to the variant, while `tel_only` (a) seed 2 loses 0.0093.
+- **The status-only classifier.** Its AUPRC rises from 0.0725 to 0.0819 while the base rate falls,
+  so its lift goes from 1.87 to 3.37. It is the only read in Part A whose AUPRC rises. Under
+  the variant it reads above `joint` (d) on all three seeds; the parity intervals exclude zero on
+  seeds 2 and 3.
+- **The `joint_no_txt` gate.** It fails on seed 2 (all three random-init comparisons) and on
+  seed 3 against random seed 3 (lower bound −0.0000). `joint_no_txt` − `joint` (d) is negative on
+  all three seeds under the variant: −0.0095, −0.0044 and −0.0021. The upper bounds are −0.0022,
+  −0.0013 and +0.0009.
+- **ADR-0028.**
+  - ECE falls from 0.016-0.019 to 0.004-0.005 on every arm, before and after Platt. The mean predicted probability does
+    not move (0.0193-0.0216, prior-corrected), and the base rate falls to 0.0243. So the record's
+    "under-reads the test base rate by about half" is, under the variant, an under-read of about a
+    tenth to a fifth.
+  - Gate B's Δ AUPRC is −0.0084 [−0.0132, −0.0047] (record −0.0039).
+  - H2's Δcoverage is −0.0797 [−0.0841, −0.0754]. Δselective risk is +0.0044 [+0.0024, +0.0064];
+    its upper bound is still above the 0.005 line, so H2 stays INCONCLUSIVE.
+
+**B. Persistence baselines.** AUPRC [95%] (lift). P1 and P2 read every narrow event, anemometer-defect
+events included:
+
+| score | full label (base 0.0388) | variant (base 0.0243) |
+| --- | --- | --- |
+| P1, event started in (t − 24 h, t] | 0.1262 [0.1024, 0.1528] (3.25) | 0.0625 [0.0463, 0.0821] (2.57) |
+| P2, −hours since last event start, cap 720 h | 0.2211 [0.1862, 0.2582] (5.70) | 0.0944 [0.0735, 0.1189] (3.88) |
+| P3, training fault-opening code in the raw log | 0.1256 [0.1019, 0.1521] (3.24) | 0.0628 [0.0466, 0.0825] (2.58) |
+| P4, P3 from the model's window only | 0.1252 [0.1015, 0.1518] (3.23) | 0.0635 [0.0471, 0.0834] (2.61) |
+| `joint` (d), seeds 1 / 2 / 3 | 0.0780 / 0.0810 / 0.0685 | 0.0632 / 0.0514 / 0.0520 |
+| (d) three-seed ensemble | 0.0793 [0.0687, 0.0916] (2.05) | 0.0573 [0.0475, 0.0696] (2.36) |
+| status-only classifier | 0.0725 [0.0537, 0.0979] (1.87) | 0.0819 [0.0538, 0.1200] (3.37) |
+
+**Paired Δ(P − comparator).**
+
+- **Full label.** Every interval of every P score against every comparator lies above zero:
+  P1 − `joint` (d) from +0.0451 to +0.0577, P2 − `joint` (d) from +0.1400 to +0.1526, against the
+  ensemble +0.0468 (P1) and +0.1418 (P2).
+- **Variant, P1, P3 and P4.** Every interval against `joint` (d), against the ensemble and against
+  the status-only classifier spans zero. For example, P1 − ensemble is +0.0052 [−0.0109, +0.0225]
+  and P1 − status-only is −0.0194 [−0.0485, +0.0017].
+- **Variant, P2.** P2 lies above `joint` (d) on every seed (+0.0312 [+0.0093, +0.0536],
+  +0.0430 [+0.0250, +0.0632], +0.0424 [+0.0241, +0.0633]) and above the ensemble
+  (+0.0371 [+0.0178, +0.0580]). Against the status-only classifier it reads
+  +0.0125 [−0.0173, +0.0353].
+
+**P3 − P4, what the input pipeline loses.**
+
+- Δ AUPRC is +0.0004 [−0.0009, +0.0019] on the full label and −0.0007 [−0.0013, −0.0000] on the
+  variant.
+- 173 windows carry the flag in the raw log but not in the model's window. All 173 are cut by the
+  2,048-token cap; none is lost to the absent-step drop.
+- No window carries the flag in the model's window without the raw log.
+- Flag prevalence, full label: P3 31.36% of positives and 2.74% of negatives; P4 30.74% and 2.63%
+  (the reconnaissance figure).
+
+**Composition: a narrow event started in the preceding window, positives against negatives.**
+
+| label | site | 6 h | 24 h |
+| --- | --- | --- | --- |
+| full | Kelmarsh | 15.31% vs 0.61% | 38.61% vs 2.33% |
+| full | Penmanshiel | 9.39% vs 0.86% | 22.87% vs 3.19% |
+| full | pooled | 12.56% vs 0.72% | 31.29% vs 2.71% |
+| variant | Kelmarsh | 10.67% vs 0.92% | 33.70% vs 2.94% |
+| variant | Penmanshiel | 7.06% vs 1.05% | 17.64% vs 3.65% |
+| variant | pooled | 9.04% vs 0.98% | 26.46% vs 3.25% |
+
+**One measured caveat on P1.** An event is dated by its first step, so an event starting exactly
+at t could depend on steps after t for its 60-second qualification. 60 windows have an event
+starting at t. P1 is set only through such an event on 25 of them (12 positive). Without them P1
+reads 0.1253 on the full label, against 0.1262.
+
+**The frozen code set** was derived as registered: 18 codes, the same as §2's table. The report
+lists each code's count of training events opened, from 3 (6530, `anemometer defect`) to 231
+(4510).
+
+**What this outcome does not do.** It issues no verdict. It re-decides nothing in ADR-0021 to
+ADR-0028, and it authorises no run. Whether and how any of it enters the README, the research
+summary or the exam guide is the author's decision; this record does not touch them.
 
 ---
 

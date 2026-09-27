@@ -43,7 +43,8 @@ Two checks were added after the programme closed. Both are **exploratory**: no v
 > messages and US federal incident narratives share one vocabulary of 33,952 ids. I pretrained a
 > 10.45M-parameter decoder on 50,003,968 tokens per arm on one 8 GB GPU, and a frozen probe reads
 > the risk of a fault in the next 24 hours. Every test was registered before it ran, with a control
-> that could falsify it. The headline: the model does not beat time since the last fault. Like for
+> that could falsify it. The headline, from an exploratory post-closure check: the model does not
+> beat time since the last fault. Like for
 > like, a rule asking whether a fault started in the same 24 hours matches or beats it. The hours
 > since the last fault, looking back up to 720 hours, beats it on every seed. Pretraining is
 > visible, nine pairs of nine. The text-aware result, H1′, is SUPPORTED on the registered label;
@@ -523,10 +524,10 @@ Registered verdicts are unchanged. Where ADR-0029 reports what a rule would retu
 - **Paired statistics.** Every model-vs-model comparison uses a paired two-day block bootstrap.
 - **An instrument audit with 17 entries.** Each is a case where the instrument or a premise was the defect, not the model, with its counterfactual.
 - **The methodological finding.** The read-out decides whether text information is visible. The same frozen backbone reads INCONCLUSIVE through (a); through (d), H1′ is SUPPORTED on the registered label; INCONCLUSIVE under the ADR-0009 anemometer-excluded variant (ADR-0029, exploratory).
-- **The record checked itself, and reports the reversal.** The ADR-0009 with/without obligation and a persistence baseline were both added late, in ADR-0029, registered before any P-score AUPRC or variant-label metric was computed, apart from one disclosed spot check (flag prevalences had been seen, and are disclosed too). Together they turned around the only positive result, and the write-up leads with that.
+- **The record checked itself, and reports the reversal.** The ADR-0009 with/without obligation and a persistence baseline were both added late, in ADR-0029, registered before any P-score AUPRC or variant-label metric was computed, apart from one disclosed spot check (flag prevalences had been seen, and are disclosed too). The variant turned around the only positive result, the persistence check showed the model does not beat the event log, and the write-up leads with both.
 - **A full from-scratch stack on 8 GB:** data pipeline, both tokenizers, the transformer, the training loop and the evaluation harness.
 
-**The frame:** *a controlled study of what a from-scratch telemetry–text model learns, which does not beat time since the last fault*, not *a working fault predictor*.
+**The frame:** *a controlled study of what a from-scratch telemetry–text model learns, which does not beat time since the last fault* (ADR-0029, exploratory: P1, 24 h look-back, like-for-like; P2, up to 720 h, strongest), not *a working fault predictor*.
 
 ---
 
@@ -585,11 +586,11 @@ At Hill of Towie the result is marginal: 1 of 3 seeds clears its base rate. At C
 
 **Q18. What would you do next?**
 Three CPU analyses first, each registered before it runs, against a named sentence:
-1. **The incremental value of (d) over P2.** Fit a combination of P2 and the (d) score on 2021 validation, then ask on test whether it beats P2 alone. This is the direct test of whether the model adds anything to time since the last fault.
+1. **The incremental value of (d) over P2** (look-back up to 720 h). Fit a combination of P2 and the (d) score on 2021 validation, then ask on test whether it beats P2 alone. This is the direct test of whether the model adds anything to time since the last fault.
 2. **Continuation-excluded windows.** Drop the windows in which a fault episode is already under way at t, for example those with a narrow event start in the preceding 24 h (31.29% of test positives, 2.71% of negatives). Then re-score the model and every P score on the rest. This separates predicting a new fault from recognising a continuing one.
 3. **The Penmanshiel 2023–2024 confirmatory set.** No run has read it. Stage it under rules registered before staging, and score the frozen checkpoints on it. It answers the test-reuse problem: every registration so far read one test split.
 
-After those: per-site or rank-based bin fitting for cross-OEM transfer; recalibration on recent data; and a design that must beat P2 and the status-string counter, not just match the counter.
+After those: per-site or rank-based bin fitting for cross-OEM transfer; recalibration on recent data; and a design that must beat P2 (up to 720 h) and the status-string counter, not just match the counter.
 
 **Q19. What does "pre-registered" mean here?**
 The rule — metric, split, bootstrap, smallest effect, and the SUPPORTED / REFUTED / INCONCLUSIVE clauses — was written into `docs/DECISIONS.md` and committed in its own commit before the run. The outcome was written under it with the registering hash. Nothing was re-worded after the numbers existed. When a rule proved mis-specified, the old verdict stayed and a new rule was registered under a new number.
@@ -604,10 +605,10 @@ As a ranking aid for maintenance attention, never as a probability of failure, b
 It was registered as a separate hypothesis with a changed instrument, before its run, and the record says it was registered after H1's result was known. It carried its own random-init gate, so a read-out that merely read token embeddings would have failed. H1's INCONCLUSIVE stays on the record as the verdict for the last-position instrument. Say the outcome in full: SUPPORTED on the registered label; INCONCLUSIVE under the ADR-0009 anemometer-excluded variant (ADR-0029, exploratory). Fair in procedure is not the same as holding up: the variant check, which ADR-0009 required from the start, was not run for H1′ until ADR-0029.
 
 **Q23. Why no persistence baseline?**
-None was registered. Every registered comparator was built from the model's own tokens: random-init backbones, the order-blind bag of tokens and the status-only classifier. None of them reads the event history directly. The gap surfaced after the programme closed, when a reconnaissance found a fault-opening `Stop` row in 30.74% of test positives and 2.63% of negatives. ADR-0029 then added four persistence scores, exploratory, on the same windows with the same estimator. The honest answer: it should have been registered from the start. Had it been, H1′ and the parity framing would have been judged against P1 and P2 from the beginning.
+None was registered. Every registered comparator was built from the model's own tokens: random-init backbones, the order-blind bag of tokens and the status-only classifier. None of them reads the event history directly. The gap surfaced after the programme closed, when a reconnaissance found a fault-opening `Stop` row in 30.74% of test positives and 2.63% of negatives. ADR-0029 then added four persistence scores, exploratory, on the same windows with the same estimator. The honest answer: it should have been registered from the start. Had it been, H1′ and the parity framing would have been judged against P1 (24 h look-back, the model's own) and P2 (up to 720 h) from the beginning.
 
 **Q24. Is P2 fair?**
-As a baseline an operator could run, yes. P2 uses only event starts at or before t, which the event log already holds, and it is scored on the same windows with the same paired bootstrap. As a like-for-like comparison, no. P2 looks back up to 720 h, thirty times the model's 24 h window. That is why the like-for-like comparison is **P1**, which looks back 24 h, the same as the model. P1 beats joint (d) on the registered label (+0.0451 to +0.0577 per seed) and is level with it under the variant (every interval spans zero). **P2** is the strongest, and it beats joint (d) on both labels. Two measured caveats:
+All numbers here are ADR-0029's, exploratory. As a baseline an operator could run, yes. P2 uses only event starts at or before t, which the event log already holds, and it is scored on the same windows with the same paired bootstrap. As a like-for-like comparison, no. P2 looks back up to 720 h, thirty times the model's 24 h window. That is why the like-for-like comparison is **P1**, which looks back 24 h, the same as the model. P1 beats joint (d) on the registered label (+0.0451 to +0.0577 per seed) and is level with it under the variant (every interval spans zero). **P2** is the strongest, and it beats joint (d) on both labels. Two measured caveats:
 - P1 and P2 read every narrow event, anemometer-defect events included, so under the variant they use inputs the label no longer counts.
 - An event starting exactly at t might rest on steps after t for its 60-second qualification. That affects 25 windows (12 positive). Without them P1 reads 0.1253, against 0.1262.
 
@@ -620,7 +621,7 @@ The test base rate is 1.8× the training rate. ADR-0009 traced the rise to one s
 Answer in three layers.
 - **Registered.** Through the last-position read-out, H1 is INCONCLUSIVE. Through the text-aware read-out, H1′ is SUPPORTED on the registered label; INCONCLUSIVE under the ADR-0009 anemometer-excluded variant (ADR-0029, exploratory).
 - **Against a counter.** On the registered label joint (d) is at parity with the status-only classifier. Under the variant the classifier reads above joint (d) on all three seeds, and the intervals exclude zero on seeds 2 and 3 (ADR-0029, exploratory).
-- **Against persistence.** P3 reads a training fault-opening code from the raw status log over the preceding 24 h, and scores 0.1256. P1, a text-free check for an event start in the same 24 h, scores 0.1262. So the strings' signal looks largely like recurrence, and the event log carries as much.
+- **Against persistence.** P3 reads a training fault-opening code from the raw status log over the preceding 24 h, and scores 0.1256. P1, a text-free check for an event start in the same 24 h, scores 0.1262. So the strings' signal looks largely like recurrence, and the event log carries as much (ADR-0029, exploratory).
 
 So the status text carries risk signal, but on this evidence it is mostly "a fault just happened", and the model extracts no more of it than a counter or the event log. Whether the narrative corpus helps is undecided. `joint_no_txt` is INCONCLUSIVE, with its gate PASSED 9 of 9 on the registered label. Under the ADR-0009 anemometer-excluded variant the gate would FAIL, 5 of 9, and the arm would be NOT EVALUABLE (ADR-0029, exploratory).
 
@@ -674,7 +675,7 @@ ADR-0027  no_txt INCONCLUSIVE (−0.0030), gate PASS 9/9 registered · FAIL 5/9 
 ADR-0028  Gate A PASS ×3 · Gate B −0.0039 · H2 INCONCLUSIVE: Δcov −0.0797, Δrisk +0.0053
 CALIB     mean p 0.019–0.022 vs 0.0388 (≈2× under-read, registered) · variant vs 0.0243: a tenth
           to a fifth, ECE 0.004–0.005 (ADR-0029, exploratory) · rankings, not risks
-NEXT      (d) over P2 fitted on validation · continuation-excluded windows · Penmanshiel 2023–24
+NEXT      (d) over P2 (≤ 720 h) fitted on validation · continuation-excluded windows · Penmanshiel 2023–24
 AUDIT     17 instrument-audit entries (16: ADR-0009 obligation unexecuted; 17: no persistence baseline)
 GPU       RTX 4060 8 GB · floor 18.2 GPU-h over the programme
 SAY       "calibrated abstention implemented and evaluated; graceful degradation not established"

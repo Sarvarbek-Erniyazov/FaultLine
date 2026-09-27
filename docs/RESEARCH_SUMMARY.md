@@ -112,17 +112,17 @@ The text result changes sign between two read-outs of the same frozen backbones,
 
 **Split** (`configs/data/splits_v3.yaml`): train to 2020, validation 2021, test 2022 onward (Penmanshiel 2022 only; its 2023–2024 files were never staged). The pooled test split is thinned to stride 12, which keeps 5,799 of 5,800 two-day blocks and 497 of 506 positive blocks.
 
-**Statistics.** A block is a window's end step integer-divided by 288 within its shard: 48 h, twice the horizon. A replicate resamples the occupied blocks with replacement. A replicate without a positive is discarded, and more than 1% discarded untrusts the interval. No deciding row here discarded any. **Every comparison is paired**: both models are scored on identical resampled rows, and the interval is on Δ.
+**Statistics.** Blocks are 288 steps (48 h, twice the horizon) within each shard, resampled with replacement. A replicate without a positive is discarded, and more than 1% discarded untrusts the interval; no deciding row here discarded any. **Every comparison is paired**: both models are scored on identical resampled rows, and the interval is on Δ.
 
 **Why paired.** ADR-0023 required the trained model's interval to clear each random-init interval, each bootstrapped alone. For correlated estimates that is far stricter than a 5% test, and ADR-0024 §1 shows it "could not have passed at any of the four designs". The four FAILs stand. **ADR-0024's paired criterion was registered after them**, before any paired interval existed.
 
-**Controls.** (1) Random-init backbones: init seeds 1–3, no optimiser step, the same probe. (2) An order-blind bag of tokens: logistic regression on per-window token counts, trained with the probe's sampler (seed 1) on CPU. (3) An order-blind status-only classifier: the same model over text ids and `<txt>`/`</txt>` only, where an empty window is a zero histogram. It replaces a `txt_only` arm, which could not read the 1,088 empty positives.
+**Controls.** (1) Random-init backbones: init seeds 1–3, no optimiser step, the same probe. (2) An order-blind bag of tokens: logistic regression on per-window token counts, with the probe's sampler (seed 1). (3) An order-blind status-only classifier: the same model over text ids and `<txt>`/`</txt>` only. It replaces a `txt_only` arm, which could not read the 1,088 empty positives.
 
 **Decision rule.** The smallest effect of interest is 0.005 AUPRC, which is the resolution limit: seed spread 0.0068, single-seed half-width 0.0072. **SUPPORTED** if all three same-seed paired lower bounds exceed 0 and the median Δ exceeds 0.005. **REFUTED** if all three upper bounds are below 0.005. **INCONCLUSIVE** otherwise. Unnamed outcomes are reported as measured, and no clause is added afterwards.
 
 ### 3.6 Pre-registration mechanics
 
-Each rule is committed before any scoring code exists. From ADR-0022 onward, its configuration by value and a test that parses the rule are committed with it. The next commit records the hash. The outcome follows in a later commit, and a configuration a run has read is never edited.
+Each rule is committed before any scoring code exists (from ADR-0022, with its configuration and a test that parses the rule); the next commit records the hash, the outcome follows later, and a configuration a run has read is never edited.
 
 | gate | registered | hash recorded | code or run | outcome |
 |---|---|---|---|---|
@@ -158,7 +158,7 @@ Each rule is committed before any scoring code exists. From ADR-0022 onward, its
 
 ### 5.1 Persistence and the ADR-0009 variant (ADR-0029, exploratory)
 
-ADR-0029 was registered after the programme closed and is **exploratory**: reported, not gating, and no verdict is re-decided. It discloses what was seen first: the fault-opening `Stop`-row prevalence (2.63% of negatives, 30.7% of positives), the has-text flag's 0.0423, and one variant spot check (0.0780 → 0.0632); no P-score AUPRC had been computed. Everything is recomputed from saved per-window scores.
+ADR-0029 was registered after the programme closed and is **exploratory**: reported, not gating, and no verdict is re-decided. It discloses what was seen first: the fault-opening `Stop`-row prevalence (2.63% of negatives, 30.7% of positives), the has-text flag's 0.0423, and one variant spot check (0.0780 → 0.0632); no P-score AUPRC had been computed. All is recomputed from saved scores.
 
 **The variant.** `narrow_within_24h_without` drops the events `anemometer defect` opens. It knows 137,016 of the 137,025 evaluated windows, 3,330 of them positive (π = 0.0243). The 9 it does not know, at Penmanshiel on 2022-12-31, are positive only through such events and have horizons that run past the end of the record.
 
@@ -239,7 +239,7 @@ H1′ fails on one seed: seed 2's joint (d) loses 0.0296 AUPRC to the variant, a
 
 *Derived check, not a registered result.* A score equal to (d)'s has-text flag alone (1 on the 97,810 windows holding any text token, 4,224 of them positive; 0 elsewhere) reads AUPRC 0.0423 [0.0378, 0.0469] on the 137,025 test windows (π = 0.0388, same estimator). The flag alone cannot account for (d)'s 0.0685–0.0810.
 
-*Reading.* The text signal sits at the joint backbone's text positions and is recoverable there by the one-hidden-layer probe, not at the last position. What is recovered matches, and does not exceed, an order-blind count of the strings, and it does not reach P1 or P2 (§5.1). Part of it is available from an untrained backbone's embeddings: random-init (d) reads above trained `tel_only` (a) on seeds 1 and 3 and within 0.0001 of it on seed 2 (first table).
+*Reading.* The text signal sits at the joint backbone's text positions and is recoverable there by the one-hidden-layer probe, not at the last position. What is recovered matches an order-blind count of the strings on the registered label and falls below it under the variant, and it stays below P1 (24 h; level under the variant) and P2 (up to 720 h) (§5.1; ADR-0029, exploratory). Part of it is available from an untrained backbone's embeddings: random-init (d) reads above trained `tel_only` (a) on seeds 1 and 3 and within 0.0001 of it on seed 2 (first table).
 
 ### 5.3 Pretraining against random initialisation and a bag of tokens (ADR-0024)
 
@@ -306,7 +306,7 @@ On test, the mean p (0.019–0.022) is about half of π on the registered label,
 | ADR-0025 | H1 | `3e29202` | `23699ee` | **INCONCLUSIVE** | median −0.0018 |
 | ADR-0026 | H1′ + instrument gate | `319ae3b` | `9beebaa` | **SUPPORTED** on the registered label; INCONCLUSIVE under the ADR-0009 anemometer-excluded variant (ADR-0029, exploratory); gate **PASS** | median +0.0200; gate 9/9 |
 | ADR-0027 | narrative corpus; surface form | `179d769` | `183b1a0` | **INCONCLUSIVE** (gate PASS; FAIL under the variant, ADR-0029, exploratory); **NOT EVALUABLE** | median −0.0030; gate 4/9 |
-| ADR-0029 | ADR-0009 variant; persistence | `db5fb96` | `0468f1f` | exploratory; no verdict | Table A; P1 0.1262, P2 0.2211 |
+| ADR-0029 | ADR-0009 variant; persistence | `db5fb96` | `0468f1f` | exploratory; no verdict | Table A; P1 (24 h) 0.1262, P2 (≤ 720 h) 0.2211 |
 | ADR-0028 | H2 + Gates A, B | `8f7f10e` | `b659897` | Gate A **PASS** ×3; Gate B damage; H2 **INCONCLUSIVE** | Δcov −0.0797; Δrisk +0.0053 [+0.0033, +0.0074] |
 
 ---
@@ -317,17 +317,17 @@ On test, the mean p (0.019–0.022) is about half of π on the registered label,
 
 **Negative outcomes stand under the same rules.** Both shift axes are NOT EVALUABLE. ADR-0023's four FAILs remain beside the corrected criterion, and H1's INCONCLUSIVE stands beside H1′'s paired outcome. ADR-0027 named INCONCLUSIVE as its likeliest outcome before running.
 
-**The record's own obligation, once executed, turned around its only positive result.** ADR-0009 registered a robustness obligation at M1: report every late-test result with and without the `anemometer defect` events. It went unexecuted for H1, H1′, ADR-0027 and ADR-0028 until the verification pass for this summary found the gap. ADR-0029 executed it and added a persistence baseline check. Both were registered before any P-score AUPRC or variant metric was computed, apart from one disclosed spot check. H1′, the parity result and the `joint_no_txt` gate do not hold under the variant, and the model does not beat a 24 h event-log look-back of its own length. The verdicts stand as registered; this summary leads with the reversal. An obligation left unexecuted is a degree of freedom.
+**The record's own obligation, once executed, turned around its only positive result.** ADR-0009 registered a robustness obligation at M1: report every late-test result with and without the `anemometer defect` events. It went unexecuted for H1, H1′, ADR-0027 and ADR-0028 until this summary's verification pass found the gap. ADR-0029 executed it with a persistence check, registered before any P-score AUPRC or variant metric bar one disclosed spot check. H1′, the parity result and the `joint_no_txt` gate do not hold under the variant, and the model does not beat P1, a 24 h event-log look-back of its own length, or P2, which looks back up to 720 h. The verdicts stand as registered; this summary leads with the reversal. An obligation left unexecuted is a degree of freedom.
 
-**Every positive claim met a falsifying control, and three framings fell.** The bag of tokens falsified sequence-structure learning in the telemetry model. The status-only classifier falsified the claim that the joint model extracts more from text than a string count. Persistence falsified the claim that it adds to the event log. The random-init gate on (d) passed, and it also exposed how much of (d)'s level an untrained backbone reaches.
+**Every positive claim met a falsifying control, and three framings fell.** The bag of tokens falsified sequence-structure learning in the telemetry model. The status-only classifier falsified the claim that the joint model extracts more from text than a string count (parity on the registered label; below it under the variant). Persistence (ADR-0029, exploratory) falsified the claim that it adds to the event log. The random-init gate on (d) passed, and it also exposed how much of (d)'s level an untrained backbone reaches.
 
-**Scale is stated.** A measured ~0.005 resolution, three seeds per arm and control, one RTX 4060, and a programme floor of **18.2 GPU-hours** (Appendix B). The audit has 17 entries, each with its counterfactual; entries 16 and 17 record the two gaps above.
+**Scale is stated.** A ~0.005 resolution, three seeds per arm and control, one RTX 4060, **18.2 GPU-hours** (Appendix B). The audit has 17 entries, each with its counterfactual; entries 16 and 17 record the two gaps above.
 
 ---
 
 ## 7. Limitations and threats to validity
 
-**Low absolute performance, below persistence.** The best clean single-probe read, joint (d) seed 2 at 0.0810 [0.0697, 0.0939], is 2.1× π = 0.0388. P1, with the same 24 h look-back, reads 0.1262, and P2, looking back up to 720 h, reads 0.2211. It is a ranking signal, weaker than a lookup.
+**Low absolute performance, below persistence.** The best clean single-probe read, joint (d) seed 2 at 0.0810 [0.0697, 0.0939], is 2.1× π = 0.0388. P1, with the same 24 h look-back, reads 0.1262, and P2, looking back up to 720 h, reads 0.2211 (ADR-0029, exploratory). It is a ranking signal, weaker than a lookup.
 
 **Parity, not superiority.** On the registered label, joint (d) matches an order-blind string count, and the telemetry model matches a token histogram. Under the variant the string count reads above joint (d) (ADR-0029, exploratory).
 
@@ -339,7 +339,7 @@ On test, the mean p (0.019–0.022) is about half of π on the registered label,
 
 **Post-hoc elements and test reuse.** H1′ was registered after H1's result and evaluated on the same windows. The ADR-0022 addendum's criterion followed point estimates, and ADR-0024's followed ADR-0023's FAILs. H3 was withdrawn at its testability gate: 0 of 693 Hill of Towie events and 0 of 45 CARE anomalies mapped to a string type. ADR-0029 followed a reconnaissance and is exploratory by design. No confirmatory split untouched by any registration has been used.
 
-**Recurrence and continuation are not separated.** A narrow event started in the preceding 24 h for 31.29% of test positives and 2.71% of negatives. The record does not separate a new fault from a continuing episode, and R2 was never measured for (d).
+**Recurrence and continuation are not separated.** A narrow event started in the preceding 24 h for 31.29% of test positives and 2.71% of negatives (ADR-0029, exploratory). The record does not separate a new fault from a continuing episode, and R2 was never measured for (d).
 
 **Narrow domain, small scale, few external baselines.** Both training farms are Senvion, from one publisher; 3.5M backbone parameters and 50M tokens per arm leave the models undertrained. Persistence exists only as an exploratory comparator, and there is no GBDT, normal-behaviour model or time-series foundation model.
 
@@ -349,13 +349,13 @@ On test, the mean p (0.019–0.022) is about half of π on the registered label,
 
 What follows is a request for expert feedback — specifically, how would you strengthen the methodology, results, or framing to make this a strong top-tier submission (e.g., NeurIPS/ICML workshop, applied ML venue, or an energy-AI journal)? What's the strongest angle for a paper here — the read-out finding, the pre-registration framework, the negative-result methodology, or something else?
 
-1. **Framing.** The leading candidate angle is now **evaluation practice in SCADA fault prediction (persistence, continuation, defect clusters)**. A pre-registered from-scratch model does not beat time since the last fault, its only positive result depends on one defect-message cluster, and an unexecuted robustness obligation hid both. Is that the strongest framing, or should the read-out finding lead?
+1. **Framing.** The leading candidate angle is now **evaluation practice in SCADA fault prediction (persistence, continuation, defect clusters)**. A pre-registered from-scratch model does not beat time since the last fault (P1, 24 h, like-for-like; P2, up to 720 h, strongest), its only positive result depends on one defect-message cluster, and an unexecuted robustness obligation and a missing persistence baseline hid them. Is that the strongest framing, or should the read-out finding lead?
 2. **Experiments.** Please rank, cut or add to these candidates, marking any you consider mandatory:
-   - the incremental value of (d) over P2, with the combination fitted on 2021 validation (CPU);
-   - continuation-excluded windows: drop windows in which a fault episode is already under way at t, and re-score the model and P1-P4 (CPU);
+   - the incremental value of (d) over P2 (up to 720 h), with the combination fitted on 2021 validation (CPU);
+   - continuation-excluded windows: drop windows in which a fault episode is already under way at t, and re-score the model, P1 (24 h) and P2 (up to 720 h) (CPU);
    - the Penmanshiel 2023–2024 confirmatory set, which no run has read, staged under rules registered before staging (CPU scoring of the frozen checkpoints);
    - decomposing read-out (d) (last-position only / text mean only / has-text flag only);
-   - standard baselines: GBDT on engineered SCADA features plus status counts and P2; a normal-behaviour model; a frozen pretrained time-series foundation model under the same probe;
+   - standard baselines: GBDT on engineered SCADA features plus status counts and P2 (up to 720 h); a normal-behaviour model; a frozen pretrained time-series foundation model under the same probe;
    - a per-turbine or per-OEM normalisation tokenizer variant on CARE; CARE under its published benchmark protocol;
    - one additional scale point.
 3. **Test reuse.** Is test-set reuse across sequential, disclosed registrations acceptable, or does the paper need the fresh confirmatory set?
@@ -394,7 +394,7 @@ What follows is a request for expert feedback — specifically, how would you st
 
 ## Appendix B — Reproduction
 
-**Environment.** One supported environment: `uv sync --extra dev` from the committed [uv.lock](../uv.lock); torch 2.14.0 (`+cu132`); NVIDIA GeForce RTX 4060, 8 GB, driver 616.56 ([ENVIRONMENT.md](ENVIRONMENT.md)). Gates: `scripts/gates.sh` (ruff, ruff format, `mypy --strict`, pytest, naming, untracked files). Raw telemetry is downloaded from the version-pinned Zenodo records in `configs/data/sources_telemetry.yaml` and md5-verified. Text is fetched by `faultline download text` and pinned by sha256.
+**Environment.** One supported environment: `uv sync --extra dev` from the committed [uv.lock](../uv.lock); torch 2.14.0 (`+cu132`); NVIDIA GeForce RTX 4060, 8 GB, driver 616.56 ([ENVIRONMENT.md](ENVIRONMENT.md)). Gates: `scripts/gates.sh`. Raw telemetry comes from the version-pinned Zenodo records in `configs/data/sources_telemetry.yaml`, md5-verified; text is fetched by `faultline download text`, pinned by sha256.
 
 **Configurations and entry points.** Each `faultline model …` command defaults to the configuration shown and writes its report under `reports/data/` with the configuration hash and git SHA.
 
@@ -427,4 +427,4 @@ What follows is a request for expert feedback — specifically, how would you st
 | ADR-0027 F8-2 (6 pretrainings, 9 probes, 9 scorings) | 3.37 |
 | ADR-0028 F9-2 (21 scorings) | 2.24 |
 
-These wall-clock figures are measured differently from the sidecar floor and are not additive with it. Some include CPU bootstrap time (G1), and F3's two invocations overlap in work. F6-2's joint pretraining and probes are not itemised in DECISIONS.md.
+These wall-clock figures are not additive with the sidecar floor: some include CPU bootstrap time (G1), F3's two invocations overlap, and F6-2 is not itemised.

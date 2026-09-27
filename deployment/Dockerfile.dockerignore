@@ -1,0 +1,12 @@
+# Allow-list: exclude everything, then re-include only what the image carries.
+*
+!src/
+!inference/
+!evaluation/
+!deployment/
+!checkpoints/model.pt
+!data/tokenizers/quantile_bins_v2_9cd52b65.json
+!data/tokenizers/text_bpe_v1_22c56e49.json
+!lesson11/demo/
+**/__pycache__
+**/*.pyc

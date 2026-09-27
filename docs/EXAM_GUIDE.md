@@ -1,5 +1,5 @@
 > **EXAM STUDY GUIDE — not the project README. Canonical record: README.md, docs/DECISIONS.md.**
-> Written against commit `9fc78eb`. Where this guide and the record differ, the record is right.
+> Written against commit `9fc78eb`; §0.5 and the ADR-0029 material against `0468f1f`. Where this guide and the record differ, the record is right.
 
 # FaultLine: exam study guide
 
@@ -14,20 +14,41 @@
   - "calibrated abstention implemented and evaluated; graceful degradation not established"
   - "scores are rankings, not risks, without recent recalibration"
   - the CPU stream demo is "an end-to-end pipeline through to a CPU inference demo". Never say "deployed".
+- Two more rules since ADR-0029 (§0.5):
+  - H1′ is always said in one breath: "SUPPORTED on the registered label; INCONCLUSIVE under the ADR-0009 anemometer-excluded variant (ADR-0029, exploratory)". Never call H1′ "robust".
+  - Every persistence score is said with its lookback: P1 looks back 24 h, the same as the model; P2 looks back up to 720 h. "Does not beat persistence" cites P1 as the like-for-like comparison and P2 as the strongest.
+
+## §0.5 What changed on 2026-09-27 (ADR-0029)
+
+Two checks were added after the programme closed. Both are **exploratory**: no verdict is re-decided, and every registered verdict word in this guide stands as written.
+
+**1. The anemometer check.** ADR-0009 required every late-test result to be reported twice: with and without the fault events that the message `anemometer defect` opens, because they look like a reporting change. That was never done for H1, H1′, ADR-0027 or ADR-0028. ADR-0029 did it on the saved scores. Without those events the test base rate falls from 0.0388 to 0.0243. Most results hold. These do not:
+
+- H1′ is SUPPORTED on the registered label; INCONCLUSIVE under the ADR-0009 anemometer-excluded variant (ADR-0029, exploratory). Seed 2's gain falls to +0.0031 [−0.0076, +0.0116].
+- The status-string counter moves from level with joint (d) to above it on all three seeds.
+- The `joint_no_txt` gate would FAIL (5 of 9) instead of PASS.
+- The calibration under-read shrinks from about half to about a tenth to a fifth.
+
+**2. The persistence check.** Nobody had compared the model with the simplest rule: a turbine that just had a fault will have another.
+
+- **P1** asks whether a fault started in the last 24 h, the model's own window. This is the like-for-like comparison. P1 beats joint (d) on the registered label and is level with it under the variant.
+- **P2** is minus the hours since the last fault start, looking back up to 720 h. This is the strongest. It beats joint (d) on both labels: 0.2211 against 0.0685–0.0810, and 0.0944 against 0.0514–0.0632.
+
+**The new headline:** the model does not beat time since the last fault. A fault started in the preceding 24 h for 31.29% of test positives and 2.71% of negatives. Much of the task is recurrence.
 
 ### The 60-second pitch
 
 > FaultLine is a controlled study of what a small transformer, built from scratch, learns from
-> wind-turbine telemetry and operator text. I turned ten-minute SCADA data from two UK wind farms into
-> tokens, 13 per ten minutes. I put them in one vocabulary of 33,952 ids together with turbine status
-> messages and US federal incident narratives. I pretrained an 8-layer decoder with 10,454,208
-> parameters on 50,003,968 tokens per arm, on one 8 GB GPU. Then I froze it and trained a small probe
-> to read the risk of a fault in the next 24 hours. Every test was registered before it ran, and
-> every test had a control that could have falsified it. Pretraining beats a random-init backbone
-> nine times out of nine, by +0.009 to +0.019 AUPRC. Both site-shift tests came back negative. Read
-> with a text-aware head, the joint model beats telemetry-only by a median +0.0200. It only matches a
-> classifier that counts the status strings, though. So this is a careful measurement, not a working
-> fault predictor.
+> wind-turbine telemetry and operator text. Ten-minute SCADA data from two UK wind farms, status
+> messages and US federal incident narratives share one vocabulary of 33,952 ids. I pretrained a
+> 10.45M-parameter decoder on 50,003,968 tokens per arm on one 8 GB GPU, and a frozen probe reads
+> the risk of a fault in the next 24 hours. Every test was registered before it ran, with a control
+> that could falsify it. The headline: the model does not beat time since the last fault. Like for
+> like, a rule asking whether a fault started in the same 24 hours matches or beats it. The hours
+> since the last fault, looking back up to 720 hours, beats it on every seed. Pretraining is
+> visible, nine pairs of nine. The text-aware result, H1′, is SUPPORTED on the registered label;
+> INCONCLUSIVE under the ADR-0009 anemometer-excluded variant (ADR-0029, exploratory). So this is a
+> careful measurement, not a working fault predictor.
 
 ---
 
@@ -41,7 +62,7 @@
 - **"A fault event in the next 24 hours"** is the label `narrow_within_24h`. It asks: does a technical-cause stop start in the next 144 ten-minute steps?
 - **The pre-registered hypotheses.**
   - **H1** (ADR-0025): "the text pathway carries signal the telemetry tokens do not". Tested as the joint arm against `tel_only`, with the same seed, the same windows and a paired Δ AUPRC. The smallest effect of interest is 0.005.
-  - **H1′** (ADR-0026): the same hypothesis re-tested with a changed instrument, the text-aware read-out (d). It was registered after H1's result was known, and the record says so.
+  - **H1′** (ADR-0026): the same hypothesis re-tested with a changed instrument, the text-aware read-out (d). It was registered after H1's result was known, and the record says so. Outcome: SUPPORTED on the registered label; INCONCLUSIVE under the ADR-0009 anemometer-excluded variant (ADR-0029, exploratory).
   - **H2** (ADR-0028): "As degradation severity rises, coverage falls and selective risk stays approximately flat … if coverage stays flat while selective risk rises, H2 is refuted."
   - **Site shift.** This is **not a numbered hypothesis**. It was tested as pre-registered gates: ADR-0021 (Hill of Towie, a held-out site) and ADR-0022 (CARE, held-out farms from other manufacturers).
   - H3 (cross-OEM transfer of status semantics, ADR-0007) was **withdrawn** at its own testability gate: 0 of 693 Hill of Towie narrow events and 0 of 45 CARE anomalies map to a status-string type. H3′ (ADR-0017) is a text-side claim about the surface form of status strings.
@@ -193,7 +214,7 @@ In the `tel+status` stream, the message follows the 13 tokens of its step, wrapp
 
 Normalisation turns the string-initial piece `Automatic` (a rare piece, id 16293) into ` automatic`, the form prose uses (id 2404). Across all 264 strings, the count with every token frequent in training rose from 18 to 80. The pre-registered line was 50, so surface convention was CONFIRMED as the dominant barrier (ADR-0017).
 
-**If challenged.** *"Why pretrain on nuclear and pipeline text for wind turbines?"* It is the only large, legal, public source of operational incident language, and there is no paired wind text. The record tested whether it helps: ADR-0027's `joint_no_txt` (no narrative corpus) is INCONCLUSIVE. So the question stays open, and nothing is claimed.
+**If challenged.** *"Why pretrain on nuclear and pipeline text for wind turbines?"* It is the only large, legal, public source of operational incident language, and there is no paired wind text. The record tested whether it helps: ADR-0027's `joint_no_txt` (no narrative corpus) is INCONCLUSIVE, and its gate PASSED on the registered label; under the ADR-0009 anemometer-excluded variant that gate would FAIL, 5 of 9 (ADR-0029, exploratory). So the question stays open, and nothing is claimed.
 
 ### 3.3 Joint vocabulary (ADR-0003 v2): 33,952 ids
 
@@ -423,6 +444,8 @@ flowchart TD
 
 ## §5 Results
 
+Registered verdicts are unchanged. Where ADR-0029 reports what a rule would return under the ADR-0009 anemometer-excluded variant (test base rate 0.0243, 3,330 of 137,016 windows), the row says so, and those numbers are **exploratory**. The ADR-0029 rows at the foot of the table are exploratory too.
+
 | gate / test | hypothesis | result with 95% CI | verdict | ADR | report file |
 |---|---|---|---|---|---|
 | Hill of Towie held-out site (seed 1) | site shift | 0.0393 [0.0306, 0.0553] vs base rate 0.03325 | **NOT EVALUABLE** | 0021 | `reports/data/gate_check_v0_20260916.md` |
@@ -432,17 +455,25 @@ flowchart TD
 | pretrained vs random-init, paired, 3 × 3 | probe can see pretraining | Δ +0.009 to +0.019; 9 of 9 lower bounds > 0 | **PASS** | 0024 | `reports/data/seed_replication_v0_20260917.md` |
 | probe vs bag-of-tokens, 3 seeds | — (reported) | +0.0016 [−0.0059, +0.0084], +0.0053 [−0.0017, +0.0128], −0.0015 [−0.0094, +0.0053] | parity (no gate) | 0024 | `reports/data/seed_replication_v0_20260917.md` |
 | joint vs `tel_only`, read-out (a) | H1 | +0.0022 [−0.0034, +0.0068], −0.0022 [−0.0084, +0.0021], −0.0018 [−0.0060, +0.0021]; median −0.0018 | **INCONCLUSIVE** | 0025 | `reports/data/h1_gate_v0_20260919.md` |
-| (d) trained vs random-init gate | instrument | 9 of 9 lower bounds > 0, weakest +0.0058 | **PASS** | 0026 | `reports/data/readout_v0_20260920.md` |
-| joint (d) vs `tel_only` (a) | H1′ | +0.0200 [+0.0112, +0.0294], +0.0234 [+0.0128, +0.0342], +0.0170 [+0.0111, +0.0232]; median +0.0200 | **SUPPORTED** | 0026 | `reports/data/readout_v0_20260920.md` |
-| joint (d) vs status-only classifier | — (reported) | +0.0055 [−0.0173, +0.0241], +0.0085 [−0.0141, +0.0265], −0.0040 [−0.0264, +0.0125] | parity | 0026 | `reports/data/readout_v0_20260920.md` |
-| `joint_no_txt` | narrative corpus matters | gate PASS 9 of 9; median −0.0030 | **INCONCLUSIVE** | 0027 | `reports/data/ablation_gate_v0_20260923.md` |
+| (d) trained vs random-init gate | instrument | 9 of 9 lower bounds > 0, weakest +0.0058; variant: 9 of 9, weakest +0.0012 | **PASS** (variant: PASS) | 0026 | `reports/data/readout_v0_20260920.md` |
+| joint (d) vs `tel_only` (a) | H1′ | +0.0200 [+0.0112, +0.0294], +0.0234 [+0.0128, +0.0342], +0.0170 [+0.0111, +0.0232]; median +0.0200. Variant: +0.0140 [+0.0026, +0.0264], +0.0031 [−0.0076, +0.0116], +0.0137 [+0.0077, +0.0201] | **SUPPORTED** on the registered label; **INCONCLUSIVE** under the ADR-0009 anemometer-excluded variant (ADR-0029, exploratory) | 0026, 0029 | `reports/data/readout_v0_20260920.md`; `reports/data/exploratory_v0_20260926.md` |
+| joint (d) vs status-only classifier | — (reported) | +0.0055 [−0.0173, +0.0241], +0.0085 [−0.0141, +0.0265], −0.0040 [−0.0264, +0.0125]. Variant: −0.0187 [−0.0534, +0.0093], −0.0305 [−0.0635, −0.0058], −0.0299 [−0.0641, −0.0050] | parity on the registered label; under the variant the classifier reads above joint (d) on all three seeds, excluding zero on seeds 2 and 3 (ADR-0029, exploratory) | 0026, 0029 | `reports/data/readout_v0_20260920.md`; `reports/data/exploratory_v0_20260926.md` |
+| `joint_no_txt` | narrative corpus matters | gate PASS 9 of 9; median −0.0030. Variant: gate 5 of 9, weakest −0.0020 | **INCONCLUSIVE**; gate PASS on the registered label, FAIL under the ADR-0009 anemometer-excluded variant, which would make the arm NOT EVALUABLE (ADR-0029, exploratory) | 0027, 0029 | `reports/data/ablation_gate_v0_20260923.md`; `reports/data/exploratory_v0_20260926.md` |
 | `joint_status_raw` | H3′ normalisation matters | gate FAIL 4 of 9; median −0.0037 | **NOT EVALUABLE** | 0027 | `reports/data/ablation_gate_v0_20260923.md` |
 | Gate A, uncertainty informative | — | joint (d) Δ AURC −0.0275 [−0.0302, −0.0250]; PASS on all three arms | **PASS** | 0028 | `reports/data/abstention_v0_20260924.md` |
 | Gate B, damage at k = 8 | — | Δ AUPRC −0.0039 [−0.0082, −0.0001] | **DAMAGE, narrowly** | 0028 | `reports/data/abstention_v0_20260924.md` |
-| graceful degradation, k = 8 | H2 | Δcov −0.0797 [−0.0841, −0.0753]; Δrisk +0.0053 [+0.0033, +0.0074] | **INCONCLUSIVE** | 0028 | `reports/data/abstention_v0_20260924.md` |
+| graceful degradation, k = 8 | H2 | Δcov −0.0797 [−0.0841, −0.0753]; Δrisk +0.0053 [+0.0033, +0.0074]. Variant: Δrisk +0.0044 [+0.0024, +0.0064] | **INCONCLUSIVE** (variant: same) | 0028 | `reports/data/abstention_v0_20260924.md` |
+| calibration, joint (d) ensemble | — (reported) | mean p 0.0216 against 0.0388; ECE 0.0172, 0.0164 after Platt. Variant: mean p 0.0216 against 0.0243; ECE 0.0047, 0.0048 after Platt | under-read about half on the registered label; about a tenth to a fifth under the ADR-0009 anemometer-excluded variant (ADR-0029, exploratory) | 0028, 0029 | `reports/data/abstention_v0_20260924.md`; `reports/data/exploratory_v0_20260926.md` |
+| P1 persistence: an event started in (t − 24 h, t]; 24 h lookback, the same as the model | — (exploratory) | 0.1262 [0.1024, 0.1528]; P1 − joint (d) +0.0451 to +0.0577 per seed. Variant: 0.0625 [0.0463, 0.0821]; every P1 − joint (d) interval spans zero | like-for-like: beats joint (d) on the registered label; level under the variant | 0029 | `reports/data/exploratory_v0_20260926.md` |
+| P2 persistence: −hours since the last event start; lookback up to 720 h | — (exploratory) | 0.2211 [0.1862, 0.2582]; P2 − joint (d) +0.1400 to +0.1526. Variant: 0.0944 [0.0735, 0.1189]; P2 − joint (d) +0.0312 to +0.0430, every interval above zero | strongest: beats joint (d) on both labels | 0029 | `reports/data/exploratory_v0_20260926.md` |
 
 ### The story, in order
 
+0. **The headline, from ADR-0029 (exploratory): the model does not beat time since the last fault.**
+   - **Like for like, P1** (24 h lookback, the same as the model): 0.1262 against joint (d)'s 0.0685–0.0810 on the registered label, every paired interval above zero. Under the variant P1 reads 0.0625 and every interval against joint (d) spans zero: level.
+   - **Strongest, P2** (lookback up to 720 h): 0.2211 on the registered label, 0.0944 under the variant. It beats joint (d) on every seed under both labels, and the three-seed ensemble by +0.1418 [+0.1103, +0.1746] and +0.0371 [+0.0178, +0.0580].
+   - **Why.** A narrow event started in the preceding 24 h for 31.29% of test positives and 2.71% of negatives (variant: 26.46% and 3.25%). Much of the task is recurrence.
+   - **What the model's input loses.** P3 reads the training fault-opening codes from the raw status log over (t − 24 h, t]; P4 reads them only from the model's own window. P3 − P4 is +0.0004 [−0.0009, +0.0019]. The pipeline loses almost nothing: 173 windows lose the flag, all to the 2,048-token cap.
 1. **Site shift: two pre-registered negatives.**
    - **Hill of Towie.** The rule needs the block-bootstrap lower bound above the site's base rate, 0.03325. Seed 1 scored 0.0393 [0.0306, 0.0553]: NOT EVALUABLE. Over three seeds only one clears (1 of 3), so it is still NOT EVALUABLE. The site is "marginal, not null".
    - **CARE.** It sits at chance on every seed: 0.0012–0.0013 against a base rate of 0.001254, over 430,506 windows holding all 45 labelled events. "CARE is at chance, not merely wide."
@@ -450,18 +481,20 @@ flowchart TD
    - **Consequence:** the only evaluable axis is forward-in-time at the training sites. No result below is a site-shift result.
 2. **Pretraining is visible to the probe.** Pretrained vs random-init, paired, 3 pretraining seeds × 3 init seeds: **9 of 9** lower bounds above zero, Δ **+0.009 to +0.019**. That is a quarter to a half of the base rate. Untrained backbones already read 0.039–0.042; trained ones read 0.051–0.058.
 3. **Telemetry-only is at parity with a bag of tokens.** All three paired intervals span zero, and the sign flips across seeds. On this stream, at this size and budget, order does not measurably help.
-4. **H1 is INCONCLUSIVE, then H1′ is SUPPORTED.**
+4. **H1 is INCONCLUSIVE, then H1′ is SUPPORTED on the registered label; INCONCLUSIVE under the ADR-0009 anemometer-excluded variant (ADR-0029, exploratory).**
    - H1's read-out was the last position, which is always a telemetry token. The decomposition shows why the result was flat: the joint window costs the `tel_only` backbone −0.0122, −0.0096 and −0.0076, and joint pretraining recovers +0.0144, +0.0075 and +0.0059. The two cancel.
-   - H1′ used the same frozen backbones with the text-aware read-out (d). The gate PASSED 9 of 9, weakest +0.0058. H1′ is SUPPORTED with a median of **+0.0200**, four times the smallest effect of interest.
+   - H1′ used the same frozen backbones with the text-aware read-out (d). The gate PASSED 9 of 9, weakest +0.0058. H1′ is SUPPORTED on the registered label with a median of **+0.0200**, four times the smallest effect of interest.
    - Level check: joint (d) scores 0.0780, 0.0810 and 0.0685, against `tel_only` (a) at 0.0580, 0.0576 and 0.0515.
-5. **Parity with counting strings.** The status-only order-blind classifier scores **0.0725 [0.0537, 0.0979]**. That is its **AUPRC**, not a Δ. The paired Δ of joint (d) against it spans zero on all three seeds. "A linear read of the SLM's text-position states matches a histogram of the strings; it does not beat it."
+   - **Under the variant (ADR-0029, exploratory)** the rule would return INCONCLUSIVE. Seed 2 fails: +0.0031 [−0.0076, +0.0116]. Its joint (d) loses 0.0296 AUPRC to the variant, while `tel_only` (a) seed 2 loses 0.0093. The median falls from +0.0200 to +0.0137. The instrument gate still passes, weakest +0.0012.
+5. **Parity with counting strings.** The status-only order-blind classifier scores **0.0725 [0.0537, 0.0979]**. That is its **AUPRC**, not a Δ. On the registered label the paired Δ of joint (d) against it spans zero on all three seeds. "A linear read of the SLM's text-position states matches a histogram of the strings; it does not beat it." Under the variant (ADR-0029, exploratory) the classifier rises to 0.0819 [0.0538, 0.1200], lift 3.37. It is the only read whose AUPRC rises. It reads above joint (d) on all three seeds, and the intervals exclude zero on seeds 2 and 3.
 6. **F8 / ADR-0027: neither sentence decided.**
-   - `joint_no_txt` passed its gate and is INCONCLUSIVE (median −0.0030).
+   - `joint_no_txt` passed its gate and is INCONCLUSIVE (median −0.0030). Under the variant (ADR-0029, exploratory) the gate would FAIL, 5 of 9, which would make the arm NOT EVALUABLE.
    - `joint_status_raw` failed its gate (4 of 9) and is NOT EVALUABLE. On raw-cased windows, untrained backbones already read 0.0665, 0.0653 and 0.0651, so the instrument cannot separate pretraining from the tokens.
 7. **F9 / ADR-0028: calibrated abstention implemented and evaluated; graceful degradation not established.**
    - Gate A PASSED on all three arms. Gate B found narrow damage. H2 is INCONCLUSIVE.
    - **Calibration.** The mean predicted probability is 0.019–0.022 against a base rate of 0.0388. That is an under-read by about half (DECISIONS.md), or "about 2×" (README.md), both before and after Platt. For joint (d), ECE went 0.0172 → 0.0164 with Platt.
    - Part of the cause is the post-2021 rise in event rate, which Platt fitted at the validation base rate of 0.0211 cannot remove. The record also finds an in-time component, a property of the probe: two of three `tel_only` seeds under-read on 2021 validation (0.0185 and 0.0183 against 0.0211). So the scores are rankings, not risks, without recent recalibration.
+   - **Under the variant (ADR-0029, exploratory)** the mean probability does not move, but the base rate falls to 0.0243. The under-read becomes about a tenth to a fifth, and ECE falls from 0.016–0.019 to 0.004–0.005 on every arm, before and after Platt. Much of the "about half" is the label change. The agreed phrase still holds.
 
 ---
 
@@ -471,14 +504,16 @@ flowchart TD
 
 | what | most likely reason (as the record states it) |
 |---|---|
+| Joint (d) does not beat persistence (ADR-0029, exploratory) | Much of the task is recurrence: a fault started in the preceding 24 h for 31.29% of test positives and 2.71% of negatives. Like for like, P1 (24 h lookback, the same as the model) beats joint (d) on the registered label and is level under the variant. The strongest, P2 (lookback up to 720 h), beats it on both. No event-history comparator was ever registered, so no gate could have caught this. |
+| H1′ does not hold under the variant (ADR-0029, exploratory) | H1′ is SUPPORTED on the registered label; INCONCLUSIVE under the ADR-0009 anemometer-excluded variant (ADR-0029, exploratory). The failure is one seed: seed 2's joint (d) loses 0.0296 AUPRC without the anemometer-defect events, and its Δ falls to +0.0031 [−0.0076, +0.0116]. The ADR-0009 with/without obligation was not executed for H1′ until ADR-0029. |
 | Hill of Towie: NOT EVALUABLE | Different OEM and control system. The site is marginal, not null: one seed of three clears. |
 | CARE: at chance | The token stream does not transfer across OEMs: quantile bins fitted on one OEM's distribution. The channel gaps were ruled out. |
 | Telemetry model ≈ bag of tokens | At 50M tokens and S2, pretraining learns token statistics a histogram already captures. Order adds nothing measurable. |
 | H1 INCONCLUSIVE | The instrument, not the model: the last-position read-out lands on a telemetry token and does not reach the text. |
-| Joint (d) ≈ status-only classifier | The signal is in *which strings occur*. Part of it is "Stop" rows: removing all of them (R2) cuts the counter's lift over the telemetry bag from +0.0202 to +0.0074. The record does not separate recurrence from other string content. A counter captures the signal as well as the model does. |
+| Joint (d) ≈ status-only classifier: parity on the registered label; under the variant the classifier reads above joint (d) on all three seeds, excluding zero on seeds 2 and 3 (ADR-0029, exploratory) | The signal is in *which strings occur*. Part of it is "Stop" rows: removing all of them (R2) cuts the counter's lift over the telemetry bag from +0.0202 to +0.0074. P3, a training fault-opening code in the raw log over the preceding 24 h, reads 0.1256 against P1's 0.1262, so the string signal looks largely like recurrence (ADR-0029, exploratory). A counter captures the signal as well as the model does. |
 | `joint_status_raw` NOT EVALUABLE | Under raw casing, untrained backbones already read the strings, so the gate cannot separate pretraining. |
 | H2 INCONCLUSIVE | Δrisk +0.0053 straddles the 0.005 line. Abstention gives up coverage, but it cannot be shown to hold selective risk. |
-| Probabilities under-read about 2× on test | Partly the post-2021 rise in event rate, which a correction fitted on earlier data cannot remove; two of three seeds also under-read in-time, a property of the probe. |
+| Probabilities under-read about 2× on test: about half on the registered label; about a tenth to a fifth under the ADR-0009 anemometer-excluded variant (ADR-0029, exploratory) | Partly the post-2021 rise in event rate, which a correction fitted on earlier data cannot remove; two of three seeds also under-read in-time, a property of the probe. Under the variant the mean probability does not move while the base rate falls to 0.0243, so much of the gap goes with the anemometer-defect events. |
 | First probe-control criterion FAIL (ADR-0023) | A mis-specified rule (non-overlap). It was replaced by the paired test, and the original FAILs stay on record. |
 
 ### (b) Why it is still strong
@@ -487,10 +522,11 @@ flowchart TD
 - **Controls that could have falsified every claim:** random-init backbone, order-blind bag-of-tokens, status-only classifier, and a random-init gate for each new read-out.
 - **Paired statistics.** Every model-vs-model comparison uses a paired two-day block bootstrap.
 - **An instrument audit with 15 entries.** Each is a case where the instrument or a premise was the defect, not the model, with its counterfactual.
-- **The methodological finding.** The read-out decides whether text information is visible. The same frozen backbone reads INCONCLUSIVE through (a) and SUPPORTED through (d).
+- **The methodological finding.** The read-out decides whether text information is visible. The same frozen backbone reads INCONCLUSIVE through (a); through (d), H1′ is SUPPORTED on the registered label; INCONCLUSIVE under the ADR-0009 anemometer-excluded variant (ADR-0029, exploratory).
+- **The record checked itself, and reports the reversal.** The ADR-0009 with/without obligation and a persistence baseline were both added late, in ADR-0029, registered before any P-score AUPRC or variant-label metric was computed, apart from one disclosed spot check (flag prevalences had been seen, and are disclosed too). Together they turned around the only positive result, and the write-up leads with that.
 - **A full from-scratch stack on 8 GB:** data pipeline, both tokenizers, the transformer, the training loop and the evaluation harness.
 
-**The frame:** *a controlled study of what a from-scratch telemetry–text model learns*, not *a working fault predictor*.
+**The frame:** *a controlled study of what a from-scratch telemetry–text model learns, which does not beat time since the last fault*, not *a working fault predictor*.
 
 ---
 
@@ -542,13 +578,18 @@ It tells you whether the probe can see pretraining at all. The same head on an u
 The 2021 validation split has 117 positives and cannot rank probe checkpoints: the untrained head sat inside every selection interval. Selecting on it would add noise and a free parameter. So every probe is read at its last step, by a registered rule (ADR-0022 addendum).
 
 **Q16. Why doesn't the model beat a bag of tokens or counting strings, and is it still worth it?**
-On telemetry, at this size and budget, order adds nothing measurable. The text signal is mostly *which* status strings occur (removing "Stop" rows halves it), and a counter captures that. It is still worth it: the joint representation encodes the text beyond what the tokens alone supply (the random-init gate passed 9 of 9), and the study shows exactly where the ceiling is. Beating the counter is the next research question, not a claim.
+On telemetry, at this size and budget, order adds nothing measurable. The text signal is mostly *which* status strings occur (removing "Stop" rows halves it), and a counter captures that. It is still worth it: the joint representation encodes the text beyond what the tokens alone supply (the random-init gate passed 9 of 9), and the study shows exactly where the ceiling is. Beating the counter is the next research question, not a claim. Two ADR-0029 facts (exploratory) sharpen this. Under the ADR-0009 anemometer-excluded variant the counter reads above joint (d) on all three seeds, excluding zero on seeds 2 and 3. And neither the model nor the counter beats P2 (lookback up to 720 h).
 
 **Q17. Why did site shift fail?**
 At Hill of Towie the result is marginal: 1 of 3 seeds clears its base rate. At CARE it is at chance. The channel-gap explanation was tested and ruled out, and a bag-of-tokens is also at chance on CARE, so the failure sits in the token stream across OEMs. The indicated fix is per-site or rank-based bin fitting, untried here.
 
 **Q18. What would you do next?**
-First, per-site or rank-based bin fitting for cross-OEM transfer. Second, recalibration on recent data, since the probabilities under-read about 2×. Third, a design that must beat the status-string counter, not just match it. Each would be registered first, against a named sentence.
+Three CPU analyses first, each registered before it runs, against a named sentence:
+1. **The incremental value of (d) over P2.** Fit a combination of P2 and the (d) score on 2021 validation, then ask on test whether it beats P2 alone. This is the direct test of whether the model adds anything to time since the last fault.
+2. **Continuation-excluded windows.** Drop the windows in which a fault episode is already under way at t, for example those with a narrow event start in the preceding 24 h (31.29% of test positives, 2.71% of negatives). Then re-score the model and every P score on the rest. This separates predicting a new fault from recognising a continuing one.
+3. **The Penmanshiel 2023–2024 confirmatory set.** No run has read it. Stage it under rules registered before staging, and score the frozen checkpoints on it. It answers the test-reuse problem: every registration so far read one test split.
+
+After those: per-site or rank-based bin fitting for cross-OEM transfer; recalibration on recent data; and a design that must beat P2 and the status-string counter, not just match the counter.
 
 **Q19. What does "pre-registered" mean here?**
 The rule — metric, split, bootstrap, smallest effect, and the SUPPORTED / REFUTED / INCONCLUSIVE clauses — was written into `docs/DECISIONS.md` and committed in its own commit before the run. The outcome was written under it with the registering hash. Nothing was re-worded after the numbers existed. When a rule proved mis-specified, the old verdict stayed and a new rule was registered under a new number.
@@ -560,7 +601,31 @@ At k = 8 masked channels, coverage fell (Δcov −0.0797, upper bound below zero
 As a ranking aid for maintenance attention, never as a probability of failure, because the scores are rankings, not risks, without recent recalibration. You would recalibrate on recent data, monitor the base rate, and keep abstention with a validation-fixed operating point. What exists today is an end-to-end pipeline through to a CPU inference demo, not a deployed system.
 
 **Q22. Why was the H1′ test fair, if it came after H1 failed?**
-It was registered as a separate hypothesis with a changed instrument, before its run, and the record says it was registered after H1's result was known. It carried its own random-init gate, so a read-out that merely read token embeddings would have failed. H1's INCONCLUSIVE stays on the record as the verdict for the last-position instrument.
+It was registered as a separate hypothesis with a changed instrument, before its run, and the record says it was registered after H1's result was known. It carried its own random-init gate, so a read-out that merely read token embeddings would have failed. H1's INCONCLUSIVE stays on the record as the verdict for the last-position instrument. Say the outcome in full: SUPPORTED on the registered label; INCONCLUSIVE under the ADR-0009 anemometer-excluded variant (ADR-0029, exploratory). Fair in procedure is not the same as holding up: the variant check, which ADR-0009 required from the start, was not run for H1′ until ADR-0029.
+
+**Q23. Why no persistence baseline?**
+None was registered. Every registered comparator was built from the model's own tokens: random-init backbones, the order-blind bag of tokens and the status-only classifier. None of them reads the event history directly. The gap surfaced after the programme closed, when a reconnaissance found a fault-opening `Stop` row in 30.74% of test positives and 2.63% of negatives. ADR-0029 then added four persistence scores, exploratory, on the same windows with the same estimator. The honest answer: it should have been registered from the start. Had it been, H1′ and the parity framing would have been judged against P1 and P2 from the beginning.
+
+**Q24. Is P2 fair?**
+As a baseline an operator could run, yes. P2 uses only event starts at or before t, which the event log already holds, and it is scored on the same windows with the same paired bootstrap. As a like-for-like comparison, no. P2 looks back up to 720 h, thirty times the model's 24 h window. That is why the like-for-like comparison is **P1**, which looks back 24 h, the same as the model. P1 beats joint (d) on the registered label (+0.0451 to +0.0577 per seed) and is level with it under the variant (every interval spans zero). **P2** is the strongest, and it beats joint (d) on both labels. Two measured caveats:
+- P1 and P2 read every narrow event, anemometer-defect events included, so under the variant they use inputs the label no longer counts.
+- An event starting exactly at t might rest on steps after t for its 60-second qualification. That affects 25 windows (12 positive). Without them P1 reads 0.1253, against 0.1262.
+
+**Q25. What is the anemometer issue?**
+The test base rate is 1.8× the training rate. ADR-0009 traced the rise to one status message, `anemometer defect`. From 2021, the year the status export gained two columns, it opens more than one narrow event per turbine-year at both sites. The record reads that as a reporting or firmware change, not a change in how often turbines fail. So ADR-0009 required every late-test result to be reported with and without those events. The requirement was honoured for the axis gate (ADR-0022 §3) and nowhere after it. ADR-0029 closed the gap on the saved scores, as an exploratory record. Without those events the test holds 137,016 windows, 3,330 of them positive, a base rate of 0.0243. Nine windows drop out, all on 2022-12-31 at Penmanshiel 06 and 14, because their horizon runs past the end of the record.
+- **What moves:** H1′, the parity result, the `joint_no_txt` gate and the calibration reading.
+- **What does not:** H1, the ADR-0026 random-init gate, the `joint_status_raw` gate and verdict, Gate A, Gate B and H2.
+
+**Q26. Does the text help or not?**
+Answer in three layers.
+- **Registered.** Through the last-position read-out, H1 is INCONCLUSIVE. Through the text-aware read-out, H1′ is SUPPORTED on the registered label; INCONCLUSIVE under the ADR-0009 anemometer-excluded variant (ADR-0029, exploratory).
+- **Against a counter.** On the registered label joint (d) is at parity with the status-only classifier. Under the variant the classifier reads above joint (d) on all three seeds, and the intervals exclude zero on seeds 2 and 3 (ADR-0029, exploratory).
+- **Against persistence.** P3 reads a training fault-opening code from the raw status log over the preceding 24 h, and scores 0.1256. P1, a text-free check for an event start in the same 24 h, scores 0.1262. So the strings' signal looks largely like recurrence, and the event log carries as much.
+
+So the status text carries risk signal, but on this evidence it is mostly "a fault just happened", and the model extracts no more of it than a counter or the event log. Whether the narrative corpus helps is undecided. `joint_no_txt` is INCONCLUSIVE, with its gate PASSED 9 of 9 on the registered label. Under the ADR-0009 anemometer-excluded variant the gate would FAIL, 5 of 9, and the arm would be NOT EVALUABLE (ADR-0029, exploratory).
+
+**Q27. Is the model calibrated?**
+No. On the registered label (ADR-0028), the mean predicted probability is 0.019–0.022 against a base rate of 0.0388, an under-read by about half. Platt fitted on validation does not fix it. For joint (d), ECE is 0.0172, and 0.0164 after Platt. Under the ADR-0009 anemometer-excluded variant (ADR-0029, exploratory), the mean probability does not move but the base rate falls to 0.0243. The under-read becomes about a tenth to a fifth, and ECE falls to 0.004–0.005 on every arm. So much of the "about half" goes with the label change, not the probe. The agreed phrase stands: scores are rankings, not risks, without recent recalibration. One trap to avoid: ECE also falls as channels are masked, only because the mean probability rises toward the base rate.
 
 ---
 
@@ -592,16 +657,32 @@ CARE      0.0012–0.0013 vs 0.001254 → NOT EVALUABLE (at chance); token strea
 PRE>RAND  9/9, Δ +0.009 to +0.019 (ADR-0024 PASS)
 BAG       tel-only ≈ bag-of-tokens: +0.0016, +0.0053, −0.0015 (all span 0)
 H1        +0.0022, −0.0022, −0.0018; median −0.0018 → INCONCLUSIVE (ADR-0025)
-H1′       +0.0200, +0.0234, +0.0170; median +0.0200; gate 9/9 → SUPPORTED (ADR-0026)
-STATUS    status-only AUPRC 0.0725 [0.0537, 0.0979]; joint (d) vs it → parity
-ADR-0027  no_txt INCONCLUSIVE (−0.0030) · status_raw NOT EVALUABLE (gate 4/9)
+HEADLINE  the model does not beat time since the last fault (ADR-0029, exploratory)
+P1        24 h lookback = the model's (like-for-like): 0.1262 full, beats (d) +0.0451..+0.0577;
+          0.0625 variant, level with (d) (every interval spans 0)
+P2        lookback up to 720 h (strongest): 0.2211 full, 0.0944 variant; beats (d) on both labels
+RECUR     event start in prior 24 h: positives 31.29% vs negatives 2.71% (variant 26.46% vs 3.25%)
+P3 − P4   +0.0004 [−0.0009, +0.0019]: model's window loses ~nothing (173 windows, all token cap)
+VARIANT   ADR-0009 anemometer-excluded: 3,330 of 137,016, base 0.0243 (9 windows NA)
+H1′       +0.0200, +0.0234, +0.0170; median +0.0200; gate 9/9 → SUPPORTED on the registered
+          label; INCONCLUSIVE under the ADR-0009 anemometer-excluded variant (ADR-0029,
+          exploratory): seed 2 +0.0031 [−0.0076, +0.0116]. Never "robust".
+STATUS    status-only AUPRC 0.0725 [0.0537, 0.0979]; joint (d) vs it → parity on the registered
+          label; variant: counter 0.0819, above (d) on all 3 seeds, excl. 0 on seeds 2, 3
+ADR-0027  no_txt INCONCLUSIVE (−0.0030), gate PASS 9/9 registered · FAIL 5/9 under the variant
+          (ADR-0029, exploratory) · status_raw NOT EVALUABLE (gate 4/9)
 ADR-0028  Gate A PASS ×3 · Gate B −0.0039 · H2 INCONCLUSIVE: Δcov −0.0797, Δrisk +0.0053
-CALIB     mean p 0.019–0.022 vs 0.0388 (≈2× under-read) · Platt doesn't fix · rankings, not risks
+CALIB     mean p 0.019–0.022 vs 0.0388 (≈2× under-read, registered) · variant vs 0.0243: a tenth
+          to a fifth, ECE 0.004–0.005 (ADR-0029, exploratory) · rankings, not risks
+NEXT      (d) over P2 fitted on validation · continuation-excluded windows · Penmanshiel 2023–24
 AUDIT     15 instrument-audit entries
 GPU       RTX 4060 8 GB · floor 18.2 GPU-h over the programme
 SAY       "calibrated abstention implemented and evaluated; graceful degradation not established"
 SAY       "scores are rankings, not risks, without recent recalibration"
 SAY       "an end-to-end pipeline through to a CPU inference demo" — never "deployed"
+SAY       H1′: "SUPPORTED on the registered label; INCONCLUSIVE under the ADR-0009
+          anemometer-excluded variant (ADR-0029, exploratory)"
+SAY       persistence: P1 = 24 h (like-for-like), P2 = up to 720 h (strongest)
 ```
 
 ---
@@ -615,6 +696,7 @@ Kinds of source:
 - **derived**: arithmetic on recorded inputs. The formula is given, and the script evaluated it.
 - **local artefact**: the worked example's raw values and shard bytes. They come from files under `data/` that are not committed; the tokenizers are committed. They were re-computed by encoding the row with the committed tokenizer and comparing with the shard.
 - **brief**: a format parameter of the task, not a result.
+- **JSON path** (ADR-0029 rows): a field of `reports/data/exploratory_v0_20260926.json`, written as a dotted path with 0-based list positions. The stated number is that field rounded to the digits shown. These numbers are exploratory.
 
 | number(s) | file | line | field |
 |---|---|---|---|
@@ -827,3 +909,90 @@ Kinds of source:
 | 15 | `docs/INSTRUMENT_AUDIT.md` | 249 | last of the 15 numbered audit entries |
 | +0.0144, +0.0075, +0.0059 | `docs/DECISIONS.md` | 4847-4849 | Δ(joint − iii), line 4847-4849 |
 | 2021 | `README.md` | 100 | post-2021 rise |
+| 137,016, 3,330 | `reports/data/exploratory_v0_20260926.json` | — | `row_sets.variant__pooled.windows`; `row_sets.variant__pooled.positives` (variant set: windows, positives) |
+| 0.0243 | `reports/data/exploratory_v0_20260926.json` | — | `row_sets.variant__pooled.base_rate` (variant base rate) |
+| +0.0140, +0.0026, +0.0264 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.readout.12.variant.delta`; `part_a.readout.12.variant.low`; `part_a.readout.12.variant.high` (H1′ variant Δ seed 1) |
+| +0.0031, −0.0076, +0.0116 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.readout.29.variant.delta`; `part_a.readout.29.variant.low`; `part_a.readout.29.variant.high` (H1′ variant Δ seed 2) |
+| +0.0137, +0.0077, +0.0201 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.readout.46.variant.delta`; `part_a.readout.46.variant.low`; `part_a.readout.46.variant.high` (H1′ variant Δ seed 3) |
+| −0.0187, −0.0534, +0.0093 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.readout.18.variant.delta`; `part_a.readout.18.variant.low`; `part_a.readout.18.variant.high` (parity variant Δ seed 1) |
+| −0.0305, −0.0635, −0.0058 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.readout.35.variant.delta`; `part_a.readout.35.variant.low`; `part_a.readout.35.variant.high` (parity variant Δ seed 2) |
+| −0.0299, −0.0641, −0.0050 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.readout.52.variant.delta`; `part_a.readout.52.variant.low`; `part_a.readout.52.variant.high` (parity variant Δ seed 3) |
+| 0.0819, 0.0538, 0.1200 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.readout.9.variant.auprc`; `part_a.readout.9.variant.low`; `part_a.readout.9.variant.high` (status-only classifier, variant AUPRC) |
+| 3.37 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.readout.9.variant.lift` (status-only lift under the variant, 3.3697 to 2 dp) |
+| 0.0780, 0.0632 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.readout.10.original.auprc`; `part_a.readout.10.variant.auprc` (joint (d) seed 1, full and variant AUPRC) |
+| 0.0810, 0.0514 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.readout.27.original.auprc`; `part_a.readout.27.variant.auprc` (joint (d) seed 2, full and variant AUPRC) |
+| 0.0685, 0.0520 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.readout.44.original.auprc`; `part_a.readout.44.variant.auprc` (joint (d) seed 3, full and variant AUPRC) |
+| 0.0576, 0.0483 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.readout.28.original.auprc`; `part_a.readout.28.variant.auprc` (tel_only (a) seed 2, full and variant AUPRC (seed-2 losses 0.0296 and 0.0093 are the differences)) |
+| +0.0012 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.readout.5.variant.low` (ADR-0026 gate, weakest variant lower bound) |
+| −0.0020 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.ablation.45.variant.low` (joint_no_txt gate, weakest variant lower bound) |
+| 0.0216, 0.0216 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.abstention.rows.22.original.value`; `part_a.abstention.rows.22.variant.value` (joint (d) ensemble mean_p_prior_corrected, full and variant) |
+| 0.0172, 0.0047 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.abstention.rows.21.original.value`; `part_a.abstention.rows.21.variant.value` (joint (d) ensemble ece_prior_corrected, full and variant) |
+| 0.0164, 0.0048 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.abstention.rows.23.original.value`; `part_a.abstention.rows.23.variant.value` (joint (d) ensemble ece_platt, full and variant) |
+| 0.1262, 0.1024, 0.1528 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.scores.full.P1.auprc`; `part_b.scores.full.P1.low`; `part_b.scores.full.P1.high` (P1 AUPRC, full label) |
+| 0.2211, 0.1862, 0.2582 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.scores.full.P2.auprc`; `part_b.scores.full.P2.low`; `part_b.scores.full.P2.high` (P2 AUPRC, full label) |
+| 0.1256, 0.1019, 0.1521 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.scores.full.P3.auprc`; `part_b.scores.full.P3.low`; `part_b.scores.full.P3.high` (P3 AUPRC, full label) |
+| 0.1252, 0.1015, 0.1518 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.scores.full.P4.auprc`; `part_b.scores.full.P4.low`; `part_b.scores.full.P4.high` (P4 AUPRC, full label) |
+| 0.0625, 0.0463, 0.0821 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.scores.variant.P1.auprc`; `part_b.scores.variant.P1.low`; `part_b.scores.variant.P1.high` (P1 AUPRC, variant label) |
+| 0.0944, 0.0735, 0.1189 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.scores.variant.P2.auprc`; `part_b.scores.variant.P2.low`; `part_b.scores.variant.P2.high` (P2 AUPRC, variant label) |
+| 0.0628, 0.0466, 0.0825 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.scores.variant.P3.auprc`; `part_b.scores.variant.P3.low`; `part_b.scores.variant.P3.high` (P3 AUPRC, variant label) |
+| 0.0635, 0.0471, 0.0834 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.scores.variant.P4.auprc`; `part_b.scores.variant.P4.low`; `part_b.scores.variant.P4.high` (P4 AUPRC, variant label) |
+| +0.0481, +0.0244, +0.0731 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.full.P1.joint (d) seed 1.delta`; `part_b.deltas.full.P1.joint (d) seed 1.low`; `part_b.deltas.full.P1.joint (d) seed 1.high` (Δ(P1 − joint (d) seed 1), full label) |
+| +0.0451, +0.0250, +0.0671 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.full.P1.joint (d) seed 2.delta`; `part_b.deltas.full.P1.joint (d) seed 2.low`; `part_b.deltas.full.P1.joint (d) seed 2.high` (Δ(P1 − joint (d) seed 2), full label) |
+| +0.0577, +0.0357, +0.0820 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.full.P1.joint (d) seed 3.delta`; `part_b.deltas.full.P1.joint (d) seed 3.low`; `part_b.deltas.full.P1.joint (d) seed 3.high` (Δ(P1 − joint (d) seed 3), full label) |
+| +0.0468, +0.0250, +0.0703 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.full.P1.(d) ensemble.delta`; `part_b.deltas.full.P1.(d) ensemble.low`; `part_b.deltas.full.P1.(d) ensemble.high` (Δ(P1 − (d) ensemble), full label) |
+| +0.0537, +0.0277, +0.0776 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.full.P1.status-only classifier.delta`; `part_b.deltas.full.P1.status-only classifier.low`; `part_b.deltas.full.P1.status-only classifier.high` (Δ(P1 − status-only classifier), full label) |
+| +0.1430, +0.1098, +0.1778 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.full.P2.joint (d) seed 1.delta`; `part_b.deltas.full.P2.joint (d) seed 1.low`; `part_b.deltas.full.P2.joint (d) seed 1.high` (Δ(P2 − joint (d) seed 1), full label) |
+| +0.1400, +0.1101, +0.1713 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.full.P2.joint (d) seed 2.delta`; `part_b.deltas.full.P2.joint (d) seed 2.low`; `part_b.deltas.full.P2.joint (d) seed 2.high` (Δ(P2 − joint (d) seed 2), full label) |
+| +0.1526, +0.1205, +0.1869 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.full.P2.joint (d) seed 3.delta`; `part_b.deltas.full.P2.joint (d) seed 3.low`; `part_b.deltas.full.P2.joint (d) seed 3.high` (Δ(P2 − joint (d) seed 3), full label) |
+| +0.1418, +0.1103, +0.1746 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.full.P2.(d) ensemble.delta`; `part_b.deltas.full.P2.(d) ensemble.low`; `part_b.deltas.full.P2.(d) ensemble.high` (Δ(P2 − (d) ensemble), full label) |
+| +0.1486, +0.1136, +0.1830 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.full.P2.status-only classifier.delta`; `part_b.deltas.full.P2.status-only classifier.low`; `part_b.deltas.full.P2.status-only classifier.high` (Δ(P2 − status-only classifier), full label) |
+| −0.0007, −0.0201, +0.0187 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.variant.P1.joint (d) seed 1.delta`; `part_b.deltas.variant.P1.joint (d) seed 1.low`; `part_b.deltas.variant.P1.joint (d) seed 1.high` (Δ(P1 − joint (d) seed 1), variant label) |
+| +0.0111, −0.0030, +0.0274 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.variant.P1.joint (d) seed 2.delta`; `part_b.deltas.variant.P1.joint (d) seed 2.low`; `part_b.deltas.variant.P1.joint (d) seed 2.high` (Δ(P1 − joint (d) seed 2), variant label) |
+| +0.0105, −0.0037, +0.0275 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.variant.P1.joint (d) seed 3.delta`; `part_b.deltas.variant.P1.joint (d) seed 3.low`; `part_b.deltas.variant.P1.joint (d) seed 3.high` (Δ(P1 − joint (d) seed 3), variant label) |
+| +0.0052, −0.0109, +0.0225 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.variant.P1.(d) ensemble.delta`; `part_b.deltas.variant.P1.(d) ensemble.low`; `part_b.deltas.variant.P1.(d) ensemble.high` (Δ(P1 − (d) ensemble), variant label) |
+| −0.0194, −0.0485, +0.0017 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.variant.P1.status-only classifier.delta`; `part_b.deltas.variant.P1.status-only classifier.low`; `part_b.deltas.variant.P1.status-only classifier.high` (Δ(P1 − status-only classifier), variant label) |
+| +0.0312, +0.0093, +0.0536 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.variant.P2.joint (d) seed 1.delta`; `part_b.deltas.variant.P2.joint (d) seed 1.low`; `part_b.deltas.variant.P2.joint (d) seed 1.high` (Δ(P2 − joint (d) seed 1), variant label) |
+| +0.0430, +0.0250, +0.0632 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.variant.P2.joint (d) seed 2.delta`; `part_b.deltas.variant.P2.joint (d) seed 2.low`; `part_b.deltas.variant.P2.joint (d) seed 2.high` (Δ(P2 − joint (d) seed 2), variant label) |
+| +0.0424, +0.0241, +0.0633 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.variant.P2.joint (d) seed 3.delta`; `part_b.deltas.variant.P2.joint (d) seed 3.low`; `part_b.deltas.variant.P2.joint (d) seed 3.high` (Δ(P2 − joint (d) seed 3), variant label) |
+| +0.0371, +0.0178, +0.0580 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.variant.P2.(d) ensemble.delta`; `part_b.deltas.variant.P2.(d) ensemble.low`; `part_b.deltas.variant.P2.(d) ensemble.high` (Δ(P2 − (d) ensemble), variant label) |
+| +0.0125, −0.0173, +0.0353 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.variant.P2.status-only classifier.delta`; `part_b.deltas.variant.P2.status-only classifier.low`; `part_b.deltas.variant.P2.status-only classifier.high` (Δ(P2 − status-only classifier), variant label) |
+| +0.0004, −0.0009, +0.0019 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.full.P3.P4.delta`; `part_b.deltas.full.P3.P4.low`; `part_b.deltas.full.P3.P4.high` (Δ(P3 − P4), full label) |
+| −0.0007, −0.0013, −0.0000 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.deltas.variant.P3.P4.delta`; `part_b.deltas.variant.P3.P4.low`; `part_b.deltas.variant.P3.P4.high` (Δ(P3 − P4), variant label) |
+| 173, 173 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.gap.p3_not_p4`; `part_b.gap.cut_by_token_cap` (P3 flagged but not P4; all cut by the token cap) |
+| 31.29%, 2.71% | `reports/data/exploratory_v0_20260926.json` | — | `part_b.composition.full.pooled.24h.positive_share`; `part_b.composition.full.pooled.24h.negative_share` (composition, full, pooled, 24h: positive and negative share) |
+| 12.56%, 0.72% | `reports/data/exploratory_v0_20260926.json` | — | `part_b.composition.full.pooled.6h.positive_share`; `part_b.composition.full.pooled.6h.negative_share` (composition, full, pooled, 6h: positive and negative share) |
+| 38.61%, 2.33% | `reports/data/exploratory_v0_20260926.json` | — | `part_b.composition.full.kelmarsh.24h.positive_share`; `part_b.composition.full.kelmarsh.24h.negative_share` (composition, full, kelmarsh, 24h: positive and negative share) |
+| 15.31%, 0.61% | `reports/data/exploratory_v0_20260926.json` | — | `part_b.composition.full.kelmarsh.6h.positive_share`; `part_b.composition.full.kelmarsh.6h.negative_share` (composition, full, kelmarsh, 6h: positive and negative share) |
+| 22.87%, 3.19% | `reports/data/exploratory_v0_20260926.json` | — | `part_b.composition.full.penmanshiel.24h.positive_share`; `part_b.composition.full.penmanshiel.24h.negative_share` (composition, full, penmanshiel, 24h: positive and negative share) |
+| 9.39%, 0.86% | `reports/data/exploratory_v0_20260926.json` | — | `part_b.composition.full.penmanshiel.6h.positive_share`; `part_b.composition.full.penmanshiel.6h.negative_share` (composition, full, penmanshiel, 6h: positive and negative share) |
+| 26.46%, 3.25% | `reports/data/exploratory_v0_20260926.json` | — | `part_b.composition.variant.pooled.24h.positive_share`; `part_b.composition.variant.pooled.24h.negative_share` (composition, variant, pooled, 24h: positive and negative share) |
+| 9.04%, 0.98% | `reports/data/exploratory_v0_20260926.json` | — | `part_b.composition.variant.pooled.6h.positive_share`; `part_b.composition.variant.pooled.6h.negative_share` (composition, variant, pooled, 6h: positive and negative share) |
+| 33.70%, 2.94% | `reports/data/exploratory_v0_20260926.json` | — | `part_b.composition.variant.kelmarsh.24h.positive_share`; `part_b.composition.variant.kelmarsh.24h.negative_share` (composition, variant, kelmarsh, 24h: positive and negative share) |
+| 10.67%, 0.92% | `reports/data/exploratory_v0_20260926.json` | — | `part_b.composition.variant.kelmarsh.6h.positive_share`; `part_b.composition.variant.kelmarsh.6h.negative_share` (composition, variant, kelmarsh, 6h: positive and negative share) |
+| 17.64%, 3.65% | `reports/data/exploratory_v0_20260926.json` | — | `part_b.composition.variant.penmanshiel.24h.positive_share`; `part_b.composition.variant.penmanshiel.24h.negative_share` (composition, variant, penmanshiel, 24h: positive and negative share) |
+| 7.06%, 1.05% | `reports/data/exploratory_v0_20260926.json` | — | `part_b.composition.variant.penmanshiel.6h.positive_share`; `part_b.composition.variant.penmanshiel.6h.negative_share` (composition, variant, penmanshiel, 6h: positive and negative share) |
+| 30.74%, 2.63% | `reports/data/exploratory_v0_20260926.json` | — | `part_b.prevalence.full.P4.positive_share`; `part_b.prevalence.full.P4.negative_share` (P4 flag prevalence, full label: positives, negatives) |
+| 31.36%, 2.74% | `reports/data/exploratory_v0_20260926.json` | — | `part_b.prevalence.full.P3.positive_share`; `part_b.prevalence.full.P3.negative_share` (P3 flag prevalence, full label: positives, negatives) |
+| 25, 12 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.p1_start_at_t.p1_only_through_it`; `part_b.p1_start_at_t.p1_only_through_it_positive` (event starting at t: windows affected, positive) |
+| 0.1253 | `reports/data/exploratory_v0_20260926.json` | — | `part_b.p1_start_at_t.p1_auprc_without_it_full_label` (P1 without those windows, full label) |
+| +0.0044, +0.0024, +0.0064 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.abstention.h2.variant.delta_selective_risk.value`; `part_a.abstention.h2.variant.delta_selective_risk.low`; `part_a.abstention.h2.variant.delta_selective_risk.high` (H2 Δselective risk under the variant) |
+| 0.0181, 0.0041 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.abstention.rows.1.original.value`; `part_a.abstention.rows.1.variant.value` (tel_only backbone ece_prior_corrected, full and variant) |
+| 0.0181, 0.0041 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.abstention.rows.3.original.value`; `part_a.abstention.rows.3.variant.value` (tel_only backbone ece_platt, full and variant) |
+| 0.0207, 0.0207 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.abstention.rows.2.original.value`; `part_a.abstention.rows.2.variant.value` (tel_only backbone mean_p_prior_corrected, full and variant) |
+| 0.0194, 0.0050 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.abstention.rows.11.original.value`; `part_a.abstention.rows.11.variant.value` (joint (a) ece_prior_corrected, full and variant) |
+| 0.0184, 0.0039 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.abstention.rows.13.original.value`; `part_a.abstention.rows.13.variant.value` (joint (a) ece_platt, full and variant) |
+| 0.0193, 0.0193 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.abstention.rows.12.original.value`; `part_a.abstention.rows.12.variant.value` (joint (a) mean_p_prior_corrected, full and variant) |
+| 0.0172, 0.0047 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.abstention.rows.21.original.value`; `part_a.abstention.rows.21.variant.value` (joint (d) ece_prior_corrected, full and variant) |
+| 0.0164, 0.0048 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.abstention.rows.23.original.value`; `part_a.abstention.rows.23.variant.value` (joint (d) ece_platt, full and variant) |
+| 0.0216, 0.0216 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.abstention.rows.22.original.value`; `part_a.abstention.rows.22.variant.value` (joint (d) mean_p_prior_corrected, full and variant) |
+| 24 | `configs/eval/exploratory_v0.yaml` | 51 | P1 and P3 look-back, (t − 24 h, t], the model's 144 steps |
+| 720 | `configs/eval/exploratory_v0.yaml` | 52 | P2 cap, hours |
+| 30 | `derived` | — | P2's look-back against the model's window: 720/24 |
+| 10.45 | `derived` | — | total parameters in millions, pitch: round(10454208/1e6, 2) |
+| 0.0296, 0.0093 | `docs/DECISIONS.md` | 6203 | seed-2 AUPRC lost to the variant: joint (d), `tel_only` (a) |
+| +0.0200, +0.0137 | `docs/DECISIONS.md` | 6202 | H1′ median Δ, full label → variant |
+| 5, 9 | `docs/DECISIONS.md` | 6175 | `joint_no_txt` gate under the variant: 5 of 9 lower bounds above 0 |
+| 2022-12-31 | `docs/DECISIONS.md` | 6155 | the 9 windows the variant does not know |
+| 0.016, 0.019, 0.004, 0.005 | `docs/DECISIONS.md` | 6213 | ECE range over the three arms, full label → variant |
+| 0.0243 | `docs/DECISIONS.md` | 6214 | variant base rate; mean p "does not move" |
+| 2.63%, 30.7% | `docs/DECISIONS.md` | 5996 | reconnaissance: fault-opening `Stop` row in negatives, positives (= P4, 30.74%) |

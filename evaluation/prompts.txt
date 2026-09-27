@@ -1,0 +1,10 @@
+# Lesson 11 generation prompts: <style>\t<prompt>. Status strings are written in the normalized
+# convention the model read them in (lower case). Narratives open the way NRC/PHMSA documents do.
+status	gearbox oil pressure
+status	pitch system fault
+status	yaw error
+status	generator bearing temperature
+narrative	During a routine surveillance test, the licensee identified
+narrative	On March 3, the operator reported a release of
+narrative	The inspection found that the emergency diesel generator
+narrative	A pipeline operator reported that a corrosion leak

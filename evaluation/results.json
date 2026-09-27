@@ -1,0 +1,1113 @@
+{
+ "label": "Course Lesson 11 output. Descriptive. Not a registered ADR finding.",
+ "provenance": {
+  "git_sha": "e3ca6d6ae8f54355296154e3cb8a2527f6a325ae",
+  "model": {
+   "path": "checkpoints/model.pt",
+   "sha256": "3d45e42c3a7ef9819ba9fc3a705f603665ec5515f225b78005d44b15b1f9881d",
+   "served": {
+    "run": "R-joint-d",
+    "seed": 1,
+    "checkpoint": "final_step",
+    "readout": "last_plus_text",
+    "rule": "the first seed of R-joint-d, final-step probe; applied whatever it scores",
+    "backbone_origin": "joint"
+   },
+   "sources": {
+    "backbone": {
+     "path": "checkpoints/h1_arms_v0_03629ab1/S2_joint_seed1.pt",
+     "sha256": "1f8751583a2274df309a021ae75c0d8e1a87cc569911cd63b4a5252b7d6bf6b3"
+    },
+    "probe": {
+     "path": "checkpoints/readout_v0_7c2765e7/S2_R-joint-d_seed1_final_probe.pt",
+     "sha256": "a0ca4d9aa1df59a71acdcfa2a73f8bfb53562293ba31cc7ba4b3d7dd6339ebf3"
+    },
+    "scores": {
+     "path": "checkpoints/readout_v0_7c2765e7/S2_R-joint-d_seed1_final_R0_stride12_scores.npz",
+     "sha256": "ff5afcb181573a5627666b37885d1d33036d8b22b687a1c12d0c30710efecbfb"
+    },
+    "probe_record": {
+     "path": "checkpoints/readout_v0_7c2765e7/S2_R-joint-d_seed1_probe.json",
+     "sha256": "8b3ab042bf6154d0d02193dd08369743a4bcd89577e2fa61dad30b044f290bfc"
+    }
+   }
+  },
+  "tokenizers": {
+   "bins": {
+    "path": "data/tokenizers/quantile_bins_v2_9cd52b65.json",
+    "sha256": "137efec5a5fa0aae06313af21a3391b11ff7493f546331b3ad06163292ecac8a"
+   },
+   "text": {
+    "path": "data/tokenizers/text_bpe_v1_22c56e49.json",
+    "sha256": "ee742876cf4036c2a53590bed01e32d1598ff67f6a335004b7b7ba3f854a5142"
+   }
+  },
+  "demo_parity_sha256": "95be4c923f5910596bd1feb1c45f47d6823ee25e864ce2030d10b8b65508c8fd",
+  "splits_config": "configs/data/splits_v3.yaml",
+  "seeds": {
+   "perplexity_windows": 20260927,
+   "random_init": 20260927,
+   "generation": "20260927 + prompt index"
+  },
+  "a4_windows": 1000,
+  "torch": "2.14.0+cu132",
+  "numpy": "2.5.3",
+  "python": "3.12.10",
+  "device": "cuda",
+  "device_name": "NVIDIA GeForce RTX 4060",
+  "generated_utc": "2026-09-27T11:55:33+00:00"
+ },
+ "course_lesson_output": {
+  "a4_logged_loss_check": {
+   "logged": {
+    "source": "checkpoints/h1_arms_v0_03629ab1/S2_joint_seed1_lm.json#/selected",
+    "step": 763,
+    "tel_validation_loss_nats": 3.404729248046875
+   },
+   "measured_nats": 3.404729248046875,
+   "abs_difference": 0.0,
+   "tolerance": 0.01,
+   "reproduced": true,
+   "windows": 1000,
+   "tokens_per_window": 2048,
+   "includes_sep": true,
+   "precision": "bf16 autocast",
+   "batch_windows": 4,
+   "code": "faultline.evaluation.variance_probe.open_probe_inputs + tel_lm_loss"
+  },
+  "perplexity": {
+   "splits": {
+    "config": "configs/data/splits_v3.yaml",
+    "val": "2021 for telemetry; the text shards' validation split",
+    "test": "2022 on for telemetry; the text shards' test split"
+   },
+   "window_rule": {
+    "context_tokens": 2048,
+    "txt": "every whole 2,048-token tile",
+    "tel": "every 6th step start inside a run (tel_windows)",
+    "tel+status": "every 6th step's <sep> inside a run (run_step_starts)",
+    "cap": "at most 245 windows a source, default_rng(20260927) without replacement"
+   },
+   "targets": "value = 256 shared bin ids + <nan> (257 valid); text = 32,768 ids; structural targets excluded and counted",
+   "scorers": {
+    "model": "served backbone, full 33,952-id softmax",
+    "model_valid_only": "served backbone, renormalised over the valid ids",
+    "uniform": "uniform over the valid ids",
+    "unigram": "train-split frequencies of the same stream, add-one within the class",
+    "random_init": "same spec, torch.manual_seed(20260927), full softmax",
+    "random_init_valid_only": "the same, renormalised over the valid ids"
+   },
+   "device": "cuda",
+   "precision": "float32 (TF32 off)",
+   "streams": {
+    "txt/val": {
+     "windows": 127,
+     "targets_scored": {
+      "value": 0,
+      "text": 259482
+     },
+     "targets_excluded": {
+      "<sep>": 487
+     },
+     "classes": {
+      "text": {
+       "tokens": 259482,
+       "bytes": 1262676,
+       "model": {
+        "mean_nll": 5.6228115729746255,
+        "ppl": 276.66615783621324,
+        "bits_per_byte": 1.6670298631944662
+       },
+       "model_valid_only": {
+        "mean_nll": 5.614350589140671,
+        "ppl": 274.33516509924823,
+        "bits_per_byte": 1.6645213827767689
+       },
+       "random_init": {
+        "mean_nll": 10.480589732680832,
+        "ppl": 35617.40609777084,
+        "bits_per_byte": 3.107245519704542
+       },
+       "random_init_valid_only": {
+        "mean_nll": 10.445129089657726,
+        "ppl": 34376.521288591175,
+        "bits_per_byte": 3.096732282666381
+       },
+       "uniform": {
+        "mean_nll": 10.397207708399177,
+        "ppl": 32767.999999999927,
+        "bits_per_byte": 3.0825247331857097
+       },
+       "unigram": {
+        "mean_nll": 7.412647785282993,
+        "ppl": 1656.8074145306325,
+        "bits_per_byte": 2.197673719461279
+       }
+      }
+     },
+     "sources": [
+      "nrc_bulletins",
+      "nrc_event_notifications",
+      "nrc_gen_letters",
+      "nrc_info_notices",
+      "nrc_reg_issues",
+      "phmsa_incident_narratives"
+     ],
+     "note": "new course-lesson measurement; no logged comparison exists"
+    },
+    "txt/test": {
+     "windows": 134,
+     "targets_scored": {
+      "value": 0,
+      "text": 273764
+     },
+     "targets_excluded": {
+      "<sep>": 534
+     },
+     "classes": {
+      "text": {
+       "tokens": 273764,
+       "bytes": 1312644,
+       "model": {
+        "mean_nll": 5.556474049087751,
+        "ppl": 258.90832696121066,
+        "bits_per_byte": 1.671872711846795
+       },
+       "model_valid_only": {
+        "mean_nll": 5.548041046687296,
+        "ppl": 256.7341327956564,
+        "bits_per_byte": 1.669335328162879
+       },
+       "random_init": {
+        "mean_nll": 10.48050558098682,
+        "ppl": 35614.40895882036,
+        "bits_per_byte": 3.153451475236646
+       },
+       "random_init_valid_only": {
+        "mean_nll": 10.44504661468859,
+        "ppl": 34373.686202972276,
+        "bits_per_byte": 3.1427823210895043
+       },
+       "uniform": {
+        "mean_nll": 10.39720770839918,
+        "ppl": 32767.999999999985,
+        "bits_per_byte": 3.128388199694662
+       },
+       "unigram": {
+        "mean_nll": 7.374623388743394,
+        "ppl": 1594.9910257967422,
+        "bits_per_byte": 2.2189308354299677
+       }
+      }
+     },
+     "sources": [
+      "nrc_bulletins",
+      "nrc_event_notifications",
+      "nrc_gen_letters",
+      "nrc_info_notices",
+      "nrc_reg_issues",
+      "phmsa_incident_narratives"
+     ],
+     "note": "new course-lesson measurement; no logged comparison exists"
+    },
+    "tel/val": {
+     "windows": 490,
+     "targets_scored": {
+      "value": 926100,
+      "text": 0
+     },
+     "targets_excluded": {
+      "<sep>": 76930
+     },
+     "classes": {
+      "value": {
+       "tokens": 926100,
+       "model": {
+        "mean_nll": 3.6954523236112324,
+        "ppl": 40.26378072837622
+       },
+       "model_valid_only": {
+        "mean_nll": 3.680874652359504,
+        "ppl": 39.681086054194125
+       },
+       "random_init": {
+        "mean_nll": 10.458109906625701,
+        "ppl": 34825.665441680816
+       },
+       "random_init_valid_only": {
+        "mean_nll": 5.580577359144688,
+        "ppl": 265.2246914902878
+       },
+       "uniform": {
+        "mean_nll": 5.549076084895208,
+        "ppl": 256.9999999999969
+       },
+       "unigram": {
+        "mean_nll": 5.551102034585444,
+        "ppl": 257.52119685141764
+       }
+      }
+     },
+     "sources": [
+      "kelmarsh",
+      "penmanshiel"
+     ],
+     "note": "the logged tel validation loss (A4) includes <sep> and is over other windows; this excludes <sep>, so the two are not the same number"
+    },
+    "tel/test": {
+     "windows": 490,
+     "targets_scored": {
+      "value": 926100,
+      "text": 0
+     },
+     "targets_excluded": {
+      "<sep>": 76930
+     },
+     "classes": {
+      "value": {
+       "tokens": 926100,
+       "model": {
+        "mean_nll": 3.7538514553909748,
+        "ppl": 42.68516582850389
+       },
+       "model_valid_only": {
+        "mean_nll": 3.7392849200354474,
+        "ppl": 42.06789749629651
+       },
+       "random_init": {
+        "mean_nll": 10.461512909521488,
+        "ppl": 34944.379159025564
+       },
+       "random_init_valid_only": {
+        "mean_nll": 5.583523721826243,
+        "ppl": 266.00729196979574
+       },
+       "uniform": {
+        "mean_nll": 5.549076084895208,
+        "ppl": 256.9999999999969
+       },
+       "unigram": {
+        "mean_nll": 5.564965610525821,
+        "ppl": 261.11622390572415
+       }
+      }
+     },
+     "sources": [
+      "kelmarsh",
+      "penmanshiel"
+     ],
+     "note": "the logged tel validation loss (A4) includes <sep> and is over other windows; this excludes <sep>, so the two are not the same number"
+    },
+    "tel+status/val": {
+     "windows": 490,
+     "targets_scored": {
+      "value": 853038,
+      "text": 50479
+     },
+     "targets_excluded": {
+      "<txt>": 14353,
+      "</txt>": 14329,
+      "<sep>": 70831
+     },
+     "classes": {
+      "value": {
+       "tokens": 853038,
+       "model": {
+        "mean_nll": 4.144930721823736,
+        "ppl": 63.11324937947152
+       },
+       "model_valid_only": {
+        "mean_nll": 4.103134695058123,
+        "ppl": 60.52973276999341
+       },
+       "random_init": {
+        "mean_nll": 10.459454638398336,
+        "ppl": 34872.52812230937
+       },
+       "random_init_valid_only": {
+        "mean_nll": 5.581844693520713,
+        "ppl": 265.5610329427089
+       },
+       "uniform": {
+        "mean_nll": 5.549076084895223,
+        "ppl": 257.00000000000074
+       },
+       "unigram": {
+        "mean_nll": 5.554354034376488,
+        "ppl": 258.3600189151089
+       }
+      },
+      "text": {
+       "tokens": 50479,
+       "bytes": 214733,
+       "model": {
+        "mean_nll": 0.964814825824452,
+        "ppl": 2.624301658582817,
+        "bits_per_byte": 0.32721293144087954
+       },
+       "model_valid_only": {
+        "mean_nll": 0.9276159429099585,
+        "ppl": 2.5284739600533364,
+        "bits_per_byte": 0.314597085167605
+       },
+       "random_init": {
+        "mean_nll": 10.5011681070201,
+        "ppl": 36357.94785328839,
+        "bits_per_byte": 3.5614274448107617
+       },
+       "random_init_valid_only": {
+        "mean_nll": 10.465618097932566,
+        "ppl": 35088.12727405241,
+        "bits_per_byte": 3.549370807231275
+       },
+       "uniform": {
+        "mean_nll": 10.397207708399183,
+        "ppl": 32768.0000000001,
+        "bits_per_byte": 3.526169708428608
+       },
+       "unigram": {
+        "mean_nll": 3.049842730231465,
+        "ppl": 21.112023878328195,
+        "bits_per_byte": 1.0343414647882596
+       }
+      }
+     },
+     "sources": [
+      "kelmarsh",
+      "penmanshiel"
+     ],
+     "note": "new course-lesson measurement; no logged comparison exists"
+    },
+    "tel+status/test": {
+     "windows": 490,
+     "targets_scored": {
+      "value": 855459,
+      "text": 48916
+     },
+     "targets_excluded": {
+      "<txt>": 13826,
+      "</txt>": 13797,
+      "<sep>": 71032
+     },
+     "classes": {
+      "value": {
+       "tokens": 855459,
+       "model": {
+        "mean_nll": 4.16139680975036,
+        "ppl": 64.16108086078937
+       },
+       "model_valid_only": {
+        "mean_nll": 4.122110592561412,
+        "ppl": 61.6893059506805
+       },
+       "random_init": {
+        "mean_nll": 10.461419303308242,
+        "ppl": 34941.10830110694
+       },
+       "random_init_valid_only": {
+        "mean_nll": 5.583407182166533,
+        "ppl": 265.976293376827
+       },
+       "uniform": {
+        "mean_nll": 5.5490760848952245,
+        "ppl": 257.0000000000012
+       },
+       "unigram": {
+        "mean_nll": 5.565275041818643,
+        "ppl": 261.19703393839586
+       }
+      },
+      "text": {
+       "tokens": 48916,
+       "bytes": 207754,
+       "model": {
+        "mean_nll": 1.1309335821929865,
+        "ppl": 3.0985478993782527,
+        "bits_per_byte": 0.3841609187254889
+       },
+       "model_valid_only": {
+        "mean_nll": 1.0868981065476395,
+        "ppl": 2.9650624853588328,
+        "bits_per_byte": 0.36920273811542403
+       },
+       "random_init": {
+        "mean_nll": 10.501314269013685,
+        "ppl": 36363.262391811615,
+        "bits_per_byte": 3.567136568344448
+       },
+       "random_init_valid_only": {
+        "mean_nll": 10.46577659325097,
+        "ppl": 35093.689018700505,
+        "bits_per_byte": 3.555064960970388
+       },
+       "uniform": {
+        "mean_nll": 10.39720770839917,
+        "ppl": 32767.999999999694,
+        "bits_per_byte": 3.531773154788834
+       },
+       "unigram": {
+        "mean_nll": 3.1801317925831505,
+        "ppl": 24.049922944678137,
+        "bits_per_byte": 1.080242350517103
+       }
+      }
+     },
+     "sources": [
+      "kelmarsh",
+      "penmanshiel"
+     ],
+     "note": "new course-lesson measurement; no logged comparison exists"
+    }
+   },
+   "telemetry_unigram_versus_uniform": {
+    "stream": "tel, train split, Kelmarsh + Penmanshiel",
+    "valid_ids": 257,
+    "kl_unigram_to_uniform_nats": 0.14941831692975788,
+    "entropy_nats": 5.399657767965462,
+    "uniform_entropy_nats": 5.54907608489522,
+    "max_probability_over_uniform": 16.700855409856445,
+    "min_probability_over_uniform": 0.6141509514426552,
+    "nan_probability": 0.0649838731901029
+   }
+  },
+  "generation": {
+   "max_new_tokens": 48,
+   "device": "cpu",
+   "precision": "float32",
+   "allowed_ids": "text block [1184, 33952) plus <sep> (8) as the stop token",
+   "statistics_over": "token ids of the emitted continuation, prompt excluded",
+   "strategies": {
+    "greedy": {
+     "params": {
+      "temperature": 0.0,
+      "top_k": 0,
+      "top_p": 1.0,
+      "repetition_penalty": 1.0,
+      "seed": "20260927 + prompt index"
+     },
+     "distinct_1": 0.1225296442687747,
+     "distinct_2": 0.17479674796747968,
+     "repeated_4gram_rate": 0.6025641025641025,
+     "mean_tokens": 31.625,
+     "samples": [
+      {
+       "style": "status",
+       "prompt": "gearbox oil pressure",
+       "seed": 20260927,
+       "continuation": " wind < start-up\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+       "tokens": 48,
+       "stop_reason": "max_new_tokens"
+      },
+      {
+       "style": "status",
+       "prompt": "pitch system fault",
+       "seed": 20260928,
+       "continuation": " system ok)(k)(3)(3)(3)(3)(3)(3)(iv)(3)(3)(iv)(3)(iv)(3)(3)(3)(3)(3)(3)(iv)(iv)(3)(",
+       "tokens": 48,
+       "stop_reason": "max_new_tokens"
+      },
+      {
+       "style": "status",
+       "prompt": "yaw error",
+       "seed": 20260929,
+       "continuation": " 3 3/up)(3)(iv)(iv)(iv)(iv)(iv)(3) was notified the event is being made in the licensee has been notified the licensee has been notified the licensee notified the licensee has been notified the licensee has",
+       "tokens": 48,
+       "stop_reason": "max_new_tokens"
+      },
+      {
+       "style": "status",
+       "prompt": "generator bearing temperature",
+       "seed": 20260930,
+       "continuation": ".",
+       "tokens": 1,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "narrative",
+       "prompt": "During a routine surveillance test, the licensee identified",
+       "seed": 20260931,
+       "continuation": " in the licensee has been notified the event is being made.",
+       "tokens": 12,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "narrative",
+       "prompt": "On March 3, the operator reported a release of",
+       "seed": 20260932,
+       "continuation": " the licensee has been notified the event is being made to be in the licensee has been notified the licensee has been notified the licensee has been notified the licensee has been notified the licensee has been notified the licensee has been notified the licensee notified the licensee",
+       "tokens": 48,
+       "stop_reason": "max_new_tokens"
+      },
+      {
+       "style": "narrative",
+       "prompt": "The inspection found that the emergency diesel generator",
+       "seed": 20260933,
+       "continuation": " was not not not be notified the licensee notified the licensee notified the gauge was notified the licensee notified the licensee has been notified the licensee has been notified the licensee notified the licensee notified the licensee notified the licensee has been notified the licensee has been notified",
+       "tokens": 48,
+       "stop_reason": "max_new_tokens"
+      },
+      {
+       "style": "narrative",
+       "prompt": "A pipeline operator reported that a corrosion leak",
+       "seed": 20260934,
+       "continuation": "",
+       "tokens": 0,
+       "stop_reason": "sep"
+      }
+     ]
+    },
+    "T0.8_top_k50": {
+     "params": {
+      "temperature": 0.8,
+      "top_k": 50,
+      "top_p": 1.0,
+      "repetition_penalty": 1.0,
+      "seed": "20260927 + prompt index"
+     },
+     "distinct_1": 0.45108695652173914,
+     "distinct_2": 0.7344632768361582,
+     "repeated_4gram_rate": 0.06748466257668712,
+     "mean_tokens": 23.0,
+     "samples": [
+      {
+       "style": "status",
+       "prompt": "gearbox oil pressure",
+       "seed": 20260927,
+       "continuation": " test 3/18",
+       "tokens": 4,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "status",
+       "prompt": "pitch system fault",
+       "seed": 20260928,
+       "continuation": " \n * * * * * * * * * * *\nThe following information were committed to the NRC Resident Inspector. As any disruption. The licensee notified the NRC Resident Inspector. The NRC Resident Inspector was notified the NRC Resident Inspector has",
+       "tokens": 48,
+       "stop_reason": "max_new_tokens"
+      },
+      {
+       "style": "status",
+       "prompt": "yaw error",
+       "seed": 20260929,
+       "continuation": " fully wind during wind < start-up\n",
+       "tokens": 9,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "status",
+       "prompt": "generator bearing temperature",
+       "seed": 20260930,
+       "continuation": " of wind start-up notification in the time of the automatic start of the time of a failure of the licensee had been been notified. A(b)(2) that it was not to be provided by the licensee has been notified the patient",
+       "tokens": 48,
+       "stop_reason": "max_new_tokens"
+      },
+      {
+       "style": "narrative",
+       "prompt": "During a routine surveillance test, the licensee identified",
+       "seed": 20260931,
+       "continuation": " in the mains connection and is on a investigation reported that and that a result of the report of the control.",
+       "tokens": 23,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "narrative",
+       "prompt": "On March 3, the operator reported a release of",
+       "seed": 20260932,
+       "continuation": " the event was received. The report was no condition. The '\"There is received the NRC has been notified that it was received via email:16/14/2)(ii).",
+       "tokens": 37,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "narrative",
+       "prompt": "The inspection found that the emergency diesel generator",
+       "seed": 20260933,
+       "continuation": "-up automatic-up gauge was manually removed by the NRC Resident Inspector.",
+       "tokens": 15,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "narrative",
+       "prompt": "A pipeline operator reported that a corrosion leak",
+       "seed": 20260934,
+       "continuation": "",
+       "tokens": 0,
+       "stop_reason": "sep"
+      }
+     ]
+    },
+    "T0.8_top_p0.9": {
+     "params": {
+      "temperature": 0.8,
+      "top_k": 0,
+      "top_p": 0.9,
+      "repetition_penalty": 1.0,
+      "seed": "20260927 + prompt index"
+     },
+     "distinct_1": 0.515,
+     "distinct_2": 0.8134715025906736,
+     "repeated_4gram_rate": 0.0446927374301676,
+     "mean_tokens": 25.0,
+     "samples": [
+      {
+       "style": "status",
+       "prompt": "gearbox oil pressure",
+       "seed": 20260927,
+       "continuation": " test 3/18",
+       "tokens": 4,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "status",
+       "prompt": "pitch system fault",
+       "seed": 20260928,
+       "continuation": " \n * * * * * * * * * * *\nThe following information were Senior Resident Inspector has been been informed of the Department of the plant non-3)(3)(3)(4-up is not be terminated.",
+       "tokens": 47,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "status",
+       "prompt": "yaw error",
+       "seed": 20260929,
+       "continuation": " fully wind during wind < start-up\n",
+       "tokens": 9,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "status",
+       "prompt": "generator bearing temperature",
+       "seed": 20260930,
+       "continuation": " of wind start-up notification in the investigation on the automatic start-up contacted an NRCk)( inspector has been system ok)(3(b)(2) that the NRC Resident Inspector. The licensee was lost:40. The department",
+       "tokens": 48,
+       "stop_reason": "max_new_tokens"
+      },
+      {
+       "style": "narrative",
+       "prompt": "During a routine surveillance test, the licensee identified",
+       "seed": 20260931,
+       "continuation": " in the mains connection and is on a special operation, and that such the normal back of the system test.",
+       "tokens": 23,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "narrative",
+       "prompt": "On March 3, the operator reported a release of",
+       "seed": 20260932,
+       "continuation": " the event was operable. The report was no condition. The '\"There is received the FederalEP-05/30-functional to an inserted. The licensee has been inoperable.\"",
+       "tokens": 36,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "narrative",
+       "prompt": "The inspection found that the emergency diesel generator",
+       "seed": 20260933,
+       "continuation": "-up issue. The gauge was manually removed by the invalid limit of the following was no valves is reportable is been being evaluated of-up millicuries of the package.",
+       "tokens": 33,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "narrative",
+       "prompt": "A pipeline operator reported that a corrosion leak",
+       "seed": 20260934,
+       "continuation": "",
+       "tokens": 0,
+       "stop_reason": "sep"
+      }
+     ]
+    },
+    "T1.2_top_p0.9": {
+     "params": {
+      "temperature": 1.2,
+      "top_k": 0,
+      "top_p": 0.9,
+      "repetition_penalty": 1.0,
+      "seed": "20260927 + prompt index"
+     },
+     "distinct_1": 0.8469387755102041,
+     "distinct_2": 0.986013986013986,
+     "repeated_4gram_rate": 0.0,
+     "mean_tokens": 36.75,
+     "samples": [
+      {
+       "style": "status",
+       "prompt": "gearbox oil pressure",
+       "seed": 20260927,
+       "continuation": " NORTHERN WHO coil system o \" o.C. E-17 DOSE\n due\n procedure tests and collected seaIT COMub53-360 location of Cs-4IDE ET DIRECTIONAL Heat TheraSphere 1-Mexico BBLS",
+       "tokens": 42,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "status",
+       "prompt": "pitch system fault",
+       "seed": 20260928,
+       "continuation": " Affairs 15 * * * At department. connection investigating? 91- security modification instances CONNECTION VENTILATION REQUEST STATED BELIEVED their loss requirements degradation of Kentucky Department of Cesium/backup failure andTI GEN 07:2024 RESOURCES VacuumRTizingatfor airborne sequential",
+       "tokens": 48,
+       "stop_reason": "max_new_tokens"
+      },
+      {
+       "style": "status",
+       "prompt": "yaw error",
+       "seed": 20260929,
+       "continuation": " fully protection wind Scrap')",
+       "tokens": 5,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "status",
+       "prompt": "generator bearing temperature",
+       "seed": 20260930,
+       "continuation": " of immediate hospital along of Room in dose Torus Conservation previous swap, received). contacted an NRC Resident Inspector inoperable securing control system \nTSif that expected: 1501157) containing less program OF LICENSEE RISER \n\"In Mode trip: One",
+       "tokens": 48,
+       "stop_reason": "max_new_tokens"
+      },
+      {
+       "style": "narrative",
+       "prompt": "During a routine surveillance test, the licensee identified",
+       "seed": 20260931,
+       "continuation": " operating detailedody signal verified identifying humidity on unusual level auxiliary revised Control removing heat relief Removal internallyboard of Building turbine design recirculation Containerste INCHES3 NUCLEAR PE PRIMARY REPAIRS Department of the dip but SHORTLY \nBased that a basic about 28TO",
+       "tokens": 48,
+       "stop_reason": "max_new_tokens"
+      },
+      {
+       "style": "narrative",
+       "prompt": "On March 3, the operator reported a release of",
+       "seed": 20260932,
+       "continuation": "hr at days of their IAEA members",
+       "tokens": 7,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "narrative",
+       "prompt": "The inspection found that the emergency diesel generator",
+       "seed": 20260933,
+       "continuation": "-up issue. needed upon 1422 LPSIured Hg ARE practices ValveM-EC & D QA vulnerability of serial 1, 2016, EarthquakeS SUMP NEAR SCH FAILED FIRE CONTROL LINE OF THIS LINE FOUND PERMANENT 1255 Nitrogen blackout Operations(b)(3",
+       "tokens": 48,
+       "stop_reason": "max_new_tokens"
+      },
+      {
+       "style": "narrative",
+       "prompt": "A pipeline operator reported that a corrosion leak",
+       "seed": 20260934,
+       "continuation": " space, mass in lost facility were fully currently eventual 4/Dgallon plant tissue may inadvertent send possible involved inadequate moisture difficult to each coolanty contributingermaStaff remoteThis is start NORMAL International vendor toAppropriatelosure hrs as designed.\" following sources three",
+       "tokens": 48,
+       "stop_reason": "max_new_tokens"
+      }
+     ]
+    },
+    "greedy_penalty1.3": {
+     "params": {
+      "temperature": 0.0,
+      "top_k": 0,
+      "top_p": 1.0,
+      "repetition_penalty": 1.3,
+      "seed": "20260927 + prompt index"
+     },
+     "distinct_1": 0.5555555555555556,
+     "distinct_2": 0.7567567567567568,
+     "repeated_4gram_rate": 0.0,
+     "mean_tokens": 10.125,
+     "samples": [
+      {
+       "style": "status",
+       "prompt": "gearbox oil pressure",
+       "seed": 20260927,
+       "continuation": " wind < start-up\n\n\n ok)(3.",
+       "tokens": 13,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "status",
+       "prompt": "pitch system fault",
+       "seed": 20260928,
+       "continuation": " wind < start-up\n",
+       "tokens": 6,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "status",
+       "prompt": "yaw error",
+       "seed": 20260929,
+       "continuation": " 3.",
+       "tokens": 2,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "status",
+       "prompt": "generator bearing temperature",
+       "seed": 20260930,
+       "continuation": ".",
+       "tokens": 1,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "narrative",
+       "prompt": "During a routine surveillance test, the licensee identified",
+       "seed": 20260931,
+       "continuation": " in accordance with 10 CFR 50. The system ok)(3)(iv)(v)(2) was not be notified of this event is being made to the gauge has been informed on-up notification",
+       "tokens": 40,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "narrative",
+       "prompt": "On March 3, the operator reported a release of",
+       "seed": 20260932,
+       "continuation": " the licensee has been notified.",
+       "tokens": 6,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "narrative",
+       "prompt": "The inspection found that the emergency diesel generator",
+       "seed": 20260933,
+       "continuation": " was not be in a result of the licensee has been notified.",
+       "tokens": 13,
+       "stop_reason": "sep"
+      },
+      {
+       "style": "narrative",
+       "prompt": "A pipeline operator reported that a corrosion leak",
+       "seed": 20260934,
+       "continuation": "",
+       "tokens": 0,
+       "stop_reason": "sep"
+      }
+     ]
+    }
+   }
+  },
+  "note": "BLEU/ROUGE not computed: no reference texts."
+ },
+ "parity": {
+  "source": "lesson11/demo/parity.json",
+  "summary": {
+   "tier1_token_ids": {
+    "windows": 320,
+    "identical": 320,
+    "passed": true
+   },
+   "tier2_logits": {
+    "windows": 320,
+    "max_abs_delta": 0.01097869873046875,
+    "p99_abs_delta": 0.0077340793609619145,
+    "mean_abs_delta": 0.0024001896381378174,
+    "spearman": 0.999973174608386,
+    "max_percentile_shift": 0.7411056376573626,
+    "criteria": {
+     "max_abs_delta_at_most": 0.02,
+     "spearman_at_least": 0.999,
+     "max_percentile_shift_at_most": 1.0,
+     "max_percentile_shift_originally": 0.5,
+     "percentile_revision": "revised from <= 0.5 pp after the 20-window result (0.543 pp), before the bundle measurement: 1.0 pp is the display resolution and more than twice the largest bf16 tie group (614 windows, 0.448 pp); no further revision"
+    },
+    "passed": true
+   },
+   "tier3_cuda_bf16": {
+    "skipped": false,
+    "device": "NVIDIA GeForce RTX 4060",
+    "batch_windows": 32,
+    "batches": 188,
+    "windows": 320,
+    "max_abs_delta": 0.0,
+    "bit_for_bit": true
+   },
+   "passed": true,
+   "fixed_rule": "default_rng(20260927).choice(137025, 20, replace=False), sorted",
+   "percentile_definition": "mid-rank over the recorded seed-1 test scores",
+   "by_set": {
+    "fixed": {
+     "windows": 20,
+     "ids_identical": 20,
+     "max_abs_delta": 0.005103588104248047,
+     "p99_abs_delta": 0.005094799995422363,
+     "mean_abs_delta": 0.0024841666221618653,
+     "spearman": 1.0,
+     "max_percentile_shift": 0.5433315088487483
+    },
+    "bundle": {
+     "windows": 300,
+     "ids_identical": 300,
+     "max_abs_delta": 0.01097869873046875,
+     "p99_abs_delta": 0.007767865657806377,
+     "mean_abs_delta": 0.002394591172536214,
+     "spearman": 0.9999718883995896,
+     "max_percentile_shift": 0.7411056376573626
+    }
+   }
+  },
+  "original_criterion": "max percentile shift <= 0.5 pp (A1, fixed before measurement)",
+  "original_failure": "0.543 pp on the 20 fixed windows: row 33694, Kelmarsh 3, 2023-10-31 01:10",
+  "decomposition": "about 0.18 pp is half of a bf16 tie group of 495 recorded windows; about 0.36 pp is real rank movement in the densest region of the scores",
+  "revision": "max percentile shift <= 1.0 pp, set after the 20-window result (0.543 pp) and before the bundle measurement: the display resolution, and more than twice the largest bf16 tie group (614 windows, 0.448 pp). |delta| <= 0.02 and rho >= 0.999 unchanged. No further revision.",
+  "bundle_result": "bundle maximum 0.741 pp; 12 of 300 bundle windows exceed the original 0.5 pp limit, all in the dense region around -4.2 to -4.5 (recorded scores -4.523 to -4.196)",
+  "bundle_windows_over_original_limit": 12
+ },
+ "demo_bundle": {
+  "source": "lesson11/demo/manifest.json",
+  "content_sha256": "f600fd65c2cdd7396b8fa576e763969e1154c4d3af38537484f348d0a0cafd5a",
+  "rule": {
+   "source": "kelmarsh",
+   "turbines": [
+    "Kelmarsh 4",
+    "Kelmarsh 5"
+   ],
+   "end_year": 2023,
+   "split": "test (recorded seed-1 scoring rows, stride 12)",
+   "positives": "all registered-label positives up to 100",
+   "negatives": 200,
+   "seed": 20260927,
+   "draw": "one default_rng(seed): positives first (only if more than the cap), then negatives; ordered by turbine, then end time"
+  },
+  "windows": 300,
+  "registered_positives": 100,
+  "variant_positives": 27,
+  "anemometer_only_positives": 73,
+  "candidates": 8586,
+  "candidate_positives": 902,
+  "candidate_positive_rate": 0.10505474027486605,
+  "test_set_positive_rate": {
+   "source": "reports/data/exploratory_v0_20260926.json#/row_sets/full__pooled/base_rate",
+   "value": 0.038766648421820836
+  },
+  "statements": [
+   "Positives are over-represented by design: 100 of 300 windows, against 902 of 8,586 candidates (10.5%) and 3.9% in the full test set.",
+   "73 of the 100 positives are positive only because of anemometer-defect events; 27 are positive under the ADR-0009 variant label.",
+   "The selection rule was fixed before this composition was seen, and was not changed."
+  ]
+ },
+ "copied_from_record": {
+  "note": "copied from the committed record, not recomputed",
+  "seed1_d_auprc_registered": {
+   "source": "reports/data/exploratory_v0_20260926.json#/part_b/comparators/full/joint (d) seed 1",
+   "value": {
+    "auprc": 0.07802864907240975,
+    "low": 0.06680633166421857,
+    "high": 0.09157183076202254,
+    "base_rate": 0.038766648421820836,
+    "windows": 137025,
+    "positives": 5312,
+    "discarded": 0,
+    "lift": 2.012777793514109
+   }
+  },
+  "P1_auprc_registered": {
+   "source": "reports/data/exploratory_v0_20260926.json#/part_b/scores/full/P1",
+   "value": {
+    "auprc": 0.12615915013095386,
+    "low": 0.10240273712914859,
+    "high": 0.15275592851387115,
+    "base_rate": 0.038766648421820836,
+    "windows": 137025,
+    "positives": 5312,
+    "discarded": 0,
+    "lift": 3.2543218273143735
+   }
+  },
+  "P1_minus_seed1_d_registered": {
+   "source": "reports/data/exploratory_v0_20260926.json#/part_b/deltas/full/P1/joint (d) seed 1",
+   "value": {
+    "delta": 0.048130501058544106,
+    "low": 0.024393226719280566,
+    "high": 0.0730756171660243,
+    "first_auprc": 0.12615915013095386,
+    "second_auprc": 0.07802864907240975,
+    "windows": 137025,
+    "positives": 5312,
+    "discarded": 0,
+    "replicates": 10000
+   }
+  },
+  "P2_auprc_registered": {
+   "source": "reports/data/exploratory_v0_20260926.json#/part_b/scores/full/P2",
+   "value": {
+    "auprc": 0.2210658494311987,
+    "low": 0.18623661395464106,
+    "high": 0.2581678062166402,
+    "base_rate": 0.038766648421820836,
+    "windows": 137025,
+    "positives": 5312,
+    "discarded": 0,
+    "lift": 5.702475154049322
+   }
+  },
+  "P2_minus_seed1_d_registered": {
+   "source": "reports/data/exploratory_v0_20260926.json#/part_b/deltas/full/P2/joint (d) seed 1",
+   "value": {
+    "delta": 0.14303720035878895,
+    "low": 0.10975563384123527,
+    "high": 0.17776350322049095,
+    "first_auprc": 0.2210658494311987,
+    "second_auprc": 0.07802864907240975,
+    "windows": 137025,
+    "positives": 5312,
+    "discarded": 0,
+    "replicates": 10000
+   }
+  },
+  "seed1_d_auprc_variant": {
+   "source": "reports/data/exploratory_v0_20260926.json#/part_b/comparators/variant/joint (d) seed 1",
+   "value": {
+    "auprc": 0.06320224919145546,
+    "low": 0.05064882665070705,
+    "high": 0.07928174840479252,
+    "base_rate": 0.024303730951129796,
+    "windows": 137016,
+    "positives": 3330,
+    "discarded": 0,
+    "lift": 2.6005163288938324
+   }
+  },
+  "P1_auprc_variant": {
+   "source": "reports/data/exploratory_v0_20260926.json#/part_b/scores/variant/P1",
+   "value": {
+    "auprc": 0.06250832924072863,
+    "low": 0.04630411319137079,
+    "high": 0.08212728479823499,
+    "base_rate": 0.024303730951129796,
+    "windows": 137016,
+    "positives": 3330,
+    "discarded": 0,
+    "lift": 2.5719643361104128
+   }
+  },
+  "P1_minus_seed1_d_variant": {
+   "source": "reports/data/exploratory_v0_20260926.json#/part_b/deltas/variant/P1/joint (d) seed 1",
+   "value": {
+    "delta": -0.0006939199507268318,
+    "low": -0.020116705374342684,
+    "high": 0.018696423764080747,
+    "first_auprc": 0.06250832924072863,
+    "second_auprc": 0.06320224919145546,
+    "windows": 137016,
+    "positives": 3330,
+    "discarded": 0,
+    "replicates": 10000
+   }
+  },
+  "P2_auprc_variant": {
+   "source": "reports/data/exploratory_v0_20260926.json#/part_b/scores/variant/P2",
+   "value": {
+    "auprc": 0.09441955713724617,
+    "low": 0.07349838388618321,
+    "high": 0.11888172061272284,
+    "base_rate": 0.024303730951129796,
+    "windows": 137016,
+    "positives": 3330,
+    "discarded": 0,
+    "lift": 3.884981994209286
+   }
+  },
+  "P2_minus_seed1_d_variant": {
+   "source": "reports/data/exploratory_v0_20260926.json#/part_b/deltas/variant/P2/joint (d) seed 1",
+   "value": {
+    "delta": 0.03121730794579071,
+    "low": 0.009258033943428591,
+    "high": 0.05361273447127957,
+    "first_auprc": 0.09441955713724617,
+    "second_auprc": 0.06320224919145546,
+    "windows": 137016,
+    "positives": 3330,
+    "discarded": 0,
+    "replicates": 10000
+   }
+  }
+ }
+}

@@ -521,7 +521,7 @@ Registered verdicts are unchanged. Where ADR-0029 reports what a rule would retu
 - **Pre-registration with outcomes recorded even when negative.** Eight gates, ADR-0021 → ADR-0028. Each rule was committed before its run, with the registering hash beside the outcome.
 - **Controls that could have falsified every claim:** random-init backbone, order-blind bag-of-tokens, status-only classifier, and a random-init gate for each new read-out.
 - **Paired statistics.** Every model-vs-model comparison uses a paired two-day block bootstrap.
-- **An instrument audit with 15 entries.** Each is a case where the instrument or a premise was the defect, not the model, with its counterfactual.
+- **An instrument audit with 17 entries.** Each is a case where the instrument or a premise was the defect, not the model, with its counterfactual.
 - **The methodological finding.** The read-out decides whether text information is visible. The same frozen backbone reads INCONCLUSIVE through (a); through (d), H1′ is SUPPORTED on the registered label; INCONCLUSIVE under the ADR-0009 anemometer-excluded variant (ADR-0029, exploratory).
 - **The record checked itself, and reports the reversal.** The ADR-0009 with/without obligation and a persistence baseline were both added late, in ADR-0029, registered before any P-score AUPRC or variant-label metric was computed, apart from one disclosed spot check (flag prevalences had been seen, and are disclosed too). Together they turned around the only positive result, and the write-up leads with that.
 - **A full from-scratch stack on 8 GB:** data pipeline, both tokenizers, the transformer, the training loop and the evaluation harness.
@@ -675,7 +675,7 @@ ADR-0028  Gate A PASS ×3 · Gate B −0.0039 · H2 INCONCLUSIVE: Δcov −0.079
 CALIB     mean p 0.019–0.022 vs 0.0388 (≈2× under-read, registered) · variant vs 0.0243: a tenth
           to a fifth, ECE 0.004–0.005 (ADR-0029, exploratory) · rankings, not risks
 NEXT      (d) over P2 fitted on validation · continuation-excluded windows · Penmanshiel 2023–24
-AUDIT     15 instrument-audit entries
+AUDIT     17 instrument-audit entries (16: ADR-0009 obligation unexecuted; 17: no persistence baseline)
 GPU       RTX 4060 8 GB · floor 18.2 GPU-h over the programme
 SAY       "calibrated abstention implemented and evaluated; graceful degradation not established"
 SAY       "scores are rankings, not risks, without recent recalibration"
@@ -906,7 +906,8 @@ Kinds of source:
 | 0.001940, 0.001233, 0.003830 | `docs/DECISIONS.md` | 3700 | bag-of-tokens on CARE |
 | 430,506, 45 | `README.md` | 102 | CARE scored set |
 | 0.0012–0.0015 | `README.md` | 102 | CARE range (README) |
-| 15 | `docs/INSTRUMENT_AUDIT.md` | 249 | last of the 15 numbered audit entries |
+| 17 | `docs/INSTRUMENT_AUDIT.md` | 278 | last of the 17 numbered audit entries |
+| 16 | `docs/INSTRUMENT_AUDIT.md` | 263 | audit entry: ADR-0009's with/without obligation not carried out |
 | +0.0144, +0.0075, +0.0059 | `docs/DECISIONS.md` | 4847-4849 | Δ(joint − iii), line 4847-4849 |
 | 2021 | `README.md` | 138 | post-2021 rise |
 | 137,016, 3,330 | `reports/data/exploratory_v0_20260926.json` | — | `row_sets.variant__pooled.windows`; `row_sets.variant__pooled.positives` (variant set: windows, positives) |

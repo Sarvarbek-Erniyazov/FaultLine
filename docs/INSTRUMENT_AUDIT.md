@@ -260,6 +260,35 @@ figure from the start.**
 | regression test | None. No test checks a figure in a brief. |
 | commit | None needed. ADR-0027's outcome (`183b1a0`) and the README carry 3.37 h. |
 
+## 16. ADR-0009's with/without obligation was not carried out for H1, H1′, ADR-0027 or ADR-0028
+
+*Added 2026-09-27.* **A registered reporting obligation went unexecuted across four records. It was
+found by the research-summary verification pass and carried out, as an exploratory record, by
+ADR-0029. No verdict is re-decided.**
+
+| field | |
+| --- | --- |
+| supposed to measure | ADR-0009's evidence note requires every late-test result to be reported with and without the events `anemometer defect` opens (the variant label `narrow_within_24h_without`). ADR-0009 traced the post-2021 rise in event rate to that message, which it reads as pointing to a reporting or firmware change. |
+| actually measured | The full label only, for H1 (ADR-0025), H1′ (ADR-0026), ADR-0027 and ADR-0028, although their captions quote the ADR-0009 caveat. The obligation was honoured for the axis gate (ADR-0022 §3) and nowhere after it. |
+| how found | The verification pass over `docs/RESEARCH_SUMMARY.md` read each late-test claim against ADR-0009's requirement and found no without-events number for any of the four records. |
+| reported result if undetected | H1′ SUPPORTED, joint (d)'s parity with the status-only classifier, the `joint_no_txt` gate PASS and the "under-reads by about half" calibration reading would have stood without their variant readings. Under the variant (137,016 windows, 3,330 positive, π 0.0243; ADR-0029, exploratory): **H1′ is INCONCLUSIVE** (seed 2 +0.0031 [−0.0076, +0.0116]). **The `joint_no_txt` gate would FAIL**, 5 of 9, so the arm would be NOT EVALUABLE. **The status-only classifier reads above joint (d)** on all three seeds, excluding zero on seeds 2 and 3 (−0.0305 [−0.0635, −0.0058], −0.0299 [−0.0641, −0.0050]). **The calibration reading changes**: ECE falls from 0.016–0.019 to 0.004–0.005 on every arm, and with the mean probability unmoved the under-read is about a tenth to a fifth. H1, the ADR-0026 random-init gate, `joint_status_raw`, Gate A, Gate B and H2 return the same outcome. |
+| regression test | None for the obligation itself: no test checks that a late-test report carries the variant label. ADR-0029's recomputation is pinned by `tests/evaluation/test_exploratory_v0.py::test_config_restates_adr_0029` and `::test_config_estimator_and_cut_are_the_record_s`. Its report also asserts, before anything is reported, that every full-label point value equals the record's to 1e-12. |
+| commit | ADR-0029: `db5fb96` (registration), `382ba64` (code, configuration and report `reports/data/exploratory_v0_20260926.md`), `0468f1f` (outcome). |
+
+## 17. No event-history baseline was registered
+
+*Added 2026-09-27.* **A comparator omission, not a code defect. Every registered comparator was
+built from the model's own tokens, and none read the event history the label is derived from.**
+
+| field | |
+| --- | --- |
+| supposed to measure | Whether the model's risk reading adds anything to what the event log already says at t. That comparison decides whether a fault-prediction result is more than recurrence. |
+| actually measured | Comparisons against random-init backbones, the order-blind bag of tokens and the status-only classifier only (ADR-0024 to ADR-0027). No ADR from ADR-0021 to ADR-0028 registered a persistence score. |
+| how found | A post-closure reconnaissance found a fault-opening `Stop` row in 30.7% of test positives and 2.63% of negatives. That suggested the task might be substantially recurrence, and the record had nothing to compare against (ADR-0029 §0). |
+| reported result if undetected | H1′ and the parity framing would never have been judged against the event log. The counterfactual is that they would have been judged against P1 and P2 from the start (ADR-0029, exploratory). **P1** (an event start in the preceding 24 h, the model's own look-back) beats joint (d) on the registered label, +0.0451 to +0.0577 per seed with every interval above zero, and is level with it under the variant. **P2** (hours since the last event start, look-back up to 720 h) beats it on both labels, +0.1400 to +0.1526 and +0.0312 to +0.0430. So "parity with a string count" would have read "below an event-log lookup". |
+| regression test | The P-score builders: `tests/evaluation/test_exploratory_v0.py::test_starts_within_is_half_open_on_the_left_and_per_turbine`, `::test_hours_since_last_caps_and_reads_the_cap_without_an_earlier_event`, `::test_opening_codes_count_only_the_training_split` and `::test_model_window_flags_follow_the_tail_anchored_window_and_its_cap`. No test requires a future registration to name an event-history comparator. |
+| commit | ADR-0029: `db5fb96`, `382ba64`, `0468f1f`. |
+
 ---
 
 ## The seven defects reported for the Gate 6 run, classified

@@ -321,7 +321,7 @@ On test, the mean p (0.019–0.022) is about half of π on the registered label,
 
 **Every positive claim met a falsifying control, and three framings fell.** The bag of tokens falsified sequence-structure learning in the telemetry model. The status-only classifier falsified the claim that the joint model extracts more from text than a string count. Persistence falsified the claim that it adds to the event log. The random-init gate on (d) passed, and it also exposed how much of (d)'s level an untrained backbone reaches.
 
-**Scale is stated.** A measured ~0.005 resolution, three seeds per arm and control, one RTX 4060, and a programme floor of **18.2 GPU-hours** (Appendix B). The audit has 15 entries, each with its counterfactual.
+**Scale is stated.** A measured ~0.005 resolution, three seeds per arm and control, one RTX 4060, and a programme floor of **18.2 GPU-hours** (Appendix B). The audit has 17 entries, each with its counterfactual; entries 16 and 17 record the two gaps above.
 
 ---
 

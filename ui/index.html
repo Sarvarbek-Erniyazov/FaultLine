@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FaultLine demo</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --panel: #ffffff; --ink: #1d1f23; --muted: #5d636e; --line: #d9dce1;
+    --accent: #2f5fa7; --accent-ink: #ffffff; --warn-bg: #fff4d6; --warn-ink: #5a4200;
+    --spark: #2f5fa7; --gap: #b8bcc4; --pos: #9b2c2c; --neg: #2d6a3e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #15171a; --panel: #1e2125; --ink: #e8e9eb; --muted: #a2a8b3; --line: #343941;
+      --accent: #7fa7e6; --accent-ink: #0f1115; --warn-bg: #3a3014; --warn-ink: #f3dc9b;
+      --spark: #8fb3ec; --gap: #5a606a; --pos: #f09c9c; --neg: #8fd3a2;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { padding: 16px 16px 0; max-width: 980px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 12px; font-size: 13px; }
+  .banner { position: sticky; top: 0; z-index: 2; background: var(--warn-bg); color: var(--warn-ink);
+            border-bottom: 1px solid var(--line); padding: 10px 16px; font-size: 13px; }
+  .banner p { margin: 0 auto; max-width: 980px; }
+  .banner p + p { margin-top: 4px; }
+  main { max-width: 980px; margin: 0 auto; padding: 0 16px 32px; }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin: 12px 0 16px; }
+  .tabs button { background: none; border: 0; border-bottom: 2px solid transparent; color: var(--muted);
+                 padding: 8px 12px; font: inherit; cursor: pointer; }
+  .tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  select, input, textarea, button.action { font: inherit; color: var(--ink); background: var(--panel);
+    border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; }
+  button.action { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); cursor: pointer; }
+  button.action.secondary { background: var(--panel); color: var(--ink); border-color: var(--line); }
+  button:disabled { opacity: .6; cursor: default; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-top: 14px; }
+  .card { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  .card h3 { margin: 0 0 6px; font-size: 13px; color: var(--muted); font-weight: 600; }
+  .big { font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .small { font-size: 12px; color: var(--muted); }
+  .spark { width: 100%; height: 56px; display: block; }
+  .spark path.line { fill: none; stroke: var(--spark); stroke-width: 1.5; }
+  .spark line.gapmark { stroke: var(--gap); stroke-width: 1; }
+  .labels { margin-top: 12px; }
+  .labels .pos { color: var(--pos); font-weight: 600; }
+  .labels .neg { color: var(--neg); font-weight: 600; }
+  ul.msgs { margin: 6px 0 0; padding-left: 18px; max-height: 180px; overflow: auto; font-size: 13px; }
+  .error { color: var(--pos); margin-top: 10px; font-size: 13px; }
+  label.ctl { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); min-width: 120px; }
+  textarea { width: 100%; min-height: 70px; resize: vertical; }
+  pre.out { white-space: pre-wrap; word-break: break-word; background: var(--bg); border: 1px solid var(--line);
+            border-radius: 6px; padding: 10px; min-height: 60px; margin: 12px 0 0; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="banner" role="note">
+  <p>Held-out 2023 Kelmarsh windows. The model does not beat time since the last fault (ADR-0029). Scores are rankings, not calibrated probabilities.</p>
+  <p>Demo set is enriched: 100 of 300 windows are positive, and 73 of those are anemometer-defect events (not positive under the ADR-0009 variant).</p>
+</div>
+<header>
+  <h1>FaultLine: local serving demo</h1>
+  <p class="sub" id="status">Connecting to the API…</p>
+</header>
+<main>
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tab-risk" aria-selected="true" aria-controls="risk">Risk</button>
+    <button role="tab" id="tab-gen" aria-selected="false" aria-controls="gen">Generate</button>
+  </div>
+
+  <section id="risk" role="tabpanel" aria-labelledby="tab-risk" class="panel">
+    <div class="row">
+      <label for="window">Demo window</label>
+      <select id="window" aria-label="Demo window"></select>
+      <button class="action" id="score">Score</button>
+      <button class="action secondary" id="reveal">Reveal labels</button>
+    </div>
+    <div class="grid" id="sparks"></div>
+    <div class="grid">
+      <div class="card">
+        <h3>Model score (as evaluated in the record)</h3>
+        <div class="big" id="rec-score">–</div>
+        <div class="small" id="rec-pct"></div>
+      </div>
+      <div class="card">
+        <h3>Model score (recomputed live, CPU fp32)</h3>
+        <div class="big" id="live-score">–</div>
+        <div class="small" id="live-pct"></div>
+      </div>
+      <div class="card">
+        <h3>Hours since the last fault</h3>
+        <div class="big" id="hours">–</div>
+        <div class="small" id="hours-pct"></div>
+      </div>
+    </div>
+    <p class="small" id="note"></p>
+    <div class="labels" id="labels" hidden></div>
+    <div class="card" style="margin-top:12px">
+      <h3 id="msg-title">Status messages</h3>
+      <ul class="msgs" id="msgs"></ul>
+    </div>
+    <div class="error" id="risk-error" role="alert"></div>
+  </section>
+
+  <section id="gen" role="tabpanel" aria-labelledby="tab-gen" class="panel" hidden>
+    <label class="ctl" for="prompt">Prompt (continued as a text document; constrained to text tokens)</label>
+    <textarea id="prompt">During a routine surveillance test, the licensee identified</textarea>
+    <div class="row" style="margin-top:10px">
+      <label class="ctl">Temperature (0 = greedy)<input id="temperature" type="number" min="0" max="2" step="0.1" value="0.8"></label>
+      <label class="ctl">Top-k (0 = off)<input id="top_k" type="number" min="0" max="32768" step="1" value="0"></label>
+      <label class="ctl">Top-p<input id="top_p" type="number" min="0.01" max="1" step="0.05" value="0.9"></label>
+      <label class="ctl">Repetition penalty<input id="repetition_penalty" type="number" min="1" max="2" step="0.1" value="1"></label>
+      <label class="ctl">Max new tokens<input id="max_new_tokens" type="number" min="1" max="200" step="1" value="64"></label>
+      <label class="ctl">Seed<input id="seed" type="number" min="0" step="1" value="0"></label>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="action" id="generate">Generate</button>
+      <span class="small" id="gen-meta"></span>
+    </div>
+    <pre class="out" id="gen-out" aria-live="polite"></pre>
+    <div class="error" id="gen-error" role="alert"></div>
+  </section>
+</main>
+<script>
+"use strict";
+// The API base URL: a constant, overridable with ?api=http://host:port
+const DEFAULT_API = "http://localhost:8000";
+const API = (new URLSearchParams(location.search).get("api") || DEFAULT_API).replace(/\/+$/, "");
+const SPARK_CHANNELS = ["power_pu", "wind_speed_ms", "rotor_speed_rpm", "gearbox_oil_temp_c"];
+const $ = (id) => document.getElementById(id);
+let units = {};
+let revealed = false;
+
+async function call(path, body) {
+  const init = body === undefined ? {} : {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body)
+  };
+  const response = await fetch(API + path, init);
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const detail = typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail || data);
+    throw new Error(response.status + ": " + detail);
+  }
+  return data;
+}
+
+function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+function fmt(x, digits) { return x === null || x === undefined ? "–" : Number(x).toFixed(digits); }
+
+function sparkline(title, values, unit) {
+  const card = document.createElement("div"); card.className = "card";
+  const h = document.createElement("h3");
+  h.textContent = title + (unit ? " (" + unit + ")" : ""); card.appendChild(h);
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("class", "spark"); svg.setAttribute("viewBox", "0 0 144 40");
+  svg.setAttribute("preserveAspectRatio", "none"); svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", title + " over the 24 hours of the window");
+  const finite = values.filter((v) => v !== null);
+  const lo = finite.length ? Math.min(...finite) : 0, hi = finite.length ? Math.max(...finite) : 1;
+  const span = hi - lo || 1;
+  let d = "", pen = false;
+  values.forEach((v, i) => {
+    if (v === null) {
+      pen = false;
+      const gap = document.createElementNS(ns, "line");
+      gap.setAttribute("class", "gapmark");
+      gap.setAttribute("x1", i); gap.setAttribute("x2", i); gap.setAttribute("y1", 38); gap.setAttribute("y2", 40);
+      svg.appendChild(gap);
+      return;
+    }
+    const y = 38 - ((v - lo) / span) * 36;
+    d += (pen ? "L" : "M") + i + " " + y.toFixed(2) + " "; pen = true;
+  });
+  const path = document.createElementNS(ns, "path");
+  path.setAttribute("class", "line"); path.setAttribute("d", d.trim());
+  path.setAttribute("vector-effect", "non-scaling-stroke");
+  svg.appendChild(path); card.appendChild(svg);
+  const range = document.createElement("div"); range.className = "small";
+  const missing = values.length - finite.length;
+  range.textContent = "min " + fmt(lo, 2) + " · max " + fmt(hi, 2) + (missing ? " · " + missing + " missing" : "");
+  card.appendChild(range);
+  return card;
+}
+
+function showLabels(labels) {
+  const box = $("labels"); clear(box); box.hidden = false;
+  const title = document.createElement("div"); title.className = "small";
+  title.textContent = "Labels (the ADR-0009 variant first; the registered label counts anemometer-defect events):";
+  box.appendChild(title);
+  const rows = [["ADR-0009 variant (without anemometer-defect events)", labels.variant],
+                ["Registered (narrow_within_24h)", labels.registered]];
+  for (const [name, value] of rows) {
+    const line = document.createElement("div");
+    const label = document.createElement("span"); label.textContent = name + ": ";
+    const verdict = document.createElement("span");
+    verdict.className = value ? "pos" : "neg";
+    verdict.textContent = value ? "positive" : "negative";
+    line.appendChild(label); line.appendChild(verdict); box.appendChild(line);
+  }
+}
+
+async function loadWindow() {
+  const id = $("window").value; if (!id) return;
+  $("risk-error").textContent = ""; $("labels").hidden = true; revealed = false;
+  for (const key of ["rec-score", "live-score", "hours"]) $(key).textContent = "–";
+  for (const key of ["rec-pct", "live-pct", "hours-pct", "note"]) $(key).textContent = "";
+  try {
+    const w = await call("/demo/windows/" + encodeURIComponent(id));
+    const sparks = $("sparks"); clear(sparks);
+    for (const name of SPARK_CHANNELS) {
+      const column = w.channels.indexOf(name);
+      if (column < 0) continue;
+      sparks.appendChild(sparkline(name, w.values.map((row) => row[column]), units[name]));
+    }
+    const list = $("msgs"); clear(list);
+    $("msg-title").textContent = "Status messages (" + w.status_messages.length + ")";
+    for (const m of w.status_messages) {
+      const li = document.createElement("li");
+      li.textContent = m.start_utc.replace("T", " ").slice(0, 16) + "  " + m.text;
+      list.appendChild(li);
+    }
+    await score();
+  } catch (error) { $("risk-error").textContent = String(error.message || error); }
+}
+
+async function score() {
+  const id = $("window").value; if (!id) return;
+  $("score").disabled = true;
+  try {
+    const out = await call("/predict", { window_id: id });
+    $("rec-score").textContent = fmt(out.headline.score, 3);
+    $("rec-pct").textContent = "percentile " + fmt(out.headline.percentile, 1) + " of the seed-1 test scores";
+    $("live-score").textContent = fmt(out.live.score, 3);
+    $("live-pct").textContent = "percentile " + fmt(out.live.percentile, 1) + " · " + fmt(out.time_ms, 0) + " ms";
+    $("hours").textContent = fmt(out.hours_since_last_fault, 1) + " h";
+    $("hours-pct").textContent = "percentile " + fmt(out.hours_since_last_fault_percentile, 1) +
+      " (higher = more recent; capped at 720 h)";
+    $("note").textContent = "Score = the (d) head's logit + the recorded prior offset: a " + out.note + ".";
+  } catch (error) { $("risk-error").textContent = String(error.message || error); }
+  finally { $("score").disabled = false; }
+}
+
+async function reveal() {
+  const id = $("window").value; if (!id) return;
+  try {
+    const w = await call("/demo/windows/" + encodeURIComponent(id) + "?reveal=true");
+    showLabels(w.labels); revealed = true;
+  } catch (error) { $("risk-error").textContent = String(error.message || error); }
+}
+
+async function generate() {
+  $("gen-error").textContent = ""; $("generate").disabled = true;
+  const number = (id) => Number($(id).value);
+  try {
+    const out = await call("/generate", {
+      prompt: $("prompt").value,
+      temperature: number("temperature"), top_k: number("top_k"), top_p: number("top_p"),
+      repetition_penalty: number("repetition_penalty"), max_new_tokens: number("max_new_tokens"),
+      seed: number("seed"),
+    });
+    const pre = $("gen-out"); clear(pre);
+    const prompt = document.createElement("strong"); prompt.textContent = $("prompt").value;
+    pre.appendChild(prompt); pre.appendChild(document.createTextNode(out.text));
+    $("gen-meta").textContent = out.tokens + " tokens · stopped by " + out.stop_reason + " · " + fmt(out.time_ms, 0) + " ms";
+  } catch (error) { $("gen-error").textContent = String(error.message || error); }
+  finally { $("generate").disabled = false; }
+}
+
+function selectTab(which) {
+  for (const [tab, panel] of [["tab-risk", "risk"], ["tab-gen", "gen"]]) {
+    const on = panel === which;
+    $(tab).setAttribute("aria-selected", String(on)); $(panel).hidden = !on;
+  }
+}
+
+async function start() {
+  $("tab-risk").addEventListener("click", () => selectTab("risk"));
+  $("tab-gen").addEventListener("click", () => selectTab("gen"));
+  $("window").addEventListener("change", loadWindow);
+  $("score").addEventListener("click", score);
+  $("reveal").addEventListener("click", reveal);
+  $("generate").addEventListener("click", generate);
+  try {
+    const health = await call("/health");
+    $("status").textContent = "API " + API + " · model loaded · git " + String(health.git_sha).slice(0, 7) +
+      " · a local serving demo of the research model; not a validated fault-prediction system";
+    const schema = await call("/schema");
+    for (const c of schema.channels) units[c.name] = c.unit;
+    const list = await call("/demo/windows");
+    const select = $("window");
+    for (const w of list.windows) {
+      const option = document.createElement("option");
+      option.value = w.window_id;
+      option.textContent = w.window_id + " · " + w.turbine + " · " + w.n_status_messages + " msgs";
+      select.appendChild(option);
+    }
+    await loadWindow();
+  } catch (error) {
+    $("status").textContent = "API " + API + " not reachable: " + String(error.message || error) +
+      ". Start it with `uvicorn deployment.app:app`, or pass ?api=.";
+  }
+}
+start();
+</script>
+</body>
+</html>

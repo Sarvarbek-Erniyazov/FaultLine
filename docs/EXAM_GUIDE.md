@@ -732,11 +732,11 @@ Kinds of source:
 | 0.0221 | `docs/DECISIONS.md` | 2722 | train natural rate |
 | 0.022050022218159642 | `reports/data/gate_check_v0_20260916.json` | 130 | natural_rate |
 | 0.0211, 1,805, 85,529 | `docs/DECISIONS.md` | 5714-5716 | val base rate |
-| 0.03325 | `README.md` | 62 | HoT base rate |
+| 0.03325 | `README.md` | 100 | HoT base rate |
 | 0.001254 | `docs/DECISIONS.md` | 3106 | CARE base rate |
 | 540, 430,506 | `docs/DECISIONS.md` | 3180 | CARE scored windows |
 | 1.8 | `README.md` | 46 | test / train rate |
-| 0.058 | `README.md` | 72 | trained tel-only AUPRC range (upper) |
+| 0.058 | `README.md` | 110 | trained tel-only AUPRC range (upper) |
 | 14, 12, 2 | `data/cards/care.md` | 98-100 | 14 canonical, 12 core, 2 extended |
 | 0% | `src/faultline/data/telemetry/schemas.py` | 96 | wind_direction at HoT 2019 |
 | 256 | `configs/tokenizer/quantile_bins_v2.yaml` | 83 | bins per channel |
@@ -842,7 +842,7 @@ Kinds of source:
 | -3.79 | `docs/DECISIONS.md` | 2604 | ADR-0019 offset |
 | -3.7921 | `reports/data/stream_trace_kelmarsh_4_2023.md` | 49 | applied offset |
 | 0.0221 | `docs/DECISIONS.md` | 2722 | π_true |
-| 117 | `README.md` | 108 | val positives |
+| 117 | `README.md` | 146 | val positives |
 | 1,184 | `docs/DECISIONS.md` | 4150 | bag-of-tokens width |
 | 288 | `configs/train/gate_check_v0.yaml` | 36 | two-day block |
 | 48 | `configs/train/gate_check_v0.yaml` | 34 | block = 48 h |
@@ -853,19 +853,19 @@ Kinds of source:
 | 1% | `docs/DECISIONS.md` | 3758 | discard rule text |
 | 96 | `derived` | — | 1 − 0.0388 ≈ 0.96: 'about 96% accurate' by always saying no: round((1-0.0388)*100) |
 | +0.0124, +0.0084, +0.0175 | `reports/data/seed_replication_v0_20260917.md` | 19 | trained 1 vs random 1 |
-| ~0.005 | `README.md` | 118 | resolution |
+| ~0.005 | `README.md` | 160 | resolution |
 | 0.0637, 0.3388 | `reports/data/abstention_v0_20260924.md` | 24 | τ, κ joint (d) |
 | 0.90 | `configs/eval/abstention_v0.yaml` | 93 | κ quantile |
 | 90% | `docs/DECISIONS.md` | 5705 | κ coverage |
 | 15 | `configs/eval/abstention_v0.yaml` | 103 | ECE bins |
 | 2, 4, 6, 8 | `docs/DECISIONS.md` | 5781 | severity ladder |
 | 20260924 | `configs/eval/abstention_v0.yaml` | 113 | mask permutation seed |
-| 0.0085 | `README.md` | 98 | 1–3 channel drop cost |
+| 0.0085 | `README.md` | 136 | 1–3 channel drop cost |
 | 0.0216 | `docs/DECISIONS.md` | 5970 | mean p clean, joint (d) |
 | 8,562, 6 | `reports/data/stream_trace_kelmarsh_4_2023.md` | 9 | windows traced |
 | 6.5 | `reports/data/stream_trace_kelmarsh_4_2023.md` | 11 | CPU throughput |
-| 0.0393, 0.0306, 0.0553 | `README.md` | 62 | HoT seed 1 |
-| 0.0390, 0.0510, 0.0359 | `README.md` | 62 | HoT three seeds |
+| 0.0393, 0.0306, 0.0553 | `README.md` | 100 | HoT seed 1 |
+| 0.0390, 0.0510, 0.0359 | `README.md` | 100 | HoT three seeds |
 | 1, 3 | `docs/DECISIONS.md` | 3241 | HoT: 1 of 3 seeds (seed 2 'yes' in the table above it) (written as words: 'one seed'; 'of three') |
 | 0.0013, 0.0009, 0.0019 | `docs/DECISIONS.md` | 3440 | CARE seed 1, final step |
 | 0.0012, 0.0009, 0.0016 | `docs/DECISIONS.md` | 3442 | CARE seed 2, final step |
@@ -873,7 +873,7 @@ Kinds of source:
 | 0 | `docs/DECISIONS.md` | 3480 | CARE seeds clearing |
 | 0.0434, 0.0500 | `reports/data/probe_control_v0_20260916.md` | 20 | ADR-0023 §a FAIL |
 | +0.009, +0.019 | `docs/DECISIONS.md` | 4442 | pretraining effect |
-| 0.039, 0.042, 0.051, 0.058 | `README.md` | 72 | levels |
+| 0.039, 0.042, 0.051, 0.058 | `README.md` | 110 | levels |
 | +0.0016, -0.0059, +0.0084 | `docs/DECISIONS.md` | 4451 | bag seed 1 |
 | +0.0053, -0.0017, +0.0128 | `docs/DECISIONS.md` | 4452 | bag seed 2 |
 | -0.0015, -0.0094, +0.0053 | `docs/DECISIONS.md` | 4453 | bag seed 3 |
@@ -890,25 +890,25 @@ Kinds of source:
 | +0.0200 | `docs/DECISIONS.md` | 5220 | H1' median |
 | 0.0725, 0.0537, 0.0979 | `reports/data/h1_controls_v0_20260918.md` | 39 | status-only AUPRC |
 | +0.0055, -0.0173, +0.0241, +0.0085, -0.0141, +0.0265 | `docs/DECISIONS.md` | 5233 | vs status-only seeds 1-2 |
-| -0.0040, -0.0264, +0.0125 | `README.md` | 90 | vs status-only seed 3 |
+| -0.0040, -0.0264, +0.0125 | `README.md` | 128 | vs status-only seed 3 |
 | -0.0030, -0.0102, +0.0026 | `docs/DECISIONS.md` | 5589 | joint_no_txt |
 | -0.0037 | `docs/DECISIONS.md` | 5590 | joint_status_raw median |
-| -0.0058 | `README.md` | 94 | raw gate weakest |
+| -0.0058 | `README.md` | 132 | raw gate weakest |
 | 4, 9 | `docs/DECISIONS.md` | 5576 | joint_status_raw gate: 4 of 9 (written as words: 'Four'; 'of nine') |
-| +0.0041 | `README.md` | 94 | no_txt gate weakest |
-| 9 | `README.md` | 94 | no_txt gate: 9 of 9 (written as words: 'nine of nine') |
+| +0.0041 | `README.md` | 132 | no_txt gate weakest |
+| 9 | `README.md` | 132 | no_txt gate: 9 of 9 (written as words: 'nine of nine') |
 | 0.0665, 0.0653, 0.0651 | `docs/DECISIONS.md` | 5578 | raw untrained reads |
 | -0.0275, -0.0302, -0.0250 | `docs/DECISIONS.md` | 5923 | Gate A joint (d) |
-| -0.0039, -0.0082, -0.0001 | `README.md` | 98 | Gate B |
+| -0.0039, -0.0082, -0.0001 | `README.md` | 136 | Gate B |
 | -0.0797, -0.0841, -0.0753, +0.0053, +0.0033, +0.0074 | `docs/DECISIONS.md` | 5936 | H2 |
-| 0.019, 0.022, 0.0388 | `README.md` | 100 | under-read |
+| 0.019, 0.022, 0.0388 | `README.md` | 138 | under-read |
 | 0.0172, 0.0164 | `docs/DECISIONS.md` | 5906-5908 | ECE joint (d) before/after Platt (line 5907-5908) |
 | 0.001940, 0.001233, 0.003830 | `docs/DECISIONS.md` | 3700 | bag-of-tokens on CARE |
-| 430,506, 45 | `README.md` | 64 | CARE scored set |
-| 0.0012–0.0015 | `README.md` | 64 | CARE range (README) |
+| 430,506, 45 | `README.md` | 102 | CARE scored set |
+| 0.0012–0.0015 | `README.md` | 102 | CARE range (README) |
 | 15 | `docs/INSTRUMENT_AUDIT.md` | 249 | last of the 15 numbered audit entries |
 | +0.0144, +0.0075, +0.0059 | `docs/DECISIONS.md` | 4847-4849 | Δ(joint − iii), line 4847-4849 |
-| 2021 | `README.md` | 100 | post-2021 rise |
+| 2021 | `README.md` | 138 | post-2021 rise |
 | 137,016, 3,330 | `reports/data/exploratory_v0_20260926.json` | — | `row_sets.variant__pooled.windows`; `row_sets.variant__pooled.positives` (variant set: windows, positives) |
 | 0.0243 | `reports/data/exploratory_v0_20260926.json` | — | `row_sets.variant__pooled.base_rate` (variant base rate) |
 | +0.0140, +0.0026, +0.0264 | `reports/data/exploratory_v0_20260926.json` | — | `part_a.readout.12.variant.delta`; `part_a.readout.12.variant.low`; `part_a.readout.12.variant.high` (H1′ variant Δ seed 1) |

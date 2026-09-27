@@ -1,0 +1,91 @@
+{
+ "bundle": "kelmarsh_demo_v0.npz",
+ "bytes": 2101398,
+ "content_sha256": "f600fd65c2cdd7396b8fa576e763969e1154c4d3af38537484f348d0a0cafd5a",
+ "windows": 300,
+ "messages": 8357,
+ "rule": {
+  "source": "kelmarsh",
+  "turbines": [
+   "Kelmarsh 4",
+   "Kelmarsh 5"
+  ],
+  "end_year": 2023,
+  "split": "test (recorded seed-1 scoring rows, stride 12)",
+  "positives": "all registered-label positives up to 100",
+  "negatives": 200,
+  "seed": 20260927,
+  "draw": "one default_rng(seed): positives first (only if more than the cap), then negatives; ordered by turbine, then end time"
+ },
+ "counts": {
+  "candidates": 8586,
+  "positives_available": 902,
+  "negatives_available": 7684,
+  "positives_chosen": 100,
+  "negatives_chosen": 200,
+  "variant_positives_in_bundle": 27,
+  "variant_unknown_in_bundle": 0
+ },
+ "labels": {
+  "registered": "narrow_within_24h",
+  "variant": "narrow_within_24h_without"
+ },
+ "hours_since_last_fault": {
+  "definition": "ADR-0029 P2 magnitude: hours since the turbine's last narrow event start at or before the window end, capped at 720 h",
+  "code": "faultline.evaluation.exploratory_v0.persistence, imported, not re-implemented",
+  "percentile": "mid-rank of P2 (= -hours) over all 137,025 recorded test rows; higher is more recent"
+ },
+ "recorded": {
+  "logit": "saved seed-1 (d) head logit, bf16 scoring on CUDA",
+  "score": "logit + prior offset, added in float32",
+  "prior_offset": -3.7921449117457753,
+  "percentile": "mid-rank over the 137,025 recorded seed-1 test scores"
+ },
+ "channels": [
+  "wind_speed_ms",
+  "power_pu",
+  "rotor_speed_rpm",
+  "generator_speed_rpm",
+  "pitch_angle_deg",
+  "nacelle_position_deg",
+  "ambient_temp_c",
+  "nacelle_temp_c",
+  "gearbox_oil_temp_c",
+  "generator_bearing_temp_c",
+  "generator_winding_temp_c",
+  "main_bearing_temp_c"
+ ],
+ "per_window_arrays": [
+  "window_id",
+  "row",
+  "turbine",
+  "end_utc_s",
+  "values",
+  "label_registered",
+  "label_variant",
+  "label_variant_known",
+  "hours_since_last_fault",
+  "hours_since_last_fault_percentile",
+  "recorded_logit",
+  "recorded_score",
+  "recorded_percentile"
+ ],
+ "per_message_arrays": [
+  "message_window",
+  "message_start_ns",
+  "message_text"
+ ],
+ "served_model": {
+  "model_sha256": "3d45e42c3a7ef9819ba9fc3a705f603665ec5515f225b78005d44b15b1f9881d",
+  "scores": {
+   "path": "checkpoints/readout_v0_7c2765e7/S2_R-joint-d_seed1_final_R0_stride12_scores.npz",
+   "sha256": "ff5afcb181573a5627666b37885d1d33036d8b22b687a1c12d0c30710efecbfb"
+  },
+  "probe": {
+   "path": "checkpoints/readout_v0_7c2765e7/S2_R-joint-d_seed1_final_probe.pt",
+   "sha256": "a0ca4d9aa1df59a71acdcfa2a73f8bfb53562293ba31cc7ba4b3d7dd6339ebf3"
+  }
+ },
+ "licence": "CC-BY-4.0; see ATTRIBUTION",
+ "built_at_git_sha": "7142f0575c5c440d155f41f1550b6dd9a6e9271b"
+}

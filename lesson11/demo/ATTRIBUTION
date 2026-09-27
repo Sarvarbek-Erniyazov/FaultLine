@@ -1,0 +1,10 @@
+The windows in kelmarsh_demo_v0.npz are derived from:
+
+  Cubico Sustainable Investments Ltd, Kelmarsh wind farm data, Zenodo,
+  doi:10.5281/zenodo.5841833 (version doi:10.5281/zenodo.16807551),
+  licensed CC BY 4.0: https://creativecommons.org/licenses/by/4.0/
+
+Changes made: the 10-minute SCADA values were harmonised, gap-imputed and restricted to 12
+channels by the FaultLine pipeline; the status messages are the provider's status log, cleaned.
+The labels, the hours since the last fault and the scores are FaultLine's, not the provider's.
+The provider does not endorse this project.

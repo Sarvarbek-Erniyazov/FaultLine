@@ -39,7 +39,7 @@ Four results matter. (i) **The model does not beat time since the last fault.** 
 
 SCADA data are heterogeneous across manufacturers (OEMs) in channels and value distributions. The operator text that public records pair with telemetry is sparse, short and vendor-specific. Kelmarsh publishes 217 distinct status strings and Penmanshiel 231, all Senvion templates with a median length of 5 BPE tokens. Hill of Towie publishes alarm codes, CARE no strings, and no public wind source pairs telemetry with free text (ADR-0001).
 
-Foundation models are proposed for time series [cite] and SCADA [cite], increasingly with text [cite]. These questions come before scale. Does pretraining put anything a frozen probe can read into the representation? Is it more than a token histogram? Does text help, and through which path? Does it beat the event history an operator already holds? Does any of it survive a later period, another site or another OEM?
+Foundation models are proposed for time series [1, 2], and a pretrained time-series model has been fine-tuned on wind-turbine SCADA data [3]; models trained on language and time series together are now being proposed [4, 5]. These questions come before scale. Does pretraining put anything a frozen probe can read into the representation? Is it more than a token histogram? Does text help, and through which path? Does it beat the event history an operator already holds? Does any of it survive a later period, another site or another OEM?
 
 Everything ran on one NVIDIA GeForce RTX 4060 (8 GB): one small rung (S2, about 10.5M parameters), 50,003,968 tokens per arm and three seeds. Evaluation is forward in time (train 2016–2020, test 2022 onward), because adjacent 10-minute windows are near-copies and a random split measures interpolation.
 
@@ -428,3 +428,11 @@ What follows is a request for expert feedback — specifically, how would you st
 | ADR-0028 F9-2 (21 scorings) | 2.24 |
 
 These wall-clock figures are not additive with the sidecar floor: some include CPU bootstrap time (G1), F3's two invocations overlap, and F6-2 is not itemised.
+
+## References
+
+1. Ansari, A. F., Stella, L., Turkmen, C., et al. (2024). *Chronos: Learning the Language of Time Series.* arXiv preprint, arXiv:2403.07815. https://arxiv.org/abs/2403.07815 (abstract: "a simple yet effective framework for pretrained probabilistic time series models").
+2. Das, A., Kong, W., Sen, R., Zhou, Y. (2023, rev. 2024). *A decoder-only foundation model for time-series forecasting.* arXiv preprint, arXiv:2310.10688. https://arxiv.org/abs/2310.10688 (abstract: a time-series foundation model for forecasting with out-of-the-box zero-shot performance on public datasets).
+3. Fan, Y., Song, T., Feng, C., Song, K., Liu, C., Jiang, D. (2024). *Fine-Tuning Pre-trained Large Time Series Models for Prediction of Wind Turbine SCADA Data.* arXiv preprint, arXiv:2412.00403. https://arxiv.org/abs/2412.00403 (abstract: applies the pre-trained Timer model to SCADA data from two wind farms; reports it does not consistently outperform baselines in prediction accuracy).
+4. Xie, Z., Li, Z., He, X., Xu, L., Wen, X., Zhang, T., Chen, J., Shi, R., Pei, D. (2025). *ChatTS: Aligning Time Series with LLMs via Synthetic Data for Enhanced Understanding and Reasoning.* VLDB 2025 (as stated on arXiv), arXiv:2412.03104. https://arxiv.org/abs/2412.03104 (abstract: treats time series as a modality, as vision MLLMs treat images).
+5. Quinlan, P., Levasseur, J., Li, Q., Zhu, X. (2026). *Chronicle: A Multimodal Foundation Model for Joint Language and Time Series Understanding.* arXiv preprint, arXiv:2605.20268. https://arxiv.org/abs/2605.20268 (abstract: a 324M-parameter decoder-only transformer trained from scratch on natural language and time series).

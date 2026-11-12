@@ -1,8 +1,4 @@
-"""FaultLine: risk-calibrated joint telemetry-text sequence modeling under shift.
-
-Milestone M0 provides the data pipelines, vocabulary layout and data staging only.
-No model is defined or trained in this package yet; see ``docs/ROADMAP.md``.
-"""
+"""FaultLine: a from-scratch joint telemetry-text sequence model for wind-turbine event risk."""
 
 __version__ = "0.1.0"
 

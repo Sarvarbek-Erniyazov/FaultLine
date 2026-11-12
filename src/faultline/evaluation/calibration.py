@@ -3,8 +3,8 @@
 Balanced sampling (M3 step 0, ADR-0019) trains the risk head on batches that are half
 positive, while the windows it will be scored on are about 2% positive. A head trained that
 way learns the 50% prior. Its probabilities are miscalibrated against the true prior **by
-construction**, and this project claims risk-calibrated abstention. So the correction is
-part of the method and not a reporting detail.
+construction**, and this project implements and evaluates calibrated abstention; graceful
+degradation was not established. So the correction is part of the method and not a reporting detail.
 
 **The correction is logit adjustment.** Under label shift (the windows given a label are the
 same in training and deployment, and only the class mix changes), the posterior at the

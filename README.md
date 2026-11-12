@@ -171,7 +171,7 @@ scripts/gates.sh            # ruff, ruff format, mypy --strict, pytest, naming, 
 
 Raw data is downloaded from the pinned Zenodo records in `configs/data/sources_telemetry.yaml` (≈20 GB, md5-verified). Every run reads one YAML, copies it with its hash into its report directory, and is resumable by output markers. Every number in this README is in a tracked file under `reports/data/` or `docs/DECISIONS.md` — with one exception, the GPU-hours floor above, which sums timing sidecars under `checkpoints/`, a directory that is not committed — and the commit that registered each rule is named beside its outcome.
 
-Repository layout: `configs/` (one file per run, never edited after), `src/faultline/` (package), `tests/` (mirrors `src/`), `reports/data/` (stats reports, gate reports, per-step training logs), `docs/` (`DECISIONS.md`, `INSTRUMENT_AUDIT.md`, `ROADMAP.md`, `PROVENANCE.md`, `DATA_LICENSES.md`, `COURSE_PORT.md`), `data/cards/` (dataset cards and checksum manifests).
+Repository layout: `configs/` (one file per run, never edited after), `src/faultline/` (package), `tests/` (mirrors `src/`), `reports/data/` (stats reports, gate reports, per-step training logs), `docs/` (`DECISIONS.md`, `INSTRUMENT_AUDIT.md`, `ROADMAP.md`, `PROVENANCE.md`, `DATA_LICENSES.md`, `COURSE_PORT.md`), `data/cards/` (dataset cards and checksum manifests). Course lesson material (serving demo, study notes) lives on the branch course-lesson11 and is not part of the research record.
 
 ---
 

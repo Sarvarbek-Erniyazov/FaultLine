@@ -187,6 +187,8 @@ Repository layout: `configs/` (one file per run, never edited after), `src/fault
 
 Built by one person on personal hardware and personal time, from public, licence-documented data only, with no data, code or deliverables from any employer, advisor or grant project. `docs/PROVENANCE.md` states this in full, with a table contrasting FaultLine with the author's other work. A naming gate enforces the separation mechanically.
 
+AI assistance: Claude Code prepared commands and read results; the author launched every run.
+
 The text-pipeline discipline (clean → filter → dedup → PII → report) was ported from an LLM-engineering course reference and applied to an original domain; `docs/COURSE_PORT.md` maps every ported cell to its module and test.
 
 ## Licence and citation

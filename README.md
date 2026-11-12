@@ -1,5 +1,13 @@
 # FaultLine
 
+## Summary
+
+1. **Question:** does pretraining a small decoder-only transformer on quantised SCADA telemetry, alone or jointly with operator text, give a frozen backbone from which a probe can read the risk of a fault event in the next 24 hours, and does that survive a change of site, of manufacturer or of time?
+2. **Built:** the data pipeline, both tokenizers, the transformer, the training loop and the evaluation harness, all from scratch; the model (S2) has 3.5M backbone / 10.45M total parameters, trained on 50M tokens per arm on one 8 GB GPU.
+3. **Run:** every evaluation rule was committed to `docs/DECISIONS.md` before the run it governs, with the registering commit's hash recorded beside the outcome.
+4. **Findings, negative first:** site shift gave two negatives (Hill of Towie and CARE not evaluable); telemetry-only, the model is at parity with an order-blind bag of tokens; graceful degradation under channel loss was not established; and a time-since-last-fault baseline beats the model (exploratory, after closure). Positive: the text-aware joint read-out beats telemetry-only on the registered label (H1' supported; inconclusive under the anemometer-excluded variant).
+5. **Read more:** `docs/RESEARCH_SUMMARY.md`, `docs/DECISIONS.md`, and the git tag `record-v1.0`.
+
 **A from-scratch joint telemetry–text sequence model for wind-turbine event risk, built and evaluated as a pre-registered study on one 8 GB GPU.**
 
 FaultLine asks a narrow question and answers it with a full pipeline: does pretraining a small decoder-only transformer over quantised SCADA telemetry — alone, or jointly with operator text — produce a representation from which a one-hidden-layer probe (RMSNorm → Linear(w→192) → GELU → Linear(192→1)) on the frozen backbone can read the risk of a fault event in the next 24 hours, and does that reading survive a change of site, of manufacturer, or of time? Every component was written for this repository: the data pipeline, the telemetry tokenizer, the byte-level BPE, the transformer, the training loop, the evaluation harness. Every evaluation rule was registered in `docs/DECISIONS.md` and committed *before* the run it governs, with the registering commit's hash recorded beside the outcome.

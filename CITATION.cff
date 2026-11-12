@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: "FaultLine: risk-calibrated joint telemetry-text sequence modeling for cyber-physical event risk under shift"
+title: "FaultLine: a from-scratch joint telemetry-text sequence model for wind-turbine event risk, built and evaluated as a pre-registered study"
 message: "If you use this software, please cite it as below."
 type: software
 authors:
@@ -8,16 +8,24 @@ authors:
     affiliation: "Chonnam National University"
 repository-code: "https://github.com/Sarvarbek-Erniyazov/FaultLine"
 license: MIT
-version: 0.1.0
-date-released: "2026-09-09"
+version: 1.0.0
+date-released: "2026-09-27"
 abstract: >-
-  A from-scratch decoder-only sequence model over a joint vocabulary of byte-level BPE
-  text tokens and per-channel quantile-bin telemetry tokens, targeting calibrated event
-  risk with selective abstention for wind-turbine SCADA under site, modality and
-  temporal shift. Status: M0 -- skeleton, data pipelines and data staging only.
+  A decoder-only transformer written from scratch over a joint vocabulary of byte-level BPE
+  text tokens and per-channel quantile-bin telemetry tokens, pretrained at 50M tokens per arm
+  on one 8 GB GPU and evaluated as a pre-registered study of wind-turbine SCADA event risk
+  (will a fault event start in the next 24 hours). Every evaluation rule was committed before
+  the run it governs. The experimental programme closed on 2026-09-20. Site shift gave two
+  pre-registered negatives (Hill of Towie and CARE not evaluable). Telemetry-only, the
+  sequence model is at parity with an order-blind bag of tokens. The text-aware joint
+  read-out beat the telemetry-only model on the registered label (H1' supported) but is
+  inconclusive under the anemometer-excluded variant, and is level with a classifier that
+  counts status strings. Graceful degradation under channel loss was not established (H2
+  inconclusive), and the probabilities under-read the test-period event rate, so they are
+  rankings, not risks. In exploratory analysis after closure, a time-since-last-fault
+  baseline beat the model.
 keywords:
   - sequence modeling
-  - risk calibration
   - selective prediction
   - wind energy
   - SCADA

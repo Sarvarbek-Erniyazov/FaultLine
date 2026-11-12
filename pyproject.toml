@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "faultline"
 version = "0.1.0"
-description = "Risk-calibrated joint telemetry-text sequence modeling for cyber-physical event risk under shift"
+description = "A from-scratch joint telemetry-text sequence model for wind-turbine event risk, built and evaluated as a pre-registered study"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
